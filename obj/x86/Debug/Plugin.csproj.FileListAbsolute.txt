@@ -1,0 +1,6 @@
+C:\Users\leeze_000\Desktop\Prail\Plugin\bin\Debug\BVEC_ATS.dll
+C:\Users\leeze_000\Desktop\Prail\Plugin\bin\Debug\BVEC_ATS.pdb
+C:\Users\leeze_000\Desktop\Prail\Plugin\bin\Debug\OpenBveApi.dll
+C:\Users\leeze_000\Desktop\Prail\Plugin\bin\Debug\OpenBveApi.xml
+C:\Users\leeze_000\Desktop\Prail\Plugin\obj\x86\Debug\BVEC_ATS.dll
+C:\Users\leeze_000\Desktop\Prail\Plugin\obj\x86\Debug\BVEC_ATS.pdb
