@@ -34,6 +34,7 @@ namespace Plugin {
         internal double cutofftimer;
         internal bool fuelling;
         internal double fuellingtimer;
+        internal double klaxonpressuretimer;
         
 
 		// --- constants ---
@@ -84,6 +85,7 @@ namespace Plugin {
         internal double fuelfillspeed = 50;
         internal double fuelcapacity = 20000;
         internal double fuelfillindicator = -1;
+        internal double klaxonpressureuse = -1;
 
         //Panel Indicies
         internal double reverserindex = -1;
@@ -445,6 +447,16 @@ namespace Plugin {
                 {
                     stm_boilerpressure = stm_boilerpressure - ((int)(regpruse * cutprboost * spdpruse));
                     draintimer = 0.0;
+                }
+            }
+            //This section of code governs the pressure used by the horn
+            if (klaxonpressureuse != -1 && (Train.tractionmanager.primaryklaxonplaying || Train.tractionmanager.secondaryklaxonplaying || Train.tractionmanager.musicklaxonplaying))
+            {
+                this.klaxonpressuretimer += data.ElapsedTime.Seconds;
+                if (klaxonpressuretimer > 0.5)
+                {
+                    klaxonpressuretimer = 0.0;
+                    stm_boilerpressure = stm_boilerpressure - (int)(klaxonpressureuse / 2);
                 }
             }
             //This section of code fills our tanks from a water tower

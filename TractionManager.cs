@@ -18,6 +18,10 @@ namespace Plugin
         internal int travel1;
         internal int travel01;
         internal int travel001;
+        internal bool primaryklaxonplaying;
+        internal bool secondaryklaxonplaying;
+        internal bool musicklaxonplaying;
+        internal double klaxonindicatortimer;
         
         /// <summary>The underlying train.</summary>
         private Train Train;
@@ -35,6 +39,11 @@ namespace Plugin
         internal double travelmeter01 = -1;
         internal double travelmeter001 = -1;
         internal double travelmetermode = 0;
+        internal string klaxonindicator = "-1";
+
+        //Arrays
+        int[] klaxonarray;
+
         internal tractionmanager(Train train) {
 			this.Train = train;
                        
@@ -42,7 +51,23 @@ namespace Plugin
 		
 		//<param name="mode">The initialization mode.</param>
 		internal override void Initialize(InitializationModes mode) {
-            
+            //Split klaxon indicators and timings into an array
+            string[] splitklaxonindicator = klaxonindicator.Split(',');
+            klaxonarray = new int[splitklaxonindicator.Length];
+            for (int i = 0; i < 5; i++)
+            {
+                if (splitklaxonindicator[i] != null)
+                {
+                    //If we have a value parse it
+                    klaxonarray[i] = Int32.Parse(splitklaxonindicator[i]);
+                }
+                else
+                {
+                    //Otherwise return 500- Default klaxon timing in ms
+                    //Stops a complicated null check being required later
+                    klaxonarray[i] = 500;
+                }
+            }    
 
 		}
 
@@ -186,11 +211,12 @@ namespace Plugin
             //Independant Panel Variables
             if (directionindicator != -1)
             {
-
+                //Direction Indicator
                 this.Train.Panel[(int)directionindicator] = this.Train.direction;
             }
             if (reverserindex != -1)
             {
+                //Reverser Indicator
                 if (Train.Handles.Reverser == 0)
                 {
                     this.Train.Panel[(int)reverserindex] = 0;
@@ -205,13 +231,14 @@ namespace Plugin
                 }
             }
             {
+                //Travel Meter
                 if (travelmetermode == 0)
                 {
                     travelled += (Train.trainlocation - Train.previouslocation);
                 }
                 else
                 {
-                    travelled += ((Train.trainlocation - Train.previouslocation)/0.621);
+                    travelled += ((Train.trainlocation - Train.previouslocation) / 0.621);
                 }
                 if (travelled > 1)
                 {
@@ -245,28 +272,66 @@ namespace Plugin
                     this.Train.Panel[(int)travelmeter100] = travel100;
 
                 }
+                //10km
                 if (travelmeter10 != -1)
                 {
                     this.Train.Panel[(int)travelmeter10] = travel10;
 
                 }
+                //1km
                 if (travelmeter1 != -1)
                 {
                     this.Train.Panel[(int)travelmeter1] = travel1;
 
                 }
+                //100m
                 if (travelmeter01 != -1)
                 {
                     this.Train.Panel[(int)travelmeter01] = travel01;
 
                 }
+                //1m
                 if (travelmeter001 != -1)
                 {
                     this.Train.Panel[(int)travelmeter001] = travel001;
 
                 }
             }
-            data.DebugMessage = Convert.ToString(Train.AWS.SafetyState);
+            {
+                //Horn Indicators
+                if (primaryklaxonplaying == true || secondaryklaxonplaying == true || musicklaxonplaying == true)
+                {
+                    klaxonindicatortimer += data.ElapsedTime.Milliseconds;
+                    //Primary Horn
+                    if (primaryklaxonplaying == true && klaxonarray[0] != -1)
+                    {
+                        this.Train.Panel[klaxonarray[0]] = 1;
+                        if (klaxonindicatortimer > klaxonarray[1])
+                        {
+                            primaryklaxonplaying = false;
+                        }
+                    }
+                    //Secondary Horn
+                    else if (secondaryklaxonplaying == true && klaxonarray[2] != 500)
+                    {
+                        this.Train.Panel[klaxonarray[2]] = 1;
+                        if (klaxonindicatortimer > klaxonarray[3])
+                        {
+                            secondaryklaxonplaying = false;
+                        }
+                    }
+                    //Music Horn
+                    else if (musicklaxonplaying == true && klaxonarray[4] != 500)
+                    {
+                        this.Train.Panel[klaxonarray[4]] = 1;
+                        if (klaxonindicatortimer > klaxonarray[5])
+                        {
+                            musicklaxonplaying = false;
+                        }
+                    }
+                }
+            }
+
         }
 
         //Call this function from a safety system to demand power cutoff
@@ -467,6 +532,23 @@ namespace Plugin
                     }
                     break;
             }
+        }
+
+        internal override void HornBlow(HornTypes type)
+        {
+            if (type == HornTypes.Primary)
+            {
+                this.primaryklaxonplaying = true;
+            }
+            else if (type == HornTypes.Secondary)
+            {
+                this.secondaryklaxonplaying = true;
+            }
+            else
+            {
+                this.musicklaxonplaying = true;
+            }
+            
         }
     }
 }

@@ -295,13 +295,10 @@ namespace Plugin
         internal override void KeyDown(VirtualKeys key)
         {
             {
-                if (Train.deadmanstripped == false)
+                if (Train.deadmanstripped == false && independantvigilance != 0)
                 {
-                    if (independantvigilance != 0)
-                    {
-                        //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
-                        this.deadmanstimer = 0.0;
-                    }
+                    //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
+                    this.deadmanstimer = 0.0;
                 }
             }
             {
@@ -340,7 +337,10 @@ namespace Plugin
         /// <param name="reverser">The new reverser position.</param>
         internal override void SetReverser(int reverser)
         {
-            this.deadmanstimer = 0.0;
+            if (Train.deadmanstripped == false)
+            {
+                this.deadmanstimer = 0.0;
+            }
             
         }
 
@@ -348,16 +348,29 @@ namespace Plugin
         /// <param name="powerNotch">The new power notch.</param>
         internal override void SetPower(int powerNotch)
         {
-            this.deadmanstimer = 0.0;
-            debug = true;
+            if (Train.deadmanstripped == false)
+            {
+                this.deadmanstimer = 0.0;
+            }
         }
 
         /// <summary>Is called when the driver changes the brake notch.</summary>
         /// <param name="brakeNotch">The new brake notch.</param>
         internal override void SetBrake(int brakeNotch)
         {
-            this.deadmanstimer = 0.0;
-            debug = true;
+            if (Train.deadmanstripped == false)
+            {
+                this.deadmanstimer = 0.0;
+            }
+        }
+
+        internal override void HornBlow(HornTypes type)
+        {
+            if (Train.deadmanstripped == false && independantvigilance != 0)
+            {
+                //Only reset deadman's timer automatically for the horn if it's not already tripped and independant vigilance is not set
+                this.deadmanstimer = 0.0;
+            }
         }
 
 

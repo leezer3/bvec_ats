@@ -272,6 +272,9 @@ namespace Plugin
                 case "travelmeter001":
                 interlocks.Add(line);
                 break;
+                case "klaxonindicator":
+                interlocks.Add(line);
+                break;
                 //VALUES TO BE ADDED TO THE WINDSCREEN SECTION OF THE CONFIGURATION FILE
                 case "wiperindex":
                 windscreen.Add(line);

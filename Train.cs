@@ -338,6 +338,9 @@ namespace Plugin {
                                         case "blowoffsound":
                                         this.steam.blowoffsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                         break;
+                                        case "klaxonpressureuse":
+                                        this.steam.klaxonpressureuse = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        break;
                                         default:
                                         throw new InvalidDataException("The parameter " + key + " is not supported.");
 									}
@@ -579,6 +582,8 @@ namespace Plugin {
                                         case "travelmetermode":
                                             this.tractionmanager.travelmetermode = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                             break;
+                                        case "klaxonindicator":
+                                            this.tractionmanager.klaxonindicator = value;
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }
                                     break;
