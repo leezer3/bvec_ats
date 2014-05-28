@@ -377,7 +377,7 @@ namespace Plugin
                             {
                                 currentheat = heatingarray[0];
                             }
-                            else if (Train.Handles.PowerNotch <= heatingarray.Length)
+                            else if (Train.Handles.PowerNotch < heatingarray.Length)
                             {
                                 currentheat = heatingarray[Train.Handles.PowerNotch];
                             }
@@ -466,7 +466,7 @@ namespace Plugin
                     fuel = (int)fuelcapacity;
                 }
             }
-            data.DebugMessage = Convert.ToString(fuel);
+            
             {
                 //Panel Variables
                 if (!nogears)
@@ -550,7 +550,7 @@ namespace Plugin
             switch (key)
             {
                 //Toggle Automatic Cutoff
-                case VirtualKeys.D:
+                case VirtualKeys.A2:
                     if (automatic != -1)
                     {
                         automatic = -1;

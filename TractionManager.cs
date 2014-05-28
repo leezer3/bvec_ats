@@ -40,9 +40,11 @@ namespace Plugin
         internal double travelmeter001 = -1;
         internal double travelmetermode = 0;
         internal string klaxonindicator = "-1";
+        internal string customindicators = "-1";
 
         //Arrays
         int[] klaxonarray;
+        int[,] customindicatorsarray;
 
         internal tractionmanager(Train train) {
 			this.Train = train;
@@ -53,10 +55,10 @@ namespace Plugin
 		internal override void Initialize(InitializationModes mode) {
             //Split klaxon indicators and timings into an array
             string[] splitklaxonindicator = klaxonindicator.Split(',');
-            klaxonarray = new int[splitklaxonindicator.Length];
+            klaxonarray = new int[5];
             for (int i = 0; i < 5; i++)
             {
-                if (splitklaxonindicator[i] != null)
+                if (splitklaxonindicator.Length < i)
                 {
                     //If we have a value parse it
                     klaxonarray[i] = Int32.Parse(splitklaxonindicator[i]);
@@ -67,7 +69,17 @@ namespace Plugin
                     //Stops a complicated null check being required later
                     klaxonarray[i] = 500;
                 }
-            }    
+            }
+            //Split klaxon indicators and timings into an array
+            string[] splitcustomindicators = customindicators.Split(',');
+            customindicatorsarray = new int[splitcustomindicators.Length,2];
+            for (int i = 0; i < splitcustomindicators.Length; i++)
+            {
+                //Parse the panel value and set second array value to false
+                customindicatorsarray[i, 0] = Int32.Parse(splitcustomindicators[i]);
+                customindicatorsarray[i, 1] = 0;
+            }
+
 
 		}
 
@@ -331,6 +343,16 @@ namespace Plugin
                     }
                 }
             }
+            {
+                //Custom Indicators
+                for (int i = 0; i < customindicatorsarray.GetLength(0); i++)
+                {
+                    if (customindicatorsarray[i, 0] != -1)
+                    {
+                        Train.Panel[customindicatorsarray[i, 0]] = customindicatorsarray[i, 1];
+                    }
+                }
+            }
 
         }
 
@@ -459,6 +481,82 @@ namespace Plugin
                             Train.StartupSelfTestManager.driveracknowledge();
                         }
                         break;
+
+                    case VirtualKeys.D:
+                        //Toggle Custom Indicator 1
+                        if (customindicatorsarray[0,0] != -1)
+                        {
+                            if (customindicatorsarray[0, 1] == 0)
+                            {
+                                customindicatorsarray[0, 1] = 1;
+                            }
+                            else
+                            {
+                                customindicatorsarray[0, 1] = 0;
+                            }
+                        }
+                        break;
+
+                    case VirtualKeys.E:
+                        //Toggle Custom Indicator 2
+                        if (customindicatorsarray.Length >= 1)
+                        {
+                            if (customindicatorsarray[1, 1] == 0)
+                            {
+                                customindicatorsarray[1, 1] = 1;
+                            }
+                            else
+                            {
+                                customindicatorsarray[1, 1] = 0;
+                            }
+                        }
+                        break;
+
+                    case VirtualKeys.F:
+                        //Toggle Custom Indicator 3
+                        if (customindicatorsarray.Length >= 2)
+                        {
+                            if (customindicatorsarray[2, 1] == 0)
+                            {
+                                customindicatorsarray[2, 1] = 1;
+                            }
+                            else
+                            {
+                                customindicatorsarray[2, 1] = 0;
+                            }
+                        }
+                        break;
+
+                    case VirtualKeys.G:
+                        //Toggle Custom Indicator 4
+                        if (customindicatorsarray.Length >= 3)
+                        {
+                            if (customindicatorsarray[3, 1] == 0)
+                            {
+                                customindicatorsarray[3, 1] = 1;
+                            }
+                            else
+                            {
+                                customindicatorsarray[3, 1] = 0;
+                            }
+                        }
+                        break;
+
+                    case VirtualKeys.H:
+                        //Toggle Custom Indicator 5
+                        if (customindicatorsarray.Length >=4)
+                        {
+                            if (customindicatorsarray[4, 1] == 0)
+                            {
+                                customindicatorsarray[4, 1] = 1;
+                            }
+                            else
+                            {
+                                customindicatorsarray[4, 1] = 0;
+                            }
+                        }
+                        break;
+
                     case VirtualKeys.I:
                         //Toggle Fuel fill
                         if (Train.canfuel == true && Train.trainspeed == 0)

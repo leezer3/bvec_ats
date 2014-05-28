@@ -273,7 +273,40 @@ namespace Plugin
                 interlocks.Add(line);
                 break;
                 case "klaxonindicator":
-                interlocks.Add(line);
+                string[] splitklaxonindicator = value.Split(',');
+                int[] splitarray = new int[splitklaxonindicator.Length + 1];
+                for (int j = 0; j < splitklaxonindicator.Length; j++)
+                {
+                    if (j <= 1)
+                    {
+                        splitarray[j] = Int32.Parse(splitklaxonindicator[j]);
+                    }
+                    else
+                    {
+                        splitarray[2] = Int32.Parse(splitklaxonindicator[0]);
+                        splitarray[3] = Int32.Parse(splitklaxonindicator[j]);
+                    }
+                }
+                string finishedvalue = "klaxonindicator=" + string.Join(",", Array.ConvertAll<int, String>(splitarray, Convert.ToString));
+                interlocks.Add(finishedvalue);
+                break;
+                case "customindicators":
+                string[] splitcustomindicators = value.Split(',');
+                int[] splitarray1 = new int[splitcustomindicators.Length / 2];
+                int k = 0;
+                for (int j = 0; j < splitcustomindicators.Length; j++)
+                {
+                    if (j % 2 == 0)
+                    {
+                    }
+                    else
+                    {
+                        splitarray1[k] = Int32.Parse(splitcustomindicators[j]);
+                        k++;
+                    }
+                }
+                string finishedvalue1 = "customindicators=" + string.Join(",", Array.ConvertAll<int, String>(splitarray1, Convert.ToString));
+                interlocks.Add(finishedvalue1);
                 break;
                 //VALUES TO BE ADDED TO THE WINDSCREEN SECTION OF THE CONFIGURATION FILE
                 case "wiperindex":

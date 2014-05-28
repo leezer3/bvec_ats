@@ -145,7 +145,7 @@ namespace Plugin
                         {
                             currentheat = heatingarray[0];
                         }
-                        else if (Train.Handles.PowerNotch <= heatingarray.Length)
+                        else if (Train.Handles.PowerNotch < heatingarray.Length)
                         {
                             currentheat = heatingarray[Train.Handles.PowerNotch];
                         }

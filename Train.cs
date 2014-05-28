@@ -246,7 +246,7 @@ namespace Plugin {
                                         this.steam.heatingpart = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                         break;
                                         case "heatingrate":
-                                        this.diesel.heatingrate = value;
+                                        this.steam.heatingrate = value;
                                         break;
                                         case "overheatwarn":
                                         this.steam.overheatwarn = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
@@ -584,6 +584,10 @@ namespace Plugin {
                                             break;
                                         case "klaxonindicator":
                                             this.tractionmanager.klaxonindicator = value;
+                                            break;
+                                        case "customindicators":
+                                            this.tractionmanager.customindicators = value;
+                                            break;
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }
                                     break;
