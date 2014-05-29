@@ -209,7 +209,6 @@ namespace Plugin
                         }
                     }
                 }
-                data.DebugMessage = Convert.ToString(currentwiperposition);
                 //Animate Windscreen Wiper
                 if(wiperindex != -1)
                 {

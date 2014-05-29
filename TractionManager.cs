@@ -524,6 +524,11 @@ namespace Plugin
                             Train.deadmanstripped = false;
                             resetbrakeapplication();
                         }
+                        //Acknowledge AWS warning
+                        if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerActive)
+                        {
+                            Train.AWS.Acknowlege();
+                        }
 
                         //Reset AWS
                         if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired && Train.trainspeed == 0 && Train.Handles.Reverser == 0)

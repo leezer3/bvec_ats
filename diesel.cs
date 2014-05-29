@@ -438,7 +438,7 @@ namespace Plugin
             if (fuelusetimer > 1000)
             {
                 fuelusetimer = 0.0;
-                if (data.Handles.PowerNotch <= fuelarray.Length)
+                if (data.Handles.PowerNotch < fuelarray.Length)
                 {
                     fuel -= fuelarray[data.Handles.PowerNotch];
                 }

@@ -117,13 +117,13 @@ namespace Plugin
                         /* The AWS indicates a clear signal */
                         this.Reset();
                         this.SunflowerState = SunflowerStates.Clear;
-                        if (this.awswarningsound != -1)
-                        {
-                            SoundManager.Play((int)awswarningsound, 1.0, 1.0, false);
-                        }
                         if (this.awsclearsound != -1)
                         {
-                            SoundManager.Stop((int)awsclearsound);
+                            SoundManager.Play((int)awsclearsound, 1.0, 1.0, false);
+                        }
+                        if (this.awswarningsound != -1)
+                        {
+                            SoundManager.Stop((int)awswarningsound);
                         }
                     }
                     else if (this.MySafetyState == SafetyStates.CancelTimerActive)
@@ -333,25 +333,7 @@ namespace Plugin
         }
 		
 
-        /// <summary>Is called when a key is pressed.</summary>
-        /// <param name="key">The key.</param>
-        internal override void KeyDown(VirtualKeys key)
-        {
-            {
-                switch (key)
-                {
-                    case VirtualKeys.A1:
-                        //Acknowledge warning
-                        if (this.MySafetyState == SafetyStates.CancelTimerActive)
-                        {
-                            this.MySafetyState = SafetyStates.WarningAcknowledged;
-                        }
 
-                        break;
-
-                }
-            }
-        }
 
     }
 }
