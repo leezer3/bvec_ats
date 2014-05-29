@@ -331,22 +331,24 @@ namespace Plugin
                 if (allowneutralrevs == 1 && (gear == 0 || Train.Handles.Reverser == 0))
                 {
                     currentrevs = (int)Math.Abs((1000 / Train.Specs.PowerNotches) * Train.Handles.PowerNotch * 0.9);
-                    previousrevs = currentrevs;
+                    
                     //Play sounds based upon revs state
                     if (revsupsound != -1 && revsdownsound != -1 && motorsound != -1)
                     {
-                        double pitch = Train.Handles.PowerNotch / Train.Specs.PowerNotches;
+                        double pitch = (double)Train.Handles.PowerNotch / (double)Train.Specs.PowerNotches;
                         if (currentrevs > 0 && currentrevs > previousrevs)
                         {
+                            SoundManager.Play((int)motorsound, 0.8, pitch, true);
                             SoundManager.Play((int)revsupsound, 1.0, 1.0, false);
                             SoundManager.Stop((int)revsdownsound);
-                            SoundManager.Play((int)motorsound, 1.0, pitch, false);
+                            
                         }
                         else if (currentrevs >= 0 && currentrevs < previousrevs)
                         {
+                            SoundManager.Play((int)motorsound, 0.8, pitch, true);
                             SoundManager.Play((int)revsdownsound, 1.0, 1.0, false);
                             SoundManager.Stop((int)revsupsound);
-                            SoundManager.Play((int)motorsound, 1.0, pitch, false);
+                            
                         }
                         else if (currentrevs == 0)
                         {
@@ -354,6 +356,7 @@ namespace Plugin
                             SoundManager.Stop((int)revsdownsound);
                             SoundManager.Stop((int)motorsound);
                         }
+                        previousrevs = currentrevs;
                     }
                 }
 
