@@ -438,6 +438,13 @@ namespace Plugin
         /// <param name="key">The key.</param>
         internal override void KeyDown(VirtualKeys key)
         {
+            {
+                if (Train.deadmanstripped == false && Train.vigilance.independantvigilance != 0)
+                {
+                    //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
+                    Train.vigilance.deadmanstimer = 0.0;
+                }
+            }
 
             {
                 switch (key)
@@ -499,6 +506,11 @@ namespace Plugin
                     
                     //Use INS to reset safety devices
                     case VirtualKeys.A1:
+                        //Reset vigilance timer if independant vigilance is selected & the deadman's timer has not tripped
+                        if (Train.vigilance.independantvigilance != 0 && Train.deadmanstripped == false)
+                        {
+                            Train.vigilance.deadmanstimer = 0.0;
+                        }
                         //Reset Overspeed Trip
                         if (Train.trainspeed == 0 && Train.overspeedtripped == true)
                         {
@@ -726,8 +738,47 @@ namespace Plugin
             }
         }
 
+        /// <summary>Is called when the driver changes the reverser.</summary>
+        /// <param name="reverser">The new reverser position.</param>
+        internal override void SetReverser(int reverser)
+        {
+            if (Train.deadmanstripped == false && Train.vigilance.independantvigilance != 0)
+            {
+                Train.vigilance.deadmanstimer = 0.0;
+            }
+
+        }
+
+        /// <summary>Is called when the driver changes the power notch.</summary>
+        /// <param name="powerNotch">The new power notch.</param>
+        internal override void SetPower(int powerNotch)
+        {
+            //Reset vigilance if independant vigilance is not selected
+            if (Train.deadmanstripped == false && Train.vigilance.independantvigilance != 0)
+            {
+                Train.vigilance.deadmanstimer = 0.0;
+            }
+        }
+
+        /// <summary>Is called when the driver changes the brake notch.</summary>
+        /// <param name="brakeNotch">The new brake notch.</param>
+        internal override void SetBrake(int brakeNotch)
+        {
+            //Reset vigilance if independant vigilance is not selected
+            if (Train.deadmanstripped == false && Train.vigilance.independantvigilance != 0)
+            {
+                Train.vigilance.deadmanstimer = 0.0;
+            }
+        }
+
         internal override void HornBlow(HornTypes type)
         {
+            //Reset vigilance if independant vigilance is not selected
+            if (Train.deadmanstripped == false && Train.vigilance.independantvigilance != 0)
+            {
+                Train.vigilance.deadmanstimer = 0.0;
+            }
+            //Set the horn type that is playing
             if (type == HornTypes.Primary)
             {
                 this.primaryklaxonplaying = true;

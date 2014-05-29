@@ -434,16 +434,5 @@ namespace Plugin
                 SoundManager.Play((int)breakersound, 1.0, 1.0, false);
             }
         }
-
-
-        /// <summary>Is called when a key is pressed.</summary>
-        /// <param name="key">The key.</param>
-        internal override void KeyDown(VirtualKeys key)
-        {
-        }
-
-        internal override void KeyUp(VirtualKeys key)
-        {
-        }
     }
 }
