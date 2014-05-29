@@ -542,48 +542,5 @@ namespace Plugin
             }
         }
 
-
-        /// <summary>Is called when a key is pressed.</summary>
-        /// <param name="key">The key.</param>
-        internal override void KeyDown(VirtualKeys key)
-        {
-            switch (key)
-            {
-                //Toggle Automatic Cutoff
-                case VirtualKeys.A2:
-                    if (automatic != -1)
-                    {
-                        automatic = -1;
-                    }
-                    else
-                    {
-                        automatic = 0;
-                    }
-                    break;
-            }
-        }
-
-        internal override void KeyUp(VirtualKeys key)
-        {
-            switch (key)
-            {
-                case VirtualKeys.B1:
-                    //Gear Up
-                    if (gear >= 0 && gear < totalgears -1 && Train.Handles.PowerNotch == 0)
-                    {
-                        gear++;
-                        gearchange();
-                    }
-                    break;
-                    //Gear Down
-                case VirtualKeys.B2:
-                    if (gear <= totalgears && gear > 0 && Train.Handles.PowerNotch == 0)
-                    {
-                        gear--;
-                        gearchange();
-                    }
-                    break;
-            }
-        }
     }
 }

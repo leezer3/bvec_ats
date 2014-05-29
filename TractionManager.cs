@@ -58,7 +58,7 @@ namespace Plugin
             klaxonarray = new int[5];
             for (int i = 0; i < 5; i++)
             {
-                if (splitklaxonindicator.Length < i)
+                if (i < splitklaxonindicator.Length)
                 {
                     //If we have a value parse it
                     klaxonarray[i] = Int32.Parse(splitklaxonindicator[i]);
@@ -442,6 +442,61 @@ namespace Plugin
             {
                 switch (key)
                 {
+                    //Toggle Automatic Cutoff & gears
+                    case VirtualKeys.A2:
+                        if (Train.steam != null)
+                        {
+                            if (Train.steam.automatic != -1)
+                            {
+                                Train.steam.automatic = -1;
+                            }
+                            else
+                            {
+                                Train.steam.automatic = 0;
+                            }
+                        }
+                        else if (Train.diesel != null)
+                        {
+                            if (Train.diesel.automatic != -1)
+                            {
+                                Train.diesel.automatic = -1;
+                            }
+                            else
+                            {
+                                Train.diesel.automatic = 0;
+                            }
+                        }
+                        break;
+                    case VirtualKeys.B2:
+                        //Injectors
+                        if (Train.steam != null)
+                        {
+                            if (Train.steam.stm_injector == true)
+                            {
+                                Train.steam.stm_injector = false;
+                            }
+                            else
+                            {
+                                Train.steam.stm_injector = true;
+                            }
+                        }
+                        break;
+
+                    case VirtualKeys.C1:
+                        //Cutoff Up
+                        if (Train.steam != null)
+                        {
+                            Train.steam.cutoffstate = 1;
+                        }
+                        break;
+                    //Cutoff Down
+                    case VirtualKeys.C2:
+                        if (Train.steam != null)
+                        {
+                            Train.steam.cutoffstate = -1;
+                        }
+                        break;
+                    
                     //Use INS to reset safety devices
                     case VirtualKeys.A1:
                         //Reset Overspeed Trip
@@ -481,6 +536,8 @@ namespace Plugin
                             Train.StartupSelfTestManager.driveracknowledge();
                         }
                         break;
+
+
 
                     case VirtualKeys.D:
                         //Toggle Custom Indicator 1
@@ -605,6 +662,43 @@ namespace Plugin
         {
             switch (key)
             {
+
+                case VirtualKeys.B1:
+                    //Gear Up
+                    if (Train.diesel != null)
+                    {
+                        if (Train.diesel.gear >= 0 && Train.diesel.gear < Train.diesel.totalgears - 1 && Train.Handles.PowerNotch == 0)
+                        {
+                            Train.diesel.gear++;
+                            Train.diesel.gearchange();
+                        }
+                    }
+                    break;
+                //Gear Down
+                case VirtualKeys.B2:
+                    if (Train.diesel != null)
+                    {
+                        if (Train.diesel.gear <= Train.diesel.totalgears && Train.diesel.gear > 0 && Train.Handles.PowerNotch == 0)
+                        {
+                            Train.diesel.gear--;
+                            Train.diesel.gearchange();
+                        }
+                    }
+                    break;
+                case VirtualKeys.C1:
+                    //Cutoff Up
+                    if (Train.steam != null)
+                    {
+                        Train.steam.cutoffstate = 0;
+                    }
+                    break;
+
+                case VirtualKeys.C2:
+                    if (Train.steam != null)
+                    {
+                        Train.steam.cutoffstate = 0;
+                    }
+                    break;
                 case VirtualKeys.I:
                     //Toggle Fuel fill
                         if (Train.steam != null)
