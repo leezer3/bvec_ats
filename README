@@ -1,0 +1,32 @@
+BASIC OVERVIEW
+--------------
+
+BVEC_ATS is a BSD-Licened plugin for the OpenBVE train simulator.
+This plugin aims to provide basic simulation functions for British
+safety systems such as AWS & TPWS, and traction simulation for
+electric, diesel and steam locomotives.
+
+CONFIGURATION
+-------------
+
+Please see http://www.bvecornwall.co.uk/wordpress/bvec_ats-configuration/
+for full details on how to configure this plugin.
+
+BUILDING THE PLUGIN
+-------------------
+
+This plugin has been developed in Visual Studio 2010, C#.Net 2.0
+It should compile without trouble in both Visual Studio & SharpDevelop
+if a reference is added to OpenBVEapi.dll [Found in your OpenBVE directory]
+
+CONTRIBUTORS
+------------
+
+BVEC_ATS uses code derived from OS_ATS by Oskari Saarekas, as well
+as public domain code by Anthony Bowden, Odyakufan & Michelle
+
+
+
+
+Christopher Lees
+http://www.bvecornwall.co.uk
