@@ -225,6 +225,9 @@ namespace Plugin {
                             case "interlocks":
                                 //Twiddle
                                 break;
+                            case "keyassignments":
+                                //Twiddle
+                                break;
                             case "windscreen":
                                 this.Windscreen.enabled = true;
                                 break;
@@ -676,6 +679,78 @@ namespace Plugin {
                                             break;
                                         case "wiperrate":
                                             this.Windscreen.wiperrate = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            break;
+                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
+                                    }
+                                    break;
+                                case "keyassignments":
+                                    switch (key)
+                                    {
+                                        case "safetykey":
+                                            this.tractionmanager.safetykey = value;
+                                            break;
+                                        case "automatickey":
+                                            this.tractionmanager.automatickey = value;
+                                            break;
+                                        case "injectorkey":
+                                            this.tractionmanager.injectorkey = value;
+                                            break;
+                                        case "cutoffdownkey":
+                                            this.tractionmanager.cutoffdownkey = value;
+                                            break;
+                                        case "cutoffupkey":
+                                            this.tractionmanager.cutoffupkey = value;
+                                            break;
+                                        case "fuelkey":
+                                            this.tractionmanager.fuelkey = value;
+                                            break;
+                                        case "wiperspeedup":
+                                            this.tractionmanager.wiperspeedup = value;
+                                            break;
+                                        case "wiperspeeddown":
+                                            this.tractionmanager.wiperspeeddown = value;
+                                            break;
+                                        case "isolatesafetykey":
+                                            this.tractionmanager.isolatesafetykey = value;
+                                            break;
+                                        case "gearupkey":
+                                            this.tractionmanager.gearupkey = value;
+                                            break;
+                                        case "geardownkey":
+                                            this.tractionmanager.geardownkey = value;
+                                            break;
+                                        case "drakey":
+                                            this.tractionmanager.DRAkey = value;
+                                            break;
+                                        case "customindicatorkey1":
+                                            this.tractionmanager.customindicatorkey1 = value;
+                                            break;
+                                        case "customindicatorkey2":
+                                            this.tractionmanager.customindicatorkey2 = value;
+                                            break;
+                                        case "customindicatorkey3":
+                                            this.tractionmanager.customindicatorkey3 = value;
+                                            break;
+                                        case "customindicatorkey4":
+                                            this.tractionmanager.customindicatorkey4 = value;
+                                            break;
+                                        case "customindicatorkey5":
+                                            this.tractionmanager.customindicatorkey5 = value;
+                                            break;
+                                        case "customindicatorkey6":
+                                            this.tractionmanager.customindicatorkey6 = value;
+                                            break;
+                                        case "customindicatorkey7":
+                                            this.tractionmanager.customindicatorkey7 = value;
+                                            break;
+                                        case "customindicatorkey8":
+                                            this.tractionmanager.customindicatorkey8 = value;
+                                            break;
+                                        case "customindicatorkey9":
+                                            this.tractionmanager.customindicatorkey9 = value;
+                                            break;
+                                        case "customindicatorkey10":
+                                            this.tractionmanager.customindicatorkey10 = value;
                                             break;
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }

@@ -247,7 +247,7 @@ namespace Plugin
                 }
 
                 //Set current revolutions per minute
-                currentrevs = Math.Min(1000, (int)Train.trainspeed * gearratio);
+                currentrevs = Math.Max(0,Math.Min(1000, (int)Train.trainspeed * gearratio));
 
                 //Now calculate the maximumum power notch
                 if (currentrevs < fadeinratio)

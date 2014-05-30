@@ -42,6 +42,36 @@ namespace Plugin
         internal string klaxonindicator = "-1";
         internal string customindicators = "-1";
 
+        //Default Key Assignments
+        //Keys Down
+        internal string safetykey = "A1";
+        internal string automatickey = "A2";
+        internal string injectorkey = "B2";
+        internal string cutoffdownkey = "C1";
+        internal string cutoffupkey = "C2";
+        internal string fuelkey = "I";
+        internal string wiperspeedup = "J";
+        internal string wiperspeeddown = "K";
+        internal string isolatesafetykey = "L";
+
+        //Keys Up
+        internal string gearupkey = "B1";
+        internal string geardownkey = "B2";
+        internal string DRAkey = "S";
+
+        //Custom Indicators
+        internal string customindicatorkey1 = "D";
+        internal string customindicatorkey2 = "E";
+        internal string customindicatorkey3 = "F";
+        internal string customindicatorkey4 = "G";
+        internal string customindicatorkey5 = "H";
+        internal string customindicatorkey6 = "";
+        internal string customindicatorkey7 = "";
+        internal string customindicatorkey8 = "";
+        internal string customindicatorkey9 = "";
+        internal string customindicatorkey10 = "";
+
+
         //Arrays
         int[] klaxonarray;
         int[,] customindicatorsarray;
@@ -70,14 +100,22 @@ namespace Plugin
                     klaxonarray[i] = 500;
                 }
             }
-            //Split klaxon indicators and timings into an array
+            //Split custom indicators into an array
             string[] splitcustomindicators = customindicators.Split(',');
-            customindicatorsarray = new int[splitcustomindicators.Length,2];
-            for (int i = 0; i < splitcustomindicators.Length; i++)
+            customindicatorsarray = new int[10,2];
+            for (int i = 0; i < 9; i++)
             {
                 //Parse the panel value and set second array value to false
-                customindicatorsarray[i, 0] = Int32.Parse(splitcustomindicators[i]);
-                customindicatorsarray[i, 1] = 0;
+                if (i < splitcustomindicators.Length)
+                {
+                    customindicatorsarray[i, 0] = Int32.Parse(splitcustomindicators[i]);
+                    customindicatorsarray[i, 1] = 0;
+                }
+                else
+                {
+                    customindicatorsarray[i, 0] = -1;
+                    customindicatorsarray[i, 1] = 0;
+                }
             }
 
 
@@ -353,7 +391,6 @@ namespace Plugin
                     }
                 }
             }
-
         }
 
         //Call this function from a safety system to demand power cutoff
@@ -438,6 +475,8 @@ namespace Plugin
         /// <param name="key">The key.</param>
         internal override void KeyDown(VirtualKeys key)
         {
+            //Convert keypress to string for comparison
+            string keypressed = Convert.ToString(key);
             {
                 if (Train.deadmanstripped == false && Train.vigilance.independantvigilance != 0)
                 {
@@ -446,300 +485,377 @@ namespace Plugin
                 }
             }
 
+            if (keypressed == automatickey)
             {
-                switch (key)
+                //Toggle Automatic Cutoff/ Gears
+                if (Train.steam != null)
                 {
-                    //Toggle Automatic Cutoff & gears
-                    case VirtualKeys.A2:
-                        if (Train.steam != null)
-                        {
-                            if (Train.steam.automatic != -1)
-                            {
-                                Train.steam.automatic = -1;
-                            }
-                            else
-                            {
-                                Train.steam.automatic = 0;
-                            }
-                        }
-                        else if (Train.diesel != null)
-                        {
-                            if (Train.diesel.automatic != -1)
-                            {
-                                Train.diesel.automatic = -1;
-                            }
-                            else
-                            {
-                                Train.diesel.automatic = 0;
-                            }
-                        }
-                        break;
-                    case VirtualKeys.B2:
-                        //Injectors
-                        if (Train.steam != null)
-                        {
-                            if (Train.steam.stm_injector == true)
-                            {
-                                Train.steam.stm_injector = false;
-                            }
-                            else
-                            {
-                                Train.steam.stm_injector = true;
-                            }
-                        }
-                        break;
-
-                    case VirtualKeys.C1:
-                        //Cutoff Up
-                        if (Train.steam != null)
-                        {
-                            Train.steam.cutoffstate = 1;
-                        }
-                        break;
-                    //Cutoff Down
-                    case VirtualKeys.C2:
-                        if (Train.steam != null)
-                        {
-                            Train.steam.cutoffstate = -1;
-                        }
-                        break;
-                    
-                    //Use INS to reset safety devices
-                    case VirtualKeys.A1:
-                        //Reset vigilance timer if independant vigilance is selected & the deadman's timer has not tripped
-                        if (Train.vigilance.independantvigilance != 0 && Train.deadmanstripped == false)
-                        {
-                            Train.vigilance.deadmanstimer = 0.0;
-                        }
-                        //Reset Overspeed Trip
-                        if (Train.trainspeed == 0 && Train.overspeedtripped == true)
-                        {
-                            Train.overspeedtripped = false;
-                            resetbrakeapplication();
-                        }
-
-                        //Reset Deadman's Trip
-                        if (Train.vigilance.vigilancecancellable != 0 && Train.deadmanstripped == true || Train.trainspeed == 0 && Train.deadmanstripped == true)
-                        {
-                            Train.deadmanstripped = false;
-                            resetbrakeapplication();
-                        }
-                        //Acknowledge AWS warning
-                        if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerActive)
-                        {
-                            Train.AWS.Acknowlege();
-                        }
-
-                        //Reset AWS
-                        if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired && Train.trainspeed == 0 && Train.Handles.Reverser == 0)
-                        {
-                            if (SoundManager.IsPlaying((int)Train.AWS.awswarningsound))
-                            {
-                                SoundManager.Stop((int)Train.AWS.awswarningsound);
-                            }
-                            Train.AWS.Reset();
-                            resetpowercutoff();
-                        }
-
-                        //Acknowledge TPWS Brake Demand
-                        if (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand)
-                        {
-                            Train.TPWS.AcknowledgeBrakeDemand();
-                        }
-
-                        //Acknowledge Self-Test warning
-                        if (Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.AwaitingDriverInteraction)
-                        {
-                            Train.StartupSelfTestManager.driveracknowledge();
-                        }
-                        break;
-
-
-
-                    case VirtualKeys.D:
-                        //Toggle Custom Indicator 1
-                        if (customindicatorsarray[0,0] != -1)
-                        {
-                            if (customindicatorsarray[0, 1] == 0)
-                            {
-                                customindicatorsarray[0, 1] = 1;
-                            }
-                            else
-                            {
-                                customindicatorsarray[0, 1] = 0;
-                            }
-                        }
-                        break;
-
-                    case VirtualKeys.E:
-                        //Toggle Custom Indicator 2
-                        if (customindicatorsarray.Length >= 1)
-                        {
-                            if (customindicatorsarray[1, 1] == 0)
-                            {
-                                customindicatorsarray[1, 1] = 1;
-                            }
-                            else
-                            {
-                                customindicatorsarray[1, 1] = 0;
-                            }
-                        }
-                        break;
-
-                    case VirtualKeys.F:
-                        //Toggle Custom Indicator 3
-                        if (customindicatorsarray.Length >= 2)
-                        {
-                            if (customindicatorsarray[2, 1] == 0)
-                            {
-                                customindicatorsarray[2, 1] = 1;
-                            }
-                            else
-                            {
-                                customindicatorsarray[2, 1] = 0;
-                            }
-                        }
-                        break;
-
-                    case VirtualKeys.G:
-                        //Toggle Custom Indicator 4
-                        if (customindicatorsarray.Length >= 3)
-                        {
-                            if (customindicatorsarray[3, 1] == 0)
-                            {
-                                customindicatorsarray[3, 1] = 1;
-                            }
-                            else
-                            {
-                                customindicatorsarray[3, 1] = 0;
-                            }
-                        }
-                        break;
-
-                    case VirtualKeys.H:
-                        //Toggle Custom Indicator 5
-                        if (customindicatorsarray.Length >=4)
-                        {
-                            if (customindicatorsarray[4, 1] == 0)
-                            {
-                                customindicatorsarray[4, 1] = 1;
-                            }
-                            else
-                            {
-                                customindicatorsarray[4, 1] = 0;
-                            }
-                        }
-                        break;
-
-                    case VirtualKeys.I:
-                        //Toggle Fuel fill
-                        if (Train.canfuel == true && Train.trainspeed == 0)
-                        {
-                            if (Train.steam != null)
-                            {
-                                Train.steam.fuelling = true;
-                            }
-                            if (Train.diesel != null)
-                            {
-                                Train.diesel.fuelling = true;
-                            }
-                        }
-                        break;
-
-                    case VirtualKeys.J:
-                        //Wipers Speed Down
-                        if (Train.Windscreen.enabled == true)
-                        {
-                            Train.Windscreen.windscreenwipers(0);
-                        }
-                        break;
-                    case VirtualKeys.K:
-                        //Wipers Speed Up
-                        if (Train.Windscreen.enabled == true)
-                        {
-                            Train.Windscreen.windscreenwipers(1);
-                        }
-                        break;
-                    case VirtualKeys.L:
-                        //Isolate Safety Systems
-                        if (safetyisolated == false)
-                        {
-                            isolatetpwsaws();
-                        }
-                        else
-                        {
-                            reenabletpwsaws();
-                        }
-                        break;
+                    if (Train.steam.automatic != -1)
+                    {
+                        Train.steam.automatic = -1;
+                    }
+                    else
+                    {
+                        Train.steam.automatic = 0;
+                    }
+                }
+                else if (Train.diesel != null)
+                {
+                    if (Train.diesel.automatic != -1)
+                    {
+                        Train.diesel.automatic = -1;
+                    }
+                    else
+                    {
+                        Train.diesel.automatic = 0;
+                    }
                 }
             }
+            if (keypressed == injectorkey)
+            {
+                //Injectors
+                if (Train.steam != null)
+                {
+                    if (Train.steam.stm_injector == true)
+                    {
+                        Train.steam.stm_injector = false;
+                    }
+                    else
+                    {
+                        Train.steam.stm_injector = true;
+                    }
+                }
+            }
+            if (keypressed == cutoffdownkey)
+            {
+                //Cutoff Up
+                if (Train.steam != null)
+                {
+                    Train.steam.cutoffstate = 1;
+                }
+            }
+            if (keypressed == cutoffupkey)
+            {
+                //Cutoff Down
+                if (Train.steam != null)
+                {
+                    Train.steam.cutoffstate = -1;
+                }
+            }
+            if (keypressed == safetykey)
+            {
+                //Reset vigilance timer if independant vigilance is selected & the deadman's timer has not tripped
+                if (Train.vigilance.independantvigilance != 0 && Train.deadmanstripped == false)
+                {
+                    Train.vigilance.deadmanstimer = 0.0;
+                }
+                //Reset Overspeed Trip
+                if (Train.trainspeed == 0 && Train.overspeedtripped == true)
+                {
+                    Train.overspeedtripped = false;
+                    resetbrakeapplication();
+                }
+
+                //Reset Deadman's Trip
+                if (Train.vigilance.vigilancecancellable != 0 && Train.deadmanstripped == true || Train.trainspeed == 0 && Train.deadmanstripped == true)
+                {
+                    Train.deadmanstripped = false;
+                    resetbrakeapplication();
+                }
+                //Acknowledge AWS warning
+                if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerActive)
+                {
+                    Train.AWS.Acknowlege();
+                }
+
+                //Reset AWS
+                if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired && Train.trainspeed == 0 && Train.Handles.Reverser == 0)
+                {
+                    if (SoundManager.IsPlaying((int)Train.AWS.awswarningsound))
+                    {
+                        SoundManager.Stop((int)Train.AWS.awswarningsound);
+                    }
+                    Train.AWS.Reset();
+                    resetpowercutoff();
+                }
+
+                //Acknowledge TPWS Brake Demand
+                if (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand)
+                {
+                    Train.TPWS.AcknowledgeBrakeDemand();
+                }
+
+                //Acknowledge Self-Test warning
+                if (Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.AwaitingDriverInteraction)
+                {
+                    Train.StartupSelfTestManager.driveracknowledge();
+                }
+            }
+            if (keypressed == fuelkey)
+            {
+                //Toggle Fuel fill
+                if (Train.canfuel == true && Train.trainspeed == 0)
+                {
+                    if (Train.steam != null)
+                    {
+                        Train.steam.fuelling = true;
+                    }
+                    if (Train.diesel != null)
+                    {
+                        Train.diesel.fuelling = true;
+                    }
+                }
+            }
+            if (keypressed == wiperspeeddown)
+            {
+                //Wipers Speed Down
+                if (Train.Windscreen.enabled == true)
+                {
+                    Train.Windscreen.windscreenwipers(0);
+                }
+            }
+            if (keypressed == wiperspeedup)
+            {
+                //Wipers Speed Up
+                if (Train.Windscreen.enabled == true)
+                {
+                    Train.Windscreen.windscreenwipers(1);
+                }
+            }
+            if (keypressed == isolatesafetykey)
+            {
+                //Isolate Safety Systems
+                if (safetyisolated == false)
+                {
+                    isolatetpwsaws();
+                }
+                else
+                {
+                    reenabletpwsaws();
+                }
+            }
+            if (keypressed == customindicatorkey1)
+            {
+                //Toggle Custom Indicator 1
+                if (customindicatorsarray[0, 0] != -1)
+                {
+                    if (customindicatorsarray[0, 1] == 0)
+                    {
+                        customindicatorsarray[0, 1] = 1;
+                    }
+                    else
+                    {
+                        customindicatorsarray[0, 1] = 0;
+                    }
+                }
+            }
+            if (keypressed == customindicatorkey2)
+            {
+                //Toggle Custom Indicator 1
+                if (customindicatorsarray[1, 0] != -1)
+                {
+                    if (customindicatorsarray[1, 1] == 0)
+                    {
+                        customindicatorsarray[1, 1] = 1;
+                    }
+                    else
+                    {
+                        customindicatorsarray[1, 1] = 0;
+                    }
+                }
+            }
+            if (keypressed == customindicatorkey3)
+            {
+                //Toggle Custom Indicator 1
+                if (customindicatorsarray[2, 0] != -1)
+                {
+                    if (customindicatorsarray[2, 1] == 0)
+                    {
+                        customindicatorsarray[2, 1] = 1;
+                    }
+                    else
+                    {
+                        customindicatorsarray[2, 1] = 0;
+                    }
+                }
+            }
+            if (keypressed == customindicatorkey4)
+            {
+                //Toggle Custom Indicator 1
+                if (customindicatorsarray[3, 0] != -1)
+                {
+                    if (customindicatorsarray[3, 1] == 0)
+                    {
+                        customindicatorsarray[3, 1] = 1;
+                    }
+                    else
+                    {
+                        customindicatorsarray[3, 1] = 0;
+                    }
+                }
+            }
+            if (keypressed == customindicatorkey5)
+            {
+                //Toggle Custom Indicator 1
+                if (customindicatorsarray[4, 0] != -1)
+                {
+                    if (customindicatorsarray[4, 1] == 0)
+                    {
+                        customindicatorsarray[4, 1] = 1;
+                    }
+                    else
+                    {
+                        customindicatorsarray[4, 1] = 0;
+                    }
+                }
+            }
+            if (keypressed == customindicatorkey6)
+            {
+                //Toggle Custom Indicator 1
+                if (customindicatorsarray[5, 0] != -1)
+                {
+                    if (customindicatorsarray[5, 1] == 0)
+                    {
+                        customindicatorsarray[5, 1] = 1;
+                    }
+                    else
+                    {
+                        customindicatorsarray[5, 1] = 0;
+                    }
+                }
+            }
+            if (keypressed == customindicatorkey7)
+            {
+                //Toggle Custom Indicator 1
+                if (customindicatorsarray[6, 0] != -1)
+                {
+                    if (customindicatorsarray[6, 1] == 0)
+                    {
+                        customindicatorsarray[6, 1] = 1;
+                    }
+                    else
+                    {
+                        customindicatorsarray[6, 1] = 0;
+                    }
+                }
+            }
+            if (keypressed == customindicatorkey8)
+            {
+                //Toggle Custom Indicator 1
+                if (customindicatorsarray[7, 0] != -1)
+                {
+                    if (customindicatorsarray[7, 1] == 0)
+                    {
+                        customindicatorsarray[7, 1] = 1;
+                    }
+                    else
+                    {
+                        customindicatorsarray[7, 1] = 0;
+                    }
+                }
+            }
+            if (keypressed == customindicatorkey9)
+            {
+                //Toggle Custom Indicator 1
+                if (customindicatorsarray[8, 0] != -1)
+                {
+                    if (customindicatorsarray[8, 1] == 0)
+                    {
+                        customindicatorsarray[8, 1] = 1;
+                    }
+                    else
+                    {
+                        customindicatorsarray[8, 1] = 0;
+                    }
+                }
+            }
+            if (keypressed == customindicatorkey10)
+            {
+                //Toggle Custom Indicator 1
+                if (customindicatorsarray[9, 0] != -1)
+                {
+                    if (customindicatorsarray[9, 1] == 0)
+                    {
+                        customindicatorsarray[9, 1] = 1;
+                    }
+                    else
+                    {
+                        customindicatorsarray[9, 1] = 0;
+                    }
+                }
+            }
+            
         }
 
         internal override void KeyUp(VirtualKeys key)
         {
-            switch (key)
+            //Convert keypress to string for comparison
+            string keypressed = Convert.ToString(key);
+            if (keypressed == gearupkey)
             {
-
-                case VirtualKeys.B1:
-                    //Gear Up
-                    if (Train.diesel != null)
+                //Gear Up
+                if (Train.diesel != null)
+                {
+                    if (Train.diesel.gear >= 0 && Train.diesel.gear < Train.diesel.totalgears - 1 && Train.Handles.PowerNotch == 0)
                     {
-                        if (Train.diesel.gear >= 0 && Train.diesel.gear < Train.diesel.totalgears - 1 && Train.Handles.PowerNotch == 0)
-                        {
-                            Train.diesel.gear++;
-                            Train.diesel.gearchange();
-                        }
+                        Train.diesel.gear++;
+                        Train.diesel.gearchange();
                     }
-                    break;
+                }
+            }
+            if (keypressed == geardownkey)
+            {
                 //Gear Down
-                case VirtualKeys.B2:
-                    if (Train.diesel != null)
+                if (Train.diesel != null)
+                {
+                    if (Train.diesel.gear <= Train.diesel.totalgears && Train.diesel.gear > 0 && Train.Handles.PowerNotch == 0)
                     {
-                        if (Train.diesel.gear <= Train.diesel.totalgears && Train.diesel.gear > 0 && Train.Handles.PowerNotch == 0)
-                        {
-                            Train.diesel.gear--;
-                            Train.diesel.gearchange();
-                        }
+                        Train.diesel.gear--;
+                        Train.diesel.gearchange();
                     }
-                    break;
-                case VirtualKeys.C1:
-                    //Cutoff Up
-                    if (Train.steam != null)
-                    {
-                        Train.steam.cutoffstate = 0;
-                    }
-                    break;
-
-                case VirtualKeys.C2:
-                    if (Train.steam != null)
-                    {
-                        Train.steam.cutoffstate = 0;
-                    }
-                    break;
-                case VirtualKeys.I:
-                    //Toggle Fuel fill
-                        if (Train.steam != null)
-                        {
-                            Train.steam.fuelling = false;
-                        }
-                        if (Train.diesel != null)
-                        {
-                            Train.diesel.fuelling = false;
-                        }
-                    break;
-                case VirtualKeys.S:
-                    //Operate DRA
-                    if (Train.drastate == false)
-                    {
-                        Train.drastate = true;
-                        demandpowercutoff();
-                    }
-                    else
-                    {
-                        Train.drastate = false;
-                        resetpowercutoff();
-                    }
-                    break;
+                }
+            }
+            if (keypressed == cutoffupkey)
+            {
+                //Cutoff Up
+                if (Train.steam != null)
+                {
+                    Train.steam.cutoffstate = 0;
+                }
+            }
+            if (keypressed == cutoffdownkey)
+            {
+                //Cutoff Down
+                if (Train.steam != null)
+                {
+                    Train.steam.cutoffstate = 0;
+                }
+            }
+            if (keypressed == fuelkey)
+            {
+                //Toggle Fuel fill
+                if (Train.steam != null)
+                {
+                    Train.steam.fuelling = false;
+                }
+                if (Train.diesel != null)
+                {
+                    Train.diesel.fuelling = false;
+                }
+            }
+            if (keypressed == DRAkey)
+            {
+                //Operate DRA
+                if (Train.drastate == false)
+                {
+                    Train.drastate = true;
+                    demandpowercutoff();
+                }
+                else
+                {
+                    Train.drastate = false;
+                    resetpowercutoff();
+                }
             }
         }
 
