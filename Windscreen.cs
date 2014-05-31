@@ -30,6 +30,11 @@ namespace Plugin
         internal double wiperholdposition = 0;
         internal double wiperrate = 1000;
         internal double wiperdelay = 0;
+        internal int dropsound1 = -1;
+        internal int dropsound2 = 0;
+        internal int drywipesound = -1;
+        internal int wetwipesound = -1;
+        internal int wipersoundbehaviour = 0;
         
         //Arrays
         bool[] droparray;
@@ -97,6 +102,20 @@ namespace Plugin
                     {
                         droptimer = 0;
                         droparray[nextdrop] = true;
+                        //Play random drop sound
+                        if (dropsound1 != -1)
+                        {
+                            SoundManager.Play((dropsound1 + rnd.Next(0, dropsound2)), 1.0, 1.0, false);
+                        }
+                    }
+                    else if (droptimer > dropinterval && nextdrop == -1)
+                    {
+                        //Reset timer and play random drop sound
+                        droptimer = 0;
+                        if (dropsound1 != -1)
+                        {
+                            SoundManager.Play((dropsound1 + rnd.Next(0, dropsound2)), 1.0, 1.0, false);
+                        }
                     }
 
                 }
@@ -190,13 +209,61 @@ namespace Plugin
                     movewiper(data.ElapsedTime.Milliseconds);
                 }
 
+                //This section of code plays the wiper sounds
+                {
+                    int sound;
+                    //Figure out if we should play the wetwipe or the drywipe sound
+                    if ((double)unusedlength / (double)droparray.Length > 0.8 && wetwipesound != 1)
+                    {
+                        sound = drywipesound;
+                    }
+                    else
+                    {
+                        sound = wetwipesound;
+                    }
+                    if (currentwiperposition == 1 && wiperdirection == 1)
+                    {
+                        if (wiperholdposition == 0)
+                        {
+                            if (wipersoundbehaviour == 0)
+                            {
+                                SoundManager.Play(sound, 1.0, 1.0, false);
+                            }
+                        }
+                        else
+                        {
+                            if (wipersoundbehaviour != 0)
+                            {
+                                SoundManager.Play(sound, 1.0, 1.0, false);
+                            }
+                        }
+                    }
+                    else if (currentwiperposition == 99 && wiperdirection == -1)
+                    {
+                        if (wiperholdposition == 0)
+                        {
+                            if (wipersoundbehaviour != 0)
+                            {
+                                SoundManager.Play(sound, 1.0, 1.0, false);
+                            }
+                        }
+                        else
+                        {
+                            if (wipersoundbehaviour == 0)
+                            {
+                                SoundManager.Play(sound, 1.0, 1.0, false);
+                            }
+                        }
+                    }
+                }
+
                 //This section of code should delete drops
                 if (heldwipers == false)
                 {
                     int dropremove = Math.Min(49, (int)(currentwiperposition / (100 / numberofdrops)));
                     droparray[dropremove] = false;
                 }
-                
+
                 //Light Windscreen Drops
                 {
                     int i = 0;
@@ -210,7 +277,7 @@ namespace Plugin
                     }
                 }
                 //Animate Windscreen Wiper
-                if(wiperindex != -1)
+                if (wiperindex != -1)
                 {
                     this.Train.Panel[(int)wiperindex] = currentwiperposition;
                 }
@@ -219,6 +286,8 @@ namespace Plugin
 
         }
 
+        /// <summary>Called to move the windscreen wiper</summary>
+        /// <param name="time">The time elapsed since the previous call.</param>
         internal void movewiper(double time)
         {
             wipermovetimer += time;
@@ -250,6 +319,8 @@ namespace Plugin
             }
         }
 
+        /// <summary>Called to speed up or slow down the windscreen wipers</summary>
+        /// <param name="request">Whether to speed up or slow down the wipers; 1 for speed up & 0 for slow down.</param>
         internal void windscreenwipers(int request)
         {
             if (request == 0 && wiperspeed <= 1)

@@ -327,6 +327,23 @@ namespace Plugin
                 case "dropstartindex":
                 windscreen.Add(line);
                 break;
+                case "dropsound":
+                windscreen.Add(line);
+                break;
+                case "wipersound":
+                string[] splitwipersound = value.Split(',');
+                for (int j = 0; j < splitwipersound.Length; j++)
+                {
+                    if (j == 0)
+                    {
+                     windscreen.Add("drywipesound="+Convert.ToString(Int32.Parse(splitwipersound[j])));
+                    }
+                    if (j == 1)
+                    {
+                        windscreen.Add("wipersoundbehaviour=0");
+                    }
+                }
+                break;
                 throw new InvalidDataException("The parameter " + key + " is not supported.");
 
 						}

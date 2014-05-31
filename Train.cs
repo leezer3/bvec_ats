@@ -680,6 +680,29 @@ namespace Plugin {
                                         case "wiperrate":
                                             this.Windscreen.wiperrate = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                             break;
+                                        case "dropsound":
+                                            string[] dropsplit = value.Split(',');
+                                            for (int k = 0; k < dropsplit.Length; k++)
+                                            {
+                                                if (k == 0)
+                                                {
+                                                    this.Windscreen.dropsound1 = Convert.ToInt32(dropsplit[0]);
+                                                }
+                                                else
+                                                {
+                                                    this.Windscreen.dropsound2 = Convert.ToInt32(dropsplit[1]);
+                                                }
+                                            }
+                                            break;
+                                            case "drywipesound":
+                                            this.Windscreen.drywipesound = Convert.ToInt32(value);
+                                            break;
+                                            case "wetwipesound":
+                                            this.Windscreen.wetwipesound = Convert.ToInt32(value);
+                                            break;
+                                            case "wipersoundbehaviour":
+                                            this.Windscreen.wipersoundbehaviour = Convert.ToInt32(value);
+                                            break;
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }
                                     break;

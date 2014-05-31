@@ -845,16 +845,19 @@ namespace Plugin
             }
             if (keypressed == DRAkey)
             {
-                //Operate DRA
-                if (Train.drastate == false)
+                if (Train.vigilance.draenabled != -1)
                 {
-                    Train.drastate = true;
-                    demandpowercutoff();
-                }
-                else
-                {
-                    Train.drastate = false;
-                    resetpowercutoff();
+                    //Operate DRA
+                    if (Train.drastate == false)
+                    {
+                        Train.drastate = true;
+                        demandpowercutoff();
+                    }
+                    else
+                    {
+                        Train.drastate = false;
+                        resetpowercutoff();
+                    }
                 }
             }
         }
