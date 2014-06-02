@@ -46,47 +46,49 @@ namespace Plugin
             /* Value validation */
             volume = volume < 0 ? 0 : volume;
             pitch = pitch < 0 ? 0 : pitch;
-
-            if (SoundHandles[soundIndex] != null && soundIndex != -1)
+            if (soundIndex != -1)
             {
-                /* A handle already exists, so... */
-                if (IsLooped[soundIndex] && SoundHandles[soundIndex].Playing)
+                if (SoundHandles[soundIndex] != null)
                 {
-                    /* The sound is looped...
-                     * It is indeed playing already, so just modify the pitch and volume */
-                    SoundHandles[soundIndex].Volume = volume;
-                    SoundHandles[soundIndex].Pitch = pitch;
-                }
-                else if (volume == LastVolume[soundIndex] && pitch == LastPitch[soundIndex])
-                {
-                    /* Handle play-once sounds...
-                     * The pitch and volume for this sound handle are the same as they were in the last call, so start playing a new sound instead */
-                    SoundHandles[soundIndex].Stop();
-                    SoundHandles[soundIndex] = PlaySound(soundIndex, volume, pitch, loop);
-                }
-                else if (SoundHandles[soundIndex].Playing)
-                {
-                    /* The handle is already playing and the pitch or volume has been changed since the last playback of this sound handle,
-                     * so alter the pitch and volume, and continue the sound */
-                    SoundHandles[soundIndex].Pitch = pitch;
-                    SoundHandles[soundIndex].Volume = volume;
+                    /* A handle already exists, so... */
+                    if (IsLooped[soundIndex] && SoundHandles[soundIndex].Playing)
+                    {
+                        /* The sound is looped...
+                         * It is indeed playing already, so just modify the pitch and volume */
+                        SoundHandles[soundIndex].Volume = volume;
+                        SoundHandles[soundIndex].Pitch = pitch;
+                    }
+                    else if (volume == LastVolume[soundIndex] && pitch == LastPitch[soundIndex])
+                    {
+                        /* Handle play-once sounds...
+                         * The pitch and volume for this sound handle are the same as they were in the last call, so start playing a new sound instead */
+                        SoundHandles[soundIndex].Stop();
+                        SoundHandles[soundIndex] = PlaySound(soundIndex, volume, pitch, loop);
+                    }
+                    else if (SoundHandles[soundIndex].Playing)
+                    {
+                        /* The handle is already playing and the pitch or volume has been changed since the last playback of this sound handle,
+                         * so alter the pitch and volume, and continue the sound */
+                        SoundHandles[soundIndex].Pitch = pitch;
+                        SoundHandles[soundIndex].Volume = volume;
+                    }
+                    else
+                    {
+                        /* Neither pitch or volume have been changed, so start playback with a new sound handle */
+                        SoundHandles[soundIndex] = PlaySound(soundIndex, volume, pitch, loop);
+                    }
                 }
                 else
                 {
-                    /* Neither pitch or volume have been changed, so start playback with a new sound handle */
+                    /* There is no valid handle, so create a new handle for playback */
                     SoundHandles[soundIndex] = PlaySound(soundIndex, volume, pitch, loop);
                 }
-            }
-            else
-            {
-                /* There is no valid handle, so create a new handle for playback */
-                SoundHandles[soundIndex] = PlaySound(soundIndex, volume, pitch, loop);
-            }
 
-            /* Store states for future use */
-            IsLooped[soundIndex] = loop;
-            LastVolume[soundIndex] = volume;
-            LastPitch[soundIndex] = pitch;
+                /* Store states for future use */
+                IsLooped[soundIndex] = loop;
+                LastVolume[soundIndex] = volume;
+                LastPitch[soundIndex] = pitch;
+            }
         }
 
         /// <summary>Stops playback of the specified sound index.</summary>

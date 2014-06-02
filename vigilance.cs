@@ -116,27 +116,15 @@ namespace Plugin
                             {
                                 //Apply max brake notches
                                 Train.overspeedtripped = true;
-                                if (vigilancecancellable == 0)
-                                {
-
-                                }
-                                else
-                                {
-                                    Train.overspeedtripped = false;
-                                    this.overspeedtimer = 0.0;
-                                }
-
                                 if (data.Vehicle.Speed.KilometersPerHour == 0)
                                 {
+                                    this.overspeedtimer = 0.0;
                                     if (vigilanceautorelease == 0)
                                     {
-                                        this.overspeedtimer = 0.0;
-                                    }
-                                    else
-                                    {
                                         Train.overspeedtripped = false;
-                                        this.overspeedtimer = 0.0;
+                                        tractionmanager.resetbrakeapplication();
                                     }
+                                    
                                 }
                             }
                             else

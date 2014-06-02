@@ -22,6 +22,7 @@ namespace Plugin
         internal bool secondaryklaxonplaying;
         internal bool musicklaxonplaying;
         internal double klaxonindicatortimer;
+        internal bool doorlock;
         
         /// <summary>The underlying train.</summary>
         private Train Train;
@@ -70,6 +71,8 @@ namespace Plugin
         internal string customindicatorkey8 = "";
         internal string customindicatorkey9 = "";
         internal string customindicatorkey10 = "";
+        internal string frontpantographkey;
+        internal string rearpantographkey;
 
 
         //Arrays
@@ -133,24 +136,29 @@ namespace Plugin
                 {
                     tractionmanager.demandpowercutoff();
                     data.DebugMessage = "Power cutoff demanded by open doors";
+                    doorlock = true;
                 }
 
                 if (doorapplybrake == 1 && tractionmanager.brakedemanded == false)
                 {
                     tractionmanager.demandbrakeapplication();
                     data.DebugMessage = "Brakes demanded by open doors";
+                    doorlock = true;
                 }
+                
             }
             else
             {
-                if (tractionmanager.powercutoffdemanded == true)
+                if (tractionmanager.powercutoffdemanded == true && doorlock == true)
                 {
                     tractionmanager.resetpowercutoff();
+                    doorlock = false;
                 }
 
-                if (tractionmanager.brakedemanded == true)
+                if (tractionmanager.brakedemanded == true && doorlock == true)
                 {
                     tractionmanager.resetbrakeapplication();
+                    doorlock = false;
                 }
 
             }
@@ -550,14 +558,14 @@ namespace Plugin
                     Train.vigilance.deadmanstimer = 0.0;
                 }
                 //Reset Overspeed Trip
-                if (Train.trainspeed == 0 && Train.overspeedtripped == true)
+                if ((Train.trainspeed == 0 || Train.vigilance.vigilancecancellable != 0) && Train.overspeedtripped == true)
                 {
                     Train.overspeedtripped = false;
                     resetbrakeapplication();
                 }
 
                 //Reset Deadman's Trip
-                if (Train.vigilance.vigilancecancellable != 0 && Train.deadmanstripped == true || Train.trainspeed == 0 && Train.deadmanstripped == true)
+                if ((Train.vigilance.vigilancecancellable != 0 || Train.trainspeed == 0) && Train.deadmanstripped == true)
                 {
                     Train.deadmanstripped = false;
                     resetbrakeapplication();
@@ -605,6 +613,11 @@ namespace Plugin
                         Train.diesel.fuelling = true;
                     }
                 }
+                //ACB/ VCB toggle
+                if (Train.electric != null)
+                {
+                    electric.breakertrip();
+                }
             }
             if (keypressed == wiperspeeddown)
             {
@@ -633,6 +646,14 @@ namespace Plugin
                 {
                     reenabletpwsaws();
                 }
+            }
+            if (keypressed == frontpantographkey)
+            {
+                Train.electric.pantographtoggle(0);
+            }
+            if (keypressed == rearpantographkey)
+            {
+                Train.electric.pantographtoggle(1);
             }
             if (keypressed == customindicatorkey1)
             {

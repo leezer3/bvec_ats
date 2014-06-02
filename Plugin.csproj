@@ -74,6 +74,7 @@
     <Compile Include="AWS.cs" />
     <Compile Include="diesel.cs" />
     <Compile Include="electric.cs" />
+    <Compile Include="Electric.PantographStates.cs" />
     <Compile Include="StartupSelfTestManager.cs" />
     <Compile Include="StartupSelfTestManager.SequenceStates.cs" />
     <Compile Include="UpgradeConfig.cs" />

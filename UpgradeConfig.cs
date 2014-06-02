@@ -34,7 +34,9 @@ namespace Plugin
 				} else {
 					line = line.Trim();
 				}
-				
+                //Trim extra commas from the end of strings
+                //Stops the parser from attempting to read in blank values and causing issues
+                line = line.TrimEnd(',');
 			int equals = line.IndexOf('=');
 			if (equals >= 0) {
 			string key = line.Substring(0, equals).Trim().ToLowerInvariant();

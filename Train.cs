@@ -397,6 +397,18 @@ namespace Plugin {
                                         case "breakerindicator":
                                         electric.breakerindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                         break;
+                                        case "pantographindicator_f":
+                                        electric.pantographindicator_f = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        break;
+                                        case "pantographindicator_r":
+                                        electric.pantographindicator_r = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        break;
+                                        case "pantographsound":
+                                        electric.pantographsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        break;
+                                        case "pantographalarmsound":
+                                        electric.pantographalarmsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        break;
                                         default:
                                         throw new InvalidDataException("The parameter " + key + " is not supported.");
 
@@ -774,6 +786,12 @@ namespace Plugin {
                                             break;
                                         case "customindicatorkey10":
                                             this.tractionmanager.customindicatorkey10 = value;
+                                            break;
+                                        case "frontpantographkey":
+                                            this.tractionmanager.frontpantographkey = value;
+                                            break;
+                                        case "rearpantographkey":
+                                            this.tractionmanager.rearpantographkey = value;
                                             break;
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }

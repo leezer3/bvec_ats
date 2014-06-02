@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using OpenBveApi.Runtime;
-
+using System.Globalization;
 
 namespace Plugin
 {
@@ -123,7 +123,7 @@ namespace Plugin
             geararray = new int[splitgearratios.Length];
             for (int i = 0; i < geararray.Length; i++)
             {
-                geararray[i] = Int32.Parse(splitgearratios[i]);
+                geararray[i] = (int)(double.Parse(splitgearratios[i], CultureInfo.InvariantCulture));
             }
 
             //Split gear fade in range into an array
@@ -131,7 +131,7 @@ namespace Plugin
             gearfadeinarray = new int[splitgearfade.Length];
             for (int i = 0; i < gearfadeinarray.Length; i++)
             {
-                gearfadeinarray[i] = Int32.Parse(splitgearfade[i]);
+                gearfadeinarray[i] = (int)double.Parse(splitgearfade[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
             }
 
             //Split gear fade out range into an array
@@ -139,7 +139,7 @@ namespace Plugin
             gearfadeoutarray = new int[splitgearfade1.Length];
             for (int i = 0; i < gearfadeoutarray.Length; i++)
             {
-                gearfadeoutarray[i] = Int32.Parse(splitgearfade1[i]);
+                gearfadeoutarray[i] = (int)double.Parse(splitgearfade1[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
             }
 
             //Test if we have any gears
@@ -162,7 +162,7 @@ namespace Plugin
             heatingarray = new int[splitheatingrate.Length];
             for (int i = 0; i < heatingarray.Length; i++)
             {
-                heatingarray[i] = Int32.Parse(splitheatingrate[i]);
+                heatingarray[i] = (int)double.Parse(splitheatingrate[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
             }
             //Set temperature to zero
             this.temperature = 0;
@@ -171,7 +171,7 @@ namespace Plugin
             fuelarray = new int[splitfuelconsumption.Length];
             for (int i = 0; i < fuelarray.Length; i++)
             {
-                fuelarray[i] = Int32.Parse(splitfuelconsumption[i]);
+                fuelarray[i] = (int)double.Parse(splitfuelconsumption[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
             }
             fuel = (int)fuelstartamount;
         }
