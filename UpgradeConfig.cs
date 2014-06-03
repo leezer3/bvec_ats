@@ -189,6 +189,9 @@ namespace Plugin
                 case "overspeed":
                 vigilance.Add(line);
                 break;
+                case "overspeedalarm":
+                vigilance.Add(line);
+                break;
                 case "safespeed":
                 vigilance.Add(line);
                 break;

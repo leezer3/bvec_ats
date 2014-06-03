@@ -624,7 +624,7 @@ namespace Plugin
                 //Wipers Speed Down
                 if (Train.Windscreen.enabled == true)
                 {
-                    Train.Windscreen.windscreenwipers(0);
+                    Train.Windscreen.windscreenwipers(1);
                 }
             }
             if (keypressed == wiperspeedup)
@@ -632,7 +632,7 @@ namespace Plugin
                 //Wipers Speed Up
                 if (Train.Windscreen.enabled == true)
                 {
-                    Train.Windscreen.windscreenwipers(1);
+                    Train.Windscreen.windscreenwipers(0);
                 }
             }
             if (keypressed == isolatesafetykey)

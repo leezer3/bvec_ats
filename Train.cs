@@ -409,7 +409,11 @@ namespace Plugin {
                                         case "pantographalarmsound":
                                         electric.pantographalarmsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                         break;
+                                        case "pantographretryinterval":
+                                        electric.pantographretryinterval = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        break;
                                         default:
+
                                         throw new InvalidDataException("The parameter " + key + " is not supported.");
 
                                     }
@@ -739,6 +743,7 @@ namespace Plugin {
                                         case "fuelkey":
                                             this.tractionmanager.fuelkey = value;
                                             break;
+
                                         case "wiperspeedup":
                                             this.tractionmanager.wiperspeedup = value;
                                             break;
