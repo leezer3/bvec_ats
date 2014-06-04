@@ -291,18 +291,24 @@ namespace Plugin
                         {
                             gear = 1;
                             gearchange();
+                            Train.diesel.gearloop = false;
+                            Train.diesel.gearlooptimer = 0.0;
                         }
 
                         if (currentrevs > Math.Min((2000 - fadeoutratio) / 2, 800) && gear < totalgears - 1)
                         {
                             gear++;
                             gearchange();
+                            Train.diesel.gearloop = false;
+                            Train.diesel.gearlooptimer = 0.0;
                         }
                         //Change down
                         else if (currentrevs < Math.Max(fadeinratio / 2, 200) && gear > 1)
                         {
                             gear--;
                             gearchange();
+                            Train.diesel.gearloop = false;
+                            Train.diesel.gearlooptimer = 0.0;
                         }
 
 
@@ -481,10 +487,9 @@ namespace Plugin
                 {
                     //Start playback and reset our conditions
                     gearloop = true;
-                    gearlooptimer = 0.0;
                     SoundManager.Play((int)gearloopsound, 1.0, 1.0, true);
                 }
-                else
+                else if (gearloop == false)
                 {
                     SoundManager.Stop((int)gearloopsound);
                 }

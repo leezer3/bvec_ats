@@ -821,6 +821,7 @@ namespace Plugin
                     {
                         Train.diesel.gear++;
                         Train.diesel.gearloop = false;
+                        Train.diesel.gearlooptimer = 0.0;
                         Train.diesel.gearchange();
                     }
                 }
@@ -834,6 +835,7 @@ namespace Plugin
                     {
                         Train.diesel.gear--;
                         Train.diesel.gearloop = false;
+                        Train.diesel.gearlooptimer = 0.0;
                         Train.diesel.gearchange();
                     }
                 }
