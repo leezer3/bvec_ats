@@ -30,6 +30,8 @@ namespace Plugin
         internal double fuellingtimer;
         internal int fuel;
         internal double fuelusetimer;
+        internal bool gearloop;
+        internal double gearlooptimer;
         //Stores ratios for the current gears
         internal int gearratio;
         internal int fadeinratio;
@@ -51,6 +53,7 @@ namespace Plugin
         internal double fuelfillspeed = 50;
         internal string fuelconsumption = "0";
         internal double fuelfillindicator = -1;
+        internal double gearlooptime = 0;
         
         /// <summary>Is our transmission automatic</summary>
         internal double automatic = -1;
@@ -82,6 +85,7 @@ namespace Plugin
 
         //Sound Indicies
         internal double gearchangesound = -1;
+        internal double gearloopsound = -1;
         
 
         //Arrays
@@ -90,7 +94,6 @@ namespace Plugin
         int[] gearfadeoutarray;
         int[] heatingarray;
         int[] fuelarray;
-
 
 
         // --- constants ---
@@ -468,6 +471,27 @@ namespace Plugin
                 {
                     fuel = (int)fuelcapacity;
                 }
+            }
+            //This section of code runs the gear loop sound
+            if (gearloopsound != -1 && gear != 0)
+            {
+                //Start the timer
+                gearlooptimer += data.ElapsedTime.Milliseconds;
+                if (gearlooptimer > gearlooptime && gearloop == false)
+                {
+                    //Start playback and reset our conditions
+                    gearloop = true;
+                    gearlooptimer = 0.0;
+                    SoundManager.Play((int)gearloopsound, 1.0, 1.0, true);
+                }
+                else
+                {
+                    SoundManager.Stop((int)gearloopsound);
+                }
+            }
+            else if (gearloopsound != -1 && gear == 0)
+            {
+                SoundManager.Stop((int)gearloopsound);
             }
             
             {

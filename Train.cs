@@ -499,6 +499,20 @@ namespace Plugin {
                                         case "fuelfillindicator":
                                             this.diesel.fuelfillindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                             break;
+                                        case "gearloopsound":
+                                            string[] gearloopsplit = value.Split(',');
+                                            for (int k = 0; k < gearloopsplit.Length; k++)
+                                            {
+                                                if (k == 0)
+                                                {
+                                                    this.diesel.gearloopsound = Convert.ToInt32(gearloopsplit[0]);
+                                                }
+                                                else
+                                                {
+                                                    this.diesel.gearlooptime = Convert.ToInt32(gearloopsplit[1]);
+                                                }
+                                            }
+                                            break;
                                         default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
 

@@ -820,6 +820,7 @@ namespace Plugin
                     if (Train.diesel.gear >= 0 && Train.diesel.gear < Train.diesel.totalgears - 1 && Train.Handles.PowerNotch == 0)
                     {
                         Train.diesel.gear++;
+                        Train.diesel.gearloop = false;
                         Train.diesel.gearchange();
                     }
                 }
@@ -832,6 +833,7 @@ namespace Plugin
                     if (Train.diesel.gear <= Train.diesel.totalgears && Train.diesel.gear > 0 && Train.Handles.PowerNotch == 0)
                     {
                         Train.diesel.gear--;
+                        Train.diesel.gearloop = false;
                         Train.diesel.gearchange();
                     }
                 }

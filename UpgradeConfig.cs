@@ -117,6 +117,12 @@ namespace Plugin
                 case "fuelconsumption":
                 diesel.Add(line);
                 break;
+                case "gearloopsound":
+                diesel.Add(line);
+                break;
+                case "gearchangesound":
+                diesel.Add(line);
+                break;
                 //VALUES TO BE ADDED TO THE STEAM SECTION OF THE CONFIGURATION FILE
                 case "cutoffmax":
                 steam.Add(line);
