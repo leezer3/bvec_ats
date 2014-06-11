@@ -149,14 +149,9 @@ namespace Plugin
             }
             else
             {
-                if (tractionmanager.powercutoffdemanded == true && doorlock == true)
+                if ((tractionmanager.powercutoffdemanded == true || tractionmanager.brakedemanded == true) && doorlock == true)
                 {
                     tractionmanager.resetpowercutoff();
-                    doorlock = false;
-                }
-
-                if (tractionmanager.brakedemanded == true && doorlock == true)
-                {
                     tractionmanager.resetbrakeapplication();
                     doorlock = false;
                 }
@@ -213,11 +208,29 @@ namespace Plugin
                 }
                 else if (electric.powergap == true)
                 {
-                    data.DebugMessage = "Power cutoff demanded by electric conductor power gap";
+                    if (Train.electric.FrontPantographState != electric.PantographStates.OnService && Train.electric.RearPantographState != electric.PantographStates.OnService)
+                    {
+                        data.DebugMessage = "Power cutoff due to no available pantographs";
+                    }
+                    else
+                    {
+                        data.DebugMessage = "Power cutoff demanded by electric conductor power gap";
+                    }
                 }
                 else if (electric.breakertripped == true)
                 {
-                    data.DebugMessage = "Power cutoff demanded by ACB/VCB tripping";
+                    if (Train.electric.FrontPantographState != electric.PantographStates.OnService && Train.electric.RearPantographState != electric.PantographStates.OnService)
+                    {
+                        data.DebugMessage = "Power cutoff demanded by ACB/VCB not turned on";
+                    }
+                    else
+                    {
+                        data.DebugMessage = "Power cutoff demanded by ACB/VCB tripping for neutral section";
+                    }
+                }
+                else if (doorlock == true)
+                {
+                    data.DebugMessage = "Power cutoff demanded by open doors";
                 }
                 else
                 {
@@ -248,6 +261,11 @@ namespace Plugin
                     data.DebugMessage = "EB Brakes demanded by TPWS Device";
                     data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                 }
+                else if (doorlock == true)
+                {
+                    data.DebugMessage = "Service Brakes demanded by open doors";
+                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
+                }
                 else if (tractionmanager.neutralrvrtripped)
                 {
                     if (neutralrvrbrake == 1)
@@ -264,6 +282,15 @@ namespace Plugin
                 else
                 {
                     data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                }
+            }
+            else
+            {
+                //Workaround for brakes not released correctly if driver attempts to release brakes before
+                //brake cutoff is released
+                if (Train.Handles.BrakeNotch == 0)
+                {
+                    data.Handles.BrakeNotch = 0;
                 }
             }
             //Independant Panel Variables

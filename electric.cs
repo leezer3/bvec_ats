@@ -32,8 +32,8 @@ namespace Plugin
         internal double powerlooptimer;
         internal static bool powerloop;
 
-        private PantographStates FrontPantographState;
-        private PantographStates RearPantographState;
+        internal PantographStates FrontPantographState;
+        internal PantographStates RearPantographState;
 
         //Default Variables
         internal double ammeter = -1;
@@ -698,7 +698,7 @@ namespace Plugin
                     }
                 }
             }
-            data.DebugMessage = Convert.ToString(FrontPantographState);
+            
         }
 
         //This function handles legacy power magnets- Set the electric powergap to true & set the end magnet location
