@@ -6,7 +6,7 @@ namespace Plugin
     internal class tractionmanager : Device
     {
         // --- members ---
-        private static bool powercutoffdemanded;
+        internal static bool powercutoffdemanded;
         private static bool brakedemanded;
         private static bool neutralrvrtripped;
         internal static bool overheated;
@@ -910,7 +910,7 @@ namespace Plugin
             //Trigger electric powerloop sound timer
             if (Train.electric != null)
             {
-                Train.electric.powerloop = false;
+                electric.powerloop = false;
                 Train.electric.powerlooptimer = 0.0;
             }
         }

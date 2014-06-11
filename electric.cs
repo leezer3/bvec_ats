@@ -30,7 +30,7 @@ namespace Plugin
         internal double pantographcooldowntimer_r;
         internal double pantographcooldowntimer_f;
         internal double powerlooptimer;
-        internal bool powerloop;
+        internal static bool powerloop;
 
         private PantographStates FrontPantographState;
         private PantographStates RearPantographState;
@@ -572,15 +572,22 @@ namespace Plugin
             //This section of code runs the power notch loop sound
             if (powerloopsound != -1 && data.Handles.PowerNotch != 0)
             {
-                //Start the timer
-                powerlooptimer += data.ElapsedTime.Milliseconds;
-                if (powerlooptimer > powerlooptime && powerloop == false)
+                if (breakertripped == false)
                 {
-                    //Start playback and reset our conditions
-                    powerloop = true;
-                    SoundManager.Play((int)powerloopsound, 1.0, 1.0, true);
+                    //Start the timer
+                    powerlooptimer += data.ElapsedTime.Milliseconds;
+                    if (powerlooptimer > powerlooptime && powerloop == false)
+                    {
+                        //Start playback and reset our conditions
+                        powerloop = true;
+                        SoundManager.Play((int)powerloopsound, 1.0, 1.0, true);
+                    }
+                    else if (powerloop == false)
+                    {
+                        SoundManager.Stop((int)powerloopsound);
+                    }
                 }
-                else if (powerloop == false)
+                else
                 {
                     SoundManager.Stop((int)powerloopsound);
                 }
@@ -600,9 +607,13 @@ namespace Plugin
                     {
                         this.Train.Panel[(int)ammeter] = 0;
                     }
-
+                    else if (Train.Handles.PowerNotch != 0 && (powergap == true || breakertripped == true || tractionmanager.powercutoffdemanded == true))
+                    {
+                        this.Train.Panel[(int)ammeter] = 0;
+                    }
                     else if (Train.Handles.PowerNotch != 0 && Train.Handles.PowerNotch <= ammeterlength)
                     {
+
                         this.Train.Panel[(int)ammeter] = ammeterarray[(Train.Handles.PowerNotch - 1)];
                     }
                     else
@@ -725,6 +736,7 @@ namespace Plugin
             {
                 
                 electric.breakertripped = true;
+                electric.powerloop = false;
                 electric.breakerplay();
                 tractionmanager.demandpowercutoff();
             }
