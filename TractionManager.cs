@@ -907,6 +907,12 @@ namespace Plugin
             {
                 Train.vigilance.deadmanstimer = 0.0;
             }
+            //Trigger electric powerloop sound timer
+            if (Train.electric != null)
+            {
+                Train.electric.powerloop = false;
+                Train.electric.powerlooptimer = 0.0;
+            }
         }
 
         /// <summary>Is called when the driver changes the brake notch.</summary>

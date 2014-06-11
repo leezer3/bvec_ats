@@ -412,6 +412,20 @@ namespace Plugin {
                                         case "pantographretryinterval":
                                         electric.pantographretryinterval = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                         break;
+                                        case "powerloopsound":
+                                        string[] powerloopsplit = value.Split(',');
+                                        for (int k = 0; k < powerloopsplit.Length; k++)
+                                        {
+                                            if (k == 0)
+                                            {
+                                                this.electric.powerloopsound = Convert.ToInt32(powerloopsplit[0]);
+                                            }
+                                            else
+                                            {
+                                                this.electric.powerlooptime = Convert.ToInt32(powerloopsplit[1]);
+                                            }
+                                        }
+                                        break;
                                         default:
 
                                         throw new InvalidDataException("The parameter " + key + " is not supported.");

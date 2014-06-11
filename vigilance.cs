@@ -273,8 +273,18 @@ namespace Plugin
                     else
                     {
                         SoundManager.Stop((int)vigilancealarm);
-                    }
-                
+                    }   
+            }
+            if (overspeedalarm != -1)
+            {
+                if (Train.overspeedtripped == true)
+                {
+                    SoundManager.Play((int)overspeedalarm, 1.0, 1.0, true);
+                }
+                else
+                {
+                    SoundManager.Stop((int)overspeedalarm);
+                } 
             }
         }
     }

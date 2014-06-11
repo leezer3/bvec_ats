@@ -29,6 +29,8 @@ namespace Plugin
         internal double linevoltstimer;
         internal double pantographcooldowntimer_r;
         internal double pantographcooldowntimer_f;
+        internal double powerlooptimer;
+        internal bool powerloop;
 
         private PantographStates FrontPantographState;
         private PantographStates RearPantographState;
@@ -42,6 +44,7 @@ namespace Plugin
         internal string heatingrate = "0";
         internal double pantographretryinterval = 5000;
         internal double pantographalarmbehaviour = 0;
+        internal double powerlooptime = 0;
         
         //Panel Indicies
         internal double powerindicator = -1;
@@ -53,6 +56,7 @@ namespace Plugin
         internal static double breakersound = -1;
         internal double pantographsound = -1;
         internal double pantographalarmsound = -1;
+        internal double powerloopsound = -1;
 
         //Arrays
         int[] ammeterarray;
@@ -565,7 +569,26 @@ namespace Plugin
                     }
                 }
             }
-
+            //This section of code runs the power notch loop sound
+            if (powerloopsound != -1 && data.Handles.PowerNotch != 0)
+            {
+                //Start the timer
+                powerlooptimer += data.ElapsedTime.Milliseconds;
+                if (powerlooptimer > powerlooptime && powerloop == false)
+                {
+                    //Start playback and reset our conditions
+                    powerloop = true;
+                    SoundManager.Play((int)powerloopsound, 1.0, 1.0, true);
+                }
+                else if (powerloop == false)
+                {
+                    SoundManager.Stop((int)powerloopsound);
+                }
+            }
+            else if (powerloopsound != -1 && data.Handles.PowerNotch == 0)
+            {
+                SoundManager.Stop((int)powerloopsound);
+            }
 
             //Panel Indicies
             {
