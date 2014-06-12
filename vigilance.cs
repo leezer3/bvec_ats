@@ -112,25 +112,22 @@ namespace Plugin
                         {
 
                             this.overspeedtimer += data.ElapsedTime.Seconds;
-                            if (this.overspeedtimer >= (int)overspeedtime)
+                            if (this.overspeedtimer >= (int)overspeedtime && Train.overspeedtripped == false)
                             {
                                 //Apply max brake notches
                                 Train.overspeedtripped = true;
-                                if (data.Vehicle.Speed.KilometersPerHour == 0)
+                            }
+                            else if (Train.overspeedtripped == true)
+                            {
+                                if (data.Vehicle.Speed.KilometersPerHour <= safespeed)
                                 {
                                     this.overspeedtimer = 0.0;
-                                    if (vigilanceautorelease == 0)
+                                    if (vigilanceautorelease != 0)
                                     {
                                         Train.overspeedtripped = false;
                                         tractionmanager.resetbrakeapplication();
                                     }
-                                    
                                 }
-                            }
-                            else
-                            {
-
-                                //Twiddle for the moment
                             }
                         }
                         else
@@ -277,7 +274,7 @@ namespace Plugin
             }
             if (overspeedalarm != -1)
             {
-                if (Train.overspeedtripped == true)
+                if (Train.overspeedtripped == true || trainspeed > warningspeed)
                 {
                     SoundManager.Play((int)overspeedalarm, 1.0, 1.0, true);
                 }

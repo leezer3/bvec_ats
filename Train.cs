@@ -415,6 +415,9 @@ namespace Plugin {
                                         case "pantographretryinterval":
                                         electric.pantographretryinterval = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                         break;
+                                        case "pantographalarmbehaviour":
+                                        electric.pantographalarmbehaviour = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        break;
                                         case "powerloopsound":
                                         string[] powerloopsplit = value.Split(',');
                                         for (int k = 0; k < powerloopsplit.Length; k++)
