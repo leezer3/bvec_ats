@@ -31,6 +31,7 @@ namespace Plugin
         internal double pantographcooldowntimer_f;
         internal double powerlooptimer;
         internal static bool powerloop;
+        internal double breakerlooptimer;
 
         internal PantographStates FrontPantographState;
         internal PantographStates RearPantographState;
@@ -45,6 +46,7 @@ namespace Plugin
         internal double pantographretryinterval = 5000;
         internal double pantographalarmbehaviour = 0;
         internal double powerlooptime = 0;
+        internal double breakerlooptime = 0;
         
         //Panel Indicies
         internal double powerindicator = -1;
@@ -54,9 +56,11 @@ namespace Plugin
 
         //Sound Indicies
         internal static double breakersound = -1;
-        internal double pantographsound = -1;
+        internal double pantographraisedsound = -1;
+        internal double pantographloweredsound = -1;
         internal double pantographalarmsound = -1;
         internal double powerloopsound = -1;
+        internal double breakerloopsound = -1;
 
         //Arrays
         int[] ammeterarray;
@@ -596,6 +600,24 @@ namespace Plugin
             {
                 SoundManager.Stop((int)powerloopsound);
             }
+            //This section of code runs the breaker loop sound
+            if (breakerloopsound != -1 && breakertripped == false)
+            {
+                if (!powergap && SoundManager.IsPlaying((int)breakerloopsound) == false)
+                {
+                    breakerlooptimer += data.ElapsedTime.Milliseconds;
+                    if (breakerlooptimer > breakerlooptime)
+                    {
+                        SoundManager.Play((int)breakerloopsound, 1.0, 1.0, true);
+                        breakerlooptimer = 0.0;
+                    }
+                }
+            }
+            else if (breakerloopsound != -1 && breakertripped == true)
+            {
+                SoundManager.Stop((int)breakerloopsound);
+                breakerlooptimer = 0.0;
+            }
 
             //Panel Indicies
             {
@@ -762,9 +784,9 @@ namespace Plugin
                 //Front pantograph
                 if (pantographraised_f == false && breakertripped == true)
                 {
-                    if (pantographsound != -1)
+                    if (pantographraisedsound != -1)
                     {
-                        SoundManager.Play((int)pantographsound, 1.0, 1.0, false);
+                        SoundManager.Play((int)pantographraisedsound, 1.0, 1.0, false);
                     }
                     //We can raise the pantograph, so start the line volts timer
                     this.FrontPantographState = PantographStates.RaisedTimer;
@@ -776,9 +798,9 @@ namespace Plugin
                 }
                 else if (pantographraised_f == true)
                 {
-                    if (pantographsound != -1)
+                    if (pantographloweredsound != -1)
                     {
-                        SoundManager.Play((int)pantographsound, 1.0, 1.0, false);
+                        SoundManager.Play((int)pantographloweredsound, 1.0, 1.0, false);
                     }
                     //Lower the pantograph
                     if (Train.trainspeed == 0)
@@ -797,9 +819,9 @@ namespace Plugin
                 //Rear pantograph
                 if (pantographraised_r == false && breakertripped == true)
                 {
-                    if (pantographsound != -1)
+                    if (pantographraisedsound != -1)
                     {
-                        SoundManager.Play((int)pantographsound, 1.0, 1.0, false);
+                        SoundManager.Play((int)pantographraisedsound, 1.0, 1.0, false);
                     }
                     //We can raise the pantograph, so start the line volts timer
                     this.RearPantographState = PantographStates.RaisedTimer;
@@ -811,9 +833,9 @@ namespace Plugin
                 }
                 else if (pantographraised_r == true)
                 {
-                    if (pantographsound != -1)
+                    if (pantographloweredsound != -1)
                     {
-                        SoundManager.Play((int)pantographsound, 1.0, 1.0, false);
+                        SoundManager.Play((int)pantographloweredsound, 1.0, 1.0, false);
                     }
                     //Lower the pantograph
                     if (Train.trainspeed == 0)

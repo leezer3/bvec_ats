@@ -403,8 +403,11 @@ namespace Plugin {
                                         case "pantographindicator_r":
                                         electric.pantographindicator_r = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                         break;
-                                        case "pantographsound":
-                                        electric.pantographsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        case "pantographraisedsound":
+                                        electric.pantographraisedsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        break;
+                                        case "pantographloweredsound":
+                                        electric.pantographloweredsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                         break;
                                         case "pantographalarmsound":
                                         electric.pantographalarmsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
@@ -426,8 +429,21 @@ namespace Plugin {
                                             }
                                         }
                                         break;
+                                        case "breakerloopsound":
+                                        string[] breakerloopsplit = value.Split(',');
+                                        for (int k = 0; k < breakerloopsplit.Length; k++)
+                                        {
+                                            if (k == 0)
+                                            {
+                                                this.electric.breakerloopsound = Convert.ToInt32(breakerloopsplit[0]);
+                                            }
+                                            else
+                                            {
+                                                this.electric.breakerlooptime = Convert.ToInt32(breakerloopsplit[1]);
+                                            }
+                                        }
+                                        break;
                                         default:
-
                                         throw new InvalidDataException("The parameter " + key + " is not supported.");
 
                                     }
