@@ -72,6 +72,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AWS.cs" />
+    <Compile Include="vigilance.DeadmanStates.cs" />
     <Compile Include="diesel.cs" />
     <Compile Include="electric.cs" />
     <Compile Include="Electric.PantographStates.cs" />

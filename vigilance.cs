@@ -6,7 +6,7 @@ using OpenBveApi.Runtime;
 namespace Plugin
 {
     /// <summary>Represents the overspeed, deadman's handle and DRA vigilance devices.</summary>
-    internal class vigilance : Device
+    internal partial class vigilance : Device
     {
 
         // --- members ---
@@ -16,6 +16,8 @@ namespace Plugin
         //Internal Variables
         internal double vigilancetime;
         internal int trainspeed;
+
+        internal DeadmanStates DeadmansHandleState;
 
         /// <summary>Default paramaters</summary>
         /// Used if no value is loaded from the config file
@@ -30,6 +32,8 @@ namespace Plugin
         internal string vigilancetimes = "60000";
         internal double vigilanceautorelease = 0;
         internal double vigilancecancellable = 0;
+        internal double vigilancedelay1 = 3000;
+        internal double vigilancedelay2 = 3000;
         internal double vigilancelamp = -1;
         internal double draenabled = -1;
         internal double drastartstate = -1;
@@ -39,15 +43,21 @@ namespace Plugin
         internal double overspeedtimer;
         internal double deadmanshandle = 0;
         internal double deadmanstimer;
-        internal bool debug;
+
+        internal double deadmansalarmtimer;
+        internal double deadmansbraketimer;
 
         //Sound Indicies
         internal double vigilancealarm = -1;
-        
+
 
         int[] vigilancearray;
-        
-        //Old Code
+
+        /// <summary>Gets the current state of the deadman's handle.</summary>
+        internal DeadmanStates DeadmansHandle
+        {
+            get { return this.DeadmansHandleState; }
+        }
 
         // --- constructors ---
 
@@ -89,9 +99,8 @@ namespace Plugin
             {
                 Train.drastate = true;
             }
-            Train.deadmanstripped = false;
             Train.overspeedtripped = false;
-
+            DeadmansHandleState = DeadmanStates.None;
         }
 
 
@@ -167,121 +176,124 @@ namespace Plugin
                         {
                             vigilancetime = vigilancearray[(vigilancelength - 1)];
                         }
-                        
-                        //Elapse Timer
-                        this.deadmanstimer += data.ElapsedTime.Milliseconds;
-                        //If timer is greater than time and tripped is false
-                        if (this.deadmanstimer > vigilancetime && Train.deadmanstripped == false)
+
+                        if (DeadmansHandleState == DeadmanStates.None)
                         {
-                            //Trip deadman's switch
-                            Train.deadmanstripped = true;
-                            debug = false;
+                            //Start the timer
+                            DeadmansHandleState = DeadmanStates.OnTimer;
                         }
-                        //If vigilance is cancellable whilst moving and timer has been reset, reset the trip
-                        else if (vigilancecancellable != 0 && Train.deadmanstripped == true && this.deadmanstimer < vigilancetime)
+                        else if (DeadmansHandleState == DeadmanStates.OnTimer)
                         {
-                            Train.deadmanstripped = false;
+                            //Reset other timers
+                            deadmansalarmtimer = 0.0;
+                            deadmansbraketimer = 0.0;
+                            //Elapse Timer
+                            this.deadmanstimer += data.ElapsedTime.Milliseconds;
+                            if (this.deadmanstimer > vigilancetime)
+                            {
+                                DeadmansHandleState = DeadmanStates.TimerExpired;
+                            }
                         }
-                        //Otherwise Unblock
+                        else if (DeadmansHandleState == DeadmanStates.TimerExpired)
+                        {
+                            //Start the next timer
+                            deadmansalarmtimer += data.ElapsedTime.Milliseconds;
+                            if (deadmansalarmtimer > vigilancedelay1)
+                            {
+                                DeadmansHandleState = DeadmanStates.OnAlarm;
+                            }
+                        }
+                        else if (DeadmansHandleState == DeadmanStates.OnAlarm)
+                        {
+                            //Trigger the alarm sound and move on
+                            if (vigilancealarm != -1)
+                            {
+                                SoundManager.Play((int)vigilancealarm, 1.0, 1.0, true);
+                            }
+                            DeadmansHandleState = DeadmanStates.AlarmTimer;
+                        }
+                        else if (DeadmansHandleState == DeadmanStates.AlarmTimer)
+                        {
+                            //Start the next timer
+                            deadmansbraketimer += data.ElapsedTime.Milliseconds;
+                            if (deadmansbraketimer > vigilancedelay2)
+                            {
+                                DeadmansHandleState = DeadmanStates.BrakesApplied;
+                            }
+                        }
+                        else if (DeadmansHandleState == DeadmanStates.BrakesApplied)
+                        {
+                            //Demand brake application
+                            tractionmanager.demandbrakeapplication();
+                        }
+
+
+
+                    }
+
+                }
+
+                //Consequences
+                if (Train.overspeedtripped == true)
+                {
+                    //Overspeed has tripped, apply service brakes
+                    tractionmanager.demandbrakeapplication();
+                }
+
+                if (Train.drastate == true)
+                {
+                    //DRA is enabled, cut the power
+                    data.Handles.PowerNotch = 0;
+                }
+                {
+                    //Set Panel Variables
+                    if (draindicator != -1)
+                    {
+                        if (Train.drastate == true)
+                        {
+                            this.Train.Panel[(int)(draindicator)] = 1;
+                        }
                         else
                         {
-                            if (data.Vehicle.Speed.KilometersPerHour <= safespeed)
-                            {
-                                if (safespeed == 0 && vigilanceautorelease == 1)
-                                {
-                                    //Automatically release deadman's handle on stop
-                                    Train.deadmanstripped = false;
-                                }
-                                this.deadmanstimer = 0.0;
-                            }
-
-
+                            this.Train.Panel[(int)(draindicator)] = 0;
                         }
                     }
-                    else
+                    if (overspeedindicator != -1)
                     {
-                        //Deadman's Handle disabled, reset the timer
-                        this.deadmanstimer = 0.0;
-                        Train.deadmanstripped = false;
+                        if (Train.overspeedtripped == true || trainspeed > warningspeed)
+                        {
+                            this.Train.Panel[(int)(overspeedindicator)] = 1;
+                        }
+                        else
+                        {
+                            this.Train.Panel[(int)(overspeedindicator)] = 0;
+                        }
+                    }
+                    if (vigilancelamp != -1)
+                    {
+                        if (DeadmansHandleState == DeadmanStates.None || DeadmansHandleState == DeadmanStates.OnTimer)
+                        {
+                            this.Train.Panel[(int)(vigilancelamp)] = 0;
+                        }
+                        else
+                        {
+                            this.Train.Panel[(int)(vigilancelamp)] = 1;
+                        }
 
                     }
-
-
+                    
                 }
-                
-            }
-
-            //Consequences
-            if (Train.overspeedtripped == true)
-            {
-                //Overspeed has tripped, apply service brakes
-                tractionmanager.demandbrakeapplication();
-            }
-            if (Train.deadmanstripped == true)
-            {
-                //Overspeed has tripped, apply service brakes
-                tractionmanager.demandbrakeapplication();
-            }
-            if (Train.drastate == true)
-            {
-                //DRA is enabled, cut the power
-                data.Handles.PowerNotch = 0;
-            }
-            {
-                //Set Panel Variables
-                if (draindicator != -1)
-                {
-                    if (Train.drastate == true)
-                    {
-                        this.Train.Panel[(int)(draindicator)] = 1;
-                    }
-                    else
-                    {
-                        this.Train.Panel[(int)(draindicator)] = 0;
-                    }
-                }
-                if (overspeedindicator != -1)
+                if (overspeedalarm != -1)
                 {
                     if (Train.overspeedtripped == true || trainspeed > warningspeed)
                     {
-                        this.Train.Panel[(int)(overspeedindicator)] = 1;
+                        SoundManager.Play((int)overspeedalarm, 1.0, 1.0, true);
                     }
                     else
                     {
-                        this.Train.Panel[(int)(overspeedindicator)] = 0;
+                        SoundManager.Stop((int)overspeedalarm);
                     }
                 }
-                if (vigilancelamp != -1)
-                {
-                    if (Train.deadmanstripped == true)
-                    {
-                        this.Train.Panel[(int)(vigilancelamp)] = 1;
-                    }
-                    else
-                    {
-                        this.Train.Panel[(int)(vigilancelamp)] = 0;
-                    }
-                }
-                if (vigilancealarm != -1)
-                    if (Train.deadmanstripped == true)
-                    {
-                        SoundManager.Play((int)vigilancealarm, 1.0, 1.0, true);
-                    }
-                    else
-                    {
-                        SoundManager.Stop((int)vigilancealarm);
-                    }   
-            }
-            if (overspeedalarm != -1)
-            {
-                if (Train.overspeedtripped == true || trainspeed > warningspeed)
-                {
-                    SoundManager.Play((int)overspeedalarm, 1.0, 1.0, true);
-                }
-                else
-                {
-                    SoundManager.Stop((int)overspeedalarm);
-                } 
             }
         }
     }

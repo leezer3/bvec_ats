@@ -84,7 +84,7 @@ namespace Plugin {
         /// <summary>Stores whether any safety systems have been tripped.</summary>
         internal bool overspeedtripped;
         internal bool drastate;
-        internal bool deadmanstripped;
+        //internal bool deadmanstripped;
         /// <summary>Stores whether the AWS is isolated.</summary>
         internal static bool AWSIsolated = false;
         /// <summary>Stores whether the startup self-test has been performed.</summary>
@@ -605,6 +605,12 @@ namespace Plugin {
                                             break;
                                         case "vigilancealarm":
                                             this.vigilance.vigilancealarm = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "vigilancedelay1":
+                                            this.vigilance.vigilancedelay1 = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "vigilancedelay2":
+                                            this.vigilance.vigilancedelay2 = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                             break;
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }

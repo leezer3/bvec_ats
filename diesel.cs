@@ -21,7 +21,6 @@ namespace Plugin
         internal int gear = 0;
         internal int totalgears = 0;
         internal int currentrevs;
-        internal static bool overheated;
         internal static bool gearsblocked = false;
         internal bool gearplayed = true;
         internal int previousrevs;

@@ -219,6 +219,12 @@ namespace Plugin
                 case "vigilancealarm":
                 vigilance.Add(line);
                 break;
+                case "vigilancedelay1":
+                vigilance.Add(line);
+                break;
+                case "vigilancedelay2":
+                vigilance.Add(line);
+                break;
                 case "reminderkey":
                 vigilance.Add("draenabled="+value);
                 break;

@@ -251,7 +251,7 @@ namespace Plugin
                     data.DebugMessage = "Service Brakes demanded by overspeed device";
                     data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
                 }
-                else if (Train.deadmanstripped == true)
+                else if (Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
                 {
                     data.DebugMessage = "EB Brakes demanded by deadman's handle";
                     data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
@@ -513,10 +513,12 @@ namespace Plugin
             //Convert keypress to string for comparison
             string keypressed = Convert.ToString(key);
             {
-                if (Train.deadmanstripped == false && Train.vigilance.independantvigilance != 0)
+                if (Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied && Train.vigilance.independantvigilance == 0)
                 {
                     //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
                     Train.vigilance.deadmanstimer = 0.0;
+                    SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                    Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
                 }
             }
 
@@ -579,11 +581,6 @@ namespace Plugin
             }
             if (keypressed == safetykey)
             {
-                //Reset vigilance timer if independant vigilance is selected & the deadman's timer has not tripped
-                if (Train.vigilance.independantvigilance != 0 && Train.deadmanstripped == false)
-                {
-                    Train.vigilance.deadmanstimer = 0.0;
-                }
                 //Reset Overspeed Trip
                 if ((Train.trainspeed == 0 || Train.vigilance.vigilancecancellable != 0) && Train.overspeedtripped == true)
                 {
@@ -591,12 +588,31 @@ namespace Plugin
                     resetbrakeapplication();
                 }
 
-                //Reset Deadman's Trip
-                if ((Train.vigilance.vigilancecancellable != 0 || Train.trainspeed == 0) && Train.deadmanstripped == true)
+                //Reset deadman's handle if independant vigilance is selected & brakes have not been applied
+                if (Train.vigilance.independantvigilance != 0 && Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied)
                 {
-                    Train.deadmanstripped = false;
+                    Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
+                    Train.vigilance.deadmanstimer = 0.0;
+                    SoundManager.Stop((int)Train.vigilance.vigilancealarm);
                     resetbrakeapplication();
                 }
+                //Reset brakes if allowed
+                else if (Train.vigilance.vigilancecancellable != 0 && Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+                {
+                    Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
+                    Train.vigilance.deadmanstimer = 0.0;
+                    SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                }
+                //If brakes cannot be cancelled and we've stopped
+                else if (Train.vigilance.vigilancecancellable == 0 && Train.trainspeed == 0 && Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+                {
+                    Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
+                    Train.vigilance.deadmanstimer = 0.0;
+                    SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                    resetbrakeapplication();
+                }
+                
+                
                 //Acknowledge AWS warning
                 if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerActive)
                 {
@@ -918,9 +934,12 @@ namespace Plugin
         /// <param name="reverser">The new reverser position.</param>
         internal override void SetReverser(int reverser)
         {
-            if (Train.deadmanstripped == false && Train.vigilance.independantvigilance != 0)
+            if (Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied && Train.vigilance.independantvigilance == 0)
             {
+                //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
                 Train.vigilance.deadmanstimer = 0.0;
+                SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
             }
 
         }
@@ -929,10 +948,12 @@ namespace Plugin
         /// <param name="powerNotch">The new power notch.</param>
         internal override void SetPower(int powerNotch)
         {
-            //Reset vigilance if independant vigilance is not selected
-            if (Train.deadmanstripped == false && Train.vigilance.independantvigilance != 0)
+            if (Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied && Train.vigilance.independantvigilance == 0)
             {
+                //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
                 Train.vigilance.deadmanstimer = 0.0;
+                SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
             }
             //Trigger electric powerloop sound timer
             if (Train.electric != null)
@@ -946,19 +967,23 @@ namespace Plugin
         /// <param name="brakeNotch">The new brake notch.</param>
         internal override void SetBrake(int brakeNotch)
         {
-            //Reset vigilance if independant vigilance is not selected
-            if (Train.deadmanstripped == false && Train.vigilance.independantvigilance != 0)
+            if (Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied && Train.vigilance.independantvigilance == 0)
             {
+                //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
                 Train.vigilance.deadmanstimer = 0.0;
+                SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
             }
         }
 
         internal override void HornBlow(HornTypes type)
         {
-            //Reset vigilance if independant vigilance is not selected
-            if (Train.deadmanstripped == false && Train.vigilance.independantvigilance != 0)
+            if (Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied && Train.vigilance.independantvigilance == 0)
             {
+                //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
                 Train.vigilance.deadmanstimer = 0.0;
+                SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
             }
             //Set the horn type that is playing
             if (type == HornTypes.Primary)
