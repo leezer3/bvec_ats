@@ -121,7 +121,8 @@ namespace Plugin
                 diesel.Add(line);
                 break;
                 case "gearchangesound":
-                diesel.Add(line);
+                string[] changefix = line.Split(',');
+                diesel.Add(changefix[0]);
                 break;
                 //VALUES TO BE ADDED TO THE STEAM SECTION OF THE CONFIGURATION FILE
                 case "cutoffmax":
@@ -369,6 +370,9 @@ namespace Plugin
             //Create new configuration file and cycle through the newly created arrays to upgrade the original configuration file.
             using (StreamWriter sw = File.CreateText(Path.Combine(trainpath, "BVEC_Ats.cfg")))
             {
+                sw.WriteLine(";GenVersion=1");
+                sw.WriteLine(";DELETE THE ABOVE LINE IF YOU MODIFY THIS FILE");
+                sw.WriteLine();
                 //Traction Type First
                 if (electric.Count > 0 && steamtype != true && dieseltype != true)
                 {

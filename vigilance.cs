@@ -225,6 +225,14 @@ namespace Plugin
                         {
                             //Demand brake application
                             tractionmanager.demandbrakeapplication();
+                            //If we auto-release on coming to a full-stop
+                            if (vigilanceautorelease != 0 && Train.trainspeed == 0)
+                            {
+                                tractionmanager.resetbrakeapplication();
+                                deadmansalarmtimer = 0.0;
+                                deadmansbraketimer = 0.0;
+                                deadmanstimer = 0.0;
+                            }
                         }
 
 

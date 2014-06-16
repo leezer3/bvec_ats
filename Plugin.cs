@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.IO;
 using OpenBveApi.Runtime;
 
@@ -31,6 +32,35 @@ namespace Plugin {
             string OS_ATSconfigFile = Path.Combine(properties.TrainFolder, "OS_ATS1.cfg");
             if (File.Exists(configFile))
             {
+                //Check for the automatic generator version
+                string generatorversion;
+                using (StreamReader reader = new StreamReader(configFile))
+                {
+                    //Read in first line
+                    generatorversion = reader.ReadLine();
+                }
+                //If it exists
+                if(generatorversion.StartsWith(";GenVersion="))
+                {
+                    string versiontext = Regex.Match(generatorversion, @"\d+").Value;
+                    int version = Int32.Parse(versiontext);
+                    //If we're below the current version, try to upgrade again
+                    if (version < 1)
+                    {
+                        if (File.Exists(OS_ATSDLL) && File.Exists(OS_ATSconfigFile))
+                        {
+                            try
+                            {
+                                UpgradeOSATS.UpgradeConfigurationFile(OS_ATSconfigFile, properties.TrainFolder);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                        }
+                    }
+                }
+                    
+                //Now try loading
                 try
                 {
                     this.Train.LoadConfigurationFile(configFile);
@@ -52,7 +82,7 @@ namespace Plugin {
                 {
                     UpgradeOSATS.UpgradeConfigurationFile(OS_ATSconfigFile, properties.TrainFolder);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     properties.FailureReason = "Error upgrading the existing OS_ATS configuration.";
                     return false;
@@ -72,6 +102,28 @@ namespace Plugin {
             else
             {
                 properties.FailureReason = "No supported configuration files exist.";
+                //Create new configuration file and cycle through the newly created arrays to upgrade the original configuration file.
+                using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                {
+                    sw.WriteLine("Plugin location " + Convert.ToString(properties.TrainFolder));
+                    if (File.Exists(OS_ATSDLL))
+                    {
+                        sw.WriteLine("OS_ATS DLL found");
+                    }
+                    else
+                    {
+                        sw.WriteLine("No OS_ATS DLL found");
+                    }
+
+                    if (File.Exists(OS_ATSconfigFile))
+                    {
+                        sw.WriteLine("OS_ATS configuration file found");
+                    }
+                    else
+                    {
+                        sw.WriteLine("No OS_ATS configuration file found");
+                    }
+                } 
                 return false;
             }
         }
