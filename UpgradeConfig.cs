@@ -45,6 +45,7 @@ namespace Plugin
             string value = line.Substring(equals + 1).Trim();
 				switch (key) {
                 case "traction":
+                        //Set the traction type
                         if (Convert.ToInt32(value) == 1)
                         {
                             steamtype = true;
@@ -54,7 +55,7 @@ namespace Plugin
                             dieseltype = true;
                         }
                 break;
-                //VALUES COMMON TO ALL SECTIONS
+                //VALUES COMMON TO ALL TRACTION TYPE SECTIONS
                 case "automatic":
                 common.Add(line);
                 break;
@@ -123,8 +124,9 @@ namespace Plugin
                 diesel.Add(line);
                 break;
                 case "gearchangesound":
-                string[] changefix = line.Split(',');
-                diesel.Add(changefix[0]);
+                //Handle trains with an additional paramater on gearchange sound
+                string[] gearchangefix = line.Split(',');
+                diesel.Add(gearchangefix[0]);
                 break;
                 //VALUES TO BE ADDED TO THE STEAM SECTION OF THE CONFIGURATION FILE
                 case "cutoffmax":
@@ -186,11 +188,14 @@ namespace Plugin
                 electric.Add(line);
                 break;
                 case "ammetervalues":
-                electric.Add(line);
+                //Handle negative values in ammeter string
+                string ammeterfix = line.Replace("-", "");
+                electric.Add(ammeterfix);
                 break;
                 //VALUES TO BE ADDED TO VIGILANCE SECTION OF CONFIGURATION FILE
                 case "vigilance":
-                        vigilance.Add("deadmanshandle=" + value);
+                //Change vigilance to deadmanshandle (Internal)
+                vigilance.Add("deadmanshandle=" + value);
                 break;
                 case "overspeedcontrol":
                 vigilance.Add(line);
@@ -232,6 +237,9 @@ namespace Plugin
                 vigilance.Add(line);
                 break;
                 case "vigilancedelay2":
+                vigilance.Add(line);
+                break;
+                case "vigilanceinactivespeed":
                 vigilance.Add(line);
                 break;
                 case "reminderkey":
@@ -299,6 +307,7 @@ namespace Plugin
                 interlocks.Add(line);
                 break;
                 case "klaxonindicator":
+                //Remove key assignments from klaxonindicator
                 string[] splitklaxonindicator = value.Split(',');
                 int[] splitarray = new int[splitklaxonindicator.Length + 1];
                 for (int j = 0; j < splitklaxonindicator.Length; j++)
@@ -317,6 +326,7 @@ namespace Plugin
                 interlocks.Add(finishedvalue);
                 break;
                 case "customindicators":
+                //Remove key assignments from customindicators
                 string[] splitcustomindicators = value.Split(',');
                 int[] splitarray1 = new int[splitcustomindicators.Length / 2];
                 int k = 0;
@@ -357,6 +367,7 @@ namespace Plugin
                 windscreen.Add(line);
                 break;
                 case "wipersound":
+                //Convert to drywipe & wipersoundbehaviour
                 string[] splitwipersound = value.Split(',');
                 for (int j = 0; j < splitwipersound.Length; j++)
                 {
@@ -372,6 +383,7 @@ namespace Plugin
                 break;
                 case "system":
                 //Ignore this one, and don't add as an error
+                //Safety systems are only instanciated as necessary
                 break;
                 default:
                 errors.Add(line);
@@ -382,6 +394,7 @@ namespace Plugin
             //Create new configuration file and cycle through the newly created arrays to upgrade the original configuration file.
             using (StreamWriter sw = File.CreateText(Path.Combine(trainpath, "BVEC_Ats.cfg")))
             {
+                //Write out the generator version and warning
                 sw.WriteLine(";GenVersion=1");
                 sw.WriteLine(";DELETE THE ABOVE LINE IF YOU MODIFY THIS FILE");
                 sw.WriteLine();
@@ -504,10 +517,7 @@ namespace Plugin
                         }
                     }
                 }
-            }
-
-            using (StreamWriter sw = File.CreateText(Path.Combine(trainpath, "error.log")))
-            {
+                //Write out upgrade errors to log file
                 sw.WriteLine("The following unsupported paramaters were detected whilst attempting to upgrade the existing configuration file:");
                 foreach (string item in errors)
                 {

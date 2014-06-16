@@ -432,6 +432,7 @@ namespace Plugin
         }
 
         //Call this function from a safety system to demand power cutoff
+        
         internal static void demandpowercutoff()
         {
             tractionmanager.powercutoffdemanded = true;
@@ -444,12 +445,14 @@ namespace Plugin
         }
 
         //Call this function from a safety system to demand a brake application
+        /// <summary>Unconditionally demands a brake application from the traction manager.</summary>
         internal static void demandbrakeapplication()
         {
             tractionmanager.brakedemanded = true;
         }
 
         //Call this function from a safety system to reset a brake application
+        /// <summary>Unconditionally resets a brake application from the traction manager.</summary>
         internal static void resetbrakeapplication()
         {
 
@@ -457,6 +460,7 @@ namespace Plugin
         }
 
         //Call this function to attempt to isolate or re-enable the TPWS & AWS Systems
+        /// <summary>Attempts to disable or re-enable the TPWS & AWS safety systems.</summary>
         internal void isolatetpwsaws()
         {
             if (safetyisolated == false)
@@ -492,6 +496,7 @@ namespace Plugin
             }
         }
 
+        /// <summary>Enables the AWS & TPWS systems if they are fitted.</summary>
         internal void reenabletpwsaws()
         {
             if (safetyisolated == true)

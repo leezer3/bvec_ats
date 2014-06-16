@@ -29,6 +29,7 @@ namespace Plugin {
             this.Train = new Train(properties.Panel);
             string configFile = Path.Combine(properties.TrainFolder, "BVEC_Ats.cfg");
             string OS_ATSDLL = Path.Combine(properties.TrainFolder, "OS_ATS1.dll");
+            string SZ_ATSDLL = Path.Combine(properties.TrainFolder, "OS_SZ_ATS1.dll");
             string OS_ATSconfigFile = Path.Combine(properties.TrainFolder, "OS_ATS1.cfg");
             if (File.Exists(configFile))
             {
@@ -76,6 +77,7 @@ namespace Plugin {
             }
             else if (!File.Exists(configFile) && File.Exists(OS_ATSDLL) && File.Exists(OS_ATSconfigFile))
             {
+                //The F92_en is blacklisted due to a custom OS_ATS version
                 if (Regex.IsMatch(properties.TrainFolder, @"\\F92_en(\\)?", RegexOptions.IgnoreCase))
                 {
                     properties.FailureReason = "The F92_en is not currently a supported train.";
@@ -88,7 +90,7 @@ namespace Plugin {
                 else
                 {
                     //If there is no existing BVEC_ATS configuration file, but OS_ATS and the appropriate
-                    //configuration file exist, then attempt to upgrade the existing file to BVEC_ATS
+                    //configuration files exist, then attempt to upgrade the existing file to BVEC_ATS
                     try
                     {
                         UpgradeOSATS.UpgradeConfigurationFile(OS_ATSconfigFile, properties.TrainFolder);
@@ -96,6 +98,11 @@ namespace Plugin {
                     catch (Exception)
                     {
                         properties.FailureReason = "Error upgrading the existing OS_ATS configuration.";
+                        using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                        {
+                            sw.WriteLine("An existing OS_ATS configuration was found.");
+                            sw.WriteLine("However, an error occurred upgrading the existing OS_ATS configuration.");
+                        }
                         return false;
                     }
 
@@ -111,10 +118,21 @@ namespace Plugin {
                     }
                 }
             }
+            else if (File.Exists(SZ_ATSDLL))
+            {
+                //We haven't found an existing configuration, but have found an OS_SZ_ATS.dll file- This is blacklisted
+                //due to using custom parameters at present.
+                using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                {
+                    sw.WriteLine("OS_SZ_ATS & no BVEC_Ats.cfg detcted. Upgrading this configuration is not currently possible.");
+                }
+                properties.FailureReason = "OS_SZ_ATS & no BVEC_Ats.cfg detcted. Upgrading this configuration is not currently possible.";
+                return false;
+            }
             else
             {
                 properties.FailureReason = "No supported configuration files exist.";
-                //Create new configuration file and cycle through the newly created arrays to upgrade the original configuration file.
+                //Write out error.log with details of what it thinks was found and missing
                 using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
                 {
                     sw.WriteLine("Plugin location " + Convert.ToString(properties.TrainFolder));

@@ -19,7 +19,9 @@ namespace Plugin
         internal double heatingtimer;
         internal double currentheat;
         internal double temperature;
+        /// <summary>Stores whether we are currently in a power gap</summary>
         internal static bool powergap;
+        /// <summary>Stores the current state of the ACB/VCB</summary>
         internal static bool breakertripped;
         internal int nextmagnet;
         internal int firstmagnet;
@@ -33,72 +35,76 @@ namespace Plugin
         internal static bool powerloop;
         internal double breakerlooptimer;
 
+        /// <summary>The current state of the front pantograph</summary>
         internal PantographStates FrontPantographState;
+        /// <summary>The current state of the rear pantograph</summary>
         internal PantographStates RearPantographState;
 
         //Default Variables
-        internal double ammeter = -1;
+
+        /// <summary>The ammeter value for each power notch</summary>
         internal string ammetervalues = "0";
+        /// <summary>A list of the available power pickup points</summary>
         internal string pickuppoints = "0";
+        /// <summary>The behaviour of the train in a powergap</summary>
         internal double powergapbehaviour = 0;
-        internal double recieverlocation = 0;
+        /// <summary>A list of the heating rates (in heat units per second) for each power notch</summary>
         internal string heatingrate = "0";
+        /// <summary>The retry interval after an unsucessful attempt to raise the pantograph, or it has been lowered with the ACB/VCB closed</summary>
         internal double pantographretryinterval = 5000;
+        /// <summary>The behaviour when a pantograph is lowered with the ACB/VCB closed</summary>
         internal double pantographalarmbehaviour = 0;
+        /// <summary>The time before the power notch loop sound is started afer each notch change in ms</summary>
         internal double powerlooptime = 0;
+        /// <summary>The time before the breaker loop sound is started after the ACB/VCB is closed with a pantograph available</summary>
         internal double breakerlooptime = 0;
-        
+        /// <summary>Do we heave a part that heats up?</summary>
+        internal double heatingpart = 0;
+        /// <summary>The overheat warning temperature</summary>
+        internal double overheatwarn = 0;
+        /// <summary>The temperature at which the engine overheats</summary>
+        internal double overheat = 0;
+        /// <summary>What happens when we overheat?</summary>
+        internal double overheatresult = 0;
+
         //Panel Indicies
+
+        /// <summary>The panel index of the ammeter</summary>
+        internal double ammeter = -1;
+        /// <summary>The panel index of the line volts indicator</summary>
         internal double powerindicator = -1;
+        /// <summary>The panel index of the ACB/VCB</summary>
         internal double breakerindicator = -1;
+        /// <summary>The panel index of front pantograph</summary>
         internal double pantographindicator_f = -1;
+        /// <summary>The panel index of the rear pantograph</summary>
         internal double pantographindicator_r = -1;
+        /// <summary>The panel indicator for the thermometer</summary>
+        internal double thermometer = -1;
+        /// <summary>The panel indicator for the overheat indicator</summary>
+        internal double overheatindicator = -1;
 
         //Sound Indicies
+
+        /// <summary>The sound index played when the ACB/VCB is closed</summary>
         internal static double breakersound = -1;
+        /// <summary>The sound index played when a pantograph is raised</summary>
         internal double pantographraisedsound = -1;
+        /// <summary>The sound index played when a pantograph is lowered</summary>
         internal double pantographloweredsound = -1;
+        /// <summary>The alarm sound index played when a pantograph is lowered with the ACB/VCB closed</summary>
         internal double pantographalarmsound = -1;
+        /// <summary>The power notch loop sound index</summary>
         internal double powerloopsound = -1;
+        /// <summary>The breaker loop sound index</summary>
         internal double breakerloopsound = -1;
+        /// <summary>Sound index for overheat alarm</summary>
+        internal double overheatalarm = -1;
 
         //Arrays
         int[] ammeterarray;
         int[] pickuparray;
         int[] heatingarray;
-
-
-
-        // --- constants ---
-        /// <summary>Is our transmission automatic</summary>
-        internal double automatic = -1;
-
-        /// <summary>Do we heave a part that heats up?</summary>
-        internal double heatingpart = 0;
-
-        /// <summary>Overheat warning temperature<tTsummary>
-        internal double overheatwarn = 0;
-
-        /// <summary>Overheat temperature</summary>
-        internal double overheat = 0;
-
-        /// <summary>What happens when we overheat?</summary>
-        internal double overheatresult = 0;
-
-        /// <summary>Panel indicator for thermometer</summary>
-        internal double thermometer = -1;
-
-        /// <summary>Panel indicator for overheat indicator</summary>
-        internal double overheatindicator = -1;
-
-        /// <summary>Sound index for overheat alarm</summary>
-        internal double overheatalarm = -1;
-
-        /// <summary>Default paramaters</summary>
-        /// Used if no value is loaded from the config file
-
-        //Panel Indicies
-        internal double automaticindicator = -1;
 
 
         /// <summary>Gets the current state of a pantograph.</summary>
