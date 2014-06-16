@@ -21,6 +21,8 @@ namespace Plugin
             List<string> TPWS = new List<string>();
             List<string> interlocks = new List<string>();
             List<string> windscreen = new List<string>();
+
+            List<string> errors = new List<string>();
             bool steamtype = false;
             bool dieseltype = false;
             //Read all lines of existing OS_ATS configuration file and add to appropriate arrays
@@ -180,6 +182,9 @@ namespace Plugin
                 case "powerindicator":
                 electric.Add(line);
                 break;
+                case "ammeter":
+                electric.Add(line);
+                break;
                 case "ammetervalues":
                 electric.Add(line);
                 break;
@@ -218,6 +223,9 @@ namespace Plugin
                 vigilance.Add(line);
                 break;
                 case "vigilancealarm":
+                vigilance.Add(line);
+                break;
+                case "independantvigilance":
                 vigilance.Add(line);
                 break;
                 case "vigilancedelay1":
@@ -362,8 +370,12 @@ namespace Plugin
                     }
                 }
                 break;
-                throw new InvalidDataException("The parameter " + key + " is not supported.");
-
+                case "system":
+                //Ignore this one, and don't add as an error
+                break;
+                default:
+                errors.Add(line);
+                break;
 						}
 					}
 				}
@@ -493,6 +505,16 @@ namespace Plugin
                     }
                 }
             }
+
+            using (StreamWriter sw = File.CreateText(Path.Combine(trainpath, "error.log")))
+            {
+                sw.WriteLine("The following unsupported paramaters were detected whilst attempting to upgrade the existing configuration file:");
+                foreach (string item in errors)
+                {
+                    sw.WriteLine(item);
+                }
+            }
+
 			}
     }
 }

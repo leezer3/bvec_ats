@@ -35,6 +35,8 @@ namespace Plugin
         internal int drywipesound = -1;
         internal int wetwipesound = -1;
         internal int wipersoundbehaviour = 0;
+        internal double wiperswitchindex = -1;
+        internal double wiperswitchsound = -1;
         
         //Arrays
         bool[] droparray;
@@ -281,6 +283,11 @@ namespace Plugin
                 {
                     this.Train.Panel[(int)wiperindex] = currentwiperposition;
                 }
+                //Animate Windscreen Wiper Switch
+                if (wiperswitchindex != -1)
+                {
+                    this.Train.Panel[(int)wiperswitchindex] = wiperspeed;
+                }
             }
             
 
@@ -326,10 +333,18 @@ namespace Plugin
             if (request == 0 && wiperspeed <= 1)
             {
                 wiperspeed++;
+                if (wiperswitchsound != -1)
+                {
+                    SoundManager.Play((int)wiperswitchsound, 1.0, 1.0, false);
+                }
             }
             else if (request == 1 && wiperspeed > 0)
             {
                 wiperspeed--;
+                if (wiperswitchsound != -1)
+                {
+                    SoundManager.Play((int)wiperswitchsound, 1.0, 1.0, false);
+                }
             }
         }
     }

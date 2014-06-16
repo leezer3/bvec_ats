@@ -76,28 +76,40 @@ namespace Plugin {
             }
             else if (!File.Exists(configFile) && File.Exists(OS_ATSDLL) && File.Exists(OS_ATSconfigFile))
             {
-                //If there is no existing BVEC_ATS configuration file, but OS_ATS and the appropriate
-                //configuration file exist, then attempt to upgrade the existing file to BVEC_ATS
-                try
+                if (Regex.IsMatch(properties.TrainFolder, @"\\F92_en(\\)?", RegexOptions.IgnoreCase))
                 {
-                    UpgradeOSATS.UpgradeConfigurationFile(OS_ATSconfigFile, properties.TrainFolder);
-                }
-                catch (Exception)
-                {
-                    properties.FailureReason = "Error upgrading the existing OS_ATS configuration.";
+                    properties.FailureReason = "The F92_en is not currently a supported train.";
+                    using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                    {
+                        sw.WriteLine("The F92_en is not currently a supported train");
+                    }
                     return false;
                 }
+                else
+                {
+                    //If there is no existing BVEC_ATS configuration file, but OS_ATS and the appropriate
+                    //configuration file exist, then attempt to upgrade the existing file to BVEC_ATS
+                    try
+                    {
+                        UpgradeOSATS.UpgradeConfigurationFile(OS_ATSconfigFile, properties.TrainFolder);
+                    }
+                    catch (Exception)
+                    {
+                        properties.FailureReason = "Error upgrading the existing OS_ATS configuration.";
+                        return false;
+                    }
 
-                try
-                {
-                    this.Train.LoadConfigurationFile(configFile);
-                    return true;
+                    try
+                    {
+                        this.Train.LoadConfigurationFile(configFile);
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        properties.FailureReason = "Error loading the configuration file: " + ex.Message;
+                        return false;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    properties.FailureReason = "Error loading the configuration file: " + ex.Message;
-                    return false;
-                }              
             }
             else
             {

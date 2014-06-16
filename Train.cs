@@ -749,6 +749,12 @@ namespace Plugin {
                                         case "wiperrate":
                                             this.Windscreen.wiperrate = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                             break;
+                                        case "wiperswitchindex":
+                                            this.Windscreen.wiperswitchindex = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "wiperswitchsound":
+                                            this.Windscreen.wiperswitchsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            break;
                                         case "dropsound":
                                             string[] dropsplit = value.Split(',');
                                             for (int k = 0; k < dropsplit.Length; k++)
