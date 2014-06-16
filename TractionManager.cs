@@ -394,6 +394,7 @@ namespace Plugin
                         if (klaxonindicatortimer > klaxonarray[1])
                         {
                             primaryklaxonplaying = false;
+                            klaxonindicatortimer = 0.0;
                         }
                     }
                     //Secondary Horn
@@ -403,6 +404,7 @@ namespace Plugin
                         if (klaxonindicatortimer > klaxonarray[3])
                         {
                             secondaryklaxonplaying = false;
+                            klaxonindicatortimer = 0.0;
                         }
                     }
                     //Music Horn
@@ -412,6 +414,7 @@ namespace Plugin
                         if (klaxonindicatortimer > klaxonarray[5])
                         {
                             musicklaxonplaying = false;
+                            klaxonindicatortimer = 0.0;
                         }
                     }
                 }

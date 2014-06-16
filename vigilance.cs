@@ -39,6 +39,7 @@ namespace Plugin
         internal double drastartstate = -1;
         internal double draindicator = -1;
         internal double independantvigilance = 0;
+        internal double vigilanceinactivespeed = 0;
         /// <summary>Timers</summary>
         internal double overspeedtimer;
         internal double deadmanshandle = 0;
@@ -162,6 +163,44 @@ namespace Plugin
                     //Deadman's Handle
                     if (deadmanshandle != 0)
                     {
+                        //Initialise and set the start state
+                        if (Train.StartupSelfTestManager.SequenceState != StartupSelfTestManager.SequenceStates.Initialised)
+                        {
+                            //Startup self-test has not been performed, no systems active
+                            DeadmansHandleState = DeadmanStates.None;
+                        }
+                        else if (Train.electric != null && Train.electric.FrontPantographState != electric.PantographStates.OnService && Train.electric.RearPantographState != electric.PantographStates.OnService && trainspeed == 0)
+                        {
+                            //Stationary with no available pantographs
+                            DeadmansHandleState = DeadmanStates.None;
+                        }
+                        else if (vigilanceinactivespeed == -2 && Train.Handles.Reverser == 0)
+                        {
+                            //Set to no action if inactive speed is -2 & in neutral
+                            DeadmansHandleState = DeadmanStates.None;
+                        }
+                        else if (vigilanceinactivespeed == -2 && Train.Handles.Reverser != 0)
+                        {
+                            //Otherwise set to the timer state
+                            DeadmansHandleState = DeadmanStates.OnTimer;
+                        }
+                        else if (vigilanceinactivespeed == -1)
+                        {
+                            //If inactive speed is -1 always set to the timer state
+                            DeadmansHandleState = DeadmanStates.OnTimer;
+                        }
+                        else if (trainspeed < vigilanceinactivespeed && DeadmansHandleState == DeadmanStates.OnTimer)
+                        {
+                            //If train speed is than the inactive speed and we're in the timer mode
+                            //Set to no action
+                            DeadmansHandleState = DeadmanStates.None;
+                        }
+                        else if (trainspeed > vigilanceinactivespeed && DeadmansHandleState == DeadmanStates.None)
+                        {
+                            //Set to the timer state
+                            DeadmansHandleState = DeadmanStates.OnTimer;
+                        }
+
                         //Calculate vigilance time from the array
                         int vigilancelength = vigilancearray.Length;
                         if (Train.Handles.PowerNotch == 0)
@@ -177,12 +216,9 @@ namespace Plugin
                             vigilancetime = vigilancearray[(vigilancelength - 1)];
                         }
 
-                        if (DeadmansHandleState == DeadmanStates.None)
-                        {
-                            //Start the timer
-                            DeadmansHandleState = DeadmanStates.OnTimer;
-                        }
-                        else if (DeadmansHandleState == DeadmanStates.OnTimer)
+
+
+                        if (DeadmansHandleState == DeadmanStates.OnTimer)
                         {
                             //Reset other timers
                             deadmansalarmtimer = 0.0;

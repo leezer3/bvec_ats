@@ -612,6 +612,9 @@ namespace Plugin {
                                         case "vigilancedelay2":
                                             this.vigilance.vigilancedelay2 = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                             break;
+                                        case "vigilanceinactivespeed":
+                                            this.vigilance.vigilanceinactivespeed = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            break;
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }
                                     break;
