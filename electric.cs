@@ -102,8 +102,11 @@ namespace Plugin
         internal double overheatalarm = -1;
 
         //Arrays
+        /// <summary>An array storing the ammeter values for each power notch</summary>
         int[] ammeterarray;
+        /// <summary>An array storing the location of all available pickup points</summary>
         int[] pickuparray;
+        /// <summary>An array storing the heating rate for each power notch</summary>
         int[] heatingarray;
 
 

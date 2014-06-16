@@ -18,95 +18,108 @@ namespace Plugin
         internal double heatingtimer;
         internal double currentheat;
         internal bool nogears;
+        /// <summary>The current gear</summary>
         internal int gear = 0;
         internal int totalgears = 0;
         internal int currentrevs;
         internal static bool gearsblocked = false;
         internal bool gearplayed = true;
         internal int previousrevs;
+        /// <summary>The current engine temperature</summary>
         internal double temperature;
+        /// <summary>Stores whether we are currently fuelling</summary>
         internal bool fuelling;
         internal double fuellingtimer;
+        /// <summary>The current amount of fuel/ water in the tanks</summary>
         internal int fuel;
         internal double fuelusetimer;
         internal bool gearloop;
         internal double gearlooptimer;
         //Stores ratios for the current gears
+        /// <summary>The current gear ratio</summary>
         internal int gearratio;
+        /// <summary>The current gear's fade in ratio</summary>
         internal int fadeinratio;
+        /// <summary>The current gear's fade out ratio</summary>
         internal int fadeoutratio;
 
-        //New features
-        internal double allowneutralrevs = 0;
-        internal double revsupsound = -1;
-        internal double revsdownsound = -1;
-        internal double motorsound = -1;
-        //Default Variables
-        internal string gearratios = "0";
-        internal string gearfadeinrange = "0";
-        internal string gearfadeoutrange = "0";
-        internal double fuelstartamount = 20000;
-        internal double fuelcapacity = 20000;
-        internal double reversercontrol = 0;
-        internal string heatingrate = "0";
-        internal double fuelfillspeed = 50;
-        internal string fuelconsumption = "0";
-        internal double fuelfillindicator = -1;
-        internal double gearlooptime = 0;
         
+        
+        //Default Variables
+        /// <summary>A comma separated list of the train's gear ratios</summary>
+        internal string gearratios = "0";
+        /// <summary>A comma separated list of the train's gear fade in ratios</summary>
+        internal string gearfadeinrange = "0";
+        /// <summary>A comma separated list of the train's gear fade out ratios</summary>
+        internal string gearfadeoutrange = "0";
+        /// <summary>The starting amount of fuel in the tanks</summary>
+        internal double fuelstartamount = 20000;
+        /// <summary>The total capacity of the fuel tanks</summary>
+        internal double fuelcapacity = 20000;
+        /// <summary>The behaviour when the reverser is placed into neutral with the train in motion</summary>
+        internal double reversercontrol = 0;
+        /// <summary>A comma separated list of the heating rates for each throttle notch</summary>
+        internal string heatingrate = "0";
+        /// <summary>The total number of fuel units filled per second whilst fuelling is active</summary>
+        internal double fuelfillspeed = 50;
+        /// <summary>A comma separated list of the fuel consumption for each gear/ power notch</summary>
+        internal string fuelconsumption = "0";
+        /// <summary>The panel index of the fuel filling indicator</summary>
+        internal double fuelfillindicator = -1;
+        /// <summary>The time before the gear loop sound is started after changing gear</summary>
+        internal double gearlooptime = 0;
+        /// <summary>Defines whether we are allowed to rev the engine in neutral</summary>
+        internal double allowneutralrevs = 0;
         /// <summary>Is our transmission automatic</summary>
         internal double automatic = -1;
-
         /// <summary>Do we heave a part that heats up?</summary>
         internal double heatingpart = 0;
-
-        /// <summary>Overheat warning temperature</summary>
+        /// <summary>The overheat warning temperature</summary>
         internal double overheatwarn = 0;
-
-        /// <summary>Overheat temperature</summary>
+        /// <summary>The overheat temperature</summary>
         internal double overheat = 0;
-
         /// <summary>What happens when we overheat?</summary>
         internal double overheatresult = 0;
 
-        /// <summary>Panel indicator for thermometer</summary>
-        internal double thermometer = -1;
-
-        /// <summary>Panel indicator for overheat indicator</summary>
-        internal double overheatindicator = -1;
-
-        /// <summary>Sound index for overheat alarm</summary>
-        internal double overheatalarm = -1;
         //Panel Indicies
+        /// <summary>The panel indicator for the gear indicator</summary>
         internal double gearindicator = -1;
+        /// <summary>The panel indicator for the tachometer</summary>
         internal double tachometer = -1;
+        /// <summary>The panel indicator for the fuel gauge</summary>
         internal double fuelindicator = -1;
-
-        //Sound Indicies
-        internal double gearchangesound = -1;
-        internal double gearloopsound = -1;
-        
-
-        //Arrays
-        int[] geararray;
-        int[] gearfadeinarray;
-        int[] gearfadeoutarray;
-        int[] heatingarray;
-        int[] fuelarray;
-
-
-        // --- constants ---
-
-
-
-        /// <summary>Default paramaters</summary>
-        /// Used if no value is loaded from the config file
-
-        //Panel Indicies
+        /// <summary>The panel indicator for thermometer</summary>
+        internal double thermometer = -1;
+        /// <summary>The panel indicator for overheat indicator</summary>
+        internal double overheatindicator = -1;
+        /// <summary>The panel indicator for automatic gears</summary>
         internal double automaticindicator = -1;
 
         //Sound Indicies
+        /// <summary>The sound index played when the gear is changed</summary>
+        internal double gearchangesound = -1;
+        /// <summary>The sound played looped whilst we are in gear</summary>
+        internal double gearloopsound = -1;
+        /// <summary>The sound index for the overheat alarm</summary>
+        internal double overheatalarm = -1;
+        /// <summary>The sound index played when the revs increase in neutral</summary>
+        internal double revsupsound = -1;
+        /// <summary>The sound index played when the revs decrease in neutral</summary>
+        internal double revsdownsound = -1;
+        /// <summary>The sound index played whilst the motor is revving in netural</summary>
+        internal double motorsound = -1;
 
+        //Arrays
+        /// <summary>An array storing the ratio for all the train's gears</summary>
+        int[] geararray;
+        /// <summary>An array storing the fade in ratio for all the train's gears</summary>
+        int[] gearfadeinarray;
+        /// <summary>An array storing the fade out ratio for all the train's gears</summary>
+        int[] gearfadeoutarray;
+        /// <summary>An array storing the heating rate for all gears/ power notches</summary>
+        int[] heatingarray;
+        /// <summary>An array storing the fuel usage for all the gears/ power notches</summary>
+        int[] fuelarray;
 
         // --- constructors ---
 
@@ -553,7 +566,7 @@ namespace Plugin
                 //Sounds
                 if (overheatalarm != -1)
                 {
-                    if (temperature > overheatalarm)
+                    if (temperature > overheatwarn)
                     {
                         SoundManager.Play((int)overheatalarm, 1.0, 1.0, true);
                     }
@@ -565,6 +578,7 @@ namespace Plugin
             }
         }
 
+        /// <summary>Triggers the gear change sound</summary>
         internal void gearchange()
         {
             if (gearchangesound != -1)

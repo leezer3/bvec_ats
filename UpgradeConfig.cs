@@ -517,6 +517,12 @@ namespace Plugin
                         }
                     }
                 }
+                }
+
+
+
+            using (StreamWriter sw = File.CreateText(Path.Combine(trainpath, "error.log")))
+            {
                 //Write out upgrade errors to log file
                 sw.WriteLine("The following unsupported paramaters were detected whilst attempting to upgrade the existing configuration file:");
                 foreach (string item in errors)
