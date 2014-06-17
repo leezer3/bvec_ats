@@ -353,31 +353,31 @@ namespace Plugin {
                                     switch (key)
                                     {
                                         case "heatingpart":
-                                        this.electric.heatingpart = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateSetting(value, ref electric.heatingpart, key);
                                         break;
                                         case "heatingrate":
                                         this.electric.heatingrate = value;
                                         break;
                                         case "overheatwarn":
-                                        this.electric.overheatwarn = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref electric.overheatwarn, key);
                                         break;
                                         case "overheat":
                                         this.electric.overheat = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                         break;
                                         case "overheatresult":
-                                        this.electric.overheatresult = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateSetting(value, ref electric.overheatresult, key);
                                         break;
                                         case "thermometer":
-                                        this.electric.thermometer = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.thermometer, key);
                                         break;
                                         case "overheatindicator":
-                                        this.electric.overheatindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.overheatindicator, key);
                                         break;
                                         case "overheatalarm":
-                                        this.electric.overheatalarm = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.overheatalarm, key);
                                         break;
                                         case "ammeter":
-                                        this.electric.ammeter = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.ammeter, key);
                                         break;
                                         case "ammetervalues":
                                         this.electric.ammetervalues = value;
@@ -386,37 +386,37 @@ namespace Plugin {
                                         this.electric.pickuppoints = value;
                                         break;
                                         case "powergapbehaviour":
-                                        this.electric.powergapbehaviour = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateSetting(value, ref electric.powergapbehaviour, key);
                                         break;
                                         case "powerindicator":
-                                        this.electric.powerindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.powerindicator, key);
                                         break;
                                         case "breakersound":
-                                        electric.breakersound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.breakersound, key);
                                         break;
                                         case "breakerindicator":
-                                        electric.breakerindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.breakerindicator, key);
                                         break;
                                         case "pantographindicator_f":
-                                        electric.pantographindicator_f = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.pantographindicator_f, key);
                                         break;
                                         case "pantographindicator_r":
-                                        electric.pantographindicator_r = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.pantographindicator_r, key);
                                         break;
                                         case "pantographraisedsound":
-                                        electric.pantographraisedsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.pantographraisedsound, key);
                                         break;
                                         case "pantographloweredsound":
-                                        electric.pantographloweredsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.pantographloweredsound, key);
                                         break;
                                         case "pantographalarmsound":
-                                        electric.pantographalarmsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref electric.pantographalarmsound, key);
                                         break;
                                         case "pantographretryinterval":
-                                        electric.pantographretryinterval = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref electric.pantographretryinterval, key);
                                         break;
                                         case "pantographalarmbehaviour":
-                                        electric.pantographalarmbehaviour = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateSetting(value, ref electric.pantographalarmbehaviour, key);
                                         break;
                                         case "powerloopsound":
                                         string[] powerloopsplit = value.Split(',');

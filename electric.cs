@@ -47,59 +47,59 @@ namespace Plugin
         /// <summary>A list of the available power pickup points</summary>
         internal string pickuppoints = "0";
         /// <summary>The behaviour of the train in a powergap</summary>
-        internal double powergapbehaviour = 0;
+        internal int powergapbehaviour = 0;
         /// <summary>A list of the heating rates (in heat units per second) for each power notch</summary>
         internal string heatingrate = "0";
         /// <summary>The retry interval after an unsucessful attempt to raise the pantograph, or it has been lowered with the ACB/VCB closed</summary>
         internal double pantographretryinterval = 5000;
         /// <summary>The behaviour when a pantograph is lowered with the ACB/VCB closed</summary>
-        internal double pantographalarmbehaviour = 0;
+        internal int pantographalarmbehaviour = 0;
         /// <summary>The time before the power notch loop sound is started afer each notch change in ms</summary>
         internal double powerlooptime = 0;
         /// <summary>The time before the breaker loop sound is started after the ACB/VCB is closed with a pantograph available</summary>
         internal double breakerlooptime = 0;
         /// <summary>Do we heave a part that heats up?</summary>
-        internal double heatingpart = 0;
+        internal int heatingpart = 0;
         /// <summary>The overheat warning temperature</summary>
         internal double overheatwarn = 0;
         /// <summary>The temperature at which the engine overheats</summary>
         internal double overheat = 0;
         /// <summary>What happens when we overheat?</summary>
-        internal double overheatresult = 0;
+        internal int overheatresult = 0;
 
         //Panel Indicies
 
         /// <summary>The panel index of the ammeter</summary>
-        internal double ammeter = -1;
+        internal int ammeter = -1;
         /// <summary>The panel index of the line volts indicator</summary>
-        internal double powerindicator = -1;
+        internal int powerindicator = -1;
         /// <summary>The panel index of the ACB/VCB</summary>
-        internal double breakerindicator = -1;
+        internal int breakerindicator = -1;
         /// <summary>The panel index of front pantograph</summary>
-        internal double pantographindicator_f = -1;
+        internal int pantographindicator_f = -1;
         /// <summary>The panel index of the rear pantograph</summary>
-        internal double pantographindicator_r = -1;
+        internal int pantographindicator_r = -1;
         /// <summary>The panel indicator for the thermometer</summary>
-        internal double thermometer = -1;
+        internal int thermometer = -1;
         /// <summary>The panel indicator for the overheat indicator</summary>
-        internal double overheatindicator = -1;
+        internal int overheatindicator = -1;
 
         //Sound Indicies
 
         /// <summary>The sound index played when the ACB/VCB is closed</summary>
-        internal static double breakersound = -1;
+        internal static int breakersound = -1;
         /// <summary>The sound index played when a pantograph is raised</summary>
-        internal double pantographraisedsound = -1;
+        internal int pantographraisedsound = -1;
         /// <summary>The sound index played when a pantograph is lowered</summary>
-        internal double pantographloweredsound = -1;
+        internal int pantographloweredsound = -1;
         /// <summary>The alarm sound index played when a pantograph is lowered with the ACB/VCB closed</summary>
-        internal double pantographalarmsound = -1;
+        internal int pantographalarmsound = -1;
         /// <summary>The power notch loop sound index</summary>
-        internal double powerloopsound = -1;
+        internal int powerloopsound = -1;
         /// <summary>The breaker loop sound index</summary>
-        internal double breakerloopsound = -1;
+        internal int breakerloopsound = -1;
         /// <summary>Sound index for overheat alarm</summary>
-        internal double overheatalarm = -1;
+        internal int overheatalarm = -1;
 
         //Arrays
         /// <summary>An array storing the ammeter values for each power notch</summary>
@@ -128,28 +128,48 @@ namespace Plugin
         //<param name="mode">The initialization mode.</param>
         internal override void Initialize(InitializationModes mode)
         {
-            //Split ammeter values into an array
-            string[] splitammetervalues = ammetervalues.Split(',');
-            ammeterarray = new int[splitammetervalues.Length];
-            for (int i = 0; i < ammeterarray.Length; i++)
+            //Use try/ catch to handle exceptions in our array parsing
+            try
             {
-                ammeterarray[i] = Int32.Parse(splitammetervalues[i]);
+                //Split ammeter values into an array
+                string[] splitammetervalues = ammetervalues.Split(',');
+                ammeterarray = new int[splitammetervalues.Length];
+                for (int i = 0; i < ammeterarray.Length; i++)
+                {
+                    ammeterarray[i] = Int32.Parse(splitammetervalues[i]);
+                }
             }
-
-            //Split pickup location values into an array
-            string[] splitpickups = pickuppoints.Split(',');
-            pickuparray = new int[splitpickups.Length];
-            for (int i = 0; i < pickuparray.Length; i++)
+            catch
             {
-                pickuparray[i] = Int32.Parse(splitpickups[i]);
+                InternalFunctions.LogError("ammetervalues");
             }
-
-            //Split Heating Values into an array
-            string[] splitheatingrate = heatingrate.Split(',');
-            heatingarray = new int[splitheatingrate.Length];
-            for (int i = 0; i < heatingarray.Length; i++)
+            try
             {
-                heatingarray[i] = Int32.Parse(splitheatingrate[i]);
+                //Split pickup location values into an array
+                string[] splitpickups = pickuppoints.Split(',');
+                pickuparray = new int[splitpickups.Length];
+                for (int i = 0; i < pickuparray.Length; i++)
+                {
+                    pickuparray[i] = Int32.Parse(splitpickups[i]);
+                }
+            }
+            catch
+            {
+                InternalFunctions.LogError("pickupoints");
+            }
+            try
+            {
+                //Split Heating Values into an array
+                string[] splitheatingrate = heatingrate.Split(',');
+                heatingarray = new int[splitheatingrate.Length];
+                for (int i = 0; i < heatingarray.Length; i++)
+                {
+                    heatingarray[i] = Int32.Parse(splitheatingrate[i]);
+                }
+            }
+            catch
+            {
+                InternalFunctions.LogError("heatingrate");
             }
             //Set starting pantograph states
             //If neither pantograph has a key assigned, set both to enabled
@@ -215,6 +235,7 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
+            data.DebugMessage = heatingrate;
             //Check we've got a maximum temperature and a heating part
             if (overheat != 0 && heatingpart != 0)
             {
@@ -478,7 +499,7 @@ namespace Plugin
                         tractionmanager.demandbrakeapplication();
                         if (pantographalarmsound != -1)
                         {
-                            SoundManager.Play((int)pantographalarmsound, 1.0, 1.0, true);
+                            SoundManager.Play(pantographalarmsound, 1.0, 1.0, true);
                         }
                         FrontPantographState = PantographStates.LoweredAtspeedBraking;
                     }
@@ -494,7 +515,7 @@ namespace Plugin
                             pantographcooldowntimer_f = 0.0;
                             if (pantographalarmsound != -1)
                             {
-                                SoundManager.Stop((int)pantographalarmsound);
+                                SoundManager.Stop(pantographalarmsound);
                             }
                         }
                     }
@@ -560,7 +581,7 @@ namespace Plugin
                         tractionmanager.demandbrakeapplication();
                         if (pantographalarmsound != -1)
                         {
-                            SoundManager.Play((int)pantographalarmsound, 1.0, 1.0, true);
+                            SoundManager.Play(pantographalarmsound, 1.0, 1.0, true);
                         }
                         RearPantographState = PantographStates.LoweredAtspeedBraking;
                     }
@@ -576,7 +597,7 @@ namespace Plugin
                             pantographcooldowntimer_r = 0.0;
                             if (pantographalarmsound != -1)
                             {
-                                SoundManager.Stop((int)pantographalarmsound);
+                                SoundManager.Stop(pantographalarmsound);
                             }
                         }
                     }
@@ -593,38 +614,38 @@ namespace Plugin
                     {
                         //Start playback and reset our conditions
                         powerloop = true;
-                        SoundManager.Play((int)powerloopsound, 1.0, 1.0, true);
+                        SoundManager.Play(powerloopsound, 1.0, 1.0, true);
                     }
                     else if (powerloop == false)
                     {
-                        SoundManager.Stop((int)powerloopsound);
+                        SoundManager.Stop(powerloopsound);
                     }
                 }
                 else
                 {
-                    SoundManager.Stop((int)powerloopsound);
+                    SoundManager.Stop(powerloopsound);
                 }
             }
             else if (powerloopsound != -1 && data.Handles.PowerNotch == 0)
             {
-                SoundManager.Stop((int)powerloopsound);
+                SoundManager.Stop(powerloopsound);
             }
             //This section of code runs the breaker loop sound
             if (breakerloopsound != -1 && breakertripped == false)
             {
-                if (!powergap && SoundManager.IsPlaying((int)breakerloopsound) == false)
+                if (!powergap && SoundManager.IsPlaying(breakerloopsound) == false)
                 {
                     breakerlooptimer += data.ElapsedTime.Milliseconds;
                     if (breakerlooptimer > breakerlooptime)
                     {
-                        SoundManager.Play((int)breakerloopsound, 1.0, 1.0, true);
+                        SoundManager.Play(breakerloopsound, 1.0, 1.0, true);
                         breakerlooptimer = 0.0;
                     }
                 }
             }
             else if (breakerloopsound != -1 && breakertripped == true)
             {
-                SoundManager.Stop((int)breakerloopsound);
+                SoundManager.Stop(breakerloopsound);
                 breakerlooptimer = 0.0;
             }
 
@@ -636,20 +657,20 @@ namespace Plugin
                     int ammeterlength = ammeterarray.Length;
                     if (Train.Handles.Reverser == 0 || data.Handles.BrakeNotch != 0 || Train.Handles.PowerNotch == 0)
                     {
-                        this.Train.Panel[(int)ammeter] = 0;
+                        this.Train.Panel[ammeter] = 0;
                     }
                     else if (Train.Handles.PowerNotch != 0 && (powergap == true || breakertripped == true || tractionmanager.powercutoffdemanded == true))
                     {
-                        this.Train.Panel[(int)ammeter] = 0;
+                        this.Train.Panel[ammeter] = 0;
                     }
                     else if (Train.Handles.PowerNotch != 0 && Train.Handles.PowerNotch <= ammeterlength)
                     {
 
-                        this.Train.Panel[(int)ammeter] = ammeterarray[(Train.Handles.PowerNotch - 1)];
+                        this.Train.Panel[ammeter] = ammeterarray[(Train.Handles.PowerNotch - 1)];
                     }
                     else
                     {
-                        this.Train.Panel[(int)ammeter] = ammeterarray[(ammeterlength - 1)];
+                        this.Train.Panel[ammeter] = ammeterarray[(ammeterlength - 1)];
                     }
                 }
                 //Line Volts indicator
@@ -657,11 +678,11 @@ namespace Plugin
                 {
                     if (!powergap)
                     {
-                        this.Train.Panel[(int)powerindicator] = 1;
+                        this.Train.Panel[powerindicator] = 1;
                     }
                     else
                     {
-                        this.Train.Panel[(int)powerindicator] = 0;
+                        this.Train.Panel[powerindicator] = 0;
                     }
                 }
                 //ACB/VCB Breaker Indicator
@@ -669,26 +690,26 @@ namespace Plugin
                 {
                     if (!breakertripped)
                     {
-                        this.Train.Panel[(int)breakerindicator] = 1;
+                        this.Train.Panel[breakerindicator] = 1;
                     }
                     else
                     {
-                        this.Train.Panel[(int)breakerindicator] = 0;
+                        this.Train.Panel[breakerindicator] = 0;
                     }
                 }
                 if (thermometer != -1)
                 {
-                    this.Train.Panel[(int)(thermometer)] = (int)temperature;
+                    this.Train.Panel[(thermometer)] = (int)temperature;
                 }
                 if (overheatindicator != -1)
                 {
                     if (temperature > overheatwarn)
                     {
-                        this.Train.Panel[(int)(overheatindicator)] = 1;
+                        this.Train.Panel[(overheatindicator)] = 1;
                     }
                     else
                     {
-                        this.Train.Panel[(int)(overheatindicator)] = 0;
+                        this.Train.Panel[(overheatindicator)] = 0;
                     }
                 }
                 //Pantograph Indicators
@@ -696,22 +717,22 @@ namespace Plugin
                 {
                     if (pantographraised_f == true)
                     {
-                        this.Train.Panel[(int)(pantographindicator_f)] = 1;
+                        this.Train.Panel[(pantographindicator_f)] = 1;
                     }
                     else
                     {
-                        this.Train.Panel[(int)(pantographindicator_f)] = 0;
+                        this.Train.Panel[(pantographindicator_f)] = 0;
                     }
                 }
                 if (pantographindicator_r != -1)
                 {
                     if (pantographraised_r == true)
                     {
-                        this.Train.Panel[(int)(pantographindicator_r)] = 1;
+                        this.Train.Panel[(pantographindicator_r)] = 1;
                     }
                     else
                     {
-                        this.Train.Panel[(int)(pantographindicator_r)] = 0;
+                        this.Train.Panel[(pantographindicator_r)] = 0;
                     }
                 }
             }
@@ -721,11 +742,11 @@ namespace Plugin
                 {
                     if (temperature > overheatalarm)
                     {
-                        SoundManager.Play((int)overheatalarm, 1.0, 1.0, true);
+                        SoundManager.Play(overheatalarm, 1.0, 1.0, true);
                     }
                     else
                     {
-                        SoundManager.Stop((int)overheatalarm);
+                        SoundManager.Stop(overheatalarm);
                     }
                 }
             }
@@ -782,7 +803,7 @@ namespace Plugin
         {
             if (breakersound != -1)
             {
-                SoundManager.Play((int)breakersound, 1.0, 1.0, false);
+                SoundManager.Play(breakersound, 1.0, 1.0, false);
             }
         }
         //Raises & lowers the pantographs
@@ -795,7 +816,7 @@ namespace Plugin
                 {
                     if (pantographraisedsound != -1)
                     {
-                        SoundManager.Play((int)pantographraisedsound, 1.0, 1.0, false);
+                        SoundManager.Play(pantographraisedsound, 1.0, 1.0, false);
                     }
                     //We can raise the pantograph, so start the line volts timer
                     this.FrontPantographState = PantographStates.RaisedTimer;
@@ -809,7 +830,7 @@ namespace Plugin
                 {
                     if (pantographloweredsound != -1)
                     {
-                        SoundManager.Play((int)pantographloweredsound, 1.0, 1.0, false);
+                        SoundManager.Play(pantographloweredsound, 1.0, 1.0, false);
                     }
                     //Lower the pantograph
                     if (Train.trainspeed == 0)
@@ -830,7 +851,7 @@ namespace Plugin
                 {
                     if (pantographraisedsound != -1)
                     {
-                        SoundManager.Play((int)pantographraisedsound, 1.0, 1.0, false);
+                        SoundManager.Play(pantographraisedsound, 1.0, 1.0, false);
                     }
                     //We can raise the pantograph, so start the line volts timer
                     this.RearPantographState = PantographStates.RaisedTimer;
@@ -844,7 +865,7 @@ namespace Plugin
                 {
                     if (pantographloweredsound != -1)
                     {
-                        SoundManager.Play((int)pantographloweredsound, 1.0, 1.0, false);
+                        SoundManager.Play(pantographloweredsound, 1.0, 1.0, false);
                     }
                     //Lower the pantograph
                     if (Train.trainspeed == 0)

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using OpenBveApi.Runtime;
+using System.Text.RegularExpressions;
 
 namespace Plugin
 {
@@ -521,7 +522,7 @@ namespace Plugin
 
 
 
-            using (StreamWriter sw = File.CreateText(Path.Combine(trainpath, "error.log")))
+            using (StreamWriter sw = File.AppendText(Path.Combine(trainpath, "error.log")))
             {
                 //Write out upgrade errors to log file
                 sw.WriteLine("The following unsupported paramaters were detected whilst attempting to upgrade the existing configuration file:");
@@ -532,5 +533,97 @@ namespace Plugin
             }
 
 			}
+    }
+    class InternalFunctions
+    {
+        internal static string trainfolder;
+        //Call this function to validate a number input to a panel or sound index
+        //It will attempt to parse the input, discarding all decimals
+        //and checking whether the number is in the range -1 to 255
+        internal static void ValidateIndex(string input, ref int output, string failingvalue)
+        {
+            try
+            {
+                int finishedindex = Convert.ToInt32(Math.Floor(Convert.ToDouble(input)));
+                if (finishedindex >= -1 && finishedindex <= 255)
+                {
+                    output = finishedindex;
+                }
+                else
+                {
+                    throw new InvalidDataException();
+                }
+            }
+            catch
+            {
+                //Catch all exceptions
+                using (StreamWriter sw = File.AppendText(Path.Combine(trainfolder, "error.log")))
+                {
+                    //Write out upgrade errors to log file
+                    sw.WriteLine("The paramater " + failingvalue + " is not an integer between -1 & 255");
+                }
+                
+            }
+            
+        }
+        //Call this function to validate a number input to a base setting
+        //It will attempt to parse the input, discarding all decimals
+        //and checking whether the number is in the range -2 to 3
+        internal static void ValidateSetting(string input, ref int output, string failingvalue)
+        {
+            try
+            {
+                int finishedsetting = Convert.ToInt32(Math.Floor(Convert.ToDouble(input)));
+                if (finishedsetting >= -2 && finishedsetting <= 3)
+                {
+                    output = finishedsetting;
+                }
+                else
+                {
+                    throw new InvalidDataException();
+                }
+            }
+            catch
+            {
+                //Catch all exceptions
+                using (StreamWriter sw = File.AppendText(Path.Combine(trainfolder, "error.log")))
+                {
+                    //Write out upgrade errors to log file
+                    sw.WriteLine("The paramater " + failingvalue + " is not an integer between -2 & 3 [See the documentation for available values for each setting]");
+                }
+
+            }
+
+        }
+        //Call this function to parse a large number string input
+        //It will simply attempt to parse the number into a double
+        internal static void ParseNumber(string input, ref double output, string failingvalue)
+        {
+            try
+            {
+                double finishednumber = double.Parse(input);
+                output = finishednumber;
+            }
+            catch
+            {
+                //Catch all exceptions
+                using (StreamWriter sw = File.AppendText(Path.Combine(trainfolder, "error.log")))
+                {
+                    //Write out upgrade errors to log file
+                    sw.WriteLine("The paramater " + failingvalue + " is not a valid number");
+                }
+
+            }
+
+        }
+        //Call this function to log an occured error in parsing a string to an array of values
+        internal static void LogError(string failingvalue)
+        {
+                using (StreamWriter sw = File.AppendText(Path.Combine(trainfolder, "error.log")))
+                {
+                    //Write out upgrade errors to log file
+                    sw.WriteLine("The paramater " + failingvalue + " contains invalid data. This should be a comma separated list of integers.");
+                }
+        }
     }
 }

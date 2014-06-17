@@ -31,6 +31,12 @@ namespace Plugin {
             string OS_ATSDLL = Path.Combine(properties.TrainFolder, "OS_ATS1.dll");
             string SZ_ATSDLL = Path.Combine(properties.TrainFolder, "OS_SZ_ATS1.dll");
             string OS_ATSconfigFile = Path.Combine(properties.TrainFolder, "OS_ATS1.cfg");
+            InternalFunctions.trainfolder = properties.TrainFolder;
+            //Delete error.log from previous run
+            if (File.Exists(Path.Combine(properties.TrainFolder, "error.log")))
+            {
+                File.Delete(Path.Combine(properties.TrainFolder, "error.log"));
+            }
             if (File.Exists(configFile))
             {
                 //Check for the automatic generator version
