@@ -362,7 +362,7 @@ namespace Plugin {
                                         InternalFunctions.ParseNumber(value, ref electric.overheatwarn, key);
                                         break;
                                         case "overheat":
-                                        this.electric.overheat = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref electric.overheat, key);
                                         break;
                                         case "overheatresult":
                                         InternalFunctions.ValidateSetting(value, ref electric.overheatresult, key);
@@ -419,31 +419,45 @@ namespace Plugin {
                                         InternalFunctions.ValidateSetting(value, ref electric.pantographalarmbehaviour, key);
                                         break;
                                         case "powerloopsound":
-                                        string[] powerloopsplit = value.Split(',');
-                                        for (int k = 0; k < powerloopsplit.Length; k++)
+                                        try
                                         {
-                                            if (k == 0)
+                                            string[] powerloopsplit = value.Split(',');
+                                            for (int k = 0; k < powerloopsplit.Length; k++)
                                             {
-                                                this.electric.powerloopsound = Convert.ToInt32(powerloopsplit[0]);
+                                                if (k == 0)
+                                                {
+                                                    this.electric.powerloopsound = Convert.ToInt32(powerloopsplit[0]);
+                                                }
+                                                else
+                                                {
+                                                    this.electric.powerlooptime = Convert.ToInt32(powerloopsplit[1]);
+                                                }
                                             }
-                                            else
-                                            {
-                                                this.electric.powerlooptime = Convert.ToInt32(powerloopsplit[1]);
-                                            }
+                                        }
+                                        catch
+                                        {
+                                            InternalFunctions.LogError("powerloopsound");
                                         }
                                         break;
                                         case "breakerloopsound":
-                                        string[] breakerloopsplit = value.Split(',');
-                                        for (int k = 0; k < breakerloopsplit.Length; k++)
+                                        try
                                         {
-                                            if (k == 0)
+                                            string[] breakerloopsplit = value.Split(',');
+                                            for (int k = 0; k < breakerloopsplit.Length; k++)
                                             {
-                                                this.electric.breakerloopsound = Convert.ToInt32(breakerloopsplit[0]);
+                                                if (k == 0)
+                                                {
+                                                    this.electric.breakerloopsound = Convert.ToInt32(breakerloopsplit[0]);
+                                                }
+                                                else
+                                                {
+                                                    this.electric.breakerlooptime = Convert.ToInt32(breakerloopsplit[1]);
+                                                }
                                             }
-                                            else
-                                            {
-                                                this.electric.breakerlooptime = Convert.ToInt32(breakerloopsplit[1]);
-                                            }
+                                        }
+                                        catch
+                                        {
+                                            InternalFunctions.LogError("breakerloopsound");
                                         }
                                         break;
                                         default:
@@ -455,40 +469,40 @@ namespace Plugin {
                                     switch (key)
                                     {
                                         case "automatic":
-                                            this.diesel.automatic = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref diesel.automatic, key);
                                             break;
                                         case "heatingpart":
-                                            this.diesel.heatingpart = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref diesel.heatingpart, key);
                                             break;
                                         case "heatingrate":
                                             this.diesel.heatingrate = value;
                                             break;
                                         case "overheatwarn":
-                                            this.diesel.overheatwarn = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref diesel.overheatwarn, key);
                                             break;
                                         case "overheat":
-                                            this.diesel.overheat = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref diesel.overheat, key);
                                             break;
                                         case "overheatresult":
-                                            this.diesel.overheatresult = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref diesel.overheatresult, key);
                                             break;
                                         case "thermometer":
-                                            this.diesel.thermometer = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.thermometer, key);
                                             break;
                                         case "overheatindicator":
-                                            this.diesel.overheatindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.overheatindicator, key);
                                             break;
                                         case "overheatalarm":
-                                            this.diesel.overheatalarm = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.overheatalarm, key);
                                             break;
                                         case "fuelstartamount":
-                                            this.diesel.fuelstartamount = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref diesel.fuelstartamount, key);
                                             break;
                                         case "fuelindicator":
-                                            this.diesel.fuelindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.fuelindicator, key);
                                             break;
                                         case "automaticindicator":
-                                            this.diesel.automaticindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.automaticindicator, key);
                                             break;  
                                         case "gearratios":
                                             this.diesel.gearratios = value;
@@ -500,50 +514,57 @@ namespace Plugin {
                                             this.diesel.gearfadeoutrange = value;
                                             break;
                                         case "gearindicator":
-                                            this.diesel.gearindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.gearindicator, key);
                                             break;
                                         case "gearchangesound":
-                                            this.diesel.gearchangesound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.gearchangesound, key);
                                             break;
                                         case "tachometer":
-                                            this.diesel.tachometer = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.tachometer, key);
                                             break;
                                         case "allowneutralrevs":
-                                            this.diesel.allowneutralrevs = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref diesel.allowneutralrevs, key);
                                             break;
                                         case "revsupsound":
-                                            this.diesel.revsupsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.revsupsound, key);
                                             break;
                                         case "revsdownsound":
-                                            this.diesel.revsdownsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.revsdownsound, key);
                                             break;
                                         case "motorsound":
-                                            this.diesel.motorsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.motorsound, key);
                                             break;
                                         case "fuelconsumption":
                                             this.diesel.fuelconsumption = value;
                                             break;
                                         case "fuelcapacity":
-                                            this.diesel.fuelcapacity = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref diesel.fuelcapacity, key);
                                             break;
                                         case "fuelfillspeed":
-                                            this.diesel.fuelfillspeed = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref diesel.fuelfillspeed, key);
                                             break;
                                         case "fuelfillindicator":
-                                            this.diesel.fuelfillindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref diesel.fuelfillindicator, key);
                                             break;
                                         case "gearloopsound":
-                                            string[] gearloopsplit = value.Split(',');
-                                            for (int k = 0; k < gearloopsplit.Length; k++)
+                                            try
                                             {
-                                                if (k == 0)
+                                                string[] gearloopsplit = value.Split(',');
+                                                for (int k = 0; k < gearloopsplit.Length; k++)
                                                 {
-                                                    this.diesel.gearloopsound = Convert.ToInt32(gearloopsplit[0]);
+                                                    if (k == 0)
+                                                    {
+                                                        this.diesel.gearloopsound = Convert.ToInt32(gearloopsplit[0]);
+                                                    }
+                                                    else
+                                                    {
+                                                        this.diesel.gearlooptime = Convert.ToInt32(gearloopsplit[1]);
+                                                    }
                                                 }
-                                                else
-                                                {
-                                                    this.diesel.gearlooptime = Convert.ToInt32(gearloopsplit[1]);
-                                                }
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("gearloopsound");
                                             }
                                             break;
                                         default:

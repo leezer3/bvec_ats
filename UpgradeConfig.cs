@@ -534,12 +534,14 @@ namespace Plugin
 
 			}
     }
+    /// <summary>Functions used to validate inputs and log debug messages</summary>
     class InternalFunctions
     {
         internal static string trainfolder;
         //Call this function to validate a number input to a panel or sound index
         //It will attempt to parse the input, discarding all decimals
         //and checking whether the number is in the range -1 to 255
+        /// <summary>Validate whether a panel/ sound index is potentially usable</summary>
         internal static void ValidateIndex(string input, ref int output, string failingvalue)
         {
             try
@@ -569,6 +571,7 @@ namespace Plugin
         //Call this function to validate a number input to a base setting
         //It will attempt to parse the input, discarding all decimals
         //and checking whether the number is in the range -2 to 3
+        /// <summary>Validate whether a setting is potentially usable (Will not cause crashes)</summary>
         internal static void ValidateSetting(string input, ref int output, string failingvalue)
         {
             try
@@ -597,6 +600,7 @@ namespace Plugin
         }
         //Call this function to parse a large number string input
         //It will simply attempt to parse the number into a double
+        /// <summary>Check whether the input is a valid number</summary>
         internal static void ParseNumber(string input, ref double output, string failingvalue)
         {
             try

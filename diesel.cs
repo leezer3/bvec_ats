@@ -65,49 +65,49 @@ namespace Plugin
         /// <summary>A comma separated list of the fuel consumption for each gear/ power notch</summary>
         internal string fuelconsumption = "0";
         /// <summary>The panel index of the fuel filling indicator</summary>
-        internal double fuelfillindicator = -1;
+        internal int fuelfillindicator = -1;
         /// <summary>The time before the gear loop sound is started after changing gear</summary>
         internal double gearlooptime = 0;
         /// <summary>Defines whether we are allowed to rev the engine in neutral</summary>
-        internal double allowneutralrevs = 0;
+        internal int allowneutralrevs = 0;
         /// <summary>Is our transmission automatic</summary>
-        internal double automatic = -1;
+        internal int automatic = -1;
         /// <summary>Do we heave a part that heats up?</summary>
-        internal double heatingpart = 0;
+        internal int heatingpart = 0;
         /// <summary>The overheat warning temperature</summary>
         internal double overheatwarn = 0;
         /// <summary>The overheat temperature</summary>
         internal double overheat = 0;
         /// <summary>What happens when we overheat?</summary>
-        internal double overheatresult = 0;
+        internal int overheatresult = 0;
 
         //Panel Indicies
         /// <summary>The panel indicator for the gear indicator</summary>
-        internal double gearindicator = -1;
+        internal int gearindicator = -1;
         /// <summary>The panel indicator for the tachometer</summary>
-        internal double tachometer = -1;
+        internal int tachometer = -1;
         /// <summary>The panel indicator for the fuel gauge</summary>
-        internal double fuelindicator = -1;
+        internal int fuelindicator = -1;
         /// <summary>The panel indicator for thermometer</summary>
-        internal double thermometer = -1;
+        internal int thermometer = -1;
         /// <summary>The panel indicator for overheat indicator</summary>
-        internal double overheatindicator = -1;
+        internal int overheatindicator = -1;
         /// <summary>The panel indicator for automatic gears</summary>
-        internal double automaticindicator = -1;
+        internal int automaticindicator = -1;
 
         //Sound Indicies
         /// <summary>The sound index played when the gear is changed</summary>
-        internal double gearchangesound = -1;
+        internal int gearchangesound = -1;
         /// <summary>The sound played looped whilst we are in gear</summary>
-        internal double gearloopsound = -1;
+        internal int gearloopsound = -1;
         /// <summary>The sound index for the overheat alarm</summary>
-        internal double overheatalarm = -1;
+        internal int overheatalarm = -1;
         /// <summary>The sound index played when the revs increase in neutral</summary>
-        internal double revsupsound = -1;
+        internal int revsupsound = -1;
         /// <summary>The sound index played when the revs decrease in neutral</summary>
-        internal double revsdownsound = -1;
+        internal int revsdownsound = -1;
         /// <summary>The sound index played whilst the motor is revving in netural</summary>
-        internal double motorsound = -1;
+        internal int motorsound = -1;
 
         //Arrays
         /// <summary>An array storing the ratio for all the train's gears</summary>
@@ -133,28 +133,47 @@ namespace Plugin
         //<param name="mode">The initialization mode.</param>
         internal override void Initialize(InitializationModes mode)
         {
-            //Split gear ratios into an array
-            string[] splitgearratios = gearratios.Split(',');
-            geararray = new int[splitgearratios.Length];
-            for (int i = 0; i < geararray.Length; i++)
+            try
             {
-                geararray[i] = (int)(double.Parse(splitgearratios[i], CultureInfo.InvariantCulture));
+                //Split gear ratios into an array
+                string[] splitgearratios = gearratios.Split(',');
+                geararray = new int[splitgearratios.Length];
+                for (int i = 0; i < geararray.Length; i++)
+                {
+                    geararray[i] = (int)(double.Parse(splitgearratios[i], CultureInfo.InvariantCulture));
+                }
             }
-
-            //Split gear fade in range into an array
-            string[] splitgearfade = gearfadeinrange.Split(',');
-            gearfadeinarray = new int[splitgearfade.Length];
-            for (int i = 0; i < gearfadeinarray.Length; i++)
+            catch
             {
-                gearfadeinarray[i] = (int)double.Parse(splitgearfade[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                InternalFunctions.LogError("gearratios");
             }
-
-            //Split gear fade out range into an array
-            string[] splitgearfade1 = gearfadeoutrange.Split(',');
-            gearfadeoutarray = new int[splitgearfade1.Length];
-            for (int i = 0; i < gearfadeoutarray.Length; i++)
+            try
             {
-                gearfadeoutarray[i] = (int)double.Parse(splitgearfade1[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                //Split gear fade in range into an array
+                string[] splitgearfade = gearfadeinrange.Split(',');
+                gearfadeinarray = new int[splitgearfade.Length];
+                for (int i = 0; i < gearfadeinarray.Length; i++)
+                {
+                    gearfadeinarray[i] = (int)double.Parse(splitgearfade[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                }
+            }
+            catch
+            {
+                InternalFunctions.LogError("gearfadeinrange");
+            }
+            try
+            {
+                //Split gear fade out range into an array
+                string[] splitgearfade1 = gearfadeoutrange.Split(',');
+                gearfadeoutarray = new int[splitgearfade1.Length];
+                for (int i = 0; i < gearfadeoutarray.Length; i++)
+                {
+                    gearfadeoutarray[i] = (int)double.Parse(splitgearfade1[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                }
+            }
+            catch
+            {
+                InternalFunctions.LogError("gearfadeoutrange");
             }
 
             //Test if we have any gears
@@ -172,22 +191,36 @@ namespace Plugin
             }
             //Set previous revs to zero
             previousrevs = 0;
-
-            string[] splitheatingrate = heatingrate.Split(',');
-            heatingarray = new int[splitheatingrate.Length];
-            for (int i = 0; i < heatingarray.Length; i++)
+            try
             {
-                heatingarray[i] = (int)double.Parse(splitheatingrate[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                string[] splitheatingrate = heatingrate.Split(',');
+                heatingarray = new int[splitheatingrate.Length];
+                for (int i = 0; i < heatingarray.Length; i++)
+                {
+                    heatingarray[i] = (int)double.Parse(splitheatingrate[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                }
+            }
+            catch
+            {
+                InternalFunctions.LogError("heatingrate");
             }
             //Set temperature to zero
             this.temperature = 0;
             //Split fuel consumption into an array
-            string[] splitfuelconsumption = fuelconsumption.Split(',');
-            fuelarray = new int[splitfuelconsumption.Length];
-            for (int i = 0; i < fuelarray.Length; i++)
+            try
             {
-                fuelarray[i] = (int)double.Parse(splitfuelconsumption[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                string[] splitfuelconsumption = fuelconsumption.Split(',');
+                fuelarray = new int[splitfuelconsumption.Length];
+                for (int i = 0; i < fuelarray.Length; i++)
+                {
+                    fuelarray[i] = (int)double.Parse(splitfuelconsumption[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                }
             }
+            catch
+            {
+                InternalFunctions.LogError("fuelconsumption");
+            }
+
             fuel = (int)fuelstartamount;
         }
 
@@ -359,23 +392,23 @@ namespace Plugin
                         double pitch = (double)Train.Handles.PowerNotch / (double)Train.Specs.PowerNotches;
                         if (currentrevs > 0 && currentrevs > previousrevs)
                         {
-                            SoundManager.Play((int)motorsound, 0.8, pitch, true);
-                            SoundManager.Play((int)revsupsound, 1.0, 1.0, false);
-                            SoundManager.Stop((int)revsdownsound);
+                            SoundManager.Play(motorsound, 0.8, pitch, true);
+                            SoundManager.Play(revsupsound, 1.0, 1.0, false);
+                            SoundManager.Stop(revsdownsound);
                             
                         }
                         else if (currentrevs >= 0 && currentrevs < previousrevs)
                         {
-                            SoundManager.Play((int)motorsound, 0.8, pitch, true);
-                            SoundManager.Play((int)revsdownsound, 1.0, 1.0, false);
-                            SoundManager.Stop((int)revsupsound);
+                            SoundManager.Play(motorsound, 0.8, pitch, true);
+                            SoundManager.Play(revsdownsound, 1.0, 1.0, false);
+                            SoundManager.Stop(revsupsound);
                             
                         }
                         else if (currentrevs == 0)
                         {
-                            SoundManager.Stop((int)revsupsound);
-                            SoundManager.Stop((int)revsdownsound);
-                            SoundManager.Stop((int)motorsound);
+                            SoundManager.Stop(revsupsound);
+                            SoundManager.Stop(revsdownsound);
+                            SoundManager.Stop(motorsound);
                         }
                         previousrevs = currentrevs;
                     }
@@ -499,16 +532,16 @@ namespace Plugin
                 {
                     //Start playback and reset our conditions
                     gearloop = true;
-                    SoundManager.Play((int)gearloopsound, 1.0, 1.0, true);
+                    SoundManager.Play(gearloopsound, 1.0, 1.0, true);
                 }
                 else if (gearloop == false)
                 {
-                    SoundManager.Stop((int)gearloopsound);
+                    SoundManager.Stop(gearloopsound);
                 }
             }
             else if (gearloopsound != -1 && gear == 0)
             {
-                SoundManager.Stop((int)gearloopsound);
+                SoundManager.Stop(gearloopsound);
             }
             
             {
@@ -517,48 +550,48 @@ namespace Plugin
                 {
                     if (gearindicator != -1)
                     {
-                        this.Train.Panel[(int)(gearindicator)] = gear;
+                        this.Train.Panel[(gearindicator)] = gear;
                     }
                     if (tachometer != -1)
                     {
-                        this.Train.Panel[(int)(tachometer)] = currentrevs;
+                        this.Train.Panel[(tachometer)] = currentrevs;
                     }
                 }
                 if (automaticindicator != -1)
                 {
                     if (automatic == -1)
                     {
-                        this.Train.Panel[(int)(automaticindicator)] = 0;
+                        this.Train.Panel[(automaticindicator)] = 0;
                     }
                     else
                     {
-                        this.Train.Panel[(int)(automaticindicator)] = 1;
+                        this.Train.Panel[(automaticindicator)] = 1;
                     }
                 }
                 if (thermometer != -1)
                 {
-                    this.Train.Panel[(int)(thermometer)] = (int)temperature;
+                    this.Train.Panel[(thermometer)] = (int)temperature;
                 }
                 if (overheatindicator != -1)
                 {
                     if (temperature > overheatwarn)
                     {
-                        this.Train.Panel[(int)(overheatindicator)] = 1;
+                        this.Train.Panel[(overheatindicator)] = 1;
                     }
                     else
                     {
-                        this.Train.Panel[(int)(overheatindicator)] = 0;
+                        this.Train.Panel[(overheatindicator)] = 0;
                     }
                 }
                 if (fuelindicator != -1)
                 {
-                    this.Train.Panel[(int)(fuelindicator)] = (int)fuel;
+                    this.Train.Panel[(fuelindicator)] = (int)fuel;
                 }
                 if (fuelfillindicator != -1)
                 {
                     if (fuelling == true)
                     {
-                        this.Train.Panel[(int)(fuelfillindicator)] = 1;
+                        this.Train.Panel[(fuelfillindicator)] = 1;
                     }
                 }
             }
@@ -568,11 +601,11 @@ namespace Plugin
                 {
                     if (temperature > overheatwarn)
                     {
-                        SoundManager.Play((int)overheatalarm, 1.0, 1.0, true);
+                        SoundManager.Play(overheatalarm, 1.0, 1.0, true);
                     }
                     else
                     {
-                        SoundManager.Stop((int)overheatalarm);
+                        SoundManager.Stop(overheatalarm);
                     }
                 }
             }
@@ -583,7 +616,7 @@ namespace Plugin
         {
             if (gearchangesound != -1)
             {
-                SoundManager.Play((int)gearchangesound, 1.0, 1.0, false);
+                SoundManager.Play(gearchangesound, 1.0, 1.0, false);
             }
         }
 
