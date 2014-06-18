@@ -3,6 +3,7 @@ using OpenBveApi.Runtime;
 
 namespace Plugin
 {
+    //The traction manager operates panel variables common to all traction types, and handles power & brake requests
     internal class tractionmanager : Device
     {
         // --- members ---
@@ -28,18 +29,18 @@ namespace Plugin
         private Train Train;
 
         //Default Variables
-        internal double doorpowerlock = 0;
-        internal double doorapplybrake = 0;
-        internal double neutralrvrbrake = 0;
-        internal double neutralrvrbrakereset = 0;
-        internal double directionindicator = -1;
-        internal double reverserindex = -1;
-        internal double travelmeter100 = -1;
-        internal double travelmeter10 = -1;
-        internal double travelmeter1 = -1;
-        internal double travelmeter01 = -1;
-        internal double travelmeter001 = -1;
-        internal double travelmetermode = 0;
+        internal int doorpowerlock = 0;
+        internal int doorapplybrake = 0;
+        internal int neutralrvrbrake = 0;
+        internal int neutralrvrbrakereset = 0;
+        internal int directionindicator = -1;
+        internal int reverserindex = -1;
+        internal int travelmeter100 = -1;
+        internal int travelmeter10 = -1;
+        internal int travelmeter1 = -1;
+        internal int travelmeter01 = -1;
+        internal int travelmeter001 = -1;
+        internal int travelmetermode = 0;
         internal string klaxonindicator = "-1";
         internal string customindicators = "-1";
 
@@ -86,39 +87,53 @@ namespace Plugin
 		
 		//<param name="mode">The initialization mode.</param>
 		internal override void Initialize(InitializationModes mode) {
-            //Split klaxon indicators and timings into an array
-            string[] splitklaxonindicator = klaxonindicator.Split(',');
-            klaxonarray = new int[5];
-            for (int i = 0; i < 5; i++)
+            try
             {
-                if (i < splitklaxonindicator.Length)
+                //Split klaxon indicators and timings into an array
+                string[] splitklaxonindicator = klaxonindicator.Split(',');
+                klaxonarray = new int[5];
+                for (int i = 0; i < 5; i++)
                 {
-                    //If we have a value parse it
-                    klaxonarray[i] = Int32.Parse(splitklaxonindicator[i]);
-                }
-                else
-                {
-                    //Otherwise return 500- Default klaxon timing in ms
-                    //Stops a complicated null check being required later
-                    klaxonarray[i] = 500;
+                    if (i < splitklaxonindicator.Length)
+                    {
+                        //If we have a value parse it
+                        klaxonarray[i] = Int32.Parse(splitklaxonindicator[i]);
+                    }
+                    else
+                    {
+                        //Otherwise return 500- Default klaxon timing in ms
+                        //Stops a complicated null check being required later
+                        klaxonarray[i] = 500;
+                    }
                 }
             }
-            //Split custom indicators into an array
-            string[] splitcustomindicators = customindicators.Split(',');
-            customindicatorsarray = new int[10,2];
-            for (int i = 0; i < 9; i++)
+            catch
             {
-                //Parse the panel value and set second array value to false
-                if (i < splitcustomindicators.Length)
+                InternalFunctions.LogError("klaxonindicator");
+            }
+            try
+            {
+                //Split custom indicators into an array
+                string[] splitcustomindicators = customindicators.Split(',');
+                customindicatorsarray = new int[10, 2];
+                for (int i = 0; i < 9; i++)
                 {
-                    customindicatorsarray[i, 0] = Int32.Parse(splitcustomindicators[i]);
-                    customindicatorsarray[i, 1] = 0;
+                    //Parse the panel value and set second array value to false
+                    if (i < splitcustomindicators.Length)
+                    {
+                        customindicatorsarray[i, 0] = Int32.Parse(splitcustomindicators[i]);
+                        customindicatorsarray[i, 1] = 0;
+                    }
+                    else
+                    {
+                        customindicatorsarray[i, 0] = -1;
+                        customindicatorsarray[i, 1] = 0;
+                    }
                 }
-                else
-                {
-                    customindicatorsarray[i, 0] = -1;
-                    customindicatorsarray[i, 1] = 0;
-                }
+            }
+            catch
+            {
+                InternalFunctions.LogError("customindicators");
             }
 
 
@@ -297,22 +312,22 @@ namespace Plugin
             if (directionindicator != -1)
             {
                 //Direction Indicator
-                this.Train.Panel[(int)directionindicator] = this.Train.direction;
+                this.Train.Panel[directionindicator] = this.Train.direction;
             }
             if (reverserindex != -1)
             {
                 //Reverser Indicator
                 if (Train.Handles.Reverser == 0)
                 {
-                    this.Train.Panel[(int)reverserindex] = 0;
+                    this.Train.Panel[reverserindex] = 0;
                 }
                 else if (Train.Handles.Reverser == 1)
                 {
-                    this.Train.Panel[(int)reverserindex] = 1;
+                    this.Train.Panel[reverserindex] = 1;
                 }
                 else
                 {
-                    this.Train.Panel[(int)reverserindex] = 2;
+                    this.Train.Panel[reverserindex] = 2;
                 }
             }
             {
@@ -354,31 +369,31 @@ namespace Plugin
                 //100km
                 if (travelmeter100 != -1)
                 {
-                    this.Train.Panel[(int)travelmeter100] = travel100;
+                    this.Train.Panel[travelmeter100] = travel100;
 
                 }
                 //10km
                 if (travelmeter10 != -1)
                 {
-                    this.Train.Panel[(int)travelmeter10] = travel10;
+                    this.Train.Panel[travelmeter10] = travel10;
 
                 }
                 //1km
                 if (travelmeter1 != -1)
                 {
-                    this.Train.Panel[(int)travelmeter1] = travel1;
+                    this.Train.Panel[travelmeter1] = travel1;
 
                 }
                 //100m
                 if (travelmeter01 != -1)
                 {
-                    this.Train.Panel[(int)travelmeter01] = travel01;
+                    this.Train.Panel[travelmeter01] = travel01;
 
                 }
                 //1m
                 if (travelmeter001 != -1)
                 {
-                    this.Train.Panel[(int)travelmeter001] = travel001;
+                    this.Train.Panel[travelmeter001] = travel001;
 
                 }
             }
@@ -525,7 +540,7 @@ namespace Plugin
                 {
                     //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
                     Train.vigilance.deadmanstimer = 0.0;
-                    SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                    SoundManager.Stop(Train.vigilance.vigilancealarm);
                     Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
                 }
             }
@@ -601,7 +616,7 @@ namespace Plugin
                 {
                     Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
                     Train.vigilance.deadmanstimer = 0.0;
-                    SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                    SoundManager.Stop(Train.vigilance.vigilancealarm);
                     resetbrakeapplication();
                 }
                 //Reset brakes if allowed
@@ -609,14 +624,14 @@ namespace Plugin
                 {
                     Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
                     Train.vigilance.deadmanstimer = 0.0;
-                    SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                    SoundManager.Stop(Train.vigilance.vigilancealarm);
                 }
                 //If brakes cannot be cancelled and we've stopped
                 else if (Train.vigilance.vigilancecancellable == 0 && Train.trainspeed == 0 && Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
                 {
                     Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
                     Train.vigilance.deadmanstimer = 0.0;
-                    SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                    SoundManager.Stop(Train.vigilance.vigilancealarm);
                     resetbrakeapplication();
                 }
                 
@@ -946,7 +961,7 @@ namespace Plugin
             {
                 //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
                 Train.vigilance.deadmanstimer = 0.0;
-                SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                SoundManager.Stop(Train.vigilance.vigilancealarm);
                 Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
             }
 
@@ -960,7 +975,7 @@ namespace Plugin
             {
                 //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
                 Train.vigilance.deadmanstimer = 0.0;
-                SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                SoundManager.Stop(Train.vigilance.vigilancealarm);
                 Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
             }
             //Trigger electric powerloop sound timer
@@ -979,7 +994,7 @@ namespace Plugin
             {
                 //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
                 Train.vigilance.deadmanstimer = 0.0;
-                SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                SoundManager.Stop(Train.vigilance.vigilancealarm);
                 Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
             }
         }
@@ -990,7 +1005,7 @@ namespace Plugin
             {
                 //Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
                 Train.vigilance.deadmanstimer = 0.0;
-                SoundManager.Stop((int)Train.vigilance.vigilancealarm);
+                SoundManager.Stop(Train.vigilance.vigilancealarm);
                 Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
             }
             //Set the horn type that is playing

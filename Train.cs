@@ -576,107 +576,108 @@ namespace Plugin {
                                     switch (key)
                                     {
                                         case "overspeedcontrol":
-                                            this.vigilance.overspeedcontrol = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref vigilance.overspeedcontrol, key);
                                             break;
                                         case "warningspeed":
-                                            this.vigilance.warningspeed = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref vigilance.warningspeed, key);
                                             break;
                                         case "overspeed":
-                                            this.vigilance.overspeed = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref vigilance.overspeed, key);
                                             break;
                                         case "safespeed":
-                                            this.vigilance.safespeed = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref vigilance.safespeed, key);
                                             break;
                                         case "overspeedindicator":
-                                            this.vigilance.overspeedindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref vigilance.overspeedindicator, key);
                                             break;
                                         case "overspeedalarm":
-                                            this.vigilance.overspeedalarm = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref vigilance.overspeedalarm, key);
                                             break;
                                         case "overspeedtime":
-                                            this.vigilance.overspeedtime = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref vigilance.overspeedtime, key);
                                             break;
                                         case "vigilanceinterval":
                                             this.vigilance.vigilancetimes = value;
                                             break;
                                         case "vigilancelamp":
-                                            this.vigilance.vigilancelamp = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref vigilance.vigilancelamp, key);
                                             break;
                                         case "deadmanshandle":
-                                            this.vigilance.deadmanshandle = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref vigilance.deadmanshandle, key);
                                             break;
                                         case "vigilanceautorelease":
-                                            this.vigilance.vigilanceautorelease = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref vigilance.vigilanceautorelease, key);
                                             break;
                                         case "vigilancecancellable":
-                                            this.vigilance.vigilancecancellable = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref vigilance.vigilancecancellable, key);
                                             break;
                                         case "independantvigilance":
-                                            this.vigilance.independantvigilance = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref vigilance.independantvigilance, key);
                                             break;
-                                        default:
                                         case "draenabled":
-                                            this.vigilance.draenabled = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref vigilance.draenabled, key);
                                             break;
                                         case "drastartstate":
-                                            this.vigilance.drastartstate = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref vigilance.drastartstate, key);
                                             break;
                                         case "draindicator":
-                                            this.vigilance.draindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref vigilance.draindicator, key);
                                             break;
                                         case "vigilancealarm":
-                                            this.vigilance.vigilancealarm = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref vigilance.vigilancealarm, key);
                                             break;
                                         case "vigilancedelay1":
-                                            this.vigilance.vigilancedelay1 = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref vigilance.vigilancedelay1, key);
                                             break;
                                         case "vigilancedelay2":
-                                            this.vigilance.vigilancedelay2 = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref vigilance.vigilancedelay2, key);
                                             break;
                                         case "vigilanceinactivespeed":
-                                            this.vigilance.vigilanceinactivespeed = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref vigilance.vigilanceinactivespeed, key);
                                             break;
+                                        default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
+                                            
                                     }
                                     break;
                                 case "interlocks":
                                     switch (key)
                                     {
                                         case "doorpowerlock":
-                                            this.tractionmanager.doorpowerlock = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref tractionmanager.doorpowerlock, key);
                                             break;
                                         case "doorapplybrake":
-                                            this.tractionmanager.doorapplybrake = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref tractionmanager.doorapplybrake, key);
                                             break;
                                         case "neutralrvrbrake":
-                                            this.tractionmanager.neutralrvrbrake = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref tractionmanager.neutralrvrbrake, key);
                                             break;
                                         case "neutralrvrbrakereset":
-                                            this.tractionmanager.neutralrvrbrakereset = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref tractionmanager.neutralrvrbrakereset, key);
                                             break;
                                         case "directionindicator":
-                                            this.tractionmanager.directionindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.directionindicator, key);
                                             break;
                                         case "reverserindex":
-                                            this.tractionmanager.reverserindex = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.reverserindex, key);
                                             break;
                                         case "travelmeter100":
-                                            this.tractionmanager.travelmeter100 = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter100, key);
                                             break;
                                         case "travelmeter10":
-                                            this.tractionmanager.travelmeter10 = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter10, key);
                                             break;
                                         case "travelmeter1":
-                                            this.tractionmanager.travelmeter1 = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter1, key);
                                             break;
                                         case "travelmeter01":
-                                            this.tractionmanager.travelmeter01 = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter01, key);
                                             break;
                                         case "travelmeter001":
-                                            this.tractionmanager.travelmeter001 = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter001, key);
                                             break;
                                         case "travelmetermode":
-                                            this.tractionmanager.travelmetermode = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateSetting(value, ref tractionmanager.travelmetermode, key);
                                             break;
                                         case "klaxonindicator":
                                             this.tractionmanager.klaxonindicator = value;
@@ -684,6 +685,7 @@ namespace Plugin {
                                         case "customindicators":
                                             this.tractionmanager.customindicators = value;
                                             break;
+                                        default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }
                                     break;
@@ -705,6 +707,7 @@ namespace Plugin {
                                         case "tpwswarningsound":
                                             this.AWS.tpwswarningsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                             break;
+                                        default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }
                                     break;
@@ -748,7 +751,7 @@ namespace Plugin {
                                         case "tpwsindicator4":
                                             this.TPWS.tpwsisolatedindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                                             break;
-
+                                        default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }
                                     break;
@@ -802,12 +805,15 @@ namespace Plugin {
                                             case "wipersoundbehaviour":
                                             this.Windscreen.wipersoundbehaviour = Convert.ToInt32(value);
                                             break;
+                                        default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }
                                     break;
                                 case "keyassignments":
                                     switch (key)
                                     {
+                                            //No validation is necessary for key assignments
+                                            //Errors here simply mean they won't be matched
                                         case "safetykey":
                                             this.tractionmanager.safetykey = value;
                                             break;
@@ -881,6 +887,7 @@ namespace Plugin {
                                         case "rearpantographkey":
                                             this.tractionmanager.rearpantographkey = value;
                                             break;
+                                        default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }
                                     break;

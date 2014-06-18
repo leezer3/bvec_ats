@@ -21,35 +21,35 @@ namespace Plugin
 
         /// <summary>Default paramaters</summary>
         /// Used if no value is loaded from the config file
-        internal double overspeedcontrol = 0;
+        internal int overspeedcontrol = 0;
         internal double warningspeed = -1;
         internal double overspeed = 1000;
         internal double safespeed = 0;
-        internal double overspeedindicator = -1;
-        internal double overspeedalarm = -1;
+        internal int overspeedindicator = -1;
+        internal int overspeedalarm = -1;
         internal double overspeedtime = 0;
 
         internal string vigilancetimes = "60000";
-        internal double vigilanceautorelease = 0;
-        internal double vigilancecancellable = 0;
+        internal int vigilanceautorelease = 0;
+        internal int vigilancecancellable = 0;
         internal double vigilancedelay1 = 3000;
         internal double vigilancedelay2 = 3000;
-        internal double vigilancelamp = -1;
-        internal double draenabled = -1;
-        internal double drastartstate = -1;
-        internal double draindicator = -1;
-        internal double independantvigilance = 0;
+        internal int vigilancelamp = -1;
+        internal int draenabled = -1;
+        internal int drastartstate = -1;
+        internal int draindicator = -1;
+        internal int independantvigilance = 0;
         internal double vigilanceinactivespeed = 0;
         /// <summary>Timers</summary>
         internal double overspeedtimer;
-        internal double deadmanshandle = 0;
+        internal int deadmanshandle = 0;
         internal double deadmanstimer;
 
         internal double deadmansalarmtimer;
         internal double deadmansbraketimer;
 
         //Sound Indicies
-        internal double vigilancealarm = -1;
+        internal int vigilancealarm = -1;
 
 
         int[] vigilancearray;
@@ -80,11 +80,18 @@ namespace Plugin
             overspeedtimer = 0.0;
             deadmanstimer = 0.0;
             //Split vigilance times into an array
-            string[] splitvigilancetimes = vigilancetimes.Split(',');
-            vigilancearray = new int[splitvigilancetimes.Length];
-            for (int i = 0; i < vigilancearray.Length; i++)
+            try
             {
-                vigilancearray[i] = Int32.Parse(splitvigilancetimes[i]);
+                string[] splitvigilancetimes = vigilancetimes.Split(',');
+                vigilancearray = new int[splitvigilancetimes.Length];
+                for (int i = 0; i < vigilancearray.Length; i++)
+                {
+                    vigilancearray[i] = Int32.Parse(splitvigilancetimes[i]);
+                }
+            }
+            catch
+            {
+                InternalFunctions.LogError("vigilancetimes");
             }
             //Set warning to max speed if not selected
             if (warningspeed == -1)
@@ -244,7 +251,7 @@ namespace Plugin
                             //Trigger the alarm sound and move on
                             if (vigilancealarm != -1)
                             {
-                                SoundManager.Play((int)vigilancealarm, 1.0, 1.0, true);
+                                SoundManager.Play(vigilancealarm, 1.0, 1.0, true);
                             }
                             DeadmansHandleState = DeadmanStates.AlarmTimer;
                         }
@@ -295,33 +302,33 @@ namespace Plugin
                     {
                         if (Train.drastate == true)
                         {
-                            this.Train.Panel[(int)(draindicator)] = 1;
+                            this.Train.Panel[(draindicator)] = 1;
                         }
                         else
                         {
-                            this.Train.Panel[(int)(draindicator)] = 0;
+                            this.Train.Panel[(draindicator)] = 0;
                         }
                     }
                     if (overspeedindicator != -1)
                     {
                         if (Train.overspeedtripped == true || trainspeed > warningspeed)
                         {
-                            this.Train.Panel[(int)(overspeedindicator)] = 1;
+                            this.Train.Panel[(overspeedindicator)] = 1;
                         }
                         else
                         {
-                            this.Train.Panel[(int)(overspeedindicator)] = 0;
+                            this.Train.Panel[(overspeedindicator)] = 0;
                         }
                     }
                     if (vigilancelamp != -1)
                     {
                         if (DeadmansHandleState == DeadmanStates.None || DeadmansHandleState == DeadmanStates.OnTimer)
                         {
-                            this.Train.Panel[(int)(vigilancelamp)] = 0;
+                            this.Train.Panel[(vigilancelamp)] = 0;
                         }
                         else
                         {
-                            this.Train.Panel[(int)(vigilancelamp)] = 1;
+                            this.Train.Panel[(vigilancelamp)] = 1;
                         }
 
                     }
@@ -331,11 +338,11 @@ namespace Plugin
                 {
                     if (Train.overspeedtripped == true || trainspeed > warningspeed)
                     {
-                        SoundManager.Play((int)overspeedalarm, 1.0, 1.0, true);
+                        SoundManager.Play(overspeedalarm, 1.0, 1.0, true);
                     }
                     else
                     {
-                        SoundManager.Stop((int)overspeedalarm);
+                        SoundManager.Stop(overspeedalarm);
                     }
                 }
             }
