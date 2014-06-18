@@ -23,6 +23,8 @@ namespace Plugin
         internal static bool powergap;
         /// <summary>Stores the current state of the ACB/VCB</summary>
         internal static bool breakertripped;
+        /// <summary>Stores whether the power was cutoff by a legacy OS_ATS standard beacon</summary>
+        internal bool legacypowercut;
         internal int nextmagnet;
         internal int firstmagnet;
         internal int lastmagnet;
@@ -235,7 +237,6 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
-            data.DebugMessage = heatingrate;
             //Check we've got a maximum temperature and a heating part
             if (overheat != 0 && heatingpart != 0)
             {
@@ -389,6 +390,12 @@ namespace Plugin
                     else if (nextmagnet != 0 && (Train.trainlocation - pickuparray[pickuparray.Length - 1]) > nextmagnet && (Train.trainlocation - pickuparray[0]) > nextmagnet)
                     {
                         powergap = false;
+                        if (legacypowercut == true)
+                        {
+                            //Reset legacy power cutoff state and retrip breaker
+                            electric.breakertrip();
+                            legacypowercut = false;
+                        }
                         if (breakertripped == false && ((FrontPantographState == PantographStates.Disabled && RearPantographState == PantographStates.OnService) || (RearPantographState == PantographStates.Disabled && FrontPantographState == PantographStates.OnService)))
                         {
                             tractionmanager.resetpowercutoff();
@@ -761,6 +768,8 @@ namespace Plugin
                 electric.powergap = true;
                 firstmagnet = trainlocation;
                 nextmagnet = trainlocation + magnetdistance;
+                legacypowercut = true;
+                electric.breakertrip();
             }
         }
 
