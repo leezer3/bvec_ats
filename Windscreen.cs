@@ -24,9 +24,9 @@ namespace Plugin
         internal double wiperheldtimer;
 
         //Default Variables
-        internal double dropstartindex = 0;
-        internal double numberofdrops = 0;
-        internal double wiperindex = -1;
+        internal int dropstartindex = 0;
+        internal int numberofdrops = 0;
+        internal int wiperindex = -1;
         internal double wiperholdposition = 0;
         internal double wiperrate = 1000;
         internal double wiperdelay = 0;
@@ -35,8 +35,8 @@ namespace Plugin
         internal int drywipesound = -1;
         internal int wetwipesound = -1;
         internal int wipersoundbehaviour = 0;
-        internal double wiperswitchindex = -1;
-        internal double wiperswitchsound = -1;
+        internal int wiperswitchindex = -1;
+        internal int wiperswitchsound = -1;
         
         //Arrays
         bool[] droparray;
@@ -51,7 +51,7 @@ namespace Plugin
             if (numberofdrops != 0)
             {
                 //Create arrays with number of drops
-                droparray = new bool[(int)numberofdrops];
+                droparray = new bool[numberofdrops];
             }
             currentwiperposition = (int)wiperholdposition;
         }
@@ -274,19 +274,19 @@ namespace Plugin
                         i++;
                         if (x == true)
                         {
-                            this.Train.Panel[(int)(i + dropstartindex - 1)] = 1;
+                            this.Train.Panel[(i + dropstartindex - 1)] = 1;
                         }
                     }
                 }
                 //Animate Windscreen Wiper
                 if (wiperindex != -1)
                 {
-                    this.Train.Panel[(int)wiperindex] = currentwiperposition;
+                    this.Train.Panel[wiperindex] = currentwiperposition;
                 }
                 //Animate Windscreen Wiper Switch
                 if (wiperswitchindex != -1)
                 {
-                    this.Train.Panel[(int)wiperswitchindex] = wiperspeed;
+                    this.Train.Panel[wiperswitchindex] = wiperspeed;
                 }
             }
             
@@ -335,7 +335,7 @@ namespace Plugin
                 wiperspeed++;
                 if (wiperswitchsound != -1)
                 {
-                    SoundManager.Play((int)wiperswitchsound, 1.0, 1.0, false);
+                    SoundManager.Play(wiperswitchsound, 1.0, 1.0, false);
                 }
             }
             else if (request == 1 && wiperspeed > 0)
@@ -343,7 +343,7 @@ namespace Plugin
                 wiperspeed--;
                 if (wiperswitchsound != -1)
                 {
-                    SoundManager.Play((int)wiperswitchsound, 1.0, 1.0, false);
+                    SoundManager.Play(wiperswitchsound, 1.0, 1.0, false);
                 }
             }
         }

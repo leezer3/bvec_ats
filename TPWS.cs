@@ -37,7 +37,7 @@ namespace Plugin
         internal int brakeindicatorblinkrate = 300;
         internal int twpsoverrideindicator = -1;
         internal int tpwsoverrideblinkrate = -1;
-        internal double tpwsisolatedindicator = -1;
+        internal int tpwsisolatedindicator = -1;
         //Panel Variables
 
         private SafetyStates MySafetyState;
@@ -290,15 +290,15 @@ namespace Plugin
                     {
                         if (brakedemandindicator != -1)
                         {
-                            this.Train.Panel[(int)brakedemandindicator] = 1;
+                            this.Train.Panel[brakedemandindicator] = 1;
                         }
                         if (this.twpsoverrideindicator != -1)
                         {
-                            this.Train.Panel[(int)twpsoverrideindicator] = 1;
+                            this.Train.Panel[twpsoverrideindicator] = 1;
                         }
                         if (tpwsisolatedindicator != -1)
                         {
-                            this.Train.Panel[(int)tpwsisolatedindicator] = 1;
+                            this.Train.Panel[tpwsisolatedindicator] = 1;
                         }
                     }
                     
@@ -309,7 +309,7 @@ namespace Plugin
                     /* The TPWS has been isolated */
                     if (tpwsisolatedindicator != -1)
                     {
-                        this.Train.Panel[(int)tpwsisolatedindicator] = 1;
+                        this.Train.Panel[tpwsisolatedindicator] = 1;
                     }
                 }
 

@@ -693,19 +693,19 @@ namespace Plugin {
                                     switch (key)
                                     {
                                         case "awsindicator":
-                                            this.AWS.awsindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref AWS.awsindicator, key);
                                             break;
                                         case "awswarningsound":
-                                            this.AWS.awswarningsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref AWS.awswarningsound, key);
                                             break;
                                         case "awsclearsound":
-                                            this.AWS.awsclearsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref AWS.awsclearsound, key);
                                             break;
                                         case "awsdelay":
-                                            this.AWS.canceltimeout = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref AWS.canceltimeout, key);
                                             break;
                                         case "tpwswarningsound":
-                                            this.AWS.tpwswarningsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref AWS.tpwswarningsound, key);
                                             break;
                                         default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
@@ -715,41 +715,55 @@ namespace Plugin {
                                     switch (key)
                                     {
                                         case "tpwsoverridelifetime":
-                                            this.TPWS.overridetimeout = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref TPWS.overridetimeout, key);
                                             break;
                                         case "tpwsstopdelay":
-                                            this.TPWS.brakesappliedtimeout = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref TPWS.brakesappliedtimeout, key);
                                             break;
                                         case "tpwsindicator":
-                                            string[] tpwssplit1 = value.Split(',');
-                                            for (int j = 0; j < tpwssplit1.Length; j++)
+                                            try
                                             {
-                                                if (j == 0)
+                                                string[] tpwssplit1 = value.Split(',');
+                                                for (int j = 0; j < tpwssplit1.Length; j++)
                                                 {
-                                                    this.TPWS.brakedemandindicator = Convert.ToInt32(tpwssplit1[0]);
+                                                    if (j == 0)
+                                                    {
+                                                        this.TPWS.brakedemandindicator = Convert.ToInt32(tpwssplit1[0]);
+                                                    }
+                                                    else
+                                                    {
+                                                        this.TPWS.brakeindicatorblinkrate = Convert.ToInt32(tpwssplit1[1]);
+                                                    }
                                                 }
-                                                else
-                                                {
-                                                    this.TPWS.brakeindicatorblinkrate = Convert.ToInt32(tpwssplit1[1]);
-                                                }
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("tpwsindicator");
                                             }
                                             break;
                                         case "tpwsindicator2":
-                                            string[] tpwssplit2 = value.Split(',');
-                                            for (int k = 0; k < tpwssplit2.Length; k++)
+                                            try
                                             {
-                                                if (k == 0)
+                                                string[] tpwssplit2 = value.Split(',');
+                                                for (int k = 0; k < tpwssplit2.Length; k++)
                                                 {
-                                                    this.TPWS.twpsoverrideindicator = Convert.ToInt32(tpwssplit2[0]);
+                                                    if (k == 0)
+                                                    {
+                                                        this.TPWS.twpsoverrideindicator = Convert.ToInt32(tpwssplit2[0]);
+                                                    }
+                                                    else
+                                                    {
+                                                        this.TPWS.tpwsoverrideblinkrate = Convert.ToInt32(tpwssplit2[1]);
+                                                    }
                                                 }
-                                                else
-                                                {
-                                                    this.TPWS.tpwsoverrideblinkrate = Convert.ToInt32(tpwssplit2[1]);
-                                                }
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("tpwsindicator2");
                                             }
                                             break;
                                         case "tpwsindicator4":
-                                            this.TPWS.tpwsisolatedindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref TPWS.tpwsisolatedindicator, key);
                                             break;
                                         default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
@@ -759,51 +773,58 @@ namespace Plugin {
                                     switch (key)
                                     {
                                         case "dropstartindex":
-                                            this.Windscreen.dropstartindex = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref Windscreen.dropstartindex, key);
                                             break;
                                         case "numberofdrops":
-                                            this.Windscreen.numberofdrops = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref Windscreen.numberofdrops, key);
                                             break;
                                         case "wiperindex":
-                                            this.Windscreen.wiperindex = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref Windscreen.wiperindex, key);
                                             break;
                                         case "wiperholdposition":
-                                            this.Windscreen.wiperholdposition = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref Windscreen.wiperholdposition, key);
                                             break;
                                         case "wiperdelay":
-                                            this.Windscreen.wiperdelay = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref Windscreen.wiperdelay, key);
                                             break;
                                         case "wiperrate":
-                                            this.Windscreen.wiperrate = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ParseNumber(value, ref Windscreen.wiperrate, key);
                                             break;
                                         case "wiperswitchindex":
-                                            this.Windscreen.wiperswitchindex = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref Windscreen.wiperswitchindex, key);
                                             break;
                                         case "wiperswitchsound":
-                                            this.Windscreen.wiperswitchsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                            InternalFunctions.ValidateIndex(value, ref Windscreen.wiperswitchsound, key);
                                             break;
                                         case "dropsound":
-                                            string[] dropsplit = value.Split(',');
-                                            for (int k = 0; k < dropsplit.Length; k++)
+                                            try
                                             {
-                                                if (k == 0)
+                                                string[] dropsplit = value.Split(',');
+                                                for (int k = 0; k < dropsplit.Length; k++)
                                                 {
-                                                    this.Windscreen.dropsound1 = Convert.ToInt32(dropsplit[0]);
+                                                    if (k == 0)
+                                                    {
+                                                        this.Windscreen.dropsound1 = Convert.ToInt32(dropsplit[0]);
+                                                    }
+                                                    else
+                                                    {
+                                                        this.Windscreen.dropsound2 = Convert.ToInt32(dropsplit[1]);
+                                                    }
                                                 }
-                                                else
-                                                {
-                                                    this.Windscreen.dropsound2 = Convert.ToInt32(dropsplit[1]);
-                                                }
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("dropsound");
                                             }
                                             break;
                                             case "drywipesound":
-                                            this.Windscreen.drywipesound = Convert.ToInt32(value);
+                                            InternalFunctions.ValidateIndex(value, ref Windscreen.drywipesound, key);
                                             break;
                                             case "wetwipesound":
-                                            this.Windscreen.wetwipesound = Convert.ToInt32(value);
+                                            InternalFunctions.ValidateIndex(value, ref Windscreen.wetwipesound, key);
                                             break;
                                             case "wipersoundbehaviour":
-                                            this.Windscreen.wipersoundbehaviour = Convert.ToInt32(value);
+                                            InternalFunctions.ValidateSetting(value, ref Windscreen.wipersoundbehaviour, key);
                                             break;
                                         default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");

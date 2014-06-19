@@ -24,10 +24,10 @@ namespace Plugin
 
         /// <summary>Default paramaters</summary>
         /// Used if no value is loaded from the config file
-        internal double awsindicator = 10;
-        internal double awswarningsound = -1;
-        internal double awsclearsound = -1;
-        internal double tpwswarningsound = -1;
+        internal int awsindicator = 10;
+        internal int awswarningsound = -1;
+        internal int awsclearsound = -1;
+        internal int tpwswarningsound = -1;
 
 
         /// <summary>Gets the current warning state of the Automatic Warning System.</summary>
@@ -119,11 +119,11 @@ namespace Plugin
                         this.SunflowerState = SunflowerStates.Clear;
                         if (this.awsclearsound != -1)
                         {
-                            SoundManager.Play((int)awsclearsound, 1.0, 1.0, false);
+                            SoundManager.Play(awsclearsound, 1.0, 1.0, false);
                         }
                         if (this.awswarningsound != -1)
                         {
-                            SoundManager.Stop((int)awswarningsound);
+                            SoundManager.Stop(awswarningsound);
                         }
                     }
                     else if (this.MySafetyState == SafetyStates.CancelTimerActive)
@@ -132,7 +132,7 @@ namespace Plugin
                         /* An AWS warning has been issued */
                         if (this.awswarningsound != -1)
                         {
-                            SoundManager.Play((int)awswarningsound, 1.0, 1.0, true);
+                            SoundManager.Play(awswarningsound, 1.0, 1.0, true);
                         }
                         this.SunflowerState = SunflowerStates.Clear;
                         this.canceltimer = this.canceltimer - (int)data.ElapsedTime.Milliseconds;
@@ -147,7 +147,7 @@ namespace Plugin
                         /* An AWS warning was acknowledged in time */
                         if (this.awswarningsound != -1)
                         {
-                            SoundManager.Stop((int)awswarningsound);
+                            SoundManager.Stop(awswarningsound);
                         }
                         this.Reset();
                     }
@@ -156,7 +156,7 @@ namespace Plugin
                         /* An AWS warning was not acknowledged in time */
                         if (this.awswarningsound != -1)
                         {
-                            SoundManager.Play((int)awswarningsound, 1.0, 1.0, true);
+                            SoundManager.Play(awswarningsound, 1.0, 1.0, true);
                         }
                         if (Train.TPWS.enabled)
                         {
@@ -181,7 +181,7 @@ namespace Plugin
                             {
                                 if (startuphorntriggered == false)
                                 {
-                                    SoundManager.Play((int)awswarningsound, 1.0, 1.0, true);
+                                    SoundManager.Play(awswarningsound, 1.0, 1.0, true);
                                     startuphorntriggered = true;
                                 }
                             }
@@ -204,7 +204,7 @@ namespace Plugin
                         /* The TPWS issued an AWS Brake Demand due to the AWS not being acknowledged in time */
                         if (tpwswarningsound != -1)
                         {
-                            SoundManager.Play((int)tpwswarningsound, 1.0, 1.0, true);
+                            SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
                         }
                     }
                 }
@@ -213,16 +213,16 @@ namespace Plugin
                 {
                     if (awswarningsound != -1)
                     {
-                        if (SoundManager.IsPlaying((int)awswarningsound))
+                        if (SoundManager.IsPlaying(awswarningsound))
                         {
-                            SoundManager.Stop((int)awswarningsound);
+                            SoundManager.Stop(awswarningsound);
                         }
                     }
                     if (tpwswarningsound != -1)
                     {
-                        if (SoundManager.IsPlaying((int)tpwswarningsound))
+                        if (SoundManager.IsPlaying(tpwswarningsound))
                         {
-                            SoundManager.Stop((int)tpwswarningsound);
+                            SoundManager.Stop(tpwswarningsound);
                         }
                     }
                     this.canceltimer = (int)this.canceltimeout;
