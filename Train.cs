@@ -611,7 +611,7 @@ namespace Plugin {
                                         case "vigilancecancellable":
                                             InternalFunctions.ValidateSetting(value, ref vigilance.vigilancecancellable, key);
                                             break;
-                                        case "independantvigilance":
+                                        case "independentvigilance":
                                             InternalFunctions.ValidateSetting(value, ref vigilance.independantvigilance, key);
                                             break;
                                         case "draenabled":
@@ -1138,63 +1138,70 @@ namespace Plugin {
         /// <param name="beacon">The beacon data.</param>
         public void SetBeacon(BeaconData beacon)
         {
+            //Standard Beacons- Process All
+            switch (beacon.Type)
+            {
+                case 20:
+                    if (this.electric != null)
+                    {
+                        /* APC magnets and neutral section */
+                        if (beacon.Optional > 0)
+                        {
+                            /* Handle legacy APC magnet behaviour with only one beacon */
+                            int secondMagnetDistance;
+                            int.TryParse(beacon.Optional.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out secondMagnetDistance);
+                            electric.legacypowercutoff((int)trainlocation, secondMagnetDistance);
+                        }
+                        else if (beacon.Optional == -1)
+                        {
+                            //Signals the start and end of the neutral section
+                            electric.newpowercutoff((int)trainlocation);
+                        }
+                        else
+                        {
+                            //Opens/ Closes ACB/VCB
+                            //Line volts indicator should be illuminated, and should be resetable
+                            electric.breakertrip();
+                        }
+                    }
+                    break;
+
+                case 21:
+                    if (this.Windscreen != null)
+                    {
+                        /* Rain */
+
+                        Windscreen.rainstart(beacon.Optional);
+
+                    }
+                    break;
+                case 22:
+                    {
+                        //Handle fuelling section
+                        if (beacon.Optional == 1)
+                        {
+                            canfuel = true;
+                        }
+                        else
+                        {
+                            canfuel = false;
+                            if (this.steam != null)
+                            {
+                                this.steam.fuelling = false;
+                            }
+                            if (this.diesel != null)
+                            {
+                                this.diesel.fuelling = false;
+                            }
+                        }
+                    }
+                    break;
+            }
+            //AWS Beacons
+            if (this.AWS.enabled == true)
+            {
                 switch (beacon.Type)
                 {
-                    case 20:
-                        if (this.electric != null)
-                        {
-                            /* APC magnets and neutral section */
-                            if (beacon.Optional > 0)
-                            {
-                                /* Handle legacy APC magnet behaviour with only one beacon */
-                                int secondMagnetDistance;
-                                int.TryParse(beacon.Optional.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out secondMagnetDistance);
-                                electric.legacypowercutoff((int)trainlocation, secondMagnetDistance);
-                            }
-                            else if (beacon.Optional == -1)
-                            {
-                                //Signals the start and end of the neutral section
-                                electric.newpowercutoff((int)trainlocation);
-                            }
-                            else
-                            {
-                                //Opens/ Closes ACB/VCB
-                                //Line volts indicator should be illuminated, and should be resetable
-                                electric.breakertrip();
-                            }
-                        }
-                        break;
-
-                    case 21:
-                        if (this.Windscreen != null)
-                        {
-                            /* Rain */
-                             
-                                Windscreen.rainstart(beacon.Optional);
-                            
-                        }
-                        break;
-                    case 22:
-                        {
-                            //Handle fuelling section
-                            if (beacon.Optional == 1)
-                            {
-                                canfuel = true;
-                            }
-                            else
-                            {
-                                canfuel = false;
-                                if (this.steam != null)
-                                {
-                                    this.steam.fuelling = false;
-                                }
-                                if (this.diesel != null)
-                                {
-                                    this.diesel.fuelling = false;
-                                }
-                            }
-                        }
-                        break;
                     //Anthony Bowden's UKTrainSYS beacon codes
                     case 44000:
                         /* Automatic Warning System magnet for signals */
@@ -1234,8 +1241,14 @@ namespace Plugin {
                          * Issue a warning regardless - this is the legacy fallback behaviour ONLY */
                         AWS.Prime();
                         break;
+                }
+                if (this.TPWS.enabled == true)
+                {
+                    switch (beacon.Type)
+                    {
                         case 44002:
                             /* Train Protection and Warning System Overspeed Sensor induction loop - associated with signal */
+
                             if (beacon.Signal.Aspect == 0)
                             {
                                 TPWS.ArmOss(beacon.Optional);
@@ -1261,7 +1274,8 @@ namespace Plugin {
                             break;
                     }
                 }
-            
+            }
+        }    
         
 
 		

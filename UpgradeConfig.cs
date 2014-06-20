@@ -231,7 +231,7 @@ namespace Plugin
                 case "vigilancealarm":
                 vigilance.Add(line);
                 break;
-                case "independantvigilance":
+                case "independentvigilance":
                 vigilance.Add(line);
                 break;
                 case "vigilancedelay1":
