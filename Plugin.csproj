@@ -63,8 +63,18 @@
       <HintPath>D:\OBVE\OpenBveApi.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdvancedDriving.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdvancedDriving.Designer.cs">
+      <DependentUpon>AdvancedDriving.cs</DependentUpon>
+    </Compile>
     <Compile Include="AWS.SafetyStates.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -110,5 +120,10 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AdvancedDriving.resx">
+      <DependentUpon>AdvancedDriving.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

@@ -24,7 +24,13 @@ namespace Plugin
         internal bool musicklaxonplaying;
         internal double klaxonindicatortimer;
         internal bool doorlock;
-        
+
+        //Debug/ Advanced Driving Window Functions
+        //
+        //Is it currently visible?
+        internal static bool debugwindowshowing;
+        string[] debuginformation = new string[20];
+
         /// <summary>The underlying train.</summary>
         private Train Train;
 
@@ -444,6 +450,20 @@ namespace Plugin
                     }
                 }
             }
+
+            //Handles the debug/ advanced driving window
+            if (debugwindowshowing == true)
+            {
+                if (AdvancedDriving.CheckInst == null)
+                {
+                    AdvancedDriving.CreateInst.Show();  // This creates and displays Form2
+                }
+                else
+                {
+                    debuginformation[0] = data.DebugMessage;
+                    AdvancedDriving.CreateInst.Elapse(debuginformation);
+                }
+            }
         }
 
         //Call this function from a safety system to demand power cutoff
@@ -569,6 +589,10 @@ namespace Plugin
                     {
                         Train.diesel.automatic = 0;
                     }
+                }
+                if (debugwindowshowing == false)
+                {
+                    debugwindowshowing = true;              
                 }
             }
             if (keypressed == injectorkey)

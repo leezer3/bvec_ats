@@ -158,9 +158,9 @@ namespace Plugin {
 
 		/// <summary>A list of all the devices installed on this train</summary>
 		internal Device[] Devices;
-		
-		
-		// --- constructors ---
+
+
+  		// --- constructors ---
 
 		/// <summary>Creates a new train without any devices installed.</summary>
 		/// <param name="panel">The array of panel variables.</param>
@@ -996,6 +996,7 @@ namespace Plugin {
 				foreach (Device device in this.Devices) {
 					device.Elapse(data, ref blocking);
 				}
+                
 				if (data.Handles.BrakeNotch != 0) {
 					data.Handles.PowerNotch = 0;
 				}
