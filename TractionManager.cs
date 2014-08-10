@@ -1,5 +1,7 @@
 ﻿using System;
 using OpenBveApi.Runtime;
+using System.Drawing;
+using Microsoft.Win32;
 
 namespace Plugin
 {
@@ -457,6 +459,19 @@ namespace Plugin
                 if (AdvancedDriving.CheckInst == null)
                 {
                     AdvancedDriving.CreateInst.Show();  // This creates and displays Form2
+                    
+                    using (var key = Registry.CurrentUser.OpenSubKey(@"Software\BVEC_ATS", true))
+                    {
+                        if (key != null)
+                        {
+                            AdvancedDriving.CreateInst.Left = (int)key.GetValue("Left");
+                            AdvancedDriving.CreateInst.Top = (int)key.GetValue("Top");
+                        }
+                        else
+                        {
+                            AdvancedDriving.CreateInst.Location = new Point(100, 100);
+                        }
+                    }
                 }
                 else
                 {
@@ -464,6 +479,14 @@ namespace Plugin
                     AdvancedDriving.CreateInst.Elapse(debuginformation);
                 }
             }
+            else
+            {
+                if (AdvancedDriving.CheckInst != null)
+                {
+                    AdvancedDriving.CreateInst.Close();
+                }
+            }
+            
         }
 
         //Call this function from a safety system to demand power cutoff
@@ -592,7 +615,11 @@ namespace Plugin
                 }
                 if (debugwindowshowing == false)
                 {
-                    debugwindowshowing = true;              
+                    debugwindowshowing = true;
+                }
+                else
+                {
+                    debugwindowshowing = false;
                 }
             }
             if (keypressed == injectorkey)

@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using OpenBveApi.Runtime;
+using Microsoft.Win32;
 
 namespace Plugin
 {
@@ -71,8 +72,10 @@ namespace Plugin
             this.MinimizeBox = false;
             this.MaximizeBox = false;
             this.ShowInTaskbar = false;
+            
             mask = new AdvancedDrivingMask();
             mask.Show();
+            
         }
 
         internal void Elapse(string[] debuginformation)
@@ -84,6 +87,27 @@ namespace Plugin
         void AdvancedDriving_FormClosed(object sender, FormClosedEventArgs e)
         {
             mask.Close();
+            Point location = Location;
+            string initLocation = string.Join(",", location.X, location.Y);
+            
+            //Write Out Location
+            using (var key = Registry.CurrentUser.OpenSubKey(@"Software\BVEC_ATS", true))
+            {
+                if (key != null)
+                {
+                    key.SetValue("Left", this.Left);
+                    key.SetValue("Top", this.Top);
+                }
+                else
+                {
+                    using (var key2 = Registry.CurrentUser.CreateSubKey(@"Software\BVEC_ATS"))
+                    {
+                        key2.SetValue("Left", this.Left);
+                        key2.SetValue("Top", this.Top);
+                    }
+                }
+            }
+
         }
 
         void AdvancedDriving_SizeChanged(object sender, EventArgs e)
