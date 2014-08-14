@@ -92,6 +92,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AWS.cs" />
+    <Compile Include="Animations.cs" />
     <Compile Include="vigilance.DeadmanStates.cs" />
     <Compile Include="diesel.cs" />
     <Compile Include="electric.cs" />

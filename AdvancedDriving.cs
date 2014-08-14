@@ -12,7 +12,8 @@ namespace Plugin
 {
     public partial class AdvancedDriving : Form
     {
-
+        //The Advanced Driving form provides an independant debug window
+        //Intended to show things such as the current steam production rate versus usage (WIP)
         protected override void OnClosed(EventArgs e)
         {
             tractionmanager.debugwindowshowing = false;

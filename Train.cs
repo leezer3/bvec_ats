@@ -156,6 +156,10 @@ namespace Plugin {
         /// <summary>Windscreen & Wipers</summary>
         internal Windscreen Windscreen;
 
+        /// <summary>Advanced animation handlers</summary>
+        internal Animations Animations;
+
+
 		/// <summary>A list of all the devices installed on this train</summary>
 		internal Device[] Devices;
 
@@ -190,6 +194,7 @@ namespace Plugin {
             this.AWS = new AWS(this);
             this.TPWS = new TPWS(this);
             this.Windscreen = new Windscreen(this);
+            this.Animations = new Animations(this);
 			string[] lines = File.ReadAllLines(file, Encoding.UTF8);
 			string section = string.Empty;
 			for (int i = 0; i < lines.Length; i++) {
@@ -226,6 +231,9 @@ namespace Plugin {
                                 //Twiddle
                                 break;
                             case "keyassignments":
+                                //Twiddle
+                                break;
+                            case "animations":
                                 //Twiddle
                                 break;
                             case "windscreen":
@@ -830,6 +838,25 @@ namespace Plugin {
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }
                                     break;
+
+                               case "animations":
+                                    switch (key)
+                                    {
+                                        case "gear_yvariable":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Yvariable, key);
+                                            break;
+                                        case "gear_zvariable":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Zvariable, key);
+                                            break;
+                                        case "wheelradius":
+                                            InternalFunctions.ParseNumber(value, ref Animations.wheelradius, key);
+                                            break;
+                                            default:
+                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
+                                    }
+                                    break;
+                                    
+
                                 case "keyassignments":
                                     switch (key)
                                     {
@@ -964,7 +991,10 @@ namespace Plugin {
                 devices.Add(this.Windscreen);
             }
 
-
+            if (this.Animations != null)
+            {
+                devices.Add(this.Animations);
+            }
 			this.Devices = devices.ToArray();
 		}
 		
