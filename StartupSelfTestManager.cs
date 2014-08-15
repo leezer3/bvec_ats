@@ -39,7 +39,14 @@ namespace Plugin {
 
         internal override void Initialize(InitializationModes mode)
         {
-            if (mode == InitializationModes.OnService)
+            if (Train.AWS.enabled == false && Train.TPWS.enabled == false)
+            {
+                //Set to initialised if no AWS/ TPWS is installed
+                MySequenceState = SequenceStates.Initialised;
+                sunflowerstate = 0;
+                AWS.startuphorntriggered = false;
+            }
+            else if (mode == InitializationModes.OnService)
             {
                 MySequenceTimer = SequenceDuration;
                 MySequenceState = SequenceStates.Initialised;

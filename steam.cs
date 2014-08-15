@@ -214,13 +214,15 @@ namespace Plugin {
             if (automatic != -1)
             {
 
-
-                if (Train.Handles.Reverser == 1 && cutoff >= cutoffineffective)
+                if (Train.Handles.Reverser == 0)
                 {
-
+                    cutoff = 30;
+                }
+                else if (Train.Handles.Reverser == 1 && cutoff >= cutoffineffective)
+                {
                     cutoff = cutoffmax;
                 }
-                else if (Train.Handles.Reverser == -1 && cutoff <= -cutoffineffective)
+                else if (Train.Handles.Reverser == -1 && cutoff >= cutoffineffective)
                 {
 
                     cutoff = cutoffmin;
@@ -320,11 +322,13 @@ namespace Plugin {
                         {
                             cutoff = (int)Math.Min(optimalcutoff, -cutoffineffective - 1);
                         }
-                        else
-                        {
-                            new_power = Math.Max((int)(this.Train.Specs.PowerNotches - ((cutoffmin - cutoff) < 0 ? -((int)cutoffmin - cutoff) : ((int)cutoffmin - cutoff)) / cutoffdeviation), 0);
-                        }
                     }
+                    else
+                    {
+                        new_power = Math.Max((int)(this.Train.Specs.PowerNotches - ((Math.Abs(cutoffmin) - Math.Abs(cutoff)) < 0 ? -((int)Math.Abs(cutoffmin)
+                            - Math.Abs(cutoff)) : ((int)Math.Abs(cutoffmin) - Math.Abs(cutoff))) / cutoffdeviation), 0);
+                    }
+                    
                 }
                 else
                 {

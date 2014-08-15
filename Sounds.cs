@@ -95,7 +95,7 @@ namespace Plugin
         /// <param name="soundIndex">The sound index where playback is to be to stopped.</param>
         internal static void Stop(int soundIndex)
         {
-            if (SoundHandles[soundIndex] != null)
+            if (soundIndex != -1 && SoundHandles[soundIndex] != null)
             {
                 SoundHandles[soundIndex].Stop();
                 IsLooped[soundIndex] = false;

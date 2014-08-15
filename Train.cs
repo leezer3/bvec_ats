@@ -59,6 +59,7 @@ namespace Plugin {
 			}
 		}
 		
+
 		
 		
 		// --- plugin ---
@@ -934,6 +935,9 @@ namespace Plugin {
                                             break;
                                         case "rearpantographkey":
                                             this.tractionmanager.rearpantographkey = value;
+                                            break;
+                                        case "advancedrivingkey":
+                                            this.tractionmanager.advancedrivingkey = value;
                                             break;
                                         default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");

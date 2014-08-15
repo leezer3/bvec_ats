@@ -82,6 +82,7 @@ namespace Plugin
         internal string customindicatorkey10 = "";
         internal string frontpantographkey;
         internal string rearpantographkey;
+        internal string advancedrivingkey;
 
 
         //Arrays
@@ -613,6 +614,9 @@ namespace Plugin
                         Train.diesel.automatic = 0;
                     }
                 }
+            }
+            if (keypressed == advancedrivingkey)
+            {
                 if (debugwindowshowing == false)
                 {
                     debugwindowshowing = true;
