@@ -843,14 +843,23 @@ namespace Plugin {
                                case "animations":
                                     switch (key)
                                     {
-                                        case "gear_yvariable":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Yvariable, key);
+                                        case "gear_yvariable_r":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Yvariable_R, key);
                                             break;
-                                        case "gear_zvariable":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Zvariable, key);
+                                        case "gear_zvariable_r":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Zvariable_R, key);
                                             break;
-                                        case "wheelradius":
-                                            InternalFunctions.ParseNumber(value, ref Animations.wheelradius, key);
+                                        case "gear_yvariable_l":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Yvariable_L, key);
+                                            break;
+                                        case "gear_zvariable_l":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Zvariable_L, key);
+                                            break;
+                                        case "rodradius":
+                                            InternalFunctions.ParseNumber(value, ref Animations.rodradius, key);
+                                            break;
+                                        case "wheelrotation_variable":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.wheelrotation_variable, key);
                                             break;
                                             default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
