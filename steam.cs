@@ -210,12 +210,13 @@ namespace Plugin {
                 }
             }
 
-            //Automatic Cutoff
-            if (automatic != -1)
+            //First try to set automatic cutoff without calculating
+            if (automatic != -1 && Train.trainspeed == 0)
             {
 
                 if (Train.Handles.Reverser == 0)
                 {
+                    //If reverser is in neutral, reset cutoff to 30
                     cutoff = 30;
                 }
                 else if (Train.Handles.Reverser == 1 && cutoff >= cutoffineffective)
@@ -226,11 +227,7 @@ namespace Plugin {
                 {
 
                     cutoff = cutoffmin;
-                }
-                else
-                {
-
-                }
+                } 
             }
             else
             {
