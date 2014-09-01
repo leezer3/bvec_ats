@@ -31,7 +31,15 @@ namespace Plugin
         //
         //Is it currently visible?
         internal static bool debugwindowshowing;
-        string[] debuginformation = new string[20];
+        /** <summary><para>A string array containing the information to be passed to the debug window as follows:</para>
+         * <para>1. Plugin debug message</para>
+         * <para>2. Steam locomotive boiler pressure</para>
+         * <para>3. Steam locomotive pressure generation rate</para>
+         * <para>4. Steam locomotice pressure usage rate</para>
+         * <para>5. Steam locomotive current cutoff</para>
+         * <para>6. Steam locomotive optimal cutoff</para></summary> */
+
+        public static string[] debuginformation = new string[20];
 
         /// <summary>The underlying train.</summary>
         private Train Train;

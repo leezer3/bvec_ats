@@ -35,6 +35,8 @@ namespace Plugin {
         internal bool fuelling;
         internal double fuellingtimer;
         internal double klaxonpressuretimer;
+        internal int pressureup;
+        internal int pressureuse;
         
 
 		// --- constants ---
@@ -381,7 +383,7 @@ namespace Plugin {
                 this.boilertimer += data.ElapsedTime.Seconds;
                 if (this.boilertimer > 1)
                 {
-                    int pressureup = ((int)boilerwatertosteamrate / 60) * (int)boilertimer;
+                    pressureup = ((int)boilerwatertosteamrate / 60) * (int)boilertimer;
                     stm_boilerpressure = stm_boilerpressure + pressureup;
                     stm_boilerwater = stm_boilerwater - pressureup;
                     //Blowoff
@@ -438,15 +440,16 @@ namespace Plugin {
             {
                 
                 this.draintimer += data.ElapsedTime.Seconds;
-                int regpruse = (int)Train.Handles.PowerNotch / this.Train.Specs.PowerNotches * (int)regulatorpressureuse;
+                double regpruse = ((double)Train.Handles.PowerNotch / (double)this.Train.Specs.PowerNotches) * regulatorpressureuse;
                 //32
                 float cutprboost = Math.Abs((float)cutoff) / Math.Abs((float)cutoffmax);
                 //1
                 float spdpruse = 1 + Math.Abs((float)data.Vehicle.Speed.KilometersPerHour) / 25;
-
+                data.DebugMessage = Convert.ToString(regpruse);
                 if (draintimer > 1)
                 {
-                    stm_boilerpressure = stm_boilerpressure - ((int)(regpruse * cutprboost * spdpruse));
+                    pressureuse = (int)(regpruse * cutprboost * spdpruse);
+                    stm_boilerpressure = stm_boilerpressure - pressureuse;
                     draintimer = 0.0;
                 }
             }
@@ -473,6 +476,15 @@ namespace Plugin {
                 {
                     fuel = (int)fuelcapacity;
                 }
+            }
+            //Pass data to the debug window
+            if (AdvancedDriving.CheckInst != null)
+            {
+                tractionmanager.debuginformation[1] = Convert.ToString(stm_boilerpressure);
+                tractionmanager.debuginformation[2] = Convert.ToString(pressureup);
+                tractionmanager.debuginformation[3] = Convert.ToString(pressureuse);
+                tractionmanager.debuginformation[4] = Convert.ToString(cutoff);
+                tractionmanager.debuginformation[5] = Convert.ToString(optimalcutoff);
             }
             {
                 //Set Panel Indicators

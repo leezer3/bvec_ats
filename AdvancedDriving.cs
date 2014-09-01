@@ -73,6 +73,7 @@ namespace Plugin
             this.MinimizeBox = false;
             this.MaximizeBox = false;
             this.ShowInTaskbar = false;
+            steambox.Visible = true;
             
             mask = new AdvancedDrivingMask();
             mask.Show();
@@ -82,7 +83,26 @@ namespace Plugin
         internal void Elapse(string[] debuginformation)
         {
             debuglabel.Text = debuginformation[0];
-            
+            genrate.Text = debuginformation[2];
+            userate.Text = debuginformation[3];
+            if (Int32.Parse(debuginformation[3]) > Int32.Parse(debuginformation[2]))
+            {
+                userate.ForeColor = System.Drawing.Color.Red;
+            }
+            else
+            {
+                userate.ForeColor = System.Drawing.Color.Black;
+            }
+            currentcutoff.Text = debuginformation[4];
+            if (double.Parse(debuginformation[4]) > double.Parse(debuginformation[5]))
+            {
+                currentcutoff.ForeColor = System.Drawing.Color.Red;
+            }
+            else
+            {
+                currentcutoff.ForeColor = System.Drawing.Color.Black;
+            }
+            optimalcutoff.Text = debuginformation[5];
         }
 
         void AdvancedDriving_FormClosed(object sender, FormClosedEventArgs e)
