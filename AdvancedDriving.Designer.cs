@@ -31,16 +31,21 @@
             this.label1 = new System.Windows.Forms.Label();
             this.debuglabel = new System.Windows.Forms.Label();
             this.steambox = new System.Windows.Forms.Panel();
+            this.optimalcutoff = new System.Windows.Forms.Label();
+            this.currentcutoff = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.userate = new System.Windows.Forms.Label();
             this.genrate = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.currentcutoff = new System.Windows.Forms.Label();
-            this.optimalcutoff = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.firemass = new System.Windows.Forms.Label();
+            this.firetemp = new System.Windows.Forms.Label();
             this.steambox.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -65,6 +70,11 @@
             // 
             // steambox
             // 
+            this.steambox.Controls.Add(this.firetemp);
+            this.steambox.Controls.Add(this.firemass);
+            this.steambox.Controls.Add(this.label10);
+            this.steambox.Controls.Add(this.label9);
+            this.steambox.Controls.Add(this.label8);
             this.steambox.Controls.Add(this.optimalcutoff);
             this.steambox.Controls.Add(this.currentcutoff);
             this.steambox.Controls.Add(this.label7);
@@ -75,10 +85,58 @@
             this.steambox.Controls.Add(this.userate);
             this.steambox.Controls.Add(this.genrate);
             this.steambox.Controls.Add(this.label2);
-            this.steambox.Location = new System.Drawing.Point(16, 46);
+            this.steambox.Location = new System.Drawing.Point(12, 46);
             this.steambox.Name = "steambox";
             this.steambox.Size = new System.Drawing.Size(263, 198);
             this.steambox.TabIndex = 2;
+            // 
+            // optimalcutoff
+            // 
+            this.optimalcutoff.AutoSize = true;
+            this.optimalcutoff.Location = new System.Drawing.Point(117, 73);
+            this.optimalcutoff.Name = "optimalcutoff";
+            this.optimalcutoff.Size = new System.Drawing.Size(35, 13);
+            this.optimalcutoff.TabIndex = 9;
+            this.optimalcutoff.Text = "label8";
+            // 
+            // currentcutoff
+            // 
+            this.currentcutoff.AutoSize = true;
+            this.currentcutoff.Location = new System.Drawing.Point(117, 60);
+            this.currentcutoff.Name = "currentcutoff";
+            this.currentcutoff.Size = new System.Drawing.Size(35, 13);
+            this.currentcutoff.TabIndex = 8;
+            this.currentcutoff.Text = "label8";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(3, 73);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(91, 13);
+            this.label7.TabIndex = 7;
+            this.label7.Text = "Optimal Cutoff:";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.Location = new System.Drawing.Point(3, 60);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(90, 13);
+            this.label6.TabIndex = 6;
+            this.label6.Text = "Current Cutoff:";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(4, 45);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(41, 15);
+            this.label5.TabIndex = 5;
+            this.label5.Text = "Cutoff:";
             // 
             // label4
             // 
@@ -128,53 +186,53 @@
             this.label2.TabIndex = 0;
             this.label2.Text = "Steam Generation and Usage Rates:";
             // 
-            // label5
+            // label8
             // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(4, 45);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(41, 15);
-            this.label5.TabIndex = 5;
-            this.label5.Text = "Cutoff:";
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.Location = new System.Drawing.Point(4, 86);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(68, 15);
+            this.label8.TabIndex = 10;
+            this.label8.Text = "Fire Status:";
             // 
-            // label6
+            // label9
             // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(3, 60);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(90, 13);
-            this.label6.TabIndex = 6;
-            this.label6.Text = "Current Cutoff:";
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(4, 101);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(65, 13);
+            this.label9.TabIndex = 11;
+            this.label9.Text = "Fire Mass:";
             // 
-            // label7
+            // label10
             // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(3, 73);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(91, 13);
-            this.label7.TabIndex = 7;
-            this.label7.Text = "Optimal Cutoff:";
+            this.label10.AutoSize = true;
+            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label10.Location = new System.Drawing.Point(4, 114);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(107, 13);
+            this.label10.TabIndex = 12;
+            this.label10.Text = "Fire Temperature:";
             // 
-            // currentcutoff
+            // firemass
             // 
-            this.currentcutoff.AutoSize = true;
-            this.currentcutoff.Location = new System.Drawing.Point(117, 60);
-            this.currentcutoff.Name = "currentcutoff";
-            this.currentcutoff.Size = new System.Drawing.Size(35, 13);
-            this.currentcutoff.TabIndex = 8;
-            this.currentcutoff.Text = "label8";
+            this.firemass.AutoSize = true;
+            this.firemass.Location = new System.Drawing.Point(114, 101);
+            this.firemass.Name = "firemass";
+            this.firemass.Size = new System.Drawing.Size(35, 13);
+            this.firemass.TabIndex = 13;
+            this.firemass.Text = "label8";
             // 
-            // optimalcutoff
+            // firetemp
             // 
-            this.optimalcutoff.AutoSize = true;
-            this.optimalcutoff.Location = new System.Drawing.Point(117, 73);
-            this.optimalcutoff.Name = "optimalcutoff";
-            this.optimalcutoff.Size = new System.Drawing.Size(35, 13);
-            this.optimalcutoff.TabIndex = 9;
-            this.optimalcutoff.Text = "label8";
+            this.firetemp.AutoSize = true;
+            this.firetemp.Location = new System.Drawing.Point(114, 114);
+            this.firetemp.Name = "firetemp";
+            this.firetemp.Size = new System.Drawing.Size(35, 13);
+            this.firetemp.TabIndex = 14;
+            this.firetemp.Text = "label8";
             // 
             // AdvancedDriving
             // 
@@ -210,5 +268,10 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label firetemp;
+        private System.Windows.Forms.Label firemass;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label8;
     }
 }

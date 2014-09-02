@@ -73,6 +73,7 @@ namespace Plugin
             this.MinimizeBox = false;
             this.MaximizeBox = false;
             this.ShowInTaskbar = false;
+
             steambox.Visible = true;
             
             mask = new AdvancedDrivingMask();
@@ -85,6 +86,7 @@ namespace Plugin
             debuglabel.Text = debuginformation[0];
             genrate.Text = debuginformation[2];
             userate.Text = debuginformation[3];
+            //If we're using more pressure than we're generating, change the usage rate text color to red
             if (Int32.Parse(debuginformation[3]) > Int32.Parse(debuginformation[2]))
             {
                 userate.ForeColor = System.Drawing.Color.Red;
@@ -94,6 +96,7 @@ namespace Plugin
                 userate.ForeColor = System.Drawing.Color.Black;
             }
             currentcutoff.Text = debuginformation[4];
+            //If the current cutoff is greater than the optimum cutoff, set the text color to red
             if (double.Parse(debuginformation[4]) > double.Parse(debuginformation[5]))
             {
                 currentcutoff.ForeColor = System.Drawing.Color.Red;
@@ -103,6 +106,8 @@ namespace Plugin
                 currentcutoff.ForeColor = System.Drawing.Color.Black;
             }
             optimalcutoff.Text = debuginformation[5];
+            firemass.Text = debuginformation[6];
+            firetemp.Text = debuginformation[7];
         }
 
         void AdvancedDriving_FormClosed(object sender, FormClosedEventArgs e)

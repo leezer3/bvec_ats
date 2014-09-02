@@ -90,6 +90,7 @@ namespace Plugin
         internal string customindicatorkey10 = "";
         internal string frontpantographkey;
         internal string rearpantographkey;
+        internal string shovellingkey;
         internal string advancedrivingkey;
 
 

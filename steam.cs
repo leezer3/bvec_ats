@@ -22,21 +22,38 @@ namespace Plugin {
         internal int stm_reverser;
         internal int new_reverser;
         internal int new_power;
+        internal int pressureup;
+        internal int pressureuse;
+        /// <summary>Stores the current boiler pressure</summary>
         internal int stm_boilerpressure;
+        /// <summary>Stores the current boiler water level</summary>
         internal int stm_boilerwater;
         internal double boilertimer;
         internal double draintimer;
+        /// <summary>Stores whether the injectors are currently active</summary>
         internal bool stm_injector;
-        internal double injectortimer;
+        /// <summary>Stores the current water level in the tanks</summary>
         internal int fuel;
+        /// <summary>Stores the maximum possible ATS power notch [INTERNAL]</summary>
         internal int stm_power;
+        /// <summary>Stores the current state of the cutoff</summary>
         internal int cutoffstate;
         internal double cutofftimer;
+        /// <summary>Stores whether we are currently taking on coal & water</summary>
         internal bool fuelling;
         internal double fuellingtimer;
         internal double klaxonpressuretimer;
-        internal int pressureup;
-        internal int pressureuse;
+        /// <summary>The basic rate at which water turns to steam per second under ideal conditions</summary>
+        /// Calculated once at initilisation from the initial variables which are per minute
+        internal int calculatedsteamrate;
+        /// <summary>The rate at which steam is generated</summary>
+        internal int finalsteamrate;
+        /// <summary>The current fire mass</summary>
+        internal int firemass;
+        /// <summary>The current fire temperature</summary>
+        internal int firetemp;
+        /// <summary>Whether we are currently shovelling coal</summary>
+        internal bool shovelling;
         
 
 		// --- constants ---
@@ -65,42 +82,82 @@ namespace Plugin {
         internal double overheatalarm = -1;
 
         /// <summary>Default paramaters</summary>
+        /// 
         /// Used if no value is loaded from the config file
+        /// <summary>The maximum cutoff value</summary>
         internal double cutoffmax = 75;
+        /// <summary>The minimum cutoff value</summary>
         internal double cutoffmin = -55;
+        /// <summary>The range on either side of zero at which cutoff is ineffective</summary>
         internal double cutoffineffective = 15;
+        /// <summary>The the maximum speed in kph where maximum cutoff is effective</summary>
         internal double cutoffratiobase = 30;
+        /// <summary>The ratio at which the ideal cutoff drops in relation to the speed of the train</summary>
         internal double cutoffratio = 10;
+        /// <summary>The effective range around the ideal cutoff</summary>
         internal double cutoffdeviation = 8;
+        /// <summary>The maximum boiler pressure</summary>
         internal double boilermaxpressure = 20000;
+        /// <summary>The minimum boiler pressure</summary>
         internal double boilerminpressure = 12000;
+        /// <summary>The maximum water level in the boiler</summary>
         internal double boilermaxwaterlevel = 1600;
+        /// <summary>The number of water units converted to pressure units per minute at the maximum fire intensity</summary>
         internal double boilerwatertosteamrate = 1500;
+        /// <summary>The starting amount of water in the water tanks</summary>
         internal double fuelstartamount = 20000;
+        /// <summary>The number of units moved from the water tanks to the boiler per second</summary>
         internal double injectorrate = 100;
+        /// <summary>The number of pressure units used per second at maximum regulator</summary>
         internal double regulatorpressureuse = 32;
         internal double cutoffchangespeed = 40;
         internal double cutoffchangetest = 1;
         internal double boilerstartwaterlevel = -1;
+        /// <summary>The pressure at which the boiler blowoff will operate</summary>
         internal double blowoffpressure = 21000;
         internal string heatingrate = "0";
         internal double fuelfillspeed = 50;
+        /// <summary>The capacity of the fuel tanks</summary>
         internal double fuelcapacity = 20000;
+        /// <summary>The panel index of the fuelling indicator</summary>
         internal double fuelfillindicator = -1;
+        /// <summary>The number of pressure units used per second by the whistle</summary>
         internal double klaxonpressureuse = -1;
 
+        /// <summary>The starting mass of the fire</summary>
+        internal double firestartmass = -1;
+        /// <summary>The maximum fire mass</summary>
+        internal double maximumfiremass = 1000;
+        /// <summary>The starting temperature of the fire</summary>
+        internal double firestartemp = 500;
+        /// <summary>The number of units added per second whilst coal is being shovelled</summary>
+        internal double shovellingrate = 10;
+
+        /// <summary>Stores whether advanced firing is enabled</summary>
+        internal int advancedfiring = -1;
+
         //Panel Indicies
+        /// <summary>The panel index of the reverser indicator</summary>
         internal double reverserindex = -1;
+        /// <summary>The panel index of the boiler pressure gauge</summary>
         internal double boilerpressureindicator = -1;
+        /// <summary>The panel index of the boiler water level gauge</summary>
         internal double boilerwaterlevelindicator = -1;
+        /// <summary>The panel index of the cutoff indicator</summary>
         internal double cutoffindicator = -1;
+        /// <summary>The panel index of the tanks water level indicator</summary>
         internal double fuelindicator = -1;
+        /// <summary>The panel index of the injectors indicator</summary>
         internal double injectorindicator = -1;
+        /// <summary>The panel index of the automatic cutoff & reverser indicator</summary>
         internal double automaticindicator = -1;
 
         //Sound Indicies
+        /// <summary>The sound index played when the injectors are activated</summary>
         internal double injectorsound = -1;
+        /// <summary>The sound index played when the boiler blows off excess pressure</summary>
         internal double blowoffsound = -1;
+
 
         //Arrays
         int[] heatingarray;
@@ -143,6 +200,18 @@ namespace Plugin {
             {
                 heatingarray[i] = Int32.Parse(splitheatingrate[i]);
             }
+            //Calculate the water to steam rate and store it here, don't call every frame
+            calculatedsteamrate = (int)boilerwatertosteamrate / 60;
+            //Set the starting fire mass
+            if (firestartmass == -1)
+            {
+                firemass = (int)maximumfiremass;
+            }
+            else
+            {
+                firemass = (int)firestartmass;
+            }
+            firetemp = (int)firestartemp;
 
 		}
 
@@ -380,7 +449,48 @@ namespace Plugin {
 
             {
                 //This section of code generates pressure and operates the blowoff
+
+                //First elapse the timer- Used for both the fire and the pressure generation
                 this.boilertimer += data.ElapsedTime.Seconds;
+
+                //This section of code handles the fire simulator
+                if (advancedfiring != -1)
+                {
+                    //Advanced firing is not enabled, use the standard boiler water to steam rate
+                    finalsteamrate = calculatedsteamrate;
+                }
+                else
+                {
+                    //Advanced firing
+                    if (this.boilertimer > 1)
+                    {
+                        //Check whether we can shovel coal
+                        //Firemass must be below maximum and shovelling true [Non automatic]
+                        //If automatic firing is on, only shovel coal if we are below 50% of max fire mass- Change???
+                        //Use automatic behaviour if no shovelling key is set as obviously we can't shovel coal manually with no key
+                        if (shovelling == true && firemass < maximumfiremass || automatic != -1 && firemass < (firemass / 2) && firemass < maximumfiremass
+                            || String.IsNullOrEmpty(Train.tractionmanager.shovellingkey) && firemass < (firemass / 2) && firemass < maximumfiremass)
+                        {
+                            //Add the amount of coal shovelled per second to the fire mass & decrease it from the fire temperature
+                            firemass += (int)shovellingrate;
+                            firetemp -= (int)shovellingrate;
+                        }
+                        int fire_tempchange = (int)Math.Ceiling((double)(((firemass * 0.5) - 10) / (firemass * 0.05)));
+                        firemass = (int)((double)firemass * 0.9875);
+                        if (firetemp < 1000)
+                        {
+                            //Add calculated temperature increase to the fire temperature
+                            firetemp += fire_tempchange;
+                        }
+                        else
+                        {
+                            //Otherwise set to max
+                            firetemp = 1000;
+                        }
+                        finalsteamrate = (int)(((double)calculatedsteamrate / 1000) * firetemp);
+
+                    }
+                }
                 if (this.boilertimer > 1)
                 {
                     pressureup = ((int)boilerwatertosteamrate / 60) * (int)boilertimer;
@@ -445,7 +555,6 @@ namespace Plugin {
                 float cutprboost = Math.Abs((float)cutoff) / Math.Abs((float)cutoffmax);
                 //1
                 float spdpruse = 1 + Math.Abs((float)data.Vehicle.Speed.KilometersPerHour) / 25;
-                data.DebugMessage = Convert.ToString(regpruse);
                 if (draintimer > 1)
                 {
                     pressureuse = (int)(regpruse * cutprboost * spdpruse);
@@ -485,6 +594,8 @@ namespace Plugin {
                 tractionmanager.debuginformation[3] = Convert.ToString(pressureuse);
                 tractionmanager.debuginformation[4] = Convert.ToString(cutoff);
                 tractionmanager.debuginformation[5] = Convert.ToString(optimalcutoff);
+                tractionmanager.debuginformation[6] = Convert.ToString(firemass);
+                tractionmanager.debuginformation[7] = Convert.ToString(firetemp);
             }
             {
                 //Set Panel Indicators
