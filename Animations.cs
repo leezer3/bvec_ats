@@ -1,16 +1,36 @@
 ﻿using System;
+
 using OpenBveApi.Runtime;
 
 namespace Plugin
 {
     /// <summary>Provides a handler for complex animations such as valve gear.</summary>
-    internal class Animations : Device
+    internal partial class Animations : Device
     {
         /// <summary>The underlying train.</summary>
         private Train Train;
 
         //Variables
-        
+
+
+        private static DoorLightStates MyDoorLightState;
+
+        /// <summary>Gets the current warning state of the Automatic Warning System.</summary>
+        internal DoorLightStates DoorLightState
+        {
+            get { return MyDoorLightState; }
+        }
+
+        /// <summary>Stores the time for which we will be stopped (Minus 30 seconds for the flashing door light)</summary>
+        internal static int doorlightime;
+        internal double doorlighttimer;
+        internal double doorlighttimer2;
+        /// <summary>Stores whether the flashing door light is currently lit</summary>
+        internal bool doorlighton;
+
+        /// <summary>The panel variable for the flashing door light</summary>
+        internal int doorlight = -1;
+
         /// <summary>The Y variable for the valve gear motion [Right]</summary>
         internal int gear_Yvariable_R = -1;
         /// <summary>The Z variable for the valve gear motion [Right]</summary>
@@ -69,6 +89,15 @@ namespace Plugin
                 wheelcircumference = 2 * Math.PI * rodradius;
             }
             currentlocation = Train.trainlocation;
+            //Set the initial state of the doors light
+            if (Train.Doors != DoorStates.None)
+            {
+                MyDoorLightState = DoorLightStates.DoorsOpen;
+            }
+            else
+            {
+                MyDoorLightState = DoorLightStates.InMotion;
+            }
         }
 
         /// <summary>Is called every frame.</summary>
@@ -77,6 +106,8 @@ namespace Plugin
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
             
+            //Steam Locomotive Valve Gear
+                
                 //Calculate the distance travelled
                 double distancetravelled;
                 previouslocation = currentlocation;
@@ -138,7 +169,83 @@ namespace Plugin
                     }
                     this.Train.Panel[wheelrotation_variable] = 360 - (int)(((Math.PI / 180) * degreesturned) * 1000);
                 }
+
+            //Flashing door light
+                if (MyDoorLightState == DoorLightStates.InMotion)
+                {
+                    doorlighttimer = 0;
+                }
+                else if (MyDoorLightState == DoorLightStates.Primed)
+                {
+                    if (Train.trainspeed == 0)
+                    {
+                        if (Train.Doors != DoorStates.None)
+                        {
+                            MyDoorLightState = DoorLightStates.DoorsOpen;
+                        }
+                    }
+                }
+                else if (MyDoorLightState == DoorLightStates.DoorsOpen)
+                {
+                    MyDoorLightState = DoorLightStates.Countdown;
+                }
+                else if (MyDoorLightState == DoorLightStates.Countdown)
+                {
+                    doorlighttimer += data.ElapsedTime.Milliseconds;
+                    if (doorlighttimer > doorlightime)
+                    {
+                        MyDoorLightState = DoorLightStates.DoorsClosing;
+                        doorlighttimer = 0;
+                    }
+                }
+                else if (MyDoorLightState == DoorLightStates.DoorsClosing)
+                {
+                    doorlighttimer += data.ElapsedTime.Milliseconds;
+                    doorlighttimer2 += data.ElapsedTime.Milliseconds;
+                    if (doorlighttimer2 > 1000)
+                    {
+                        if (doorlighton == true)
+                        {
+                            doorlighton = false;
+                        }
+                        else
+                        {
+                            doorlighton = true;
+                        }
+                        doorlighttimer2 = 0;
+                    }
+
+                    if (doorlighttimer > 30000)
+                    {
+                        doorlighton = false;
+                        MyDoorLightState = DoorLightStates.DoorsClosed;
+                    }
+                }
+                else if (MyDoorLightState == DoorLightStates.DoorsClosed)
+                {
+                    if (Train.trainspeed > 0)
+                    {
+                        MyDoorLightState = DoorLightStates.InMotion;
+                    }
+                }
         }
 
+        //These two functions are called by the beacon manager to set the door light state and timer
+        internal static void doorlighttrigger()
+        {
+            if (MyDoorLightState == DoorLightStates.InMotion)
+            {
+                MyDoorLightState = DoorLightStates.Primed;
+            }
+            else if (MyDoorLightState == DoorLightStates.DoorsClosed)
+            {
+                MyDoorLightState = DoorLightStates.InMotion;
+            }
+        }
+
+        internal static void doorlightimer(int time)
+        {
+            Animations.doorlightime = time * 1000;
+        }
     }
 }

@@ -861,6 +861,9 @@ namespace Plugin {
                                         case "wheelrotation_variable":
                                             InternalFunctions.ValidateIndex(value, ref Animations.wheelrotation_variable, key);
                                             break;
+                                        case "flashingdoorlight":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.doorlight, key);
+                                            break;
                                             default:
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
                                     }
@@ -1238,6 +1241,20 @@ namespace Plugin {
                                 this.diesel.fuelling = false;
                             }
                         }
+                    }
+                    break;
+
+                //Additional BVEC_ATS beacons, process all
+                case 30:
+                    {
+                        //Door light trigger beacon
+                        Animations.doorlighttrigger();
+                    }
+                    break;
+                case 31:
+                    {
+                        //Door light timer
+
                     }
                     break;
             }
