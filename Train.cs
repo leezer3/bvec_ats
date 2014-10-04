@@ -858,6 +858,24 @@ namespace Plugin {
                                         case "rodradius":
                                             InternalFunctions.ParseNumber(value, ref Animations.rodradius, key);
                                             break;
+                                        case "crankradius":
+                                            InternalFunctions.ParseNumber(value, ref Animations.crankradius, key);
+                                            break;
+                                        case "cranklength":
+                                            InternalFunctions.ParseNumber(value, ref Animations.cranklength, key);
+                                            break;
+                                        case "crankvariable_l":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.crankvariable_L, key);
+                                            break;
+                                        case "crankvariable_r":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.crankvariable_R, key);
+                                            break;
+                                        case "crankrotation_l":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.crankrotation_L, key);
+                                            break;
+                                        case "crankrotation_r":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.crankrotation_R, key);
+                                            break;
                                         case "wheelrotation_variable":
                                             InternalFunctions.ValidateIndex(value, ref Animations.wheelrotation_variable, key);
                                             break;

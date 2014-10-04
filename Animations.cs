@@ -43,6 +43,18 @@ namespace Plugin
         internal double rodradius = 0;
         /// <summary>The variable controlling the rotation of our wheel.</summary>
         internal int wheelrotation_variable = -1;
+        /// <summary>The variable controlling Y movement of the piston crank crosshead [Left]</summary>
+        internal int crankvariable_L = -1;
+        /// <summary>The variable controlling Z rotation of the piston crank [Left]</summary>
+        internal int crankrotation_L = -1;
+        /// <summary>The variable controlling Y movement of the piston crank crosshead [Right]</summary>
+        internal int crankvariable_R = -1;
+        /// <summary>The variable controlling Z rotation of the piston crank [Right]</summary>
+        internal int crankrotation_R = -1;
+        /// <summary>The radius of the crank in millimeters.</summary>
+        internal double crankradius = 0;
+        /// <summary>The length of the crank in millimeters.</summary>
+        internal double cranklength = 0;
         //rodradius , wheelradius & the animation stepper should all be set when animating valve gear
         //This keeps all three items fully in sync
 
@@ -55,6 +67,9 @@ namespace Plugin
         internal double gear_Ylocation_L;
         /// <summary>The Z position of the valve gear motion [Left]</summary>
         internal double gear_Zlocation_L;
+        /// <summary>The Z position of the piston crank [Right]</summary>
+        internal double cranklocation_R;
+        internal double crankangle_R;
         /// <summary>The current train location.</summary>
         internal double currentlocation;
         /// <summary>The previous train location</summary>
@@ -157,7 +172,6 @@ namespace Plugin
                 }
                 if (wheelrotation_variable != -1)
                 {
-                    data.DebugMessage = Convert.ToString(wheelpercentage);
                     //Calculate the wheel rotation value- Use this rather than an animated formula, as otherwise the gear and wheel may become out of sync
                     if (wheelrotation <= 360 && wheelrotation >= 0)
                     {
@@ -169,6 +183,16 @@ namespace Plugin
                     }
                     this.Train.Panel[wheelrotation_variable] = 360 - (int)(((Math.PI / 180) * degreesturned) * 1000);
                 }
+
+                //Piston Crosshead Location Right
+                if (crankvariable_R != -1 && crankrotation_R != -1)
+                {
+                    //We've already worked out the number of degrees turned for the main crankshaft.
+                    //Work out the crank throw distance
+                    cranklocation_R = crankradius * Math.Cos((Math.PI / 180) * degreesturned + 90) + Math.Sqrt(Math.Pow(cranklength, 2) - Math.Pow(crankradius, 2) * Math.Pow(Math.Sin((Math.PI / 180) * degreesturned + 90), 2));
+                    this.Train.Panel[crankvariable_R] = (int)cranklocation_R;
+                }
+                
 
             //Flashing door light
                 if (MyDoorLightState == DoorLightStates.InMotion)

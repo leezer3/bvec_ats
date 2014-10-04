@@ -92,6 +92,7 @@ namespace Plugin
         internal string rearpantographkey;
         internal string shovellingkey;
         internal string advancedrivingkey;
+        internal string doorskey = "K";
 
 
         //Arrays
@@ -595,6 +596,18 @@ namespace Plugin
                     Train.vigilance.deadmanstimer = 0.0;
                     SoundManager.Stop(Train.vigilance.vigilancealarm);
                     Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
+                }
+            }
+
+            if (keypressed == doorskey)
+            {
+                if (Train.Doors == DoorStates.None)
+                {
+                    Train.Doors = DoorStates.Left;
+                }
+                else
+                {
+                    Train.Doors = DoorStates.None;
                 }
             }
 
