@@ -70,14 +70,13 @@ namespace Plugin
         /// <summary>The Z position of the piston crank [Right]</summary>
         internal double cranklocation_R;
         internal double crankangle_R;
-        /// <summary>The current train location.</summary>
-        internal double currentlocation;
-        /// <summary>The previous train location</summary>
-        internal double previouslocation;
+        /// <summary>The circumference in millimeters</summary>
         internal double wheelcircumference;
         internal double wheelpercentage;
         internal double degreesturned;
         internal double wheelrotation;
+        //Calculate the distance travelled
+        internal double distancetravelled;
 
         /// <summary>Creates a new instance of this system.</summary>
         /// <param name="train">The train.</param>
@@ -91,19 +90,20 @@ namespace Plugin
         {
             //Set gear position to initial [12PM] position if all variables are correct
             //Calculate wheel circumference
+            if (rodradius != 0)
+            {
+                wheelcircumference = 2 * Math.PI * rodradius;
+            }
             if (gear_Yvariable_R != 0 && gear_Zvariable_R != 0 && rodradius != 0)
             {
                 gear_Ylocation_R = rodradius;
                 gear_Zlocation_R = 0;
-                wheelcircumference = 2 * Math.PI * rodradius;
             }
             if (gear_Yvariable_L != 0 && gear_Zvariable_L != 0 && rodradius != 0)
             {
                 gear_Ylocation_L = 0;
                 gear_Zlocation_L = rodradius;
-                wheelcircumference = 2 * Math.PI * rodradius;
             }
-            currentlocation = Train.trainlocation;
             //Set the initial state of the doors light
             if (Train.Doors != DoorStates.None)
             {
@@ -122,14 +122,13 @@ namespace Plugin
         {
             
             //Steam Locomotive Valve Gear
-                
-                //Calculate the distance travelled
-                double distancetravelled;
-                previouslocation = currentlocation;
-                currentlocation = Train.trainlocation;
-                distancetravelled = currentlocation - previouslocation;
+                /// <summary>The distance travelled in meters</summary>
+                distancetravelled = Train.trainlocation - Train.previouslocation;
                 //Then divide the distance travelled by the circumference to get us the percentage around the wheel travelled in this turn
-                double percentage = (distancetravelled * 10000) / wheelcircumference;
+                double percentage = ((distancetravelled * 1000) / wheelcircumference) * 35;
+                //Multiply by 1000 to get the distance travelled in millimeters
+                //Then divide by the wheel's circumference
+                //Finally multiply by 100 to get a figure out of 100
                 if (Math.Abs(percentage) > 100)
                 {
                     //If percentage is above 100%, set to zero
@@ -185,12 +184,14 @@ namespace Plugin
                 }
 
                 //Piston Crosshead Location Right
-                if (crankvariable_R != -1 && crankrotation_R != -1)
+                if (crankvariable_R != -1 && crankrotation_R != -1 && crankradius != 0 && cranklength !=0)
                 {
                     //We've already worked out the number of degrees turned for the main crankshaft.
                     //Work out the crank throw distance
-                    cranklocation_R = crankradius * Math.Cos((Math.PI / 180) * degreesturned + 90) + Math.Sqrt(Math.Pow(cranklength, 2) - Math.Pow(crankradius, 2) * Math.Pow(Math.Sin((Math.PI / 180) * degreesturned + 90), 2));
+                    cranklocation_R = crankradius * Math.Cos((Math.PI / 180) * (degreesturned + 90)) + Math.Sqrt(Math.Pow(cranklength, 2) - Math.Pow(crankradius, 2) * Math.Pow(Math.Sin((Math.PI / 180) * (degreesturned + 90)), 2));
                     this.Train.Panel[crankvariable_R] = (int)cranklocation_R;
+                    crankangle_R = Math.Asin(crankradius * Math.Sin((Math.PI / 180) * (degreesturned + 90)) / cranklength);
+                    this.Train.Panel[crankrotation_R] = (int)((crankangle_R * 1000) /2);
                 }
                 
 

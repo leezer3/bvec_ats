@@ -454,7 +454,7 @@ namespace Plugin {
                 this.boilertimer += data.ElapsedTime.Seconds;
 
                 //This section of code handles the fire simulator
-                if (advancedfiring != -1)
+                if (advancedfiring == -1)
                 {
                     //Advanced firing is not enabled, use the standard boiler water to steam rate
                     finalsteamrate = calculatedsteamrate;
@@ -475,7 +475,17 @@ namespace Plugin {
                             firemass += (int)shovellingrate;
                             firetemp -= (int)shovellingrate;
                         }
-                        int fire_tempchange = (int)Math.Ceiling((double)(((firemass * 0.5) - 10) / (firemass * 0.05)));
+                        int fire_tempchange;
+                        if (firemass != 0)
+                        {
+                            fire_tempchange = (int)Math.Ceiling((double)(((firemass * 0.5) - 10) / (firemass * 0.05)));
+                        }
+                        else
+                        {
+                            //Temperature change must be zero if our fire mass is zero
+                            //Otherwise causes a division by zero error....
+                            fire_tempchange = 0;
+                        }
                         firemass = (int)((double)firemass * 0.9875);
                         if (firetemp < 1000)
                         {
