@@ -169,7 +169,6 @@ namespace Plugin {
 
 		/// <summary>Creates a new train without any devices installed.</summary>
 		/// <param name="panel">The array of panel variables.</param>
-		/// <param name="playSound">The delegate to play sounds.</param>
 		internal Train(int[] panel) {
 			this.PluginInitializing = false;
 			this.Specs = new VehicleSpecs(0, BrakeTypes.ElectromagneticStraightAirBrake, 0, false, 0);
@@ -252,106 +251,106 @@ namespace Plugin {
 								case "steam":
 									switch (key) {
                                         case "automatic":
-                                        this.steam.automatic = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateSetting(value, ref steam.automatic, key);
                                         break;
                                         case "heatingpart":
-                                        this.steam.heatingpart = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateSetting(value, ref steam.heatingpart, key);
                                         break;
                                         case "heatingrate":
                                         this.steam.heatingrate = value;
                                         break;
                                         case "overheatwarn":
-                                        this.steam.overheatwarn = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.overheatwarn, key);
                                         break;
                                         case "overheat":
-                                        this.steam.overheat = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.overheat, key);
                                         break;
                                         case "overheatresult":
-                                        this.steam.overheatresult = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateSetting(value, ref steam.overheatresult, key);
                                         break;
                                         case "thermometer":
-                                        this.steam.thermometer = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.thermometer, key);
                                         break;
                                         case "overheatindicator":
-                                        this.steam.overheatindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.overheatindicator, key);
                                         break;
                                         case "overheatalarm":
-                                        this.steam.overheatalarm = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.overheatalarm, key);
                                         break;
                                         case "cutoffmax":
-                                        this.steam.cutoffmax = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.cutoffmax, key);
                                         break;
                                         case "cutoffineffective":
-                                        this.steam.cutoffineffective = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.cutoffineffective, key);
                                         break;
                                         case "cutoffratio":
-                                        this.steam.cutoffratio = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.cutoffratio, key);
                                         break;
                                         case "cutoffratiobase":
-                                        this.steam.cutoffratiobase = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.cutoffratiobase, key);
                                         break;
                                         case "cutoffmin":
-                                        this.steam.cutoffmin = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.cutoffmin, key);
                                         break;
                                         case "cutoffdeviation":
-                                        this.steam.cutoffdeviation = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.cutoffdeviation, key);
                                         break;
                                         case "cutoffindicator":
-                                        this.steam.cutoffindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.cutoffindicator, key);
                                         break;
                                         case "boilermaxpressure":
-                                        this.steam.boilermaxpressure = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.boilermaxpressure, key);
                                         break;
                                         case "boilerminpressure":
-                                        this.steam.boilerminpressure = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.boilerminpressure, key);
                                         break;
                                         case "boilerstartwaterlevel":
-                                        this.steam.boilerstartwaterlevel = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.boilerstartwaterlevel, key);
                                         break;
                                         case "boilermaxwaterlevel":
-                                        this.steam.boilermaxwaterlevel = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.boilermaxwaterlevel, key);
                                         break;
                                         case "boilerpressureindicator":
-                                        this.steam.boilerpressureindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.boilerpressureindicator, key);
                                         break;
                                         case "boilerwaterlevelindicator":
-                                        this.steam.boilerwaterlevelindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.boilerwaterlevelindicator, key);
                                         break;
                                         case "boilerwatertosteamrate":
-                                        this.steam.boilerwatertosteamrate = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.boilerwatertosteamrate, key);
                                         break;
                                         case "fuelindicator":
-                                        this.steam.fuelindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.fuelindicator, key);
                                         break;
                                         case "fuelstartamount":
-                                        this.steam.fuelstartamount = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.fuelstartamount, key);
                                         break;
                                         case "fuelcapacity":
-                                        this.steam.fuelcapacity = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.fuelcapacity, key);
                                         break;
                                         case "fuelfillspeed":
-                                        this.steam.fuelfillspeed = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.fuelfillspeed, key);
                                         break;
                                         case "fuelfillindicator":
-                                        this.steam.fuelfillindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.fuelfillindicator, key);
                                         break;
                                         case "injectorrate":
-                                        this.steam.injectorrate = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.injectorrate, key);
                                         break;
                                         case "injectorindicator":
-                                        this.steam.injectorindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.injectorindicator, key);
                                         break;
                                         case "automaticindicator":
-                                        this.steam.automaticindicator = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.automaticindicator, key);
                                         break;
                                         case "injectorsound":
-                                        this.steam.injectorsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.injectorsound, key);
                                         break;
                                         case "blowoffsound":
-                                        this.steam.blowoffsound = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ValidateIndex(value, ref steam.blowoffsound, key);
                                         break;
                                         case "klaxonpressureuse":
-                                        this.steam.klaxonpressureuse = double.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                                        InternalFunctions.ParseNumber(value, ref steam.klaxonpressureuse, key);
                                         break;
                                         default:
                                         throw new InvalidDataException("The parameter " + key + " is not supported.");

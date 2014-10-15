@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using OpenBveApi.Runtime;
 
 
@@ -241,7 +240,7 @@ namespace Plugin
             if (overheat != 0 && heatingpart != 0)
             {
                 this.heatingtimer += data.ElapsedTime.Milliseconds;
-                if (heatingpart == 0 | overheat == 0)
+                if (heatingpart == 0 || overheat == 0)
                 {
                     //No heating part or overheat temperature not set
                     this.temperature = 0.0;
@@ -299,12 +298,12 @@ namespace Plugin
                 }
             }
 
-            int new_power = 0;
             {
+                
                 //If we're in a power gap, check whether we have a pickup available
                 if (powergap)
                 {
-
+                    int new_power;
                     //First check to see whether the first pickup is in the neutral section
                     if (Train.trainlocation - pickuparray[0] > firstmagnet && Train.trainlocation - pickuparray[0] < nextmagnet)
                     {

@@ -58,10 +58,10 @@ namespace Plugin {
 
 		// --- constants ---
         /// <summary>Is our transmission automatic</summary>
-        internal double automatic = -1;
+        internal int automatic = -1;
 
 		/// <summary>Do we heave a part that heats up?</summary>
-		internal double heatingpart = 0;
+		internal int heatingpart = 0;
 
         /// <summary>Overheat warning temperature</summary>
         internal double overheatwarn = 0;
@@ -70,16 +70,16 @@ namespace Plugin {
         internal double overheat = 0;
 
         /// <summary>What happens when we overheat?</summary>
-        internal double overheatresult = 0;
+        internal int overheatresult = 0;
 
         /// <summary>Panel indicator for thermometer</summary>
-        internal double thermometer = -1;
+        internal int thermometer = -1;
 
         /// <summary>Panel indicator for overheat indicator</summary>
-        internal double overheatindicator = -1;
+        internal int overheatindicator = -1;
 
         /// <summary>Sound index for overheat alarm</summary>
-        internal double overheatalarm = -1;
+        internal int overheatalarm = -1;
 
         /// <summary>Default paramaters</summary>
         /// 
@@ -120,7 +120,7 @@ namespace Plugin {
         /// <summary>The capacity of the fuel tanks</summary>
         internal double fuelcapacity = 20000;
         /// <summary>The panel index of the fuelling indicator</summary>
-        internal double fuelfillindicator = -1;
+        internal int fuelfillindicator = -1;
         /// <summary>The number of pressure units used per second by the whistle</summary>
         internal double klaxonpressureuse = -1;
 
@@ -138,25 +138,25 @@ namespace Plugin {
 
         //Panel Indicies
         /// <summary>The panel index of the reverser indicator</summary>
-        internal double reverserindex = -1;
+        internal int reverserindex = -1;
         /// <summary>The panel index of the boiler pressure gauge</summary>
-        internal double boilerpressureindicator = -1;
+        internal int boilerpressureindicator = -1;
         /// <summary>The panel index of the boiler water level gauge</summary>
-        internal double boilerwaterlevelindicator = -1;
+        internal int boilerwaterlevelindicator = -1;
         /// <summary>The panel index of the cutoff indicator</summary>
-        internal double cutoffindicator = -1;
+        internal int cutoffindicator = -1;
         /// <summary>The panel index of the tanks water level indicator</summary>
-        internal double fuelindicator = -1;
+        internal int fuelindicator = -1;
         /// <summary>The panel index of the injectors indicator</summary>
-        internal double injectorindicator = -1;
+        internal int injectorindicator = -1;
         /// <summary>The panel index of the automatic cutoff & reverser indicator</summary>
-        internal double automaticindicator = -1;
+        internal int automaticindicator = -1;
 
         //Sound Indicies
         /// <summary>The sound index played when the injectors are activated</summary>
-        internal double injectorsound = -1;
+        internal int injectorsound = -1;
         /// <summary>The sound index played when the boiler blows off excess pressure</summary>
-        internal double blowoffsound = -1;
+        internal int blowoffsound = -1;
 
 
         //Arrays
@@ -650,24 +650,24 @@ namespace Plugin {
                 }
                 if (thermometer != -1)
                 {
-                    this.Train.Panel[(int)(thermometer)] = (int)temperature;
+                    this.Train.Panel[(thermometer)] = (int)temperature;
                 }
                 if (overheatindicator != -1)
                 {
                     if (temperature > overheatwarn)
                     {
-                        this.Train.Panel[(int)(overheatindicator)] = 1;
+                        this.Train.Panel[(overheatindicator)] = 1;
                     }
                     else
                     {
-                        this.Train.Panel[(int)(overheatindicator)] = 0;
+                        this.Train.Panel[(overheatindicator)] = 0;
                     }
                 }
                 if (fuelfillindicator != -1)
                 {
                     if (fuelling == true)
                     {
-                        this.Train.Panel[(int)(fuelfillindicator)] = 1;
+                        this.Train.Panel[(fuelfillindicator)] = 1;
                     }
                 }
             }
@@ -677,22 +677,22 @@ namespace Plugin {
             {
                 if (stm_injector == true)
                 {
-                    SoundManager.Play((int)injectorsound, 1.0, 1.0, true);
+                    SoundManager.Play(injectorsound, 1.0, 1.0, true);
                 }
                 else
                 {
-                    SoundManager.Stop((int)injectorsound);
+                    SoundManager.Stop(injectorsound);
                 }
             }
             if (overheatalarm != -1)
             {
                 if (temperature > overheatalarm)
                 {
-                    SoundManager.Play((int)overheatalarm, 1.0, 1.0, true);
+                    SoundManager.Play(overheatalarm, 1.0, 1.0, true);
                 }
                 else
                 {
-                    SoundManager.Stop((int)overheatalarm);
+                    SoundManager.Stop(overheatalarm);
                 }
             }
         }

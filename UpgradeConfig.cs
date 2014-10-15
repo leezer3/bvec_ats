@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Text;
-using OpenBveApi.Runtime;
-using System.Text.RegularExpressions;
 
 namespace Plugin
 {
@@ -28,7 +25,6 @@ namespace Plugin
             bool dieseltype = false;
             //Read all lines of existing OS_ATS configuration file and add to appropriate arrays
 			string[] lines = File.ReadAllLines(file, Encoding.UTF8);
-			string section = string.Empty;
 			for (int i = 0; i < lines.Length; i++) {
 				string line = lines[i];
 				int semicolon = line.IndexOf(';');

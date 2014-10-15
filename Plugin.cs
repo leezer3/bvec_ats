@@ -47,26 +47,34 @@ namespace Plugin {
                     generatorversion = reader.ReadLine();
                 }
                 //If it exists
-                if(generatorversion.StartsWith(";GenVersion="))
+                try
                 {
-                    string versiontext = Regex.Match(generatorversion, @"\d+").Value;
-                    int version = Int32.Parse(versiontext);
-                    //If we're below the current version, try to upgrade again
-                    if (version < 1)
+                    if (generatorversion.StartsWith(";GenVersion="))
                     {
-                        if (File.Exists(OS_ATSDLL) && File.Exists(OS_ATSconfigFile))
+                        string versiontext = Regex.Match(generatorversion, @"\d+").Value;
+                        int version = Int32.Parse(versiontext);
+                        //If we're below the current version, try to upgrade again
+                        if (version < 1)
                         {
-                            try
+                            if (File.Exists(OS_ATSDLL) && File.Exists(OS_ATSconfigFile))
                             {
-                                UpgradeOSATS.UpgradeConfigurationFile(OS_ATSconfigFile, properties.TrainFolder);
-                            }
-                            catch (Exception)
-                            {
+                                try
+                                {
+                                    UpgradeOSATS.UpgradeConfigurationFile(OS_ATSconfigFile, properties.TrainFolder);
+                                }
+                                catch (Exception)
+                                {
+                                }
                             }
                         }
                     }
                 }
-                    
+                catch (Exception ex)
+                {
+                    properties.FailureReason = "Empty configuration file detected.";
+                    return false;
+                }
+
                 //Now try loading
                 try
                 {
