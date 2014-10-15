@@ -40,6 +40,7 @@ namespace Plugin
          * <para>6. Steam locomotive optimal cutoff</para></summary> */
 
         public static string[] debuginformation = new string[20];
+        public static int tractiontype;
 
         /// <summary>The underlying train.</summary>
         private Train Train;
@@ -154,7 +155,19 @@ namespace Plugin
             {
                 InternalFunctions.LogError("customindicators");
             }
-
+            //Set traction type to pass to debug window
+            if (Train.steam != null)
+            {
+                tractiontype = 0;
+            }
+            else if (Train.diesel != null)
+            {
+                tractiontype = 1;
+            }
+            else
+            {
+                tractiontype = 2;
+            }
 
 		}
 
@@ -232,6 +245,12 @@ namespace Plugin
                         tractionmanager.neutralrvrtripped = false;
                     }
                 }
+            }
+            //Insufficient steam boiler pressure
+            //Debug messages need to be called via the traction manager to be passed to the debug window correctly
+            if (Train.steam != null && Train.steam.stm_power == 0 && Train.steam.stm_boilerpressure < Train.steam.boilerminpressure)
+            {
+                data.DebugMessage = "Power cutoff due to boiler pressure below minimum";
             }
 
             if (tractionmanager.powercutoffdemanded == true)
@@ -487,7 +506,7 @@ namespace Plugin
                 else
                 {
                     debuginformation[0] = data.DebugMessage;
-                    AdvancedDriving.CreateInst.Elapse(debuginformation);
+                    AdvancedDriving.CreateInst.Elapse(debuginformation, tractiontype);
                 }
             }
             else

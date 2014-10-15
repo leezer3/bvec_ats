@@ -81,33 +81,38 @@ namespace Plugin
             
         }
 
-        internal void Elapse(string[] debuginformation)
+        internal void Elapse(string[] debuginformation, int tractiontype)
         {
             debuglabel.Text = debuginformation[0];
-            genrate.Text = debuginformation[2];
-            userate.Text = debuginformation[3];
-            //If we're using more pressure than we're generating, change the usage rate text color to red
-            if (Int32.Parse(debuginformation[3]) > Int32.Parse(debuginformation[2]))
+            //Only attempt to display steam related debug information if this is a steam locomotive
+            if (tractiontype == 0)
             {
-                userate.ForeColor = System.Drawing.Color.Red;
+                pressure.Text = debuginformation[1];
+                genrate.Text = debuginformation[2];
+                userate.Text = debuginformation[3];
+                //If we're using more pressure than we're generating, change the usage rate text color to red
+                if (Int32.Parse(debuginformation[3]) > Int32.Parse(debuginformation[2]))
+                {
+                    userate.ForeColor = System.Drawing.Color.Red;
+                }
+                else
+                {
+                    userate.ForeColor = System.Drawing.Color.Black;
+                }
+                currentcutoff.Text = debuginformation[4];
+                //If the current cutoff is greater than the optimum cutoff, set the text color to red
+                if (double.Parse(debuginformation[4]) > double.Parse(debuginformation[5]))
+                {
+                    currentcutoff.ForeColor = System.Drawing.Color.Red;
+                }
+                else
+                {
+                    currentcutoff.ForeColor = System.Drawing.Color.Black;
+                }
+                optimalcutoff.Text = debuginformation[5];
+                firemass.Text = debuginformation[6];
+                firetemp.Text = debuginformation[7];
             }
-            else
-            {
-                userate.ForeColor = System.Drawing.Color.Black;
-            }
-            currentcutoff.Text = debuginformation[4];
-            //If the current cutoff is greater than the optimum cutoff, set the text color to red
-            if (double.Parse(debuginformation[4]) > double.Parse(debuginformation[5]))
-            {
-                currentcutoff.ForeColor = System.Drawing.Color.Red;
-            }
-            else
-            {
-                currentcutoff.ForeColor = System.Drawing.Color.Black;
-            }
-            optimalcutoff.Text = debuginformation[5];
-            firemass.Text = debuginformation[6];
-            firetemp.Text = debuginformation[7];
         }
 
         void AdvancedDriving_FormClosed(object sender, FormClosedEventArgs e)

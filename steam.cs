@@ -423,7 +423,7 @@ namespace Plugin {
                 //This section of code operates the pressure power drop
                 int bp = Math.Max(stm_boilerpressure - (int)boilerminpressure, 0);
                 int bp_range = (int)boilermaxpressure - (int)boilerminpressure;
-                int pwr_limit = Math.Min(new_power, (int)(bp / (float)(bp_range) + (1.0 / this.Train.Specs.PowerNotches - 0.01)) * this.Train.Specs.PowerNotches);
+                int pwr_limit = Math.Min(new_power, (int)((bp / (float)(bp_range) + (1.0 / this.Train.Specs.PowerNotches - 0.01)) * this.Train.Specs.PowerNotches));
 
                 
 
@@ -445,7 +445,6 @@ namespace Plugin {
                     data.Handles.PowerNotch = stm_power;
                 }
             }
-
 
             {
                 //This section of code generates pressure and operates the blowoff
