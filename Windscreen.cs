@@ -60,12 +60,12 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
-            Random rnd = new Random();
+            var rnd = new Random();
             //Is rain and windscreen wipers enabled?
             if (this.enabled)
             {
                 //First pull a random unlit drop from our array
-                List<int> unuseddrops = new List<int>();
+                var unuseddrops = new List<int>();
                 unuseddrops.Clear();
                 int count = 0;
                 int unusedlength = 0;
@@ -94,7 +94,7 @@ namespace Plugin
                 if (israining == true)
                 {
                     //Generate a random drop interval
-                    int dev = (int)(0.4 * 2000 / rainintensity);
+                    var dev = (int)(0.4 * 2000 / rainintensity);
                     int dropinterval = (2000 / rainintensity) + (rnd.Next(dev, dev * 2));
 
                     droptimer += (int)data.ElapsedTime.Milliseconds;

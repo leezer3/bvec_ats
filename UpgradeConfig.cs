@@ -10,17 +10,17 @@ namespace Plugin
         //This class will upgrade an existing OS_ATS configuration file.
         //Only supported values will be upgradeed.
         	internal static void UpgradeConfigurationFile(string file, string trainpath) {
-            List<string> diesel = new List<string>();
-            List<string> electric = new List<string>();
-            List<string> steam = new List<string>();
-            List<string> common = new List<string>();
-            List<string> vigilance = new List<string>();
-            List<string> AWS = new List<string>();
-            List<string> TPWS = new List<string>();
-            List<string> interlocks = new List<string>();
-            List<string> windscreen = new List<string>();
+            var diesel = new List<string>();
+            var electric = new List<string>();
+            var steam = new List<string>();
+            var common = new List<string>();
+            var vigilance = new List<string>();
+            var AWS = new List<string>();
+            var TPWS = new List<string>();
+            var interlocks = new List<string>();
+            var windscreen = new List<string>();
+            var errors = new List<string>();
 
-            List<string> errors = new List<string>();
             bool steamtype = false;
             bool dieseltype = false;
             //Read all lines of existing OS_ATS configuration file and add to appropriate arrays
@@ -307,7 +307,7 @@ namespace Plugin
 			            case "klaxonindicator":
 			                //Remove key assignments from klaxonindicator
 			                string[] splitklaxonindicator = value.Split(',');
-			                int[] splitarray = new int[splitklaxonindicator.Length + 1];
+			                var splitarray = new int[splitklaxonindicator.Length + 1];
 			                for (int j = 0; j < splitklaxonindicator.Length; j++)
 			                {
 			                    if (j <= 1)
@@ -326,7 +326,7 @@ namespace Plugin
 			            case "customindicators":
 			                //Remove key assignments from customindicators
 			                string[] splitcustomindicators = value.Split(',');
-			                int[] splitarray1 = new int[splitcustomindicators.Length / 2];
+			                var splitarray1 = new int[splitcustomindicators.Length / 2];
 			                int k = 0;
 			                for (int j = 0; j < splitcustomindicators.Length; j++)
 			                {

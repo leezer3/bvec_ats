@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
@@ -28,7 +27,7 @@ namespace Plugin
             {
                 //make sure Top Most property on form is set to false
                 //otherwise this doesn't work
-                int WS_EX_TOPMOST = 0x00000008;
+                const int WS_EX_TOPMOST = 0x00000008;
                 CreateParams cp = base.CreateParams;
                 cp.ExStyle |= WS_EX_TOPMOST;
                 return cp;
@@ -37,7 +36,7 @@ namespace Plugin
 
         public static string debugmessage;
         private static AdvancedDriving mInst;
-        AdvancedDrivingMask mask;
+        readonly AdvancedDrivingMask mask;
         // Create a public static property that returns the state of the instance
         public static AdvancedDriving CheckInst
         {
@@ -113,9 +112,6 @@ namespace Plugin
         void AdvancedDriving_FormClosed(object sender, FormClosedEventArgs e)
         {
             mask.Close();
-            Point location = Location;
-            string initLocation = string.Join(",", location.X, location.Y);
-            
             //Write Out Location
             using (var key = Registry.CurrentUser.OpenSubKey(@"Software\BVEC_ATS", true))
             {

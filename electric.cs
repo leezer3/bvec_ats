@@ -309,9 +309,9 @@ namespace Plugin
                     {
                         //Cycle through the other pickups
                         int j = 0;
-                        for (int i = 0; i < pickuparray.Length; i++)
+                        foreach (int t in pickuparray)
                         {
-                            if (Train.trainlocation - pickuparray[i] < firstmagnet)
+                            if (Train.trainlocation - t < firstmagnet)
                             {
                                 j++;
                             }
@@ -349,9 +349,9 @@ namespace Plugin
                     {
                         //Cycle through the other pickups
                         int j = 0;
-                        for (int i = 0; i < pickuparray.Length; i++)
+                        foreach (int t in pickuparray)
                         {
-                            if (Train.trainlocation - pickuparray[i] < firstmagnet)
+                            if (Train.trainlocation - t < firstmagnet)
                             {
                                 j++;
                             }

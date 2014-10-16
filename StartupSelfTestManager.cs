@@ -10,9 +10,11 @@ namespace Plugin {
 		// members
 
         internal bool firststart;
-		/// <summary>The startup self-test sequence duration in milliseconds.</summary>
-		private static int SequenceDuration = 1700;
-		/// <summary>The state of the train systems with regard to the startup self-test procedure.</summary>
+
+	    /// <summary>The startup self-test sequence duration in milliseconds.</summary>
+	    private const int SequenceDuration = 1700;
+
+	    /// <summary>The state of the train systems with regard to the startup self-test procedure.</summary>
 		private static SequenceStates MySequenceState = SequenceStates.Pending;
 		/// <summary>The timer used during the startup self-test sequence.</summary>
 		private static int MySequenceTimer = SequenceDuration;
@@ -91,12 +93,10 @@ namespace Plugin {
                 AWS.startuphorntriggered = false;
 			}
 		}
-		
-		/// <summary>This should be called during each Elapse() call.</summary>
-		/// <param name="elapsedTime">The elapsed time since the last call to this method in milliseconds.</param>
-		/// <param name="handles">The handles of the cab.</param>
-		/// <param name="panel">The array of panel variables the plugin initialized in the Load call.</param>
-		/// <param name="debugBuilder">A string builder object, to which debug text can be appended.</param>
+
+        /// <summary>Is called every frame.</summary>
+        /// <param name="data">The data.</param>
+        /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
 		internal override void Elapse(ElapseData data, ref bool blocking){
 			if (StartupSelfTestManager.MySequenceState == StartupSelfTestManager.SequenceStates.Pending) {
 				Train.selftest = false;

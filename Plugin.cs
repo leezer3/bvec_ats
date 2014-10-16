@@ -41,7 +41,7 @@ namespace Plugin {
             {
                 //Check for the automatic generator version
                 string generatorversion;
-                using (StreamReader reader = new StreamReader(configFile))
+                using (var reader = new StreamReader(configFile))
                 {
                     //Read in first line
                     generatorversion = reader.ReadLine();

@@ -980,7 +980,7 @@ namespace Plugin {
 			    }
 			}
 			//Check for null references and add all the devices
-			List<Device> devices = new List<Device>();
+			var devices = new List<Device>();
             if (this.tractionmanager != null)
             {
                 devices.Add(this.tractionmanager);
@@ -1072,7 +1072,7 @@ namespace Plugin {
 				if (data.Handles.BrakeNotch >= this.Specs.AtsNotch & data.Handles.BrakeNotch <= this.Specs.BrakeNotches | data.Handles.Reverser != 0 & data.Handles.BrakeNotch == 1 & this.Specs.HasHoldBrake) {
 					this.Panel[101] = 1;
 				}
-				for (int i = (int)VirtualKeys.S; i <= (int)VirtualKeys.C2; i++) {
+				for (var i = (int)VirtualKeys.S; i <= (int)VirtualKeys.C2; i++) {
 					if (KeysPressed[i]) {
 						this.Panel[93 + i] = 1;
 					}
@@ -1146,7 +1146,7 @@ namespace Plugin {
 		/// <summary>Is called when a key is pressed.</summary>
 		/// <param name="key">The key.</param>
 		internal void KeyDown(VirtualKeys key) {
-			int index = (int)key;
+			var index = (int)key;
 			if (index >= 0 & index < KeysPressed.Length) {
 				KeysPressed[index] = true;
 			}
@@ -1161,7 +1161,7 @@ namespace Plugin {
 		/// <summary>Is called when a key is released.</summary>
 		/// <param name="key">The key.</param>
 		internal void KeyUp(VirtualKeys key) {
-			int index = (int)key;
+			var index = (int)key;
 			if (index >= 0 & index < KeysPressed.Length) {
 				KeysPressed[index] = false;
 			}
