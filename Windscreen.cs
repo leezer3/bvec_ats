@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using OpenBveApi.Runtime;
-using System.Security.Cryptography;
 
 namespace Plugin
 {

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Reflection;
-using OpenBveApi.Runtime;
+﻿using OpenBveApi.Runtime;
 
 namespace Plugin
 {

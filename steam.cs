@@ -226,7 +226,7 @@ namespace Plugin {
             if (overheat != 0 && heatingpart != 0)
             {
                 this.heatingtimer += data.ElapsedTime.Milliseconds;
-                if (heatingpart == 0 | overheat == 0)
+                if (heatingpart == 0 || overheat == 0)
                 {
                     //No heating part or overheat temperature not set
                     this.temperature = 0.0;
@@ -511,7 +511,7 @@ namespace Plugin {
                         stm_boilerpressure = (int)boilermaxpressure;
                         if (blowoffsound != -1)
                         {
-                            SoundManager.Play((int)blowoffsound, 1.0, 1.0, false);
+                            SoundManager.Play(blowoffsound, 1.0, 1.0, false);
                         }
                         
                     }
@@ -610,30 +610,30 @@ namespace Plugin {
                 //Set Panel Indicators
                 if (cutoffindicator != -1)
                 {
-                    this.Train.Panel[(int)(cutoffindicator)] = (int)cutoff;
+                    this.Train.Panel[(cutoffindicator)] = (int)cutoff;
                 }
                 if (boilerpressureindicator != -1)
                 {
-                    this.Train.Panel[(int)(boilerpressureindicator)] = (int)stm_boilerpressure;
+                    this.Train.Panel[(boilerpressureindicator)] = (int)stm_boilerpressure;
                 }
                 if (boilerwaterlevelindicator != -1)
                 {
-                    this.Train.Panel[(int)(boilerwaterlevelindicator)] = (int)stm_boilerwater;
+                    this.Train.Panel[(boilerwaterlevelindicator)] = (int)stm_boilerwater;
                 }
                 if (fuelindicator != -1)
                 {
-                    this.Train.Panel[(int)(fuelindicator)] = (int)fuel;
+                    this.Train.Panel[(fuelindicator)] = (int)fuel;
                 }
                 if (injectorindicator != -1)
                 {
                     if (stm_injector == true)
                     {
-                        this.Train.Panel[(int)(injectorindicator)] = 1;
+                        this.Train.Panel[(injectorindicator)] = 1;
 
                     }
                     else
                     {
-                        this.Train.Panel[(int)(injectorindicator)] = 0;
+                        this.Train.Panel[(injectorindicator)] = 0;
 
                     }
                 }
@@ -641,11 +641,11 @@ namespace Plugin {
                 {
                     if (automatic == -1)
                     {
-                        this.Train.Panel[(int)(automaticindicator)] = 0;
+                        this.Train.Panel[(automaticindicator)] = 0;
                     }
                     else
                     {
-                        this.Train.Panel[(int)(automaticindicator)] = 1;
+                        this.Train.Panel[(automaticindicator)] = 1;
                     }
                 }
                 if (thermometer != -1)

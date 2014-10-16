@@ -1,5 +1,4 @@
-﻿using System;
-using OpenBveApi.Runtime;
+﻿using OpenBveApi.Runtime;
 
 namespace Plugin {
 	
@@ -133,9 +132,9 @@ namespace Plugin {
                 {
                     if (Train.AWS.awswarningsound != -1)
                     {
-                        if (SoundManager.IsPlaying((int)Train.AWS.awswarningsound))
+                        if (SoundManager.IsPlaying(Train.AWS.awswarningsound))
                         {
-                            SoundManager.Stop((int)Train.AWS.awswarningsound);
+                            SoundManager.Stop(Train.AWS.awswarningsound);
                         }
                     }
                     MySequenceState = SequenceStates.Initialised;

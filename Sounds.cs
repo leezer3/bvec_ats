@@ -39,7 +39,7 @@ namespace Plugin
         /// <summary>Plays the sound assigned to the specified index, with a specified volume and pitch, once or in a continuous loop.</summary>
         /// <param name="soundIndex">The sound index to play, as defined in the sound configuration file.</param>
         /// <param name="volume">The playback volume, ranging from 0.0 upwards. A value of 1.0 corresponds to the original volume of the audio file.</param>
-        /// <param name="volume">The playback pitch, ranging from 0.0 upwards. A value of 1.0 corresponds to the original pitch of the audio file.</param>
+        /// <param name="pitch">The playback pitch, ranging from 0.0 upwards. A value of 1.0 corresponds to the original pitch of the audio file.</param>
         /// <param name="loop">Whether or not to play the sound in a continuous loop.</param>
         internal static void Play(int soundIndex, double volume, double pitch, bool loop)
         {

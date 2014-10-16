@@ -239,7 +239,6 @@ namespace Plugin
                 diesel.gearsblocked = true;
             }
 
-            int power_limit;
             if (!nogears)
             {
 
@@ -294,9 +293,10 @@ namespace Plugin
                 }
 
                 //Set current revolutions per minute
-                currentrevs = Math.Max(0,Math.Min(1000, (int)Train.trainspeed * gearratio));
+                currentrevs = Math.Max(0,Math.Min(1000, Train.trainspeed * gearratio));
 
                 //Now calculate the maximumum power notch
+                int power_limit;
                 if (currentrevs < fadeinratio)
                 {
                     power_limit = (int)((float)currentrevs / fadeinratio * this.Train.Specs.PowerNotches);
@@ -373,7 +373,7 @@ namespace Plugin
                 //Finally set the power notch
                 if (gear != 0)
                 {
-                    data.Handles.PowerNotch = (int)Math.Min(power_limit, this.Train.Handles.PowerNotch);
+                    data.Handles.PowerNotch = Math.Min(power_limit, this.Train.Handles.PowerNotch);
                 }
                 else
                 {
@@ -457,7 +457,7 @@ namespace Plugin
                             }
                             else if (revspercentage < heatingarray.Length)
                             {
-                                currentheat = heatingarray[(int)revspercentage];
+                                currentheat = heatingarray[revspercentage];
                             }
                             else
                             {
@@ -584,7 +584,7 @@ namespace Plugin
                 }
                 if (fuelindicator != -1)
                 {
-                    this.Train.Panel[(fuelindicator)] = (int)fuel;
+                    this.Train.Panel[(fuelindicator)] = fuel;
                 }
                 if (fuelfillindicator != -1)
                 {
