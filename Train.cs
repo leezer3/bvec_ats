@@ -197,786 +197,787 @@ namespace Plugin {
             this.Animations = new Animations(this);
 			string[] lines = File.ReadAllLines(file, Encoding.UTF8);
 			string section = string.Empty;
-			for (int i = 0; i < lines.Length; i++) {
-				string line = lines[i];
-				int semicolon = line.IndexOf(';');
-				if (semicolon >= 0) {
-					line = line.Substring(0, semicolon).Trim();
-				} else {
-					line = line.Trim();
-				}
-				if (line.Length != 0) {
-					if (line[0] == '[' & line[line.Length - 1] == ']') {
-						section = line.Substring(1, line.Length - 2).ToLowerInvariant();
-						switch (section) {
-                            case "steam":
-								this.steam = new steam(this);
-                                break;
-                            case "diesel":
-                                this.diesel = new diesel(this);
-                                break;
-                            case "electric":
-                                this.electric = new electric(this);
-                                break;
-                            case "vigilance":
-                                this.vigilance = new vigilance(this);
-                                break;
-                            case "aws":
-                                this.AWS.enabled = true;
-                                break;
-                            case "tpws":
-                                this.TPWS.enabled = true;
-                                break;
-                            case "interlocks":
-                                //Twiddle
-                                break;
-                            case "keyassignments":
-                                //Twiddle
-                                break;
-                            case "animations":
-                                //Twiddle
-                                break;
-                            case "windscreen":
-                                this.Windscreen.enabled = true;
-                                break;
-							default:
-								throw new InvalidDataException("The section " + line[0] + " is not supported.");
-						}
-					} else {
-						int equals = line.IndexOf('=');
-						if (equals >= 0) {
-							string key = line.Substring(0, equals).Trim().ToLowerInvariant();
-							string value = line.Substring(equals + 1).Trim();
-							switch (section) {
-								case "steam":
-									switch (key) {
-                                        case "automatic":
-                                        InternalFunctions.ValidateSetting(value, ref steam.automatic, key);
-                                        break;
-                                        case "heatingpart":
-                                        InternalFunctions.ValidateSetting(value, ref steam.heatingpart, key);
-                                        break;
-                                        case "heatingrate":
-                                        this.steam.heatingrate = value;
-                                        break;
-                                        case "overheatwarn":
-                                        InternalFunctions.ParseNumber(value, ref steam.overheatwarn, key);
-                                        break;
-                                        case "overheat":
-                                        InternalFunctions.ParseNumber(value, ref steam.overheat, key);
-                                        break;
-                                        case "overheatresult":
-                                        InternalFunctions.ValidateSetting(value, ref steam.overheatresult, key);
-                                        break;
-                                        case "thermometer":
-                                        InternalFunctions.ValidateIndex(value, ref steam.thermometer, key);
-                                        break;
-                                        case "overheatindicator":
-                                        InternalFunctions.ValidateIndex(value, ref steam.overheatindicator, key);
-                                        break;
-                                        case "overheatalarm":
-                                        InternalFunctions.ValidateIndex(value, ref steam.overheatalarm, key);
-                                        break;
-                                        case "cutoffmax":
-                                        InternalFunctions.ParseNumber(value, ref steam.cutoffmax, key);
-                                        break;
-                                        case "cutoffineffective":
-                                        InternalFunctions.ParseNumber(value, ref steam.cutoffineffective, key);
-                                        break;
-                                        case "cutoffratio":
-                                        InternalFunctions.ParseNumber(value, ref steam.cutoffratio, key);
-                                        break;
-                                        case "cutoffratiobase":
-                                        InternalFunctions.ParseNumber(value, ref steam.cutoffratiobase, key);
-                                        break;
-                                        case "cutoffmin":
-                                        InternalFunctions.ParseNumber(value, ref steam.cutoffmin, key);
-                                        break;
-                                        case "cutoffdeviation":
-                                        InternalFunctions.ParseNumber(value, ref steam.cutoffdeviation, key);
-                                        break;
-                                        case "cutoffindicator":
-                                        InternalFunctions.ValidateIndex(value, ref steam.cutoffindicator, key);
-                                        break;
-                                        case "boilermaxpressure":
-                                        InternalFunctions.ParseNumber(value, ref steam.boilermaxpressure, key);
-                                        break;
-                                        case "boilerminpressure":
-                                        InternalFunctions.ParseNumber(value, ref steam.boilerminpressure, key);
-                                        break;
-                                        case "boilerstartwaterlevel":
-                                        InternalFunctions.ParseNumber(value, ref steam.boilerstartwaterlevel, key);
-                                        break;
-                                        case "boilermaxwaterlevel":
-                                        InternalFunctions.ParseNumber(value, ref steam.boilermaxwaterlevel, key);
-                                        break;
-                                        case "boilerpressureindicator":
-                                        InternalFunctions.ValidateIndex(value, ref steam.boilerpressureindicator, key);
-                                        break;
-                                        case "boilerwaterlevelindicator":
-                                        InternalFunctions.ValidateIndex(value, ref steam.boilerwaterlevelindicator, key);
-                                        break;
-                                        case "boilerwatertosteamrate":
-                                        InternalFunctions.ParseNumber(value, ref steam.boilerwatertosteamrate, key);
-                                        break;
-                                        case "fuelindicator":
-                                        InternalFunctions.ValidateIndex(value, ref steam.fuelindicator, key);
-                                        break;
-                                        case "fuelstartamount":
-                                        InternalFunctions.ParseNumber(value, ref steam.fuelstartamount, key);
-                                        break;
-                                        case "fuelcapacity":
-                                        InternalFunctions.ParseNumber(value, ref steam.fuelcapacity, key);
-                                        break;
-                                        case "fuelfillspeed":
-                                        InternalFunctions.ParseNumber(value, ref steam.fuelfillspeed, key);
-                                        break;
-                                        case "fuelfillindicator":
-                                        InternalFunctions.ValidateIndex(value, ref steam.fuelfillindicator, key);
-                                        break;
-                                        case "injectorrate":
-                                        InternalFunctions.ParseNumber(value, ref steam.injectorrate, key);
-                                        break;
-                                        case "injectorindicator":
-                                        InternalFunctions.ValidateIndex(value, ref steam.injectorindicator, key);
-                                        break;
-                                        case "automaticindicator":
-                                        InternalFunctions.ValidateIndex(value, ref steam.automaticindicator, key);
-                                        break;
-                                        case "injectorsound":
-                                        InternalFunctions.ValidateIndex(value, ref steam.injectorsound, key);
-                                        break;
-                                        case "blowoffsound":
-                                        InternalFunctions.ValidateIndex(value, ref steam.blowoffsound, key);
-                                        break;
-                                        case "klaxonpressureuse":
-                                        InternalFunctions.ParseNumber(value, ref steam.klaxonpressureuse, key);
-                                        break;
-                                        default:
-                                        throw new InvalidDataException("The parameter " + key + " is not supported.");
-									}
+			foreach (string t in lines)
+			{
+			    string line = t;
+			    int semicolon = line.IndexOf(';');
+			    if (semicolon >= 0) {
+			        line = line.Substring(0, semicolon).Trim();
+			    } else {
+			        line = line.Trim();
+			    }
+			    if (line.Length != 0) {
+			        if (line[0] == '[' & line[line.Length - 1] == ']') {
+			            section = line.Substring(1, line.Length - 2).ToLowerInvariant();
+			            switch (section) {
+			                case "steam":
+			                    this.steam = new steam(this);
+			                    break;
+			                case "diesel":
+			                    this.diesel = new diesel(this);
+			                    break;
+			                case "electric":
+			                    this.electric = new electric(this);
+			                    break;
+			                case "vigilance":
+			                    this.vigilance = new vigilance(this);
+			                    break;
+			                case "aws":
+			                    this.AWS.enabled = true;
+			                    break;
+			                case "tpws":
+			                    this.TPWS.enabled = true;
+			                    break;
+			                case "interlocks":
+			                    //Twiddle
+			                    break;
+			                case "keyassignments":
+			                    //Twiddle
+			                    break;
+			                case "animations":
+			                    //Twiddle
+			                    break;
+			                case "windscreen":
+			                    this.Windscreen.enabled = true;
+			                    break;
+			                default:
+			                    throw new InvalidDataException("The section " + line[0] + " is not supported.");
+			            }
+			        } else {
+			            int equals = line.IndexOf('=');
+			            if (@equals >= 0) {
+			                string key = line.Substring(0, @equals).Trim().ToLowerInvariant();
+			                string value = line.Substring(@equals + 1).Trim();
+			                switch (section) {
+			                    case "steam":
+			                        switch (key) {
+			                            case "automatic":
+			                                InternalFunctions.ValidateSetting(value, ref steam.automatic, key);
+			                                break;
+			                            case "heatingpart":
+			                                InternalFunctions.ValidateSetting(value, ref steam.heatingpart, key);
+			                                break;
+			                            case "heatingrate":
+			                                this.steam.heatingrate = value;
+			                                break;
+			                            case "overheatwarn":
+			                                InternalFunctions.ParseNumber(value, ref steam.overheatwarn, key);
+			                                break;
+			                            case "overheat":
+			                                InternalFunctions.ParseNumber(value, ref steam.overheat, key);
+			                                break;
+			                            case "overheatresult":
+			                                InternalFunctions.ValidateSetting(value, ref steam.overheatresult, key);
+			                                break;
+			                            case "thermometer":
+			                                InternalFunctions.ValidateIndex(value, ref steam.thermometer, key);
+			                                break;
+			                            case "overheatindicator":
+			                                InternalFunctions.ValidateIndex(value, ref steam.overheatindicator, key);
+			                                break;
+			                            case "overheatalarm":
+			                                InternalFunctions.ValidateIndex(value, ref steam.overheatalarm, key);
+			                                break;
+			                            case "cutoffmax":
+			                                InternalFunctions.ParseNumber(value, ref steam.cutoffmax, key);
+			                                break;
+			                            case "cutoffineffective":
+			                                InternalFunctions.ParseNumber(value, ref steam.cutoffineffective, key);
+			                                break;
+			                            case "cutoffratio":
+			                                InternalFunctions.ParseNumber(value, ref steam.cutoffratio, key);
+			                                break;
+			                            case "cutoffratiobase":
+			                                InternalFunctions.ParseNumber(value, ref steam.cutoffratiobase, key);
+			                                break;
+			                            case "cutoffmin":
+			                                InternalFunctions.ParseNumber(value, ref steam.cutoffmin, key);
+			                                break;
+			                            case "cutoffdeviation":
+			                                InternalFunctions.ParseNumber(value, ref steam.cutoffdeviation, key);
+			                                break;
+			                            case "cutoffindicator":
+			                                InternalFunctions.ValidateIndex(value, ref steam.cutoffindicator, key);
+			                                break;
+			                            case "boilermaxpressure":
+			                                InternalFunctions.ParseNumber(value, ref steam.boilermaxpressure, key);
+			                                break;
+			                            case "boilerminpressure":
+			                                InternalFunctions.ParseNumber(value, ref steam.boilerminpressure, key);
+			                                break;
+			                            case "boilerstartwaterlevel":
+			                                InternalFunctions.ParseNumber(value, ref steam.boilerstartwaterlevel, key);
+			                                break;
+			                            case "boilermaxwaterlevel":
+			                                InternalFunctions.ParseNumber(value, ref steam.boilermaxwaterlevel, key);
+			                                break;
+			                            case "boilerpressureindicator":
+			                                InternalFunctions.ValidateIndex(value, ref steam.boilerpressureindicator, key);
+			                                break;
+			                            case "boilerwaterlevelindicator":
+			                                InternalFunctions.ValidateIndex(value, ref steam.boilerwaterlevelindicator, key);
+			                                break;
+			                            case "boilerwatertosteamrate":
+			                                InternalFunctions.ParseNumber(value, ref steam.boilerwatertosteamrate, key);
+			                                break;
+			                            case "fuelindicator":
+			                                InternalFunctions.ValidateIndex(value, ref steam.fuelindicator, key);
+			                                break;
+			                            case "fuelstartamount":
+			                                InternalFunctions.ParseNumber(value, ref steam.fuelstartamount, key);
+			                                break;
+			                            case "fuelcapacity":
+			                                InternalFunctions.ParseNumber(value, ref steam.fuelcapacity, key);
+			                                break;
+			                            case "fuelfillspeed":
+			                                InternalFunctions.ParseNumber(value, ref steam.fuelfillspeed, key);
+			                                break;
+			                            case "fuelfillindicator":
+			                                InternalFunctions.ValidateIndex(value, ref steam.fuelfillindicator, key);
+			                                break;
+			                            case "injectorrate":
+			                                InternalFunctions.ParseNumber(value, ref steam.injectorrate, key);
+			                                break;
+			                            case "injectorindicator":
+			                                InternalFunctions.ValidateIndex(value, ref steam.injectorindicator, key);
+			                                break;
+			                            case "automaticindicator":
+			                                InternalFunctions.ValidateIndex(value, ref steam.automaticindicator, key);
+			                                break;
+			                            case "injectorsound":
+			                                InternalFunctions.ValidateIndex(value, ref steam.injectorsound, key);
+			                                break;
+			                            case "blowoffsound":
+			                                InternalFunctions.ValidateIndex(value, ref steam.blowoffsound, key);
+			                                break;
+			                            case "klaxonpressureuse":
+			                                InternalFunctions.ParseNumber(value, ref steam.klaxonpressureuse, key);
+			                                break;
+			                            default:
+			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
+			                        }
 
-									break;
-                                case "electric":
-                                    switch (key)
-                                    {
-                                        case "heatingpart":
-                                        InternalFunctions.ValidateSetting(value, ref electric.heatingpart, key);
-                                        break;
-                                        case "heatingrate":
-                                        this.electric.heatingrate = value;
-                                        break;
-                                        case "overheatwarn":
-                                        InternalFunctions.ParseNumber(value, ref electric.overheatwarn, key);
-                                        break;
-                                        case "overheat":
-                                        InternalFunctions.ParseNumber(value, ref electric.overheat, key);
-                                        break;
-                                        case "overheatresult":
-                                        InternalFunctions.ValidateSetting(value, ref electric.overheatresult, key);
-                                        break;
-                                        case "thermometer":
-                                        InternalFunctions.ValidateIndex(value, ref electric.thermometer, key);
-                                        break;
-                                        case "overheatindicator":
-                                        InternalFunctions.ValidateIndex(value, ref electric.overheatindicator, key);
-                                        break;
-                                        case "overheatalarm":
-                                        InternalFunctions.ValidateIndex(value, ref electric.overheatalarm, key);
-                                        break;
-                                        case "ammeter":
-                                        InternalFunctions.ValidateIndex(value, ref electric.ammeter, key);
-                                        break;
-                                        case "ammetervalues":
-                                        this.electric.ammetervalues = value;
-                                        break;
-                                        case "powerpickuppoints":
-                                        this.electric.pickuppoints = value;
-                                        break;
-                                        case "powergapbehaviour":
-                                        InternalFunctions.ValidateSetting(value, ref electric.powergapbehaviour, key);
-                                        break;
-                                        case "powerindicator":
-                                        InternalFunctions.ValidateIndex(value, ref electric.powerindicator, key);
-                                        break;
-                                        case "breakersound":
-                                        InternalFunctions.ValidateIndex(value, ref electric.breakersound, key);
-                                        break;
-                                        case "breakerindicator":
-                                        InternalFunctions.ValidateIndex(value, ref electric.breakerindicator, key);
-                                        break;
-                                        case "pantographindicator_f":
-                                        InternalFunctions.ValidateIndex(value, ref electric.pantographindicator_f, key);
-                                        break;
-                                        case "pantographindicator_r":
-                                        InternalFunctions.ValidateIndex(value, ref electric.pantographindicator_r, key);
-                                        break;
-                                        case "pantographraisedsound":
-                                        InternalFunctions.ValidateIndex(value, ref electric.pantographraisedsound, key);
-                                        break;
-                                        case "pantographloweredsound":
-                                        InternalFunctions.ValidateIndex(value, ref electric.pantographloweredsound, key);
-                                        break;
-                                        case "pantographalarmsound":
-                                        InternalFunctions.ValidateIndex(value, ref electric.pantographalarmsound, key);
-                                        break;
-                                        case "pantographretryinterval":
-                                        InternalFunctions.ParseNumber(value, ref electric.pantographretryinterval, key);
-                                        break;
-                                        case "pantographalarmbehaviour":
-                                        InternalFunctions.ValidateSetting(value, ref electric.pantographalarmbehaviour, key);
-                                        break;
-                                        case "powerloopsound":
-                                        try
-                                        {
-                                            string[] powerloopsplit = value.Split(',');
-                                            for (int k = 0; k < powerloopsplit.Length; k++)
-                                            {
-                                                if (k == 0)
-                                                {
-                                                    this.electric.powerloopsound = Convert.ToInt32(powerloopsplit[0]);
-                                                }
-                                                else
-                                                {
-                                                    this.electric.powerlooptime = Convert.ToInt32(powerloopsplit[1]);
-                                                }
-                                            }
-                                        }
-                                        catch
-                                        {
-                                            InternalFunctions.LogError("powerloopsound");
-                                        }
-                                        break;
-                                        case "breakerloopsound":
-                                        try
-                                        {
-                                            string[] breakerloopsplit = value.Split(',');
-                                            for (int k = 0; k < breakerloopsplit.Length; k++)
-                                            {
-                                                if (k == 0)
-                                                {
-                                                    this.electric.breakerloopsound = Convert.ToInt32(breakerloopsplit[0]);
-                                                }
-                                                else
-                                                {
-                                                    this.electric.breakerlooptime = Convert.ToInt32(breakerloopsplit[1]);
-                                                }
-                                            }
-                                        }
-                                        catch
-                                        {
-                                            InternalFunctions.LogError("breakerloopsound");
-                                        }
-                                        break;
-                                        default:
-                                        throw new InvalidDataException("The parameter " + key + " is not supported.");
+			                        break;
+			                    case "electric":
+			                        switch (key)
+			                        {
+			                            case "heatingpart":
+			                                InternalFunctions.ValidateSetting(value, ref electric.heatingpart, key);
+			                                break;
+			                            case "heatingrate":
+			                                this.electric.heatingrate = value;
+			                                break;
+			                            case "overheatwarn":
+			                                InternalFunctions.ParseNumber(value, ref electric.overheatwarn, key);
+			                                break;
+			                            case "overheat":
+			                                InternalFunctions.ParseNumber(value, ref electric.overheat, key);
+			                                break;
+			                            case "overheatresult":
+			                                InternalFunctions.ValidateSetting(value, ref electric.overheatresult, key);
+			                                break;
+			                            case "thermometer":
+			                                InternalFunctions.ValidateIndex(value, ref electric.thermometer, key);
+			                                break;
+			                            case "overheatindicator":
+			                                InternalFunctions.ValidateIndex(value, ref electric.overheatindicator, key);
+			                                break;
+			                            case "overheatalarm":
+			                                InternalFunctions.ValidateIndex(value, ref electric.overheatalarm, key);
+			                                break;
+			                            case "ammeter":
+			                                InternalFunctions.ValidateIndex(value, ref electric.ammeter, key);
+			                                break;
+			                            case "ammetervalues":
+			                                this.electric.ammetervalues = value;
+			                                break;
+			                            case "powerpickuppoints":
+			                                this.electric.pickuppoints = value;
+			                                break;
+			                            case "powergapbehaviour":
+			                                InternalFunctions.ValidateSetting(value, ref electric.powergapbehaviour, key);
+			                                break;
+			                            case "powerindicator":
+			                                InternalFunctions.ValidateIndex(value, ref electric.powerindicator, key);
+			                                break;
+			                            case "breakersound":
+			                                InternalFunctions.ValidateIndex(value, ref electric.breakersound, key);
+			                                break;
+			                            case "breakerindicator":
+			                                InternalFunctions.ValidateIndex(value, ref electric.breakerindicator, key);
+			                                break;
+			                            case "pantographindicator_f":
+			                                InternalFunctions.ValidateIndex(value, ref electric.pantographindicator_f, key);
+			                                break;
+			                            case "pantographindicator_r":
+			                                InternalFunctions.ValidateIndex(value, ref electric.pantographindicator_r, key);
+			                                break;
+			                            case "pantographraisedsound":
+			                                InternalFunctions.ValidateIndex(value, ref electric.pantographraisedsound, key);
+			                                break;
+			                            case "pantographloweredsound":
+			                                InternalFunctions.ValidateIndex(value, ref electric.pantographloweredsound, key);
+			                                break;
+			                            case "pantographalarmsound":
+			                                InternalFunctions.ValidateIndex(value, ref electric.pantographalarmsound, key);
+			                                break;
+			                            case "pantographretryinterval":
+			                                InternalFunctions.ParseNumber(value, ref electric.pantographretryinterval, key);
+			                                break;
+			                            case "pantographalarmbehaviour":
+			                                InternalFunctions.ValidateSetting(value, ref electric.pantographalarmbehaviour, key);
+			                                break;
+			                            case "powerloopsound":
+			                                try
+			                                {
+			                                    string[] powerloopsplit = value.Split(',');
+			                                    for (int k = 0; k < powerloopsplit.Length; k++)
+			                                    {
+			                                        if (k == 0)
+			                                        {
+			                                            this.electric.powerloopsound = Convert.ToInt32(powerloopsplit[0]);
+			                                        }
+			                                        else
+			                                        {
+			                                            this.electric.powerlooptime = Convert.ToInt32(powerloopsplit[1]);
+			                                        }
+			                                    }
+			                                }
+			                                catch
+			                                {
+			                                    InternalFunctions.LogError("powerloopsound");
+			                                }
+			                                break;
+			                            case "breakerloopsound":
+			                                try
+			                                {
+			                                    string[] breakerloopsplit = value.Split(',');
+			                                    for (int k = 0; k < breakerloopsplit.Length; k++)
+			                                    {
+			                                        if (k == 0)
+			                                        {
+			                                            this.electric.breakerloopsound = Convert.ToInt32(breakerloopsplit[0]);
+			                                        }
+			                                        else
+			                                        {
+			                                            this.electric.breakerlooptime = Convert.ToInt32(breakerloopsplit[1]);
+			                                        }
+			                                    }
+			                                }
+			                                catch
+			                                {
+			                                    InternalFunctions.LogError("breakerloopsound");
+			                                }
+			                                break;
+			                            default:
+			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 
-                                    }
-                                    break;
-                                case "diesel":
-                                    switch (key)
-                                    {
-                                        case "automatic":
-                                            InternalFunctions.ValidateSetting(value, ref diesel.automatic, key);
-                                            break;
-                                        case "heatingpart":
-                                            InternalFunctions.ValidateSetting(value, ref diesel.heatingpart, key);
-                                            break;
-                                        case "heatingrate":
-                                            this.diesel.heatingrate = value;
-                                            break;
-                                        case "overheatwarn":
-                                            InternalFunctions.ParseNumber(value, ref diesel.overheatwarn, key);
-                                            break;
-                                        case "overheat":
-                                            InternalFunctions.ParseNumber(value, ref diesel.overheat, key);
-                                            break;
-                                        case "overheatresult":
-                                            InternalFunctions.ValidateSetting(value, ref diesel.overheatresult, key);
-                                            break;
-                                        case "thermometer":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.thermometer, key);
-                                            break;
-                                        case "overheatindicator":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.overheatindicator, key);
-                                            break;
-                                        case "overheatalarm":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.overheatalarm, key);
-                                            break;
-                                        case "fuelstartamount":
-                                            InternalFunctions.ParseNumber(value, ref diesel.fuelstartamount, key);
-                                            break;
-                                        case "fuelindicator":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.fuelindicator, key);
-                                            break;
-                                        case "automaticindicator":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.automaticindicator, key);
-                                            break;  
-                                        case "gearratios":
-                                            this.diesel.gearratios = value;
-                                            break;
-                                        case "gearfadeinrange":
-                                            this.diesel.gearfadeinrange = value;
-                                            break;
-                                        case "gearfadeoutrange":
-                                            this.diesel.gearfadeoutrange = value;
-                                            break;
-                                        case "gearindicator":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.gearindicator, key);
-                                            break;
-                                        case "gearchangesound":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.gearchangesound, key);
-                                            break;
-                                        case "tachometer":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.tachometer, key);
-                                            break;
-                                        case "allowneutralrevs":
-                                            InternalFunctions.ValidateSetting(value, ref diesel.allowneutralrevs, key);
-                                            break;
-                                        case "revsupsound":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.revsupsound, key);
-                                            break;
-                                        case "revsdownsound":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.revsdownsound, key);
-                                            break;
-                                        case "motorsound":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.motorsound, key);
-                                            break;
-                                        case "fuelconsumption":
-                                            this.diesel.fuelconsumption = value;
-                                            break;
-                                        case "fuelcapacity":
-                                            InternalFunctions.ParseNumber(value, ref diesel.fuelcapacity, key);
-                                            break;
-                                        case "fuelfillspeed":
-                                            InternalFunctions.ParseNumber(value, ref diesel.fuelfillspeed, key);
-                                            break;
-                                        case "fuelfillindicator":
-                                            InternalFunctions.ValidateIndex(value, ref diesel.fuelfillindicator, key);
-                                            break;
-                                        case "gearloopsound":
-                                            try
-                                            {
-                                                string[] gearloopsplit = value.Split(',');
-                                                for (int k = 0; k < gearloopsplit.Length; k++)
-                                                {
-                                                    if (k == 0)
-                                                    {
-                                                        this.diesel.gearloopsound = Convert.ToInt32(gearloopsplit[0]);
-                                                    }
-                                                    else
-                                                    {
-                                                        this.diesel.gearlooptime = Convert.ToInt32(gearloopsplit[1]);
-                                                    }
-                                                }
-                                            }
-                                            catch
-                                            {
-                                                InternalFunctions.LogError("gearloopsound");
-                                            }
-                                            break;
-                                        default:
-                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
+			                        }
+			                        break;
+			                    case "diesel":
+			                        switch (key)
+			                        {
+			                            case "automatic":
+			                                InternalFunctions.ValidateSetting(value, ref diesel.automatic, key);
+			                                break;
+			                            case "heatingpart":
+			                                InternalFunctions.ValidateSetting(value, ref diesel.heatingpart, key);
+			                                break;
+			                            case "heatingrate":
+			                                this.diesel.heatingrate = value;
+			                                break;
+			                            case "overheatwarn":
+			                                InternalFunctions.ParseNumber(value, ref diesel.overheatwarn, key);
+			                                break;
+			                            case "overheat":
+			                                InternalFunctions.ParseNumber(value, ref diesel.overheat, key);
+			                                break;
+			                            case "overheatresult":
+			                                InternalFunctions.ValidateSetting(value, ref diesel.overheatresult, key);
+			                                break;
+			                            case "thermometer":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.thermometer, key);
+			                                break;
+			                            case "overheatindicator":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.overheatindicator, key);
+			                                break;
+			                            case "overheatalarm":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.overheatalarm, key);
+			                                break;
+			                            case "fuelstartamount":
+			                                InternalFunctions.ParseNumber(value, ref diesel.fuelstartamount, key);
+			                                break;
+			                            case "fuelindicator":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.fuelindicator, key);
+			                                break;
+			                            case "automaticindicator":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.automaticindicator, key);
+			                                break;  
+			                            case "gearratios":
+			                                this.diesel.gearratios = value;
+			                                break;
+			                            case "gearfadeinrange":
+			                                this.diesel.gearfadeinrange = value;
+			                                break;
+			                            case "gearfadeoutrange":
+			                                this.diesel.gearfadeoutrange = value;
+			                                break;
+			                            case "gearindicator":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.gearindicator, key);
+			                                break;
+			                            case "gearchangesound":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.gearchangesound, key);
+			                                break;
+			                            case "tachometer":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.tachometer, key);
+			                                break;
+			                            case "allowneutralrevs":
+			                                InternalFunctions.ValidateSetting(value, ref diesel.allowneutralrevs, key);
+			                                break;
+			                            case "revsupsound":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.revsupsound, key);
+			                                break;
+			                            case "revsdownsound":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.revsdownsound, key);
+			                                break;
+			                            case "motorsound":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.motorsound, key);
+			                                break;
+			                            case "fuelconsumption":
+			                                this.diesel.fuelconsumption = value;
+			                                break;
+			                            case "fuelcapacity":
+			                                InternalFunctions.ParseNumber(value, ref diesel.fuelcapacity, key);
+			                                break;
+			                            case "fuelfillspeed":
+			                                InternalFunctions.ParseNumber(value, ref diesel.fuelfillspeed, key);
+			                                break;
+			                            case "fuelfillindicator":
+			                                InternalFunctions.ValidateIndex(value, ref diesel.fuelfillindicator, key);
+			                                break;
+			                            case "gearloopsound":
+			                                try
+			                                {
+			                                    string[] gearloopsplit = value.Split(',');
+			                                    for (int k = 0; k < gearloopsplit.Length; k++)
+			                                    {
+			                                        if (k == 0)
+			                                        {
+			                                            this.diesel.gearloopsound = Convert.ToInt32(gearloopsplit[0]);
+			                                        }
+			                                        else
+			                                        {
+			                                            this.diesel.gearlooptime = Convert.ToInt32(gearloopsplit[1]);
+			                                        }
+			                                    }
+			                                }
+			                                catch
+			                                {
+			                                    InternalFunctions.LogError("gearloopsound");
+			                                }
+			                                break;
+			                            default:
+			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 
-                                    }
-                                    break;
-                                case "vigilance":
-                                    switch (key)
-                                    {
-                                        case "overspeedcontrol":
-                                            InternalFunctions.ValidateSetting(value, ref vigilance.overspeedcontrol, key);
-                                            break;
-                                        case "warningspeed":
-                                            InternalFunctions.ParseNumber(value, ref vigilance.warningspeed, key);
-                                            break;
-                                        case "overspeed":
-                                            InternalFunctions.ParseNumber(value, ref vigilance.overspeed, key);
-                                            break;
-                                        case "safespeed":
-                                            InternalFunctions.ParseNumber(value, ref vigilance.safespeed, key);
-                                            break;
-                                        case "overspeedindicator":
-                                            InternalFunctions.ValidateIndex(value, ref vigilance.overspeedindicator, key);
-                                            break;
-                                        case "overspeedalarm":
-                                            InternalFunctions.ValidateIndex(value, ref vigilance.overspeedalarm, key);
-                                            break;
-                                        case "overspeedtime":
-                                            InternalFunctions.ParseNumber(value, ref vigilance.overspeedtime, key);
-                                            break;
-                                        case "vigilanceinterval":
-                                            this.vigilance.vigilancetimes = value;
-                                            break;
-                                        case "vigilancelamp":
-                                            InternalFunctions.ValidateIndex(value, ref vigilance.vigilancelamp, key);
-                                            break;
-                                        case "deadmanshandle":
-                                            InternalFunctions.ValidateSetting(value, ref vigilance.deadmanshandle, key);
-                                            break;
-                                        case "vigilanceautorelease":
-                                            InternalFunctions.ValidateSetting(value, ref vigilance.vigilanceautorelease, key);
-                                            break;
-                                        case "vigilancecancellable":
-                                            InternalFunctions.ValidateSetting(value, ref vigilance.vigilancecancellable, key);
-                                            break;
-                                        case "independentvigilance":
-                                            InternalFunctions.ValidateSetting(value, ref vigilance.independantvigilance, key);
-                                            break;
-                                        case "draenabled":
-                                            InternalFunctions.ValidateSetting(value, ref vigilance.draenabled, key);
-                                            break;
-                                        case "drastartstate":
-                                            InternalFunctions.ValidateSetting(value, ref vigilance.drastartstate, key);
-                                            break;
-                                        case "draindicator":
-                                            InternalFunctions.ValidateIndex(value, ref vigilance.draindicator, key);
-                                            break;
-                                        case "vigilancealarm":
-                                            InternalFunctions.ValidateIndex(value, ref vigilance.vigilancealarm, key);
-                                            break;
-                                        case "vigilancedelay1":
-                                            InternalFunctions.ParseNumber(value, ref vigilance.vigilancedelay1, key);
-                                            break;
-                                        case "vigilancedelay2":
-                                            InternalFunctions.ParseNumber(value, ref vigilance.vigilancedelay2, key);
-                                            break;
-                                        case "vigilanceinactivespeed":
-                                            InternalFunctions.ParseNumber(value, ref vigilance.vigilanceinactivespeed, key);
-                                            break;
-                                        default:
-                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
+			                        }
+			                        break;
+			                    case "vigilance":
+			                        switch (key)
+			                        {
+			                            case "overspeedcontrol":
+			                                InternalFunctions.ValidateSetting(value, ref vigilance.overspeedcontrol, key);
+			                                break;
+			                            case "warningspeed":
+			                                InternalFunctions.ParseNumber(value, ref vigilance.warningspeed, key);
+			                                break;
+			                            case "overspeed":
+			                                InternalFunctions.ParseNumber(value, ref vigilance.overspeed, key);
+			                                break;
+			                            case "safespeed":
+			                                InternalFunctions.ParseNumber(value, ref vigilance.safespeed, key);
+			                                break;
+			                            case "overspeedindicator":
+			                                InternalFunctions.ValidateIndex(value, ref vigilance.overspeedindicator, key);
+			                                break;
+			                            case "overspeedalarm":
+			                                InternalFunctions.ValidateIndex(value, ref vigilance.overspeedalarm, key);
+			                                break;
+			                            case "overspeedtime":
+			                                InternalFunctions.ParseNumber(value, ref vigilance.overspeedtime, key);
+			                                break;
+			                            case "vigilanceinterval":
+			                                this.vigilance.vigilancetimes = value;
+			                                break;
+			                            case "vigilancelamp":
+			                                InternalFunctions.ValidateIndex(value, ref vigilance.vigilancelamp, key);
+			                                break;
+			                            case "deadmanshandle":
+			                                InternalFunctions.ValidateSetting(value, ref vigilance.deadmanshandle, key);
+			                                break;
+			                            case "vigilanceautorelease":
+			                                InternalFunctions.ValidateSetting(value, ref vigilance.vigilanceautorelease, key);
+			                                break;
+			                            case "vigilancecancellable":
+			                                InternalFunctions.ValidateSetting(value, ref vigilance.vigilancecancellable, key);
+			                                break;
+			                            case "independentvigilance":
+			                                InternalFunctions.ValidateSetting(value, ref vigilance.independantvigilance, key);
+			                                break;
+			                            case "draenabled":
+			                                InternalFunctions.ValidateSetting(value, ref vigilance.draenabled, key);
+			                                break;
+			                            case "drastartstate":
+			                                InternalFunctions.ValidateSetting(value, ref vigilance.drastartstate, key);
+			                                break;
+			                            case "draindicator":
+			                                InternalFunctions.ValidateIndex(value, ref vigilance.draindicator, key);
+			                                break;
+			                            case "vigilancealarm":
+			                                InternalFunctions.ValidateIndex(value, ref vigilance.vigilancealarm, key);
+			                                break;
+			                            case "vigilancedelay1":
+			                                InternalFunctions.ParseNumber(value, ref vigilance.vigilancedelay1, key);
+			                                break;
+			                            case "vigilancedelay2":
+			                                InternalFunctions.ParseNumber(value, ref vigilance.vigilancedelay2, key);
+			                                break;
+			                            case "vigilanceinactivespeed":
+			                                InternalFunctions.ParseNumber(value, ref vigilance.vigilanceinactivespeed, key);
+			                                break;
+			                            default:
+			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
                                             
-                                    }
-                                    break;
-                                case "interlocks":
-                                    switch (key)
-                                    {
-                                        case "doorpowerlock":
-                                            InternalFunctions.ValidateSetting(value, ref tractionmanager.doorpowerlock, key);
-                                            break;
-                                        case "doorapplybrake":
-                                            InternalFunctions.ValidateSetting(value, ref tractionmanager.doorapplybrake, key);
-                                            break;
-                                        case "neutralrvrbrake":
-                                            InternalFunctions.ValidateSetting(value, ref tractionmanager.neutralrvrbrake, key);
-                                            break;
-                                        case "neutralrvrbrakereset":
-                                            InternalFunctions.ValidateSetting(value, ref tractionmanager.neutralrvrbrakereset, key);
-                                            break;
-                                        case "directionindicator":
-                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.directionindicator, key);
-                                            break;
-                                        case "reverserindex":
-                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.reverserindex, key);
-                                            break;
-                                        case "travelmeter100":
-                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter100, key);
-                                            break;
-                                        case "travelmeter10":
-                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter10, key);
-                                            break;
-                                        case "travelmeter1":
-                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter1, key);
-                                            break;
-                                        case "travelmeter01":
-                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter01, key);
-                                            break;
-                                        case "travelmeter001":
-                                            InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter001, key);
-                                            break;
-                                        case "travelmetermode":
-                                            InternalFunctions.ValidateSetting(value, ref tractionmanager.travelmetermode, key);
-                                            break;
-                                        case "klaxonindicator":
-                                            this.tractionmanager.klaxonindicator = value;
-                                            break;
-                                        case "customindicators":
-                                            this.tractionmanager.customindicators = value;
-                                            break;
-                                        default:
-                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
-                                    }
-                                    break;
-                                 case "aws":
-                                    switch (key)
-                                    {
-                                        case "awsindicator":
-                                            InternalFunctions.ValidateIndex(value, ref AWS.awsindicator, key);
-                                            break;
-                                        case "awswarningsound":
-                                            InternalFunctions.ValidateIndex(value, ref AWS.awswarningsound, key);
-                                            break;
-                                        case "awsclearsound":
-                                            InternalFunctions.ValidateIndex(value, ref AWS.awsclearsound, key);
-                                            break;
-                                        case "awsdelay":
-                                            InternalFunctions.ParseNumber(value, ref AWS.canceltimeout, key);
-                                            break;
-                                        case "tpwswarningsound":
-                                            InternalFunctions.ValidateIndex(value, ref AWS.tpwswarningsound, key);
-                                            break;
-                                        default:
-                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
-                                    }
-                                    break;
-                                case "tpws":
-                                    switch (key)
-                                    {
-                                        case "tpwsoverridelifetime":
-                                            InternalFunctions.ParseNumber(value, ref TPWS.overridetimeout, key);
-                                            break;
-                                        case "tpwsstopdelay":
-                                            InternalFunctions.ParseNumber(value, ref TPWS.brakesappliedtimeout, key);
-                                            break;
-                                        case "tpwsindicator":
-                                            try
-                                            {
-                                                string[] tpwssplit1 = value.Split(',');
-                                                for (int j = 0; j < tpwssplit1.Length; j++)
-                                                {
-                                                    if (j == 0)
-                                                    {
-                                                        this.TPWS.brakedemandindicator = Convert.ToInt32(tpwssplit1[0]);
-                                                    }
-                                                    else
-                                                    {
-                                                        this.TPWS.brakeindicatorblinkrate = Convert.ToInt32(tpwssplit1[1]);
-                                                    }
-                                                }
-                                            }
-                                            catch
-                                            {
-                                                InternalFunctions.LogError("tpwsindicator");
-                                            }
-                                            break;
-                                        case "tpwsindicator2":
-                                            try
-                                            {
-                                                string[] tpwssplit2 = value.Split(',');
-                                                for (int k = 0; k < tpwssplit2.Length; k++)
-                                                {
-                                                    if (k == 0)
-                                                    {
-                                                        this.TPWS.twpsoverrideindicator = Convert.ToInt32(tpwssplit2[0]);
-                                                    }
-                                                    else
-                                                    {
-                                                        this.TPWS.tpwsoverrideblinkrate = Convert.ToInt32(tpwssplit2[1]);
-                                                    }
-                                                }
-                                            }
-                                            catch
-                                            {
-                                                InternalFunctions.LogError("tpwsindicator2");
-                                            }
-                                            break;
-                                        case "tpwsindicator4":
-                                            InternalFunctions.ValidateIndex(value, ref TPWS.tpwsisolatedindicator, key);
-                                            break;
-                                        default:
-                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
-                                    }
-                                    break;
-                                case "windscreen":
-                                    switch (key)
-                                    {
-                                        case "dropstartindex":
-                                            InternalFunctions.ValidateIndex(value, ref Windscreen.dropstartindex, key);
-                                            break;
-                                        case "numberofdrops":
-                                            InternalFunctions.ValidateIndex(value, ref Windscreen.numberofdrops, key);
-                                            break;
-                                        case "wiperindex":
-                                            InternalFunctions.ValidateIndex(value, ref Windscreen.wiperindex, key);
-                                            break;
-                                        case "wiperholdposition":
-                                            InternalFunctions.ParseNumber(value, ref Windscreen.wiperholdposition, key);
-                                            break;
-                                        case "wiperdelay":
-                                            InternalFunctions.ParseNumber(value, ref Windscreen.wiperdelay, key);
-                                            break;
-                                        case "wiperrate":
-                                            InternalFunctions.ParseNumber(value, ref Windscreen.wiperrate, key);
-                                            break;
-                                        case "wiperswitchindex":
-                                            InternalFunctions.ValidateIndex(value, ref Windscreen.wiperswitchindex, key);
-                                            break;
-                                        case "wiperswitchsound":
-                                            InternalFunctions.ValidateIndex(value, ref Windscreen.wiperswitchsound, key);
-                                            break;
-                                        case "dropsound":
-                                            try
-                                            {
-                                                string[] dropsplit = value.Split(',');
-                                                for (int k = 0; k < dropsplit.Length; k++)
-                                                {
-                                                    if (k == 0)
-                                                    {
-                                                        this.Windscreen.dropsound1 = Convert.ToInt32(dropsplit[0]);
-                                                    }
-                                                    else
-                                                    {
-                                                        this.Windscreen.dropsound2 = Convert.ToInt32(dropsplit[1]);
-                                                    }
-                                                }
-                                            }
-                                            catch
-                                            {
-                                                InternalFunctions.LogError("dropsound");
-                                            }
-                                            break;
-                                            case "drywipesound":
-                                            InternalFunctions.ValidateIndex(value, ref Windscreen.drywipesound, key);
-                                            break;
-                                            case "wetwipesound":
-                                            InternalFunctions.ValidateIndex(value, ref Windscreen.wetwipesound, key);
-                                            break;
-                                            case "wipersoundbehaviour":
-                                            InternalFunctions.ValidateSetting(value, ref Windscreen.wipersoundbehaviour, key);
-                                            break;
-                                        default:
-                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
-                                    }
-                                    break;
+			                        }
+			                        break;
+			                    case "interlocks":
+			                        switch (key)
+			                        {
+			                            case "doorpowerlock":
+			                                InternalFunctions.ValidateSetting(value, ref tractionmanager.doorpowerlock, key);
+			                                break;
+			                            case "doorapplybrake":
+			                                InternalFunctions.ValidateSetting(value, ref tractionmanager.doorapplybrake, key);
+			                                break;
+			                            case "neutralrvrbrake":
+			                                InternalFunctions.ValidateSetting(value, ref tractionmanager.neutralrvrbrake, key);
+			                                break;
+			                            case "neutralrvrbrakereset":
+			                                InternalFunctions.ValidateSetting(value, ref tractionmanager.neutralrvrbrakereset, key);
+			                                break;
+			                            case "directionindicator":
+			                                InternalFunctions.ValidateIndex(value, ref tractionmanager.directionindicator, key);
+			                                break;
+			                            case "reverserindex":
+			                                InternalFunctions.ValidateIndex(value, ref tractionmanager.reverserindex, key);
+			                                break;
+			                            case "travelmeter100":
+			                                InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter100, key);
+			                                break;
+			                            case "travelmeter10":
+			                                InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter10, key);
+			                                break;
+			                            case "travelmeter1":
+			                                InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter1, key);
+			                                break;
+			                            case "travelmeter01":
+			                                InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter01, key);
+			                                break;
+			                            case "travelmeter001":
+			                                InternalFunctions.ValidateIndex(value, ref tractionmanager.travelmeter001, key);
+			                                break;
+			                            case "travelmetermode":
+			                                InternalFunctions.ValidateSetting(value, ref tractionmanager.travelmetermode, key);
+			                                break;
+			                            case "klaxonindicator":
+			                                this.tractionmanager.klaxonindicator = value;
+			                                break;
+			                            case "customindicators":
+			                                this.tractionmanager.customindicators = value;
+			                                break;
+			                            default:
+			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
+			                        }
+			                        break;
+			                    case "aws":
+			                        switch (key)
+			                        {
+			                            case "awsindicator":
+			                                InternalFunctions.ValidateIndex(value, ref AWS.awsindicator, key);
+			                                break;
+			                            case "awswarningsound":
+			                                InternalFunctions.ValidateIndex(value, ref AWS.awswarningsound, key);
+			                                break;
+			                            case "awsclearsound":
+			                                InternalFunctions.ValidateIndex(value, ref AWS.awsclearsound, key);
+			                                break;
+			                            case "awsdelay":
+			                                InternalFunctions.ParseNumber(value, ref AWS.canceltimeout, key);
+			                                break;
+			                            case "tpwswarningsound":
+			                                InternalFunctions.ValidateIndex(value, ref AWS.tpwswarningsound, key);
+			                                break;
+			                            default:
+			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
+			                        }
+			                        break;
+			                    case "tpws":
+			                        switch (key)
+			                        {
+			                            case "tpwsoverridelifetime":
+			                                InternalFunctions.ParseNumber(value, ref TPWS.overridetimeout, key);
+			                                break;
+			                            case "tpwsstopdelay":
+			                                InternalFunctions.ParseNumber(value, ref TPWS.brakesappliedtimeout, key);
+			                                break;
+			                            case "tpwsindicator":
+			                                try
+			                                {
+			                                    string[] tpwssplit1 = value.Split(',');
+			                                    for (int j = 0; j < tpwssplit1.Length; j++)
+			                                    {
+			                                        if (j == 0)
+			                                        {
+			                                            this.TPWS.brakedemandindicator = Convert.ToInt32(tpwssplit1[0]);
+			                                        }
+			                                        else
+			                                        {
+			                                            this.TPWS.brakeindicatorblinkrate = Convert.ToInt32(tpwssplit1[1]);
+			                                        }
+			                                    }
+			                                }
+			                                catch
+			                                {
+			                                    InternalFunctions.LogError("tpwsindicator");
+			                                }
+			                                break;
+			                            case "tpwsindicator2":
+			                                try
+			                                {
+			                                    string[] tpwssplit2 = value.Split(',');
+			                                    for (int k = 0; k < tpwssplit2.Length; k++)
+			                                    {
+			                                        if (k == 0)
+			                                        {
+			                                            this.TPWS.twpsoverrideindicator = Convert.ToInt32(tpwssplit2[0]);
+			                                        }
+			                                        else
+			                                        {
+			                                            this.TPWS.tpwsoverrideblinkrate = Convert.ToInt32(tpwssplit2[1]);
+			                                        }
+			                                    }
+			                                }
+			                                catch
+			                                {
+			                                    InternalFunctions.LogError("tpwsindicator2");
+			                                }
+			                                break;
+			                            case "tpwsindicator4":
+			                                InternalFunctions.ValidateIndex(value, ref TPWS.tpwsisolatedindicator, key);
+			                                break;
+			                            default:
+			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
+			                        }
+			                        break;
+			                    case "windscreen":
+			                        switch (key)
+			                        {
+			                            case "dropstartindex":
+			                                InternalFunctions.ValidateIndex(value, ref Windscreen.dropstartindex, key);
+			                                break;
+			                            case "numberofdrops":
+			                                InternalFunctions.ValidateIndex(value, ref Windscreen.numberofdrops, key);
+			                                break;
+			                            case "wiperindex":
+			                                InternalFunctions.ValidateIndex(value, ref Windscreen.wiperindex, key);
+			                                break;
+			                            case "wiperholdposition":
+			                                InternalFunctions.ParseNumber(value, ref Windscreen.wiperholdposition, key);
+			                                break;
+			                            case "wiperdelay":
+			                                InternalFunctions.ParseNumber(value, ref Windscreen.wiperdelay, key);
+			                                break;
+			                            case "wiperrate":
+			                                InternalFunctions.ParseNumber(value, ref Windscreen.wiperrate, key);
+			                                break;
+			                            case "wiperswitchindex":
+			                                InternalFunctions.ValidateIndex(value, ref Windscreen.wiperswitchindex, key);
+			                                break;
+			                            case "wiperswitchsound":
+			                                InternalFunctions.ValidateIndex(value, ref Windscreen.wiperswitchsound, key);
+			                                break;
+			                            case "dropsound":
+			                                try
+			                                {
+			                                    string[] dropsplit = value.Split(',');
+			                                    for (int k = 0; k < dropsplit.Length; k++)
+			                                    {
+			                                        if (k == 0)
+			                                        {
+			                                            this.Windscreen.dropsound1 = Convert.ToInt32(dropsplit[0]);
+			                                        }
+			                                        else
+			                                        {
+			                                            this.Windscreen.dropsound2 = Convert.ToInt32(dropsplit[1]);
+			                                        }
+			                                    }
+			                                }
+			                                catch
+			                                {
+			                                    InternalFunctions.LogError("dropsound");
+			                                }
+			                                break;
+			                            case "drywipesound":
+			                                InternalFunctions.ValidateIndex(value, ref Windscreen.drywipesound, key);
+			                                break;
+			                            case "wetwipesound":
+			                                InternalFunctions.ValidateIndex(value, ref Windscreen.wetwipesound, key);
+			                                break;
+			                            case "wipersoundbehaviour":
+			                                InternalFunctions.ValidateSetting(value, ref Windscreen.wipersoundbehaviour, key);
+			                                break;
+			                            default:
+			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
+			                        }
+			                        break;
 
-                               case "animations":
-                                    switch (key)
-                                    {
-                                        case "gear_yvariable_r":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Yvariable_R, key);
-                                            break;
-                                        case "gear_zvariable_r":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Zvariable_R, key);
-                                            break;
-                                        case "gear_yvariable_l":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Yvariable_L, key);
-                                            break;
-                                        case "gear_zvariable_l":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.gear_Zvariable_L, key);
-                                            break;
-                                        case "rodradius":
-                                            InternalFunctions.ParseNumber(value, ref Animations.rodradius, key);
-                                            break;
-                                        case "crankradius":
-                                            InternalFunctions.ParseNumber(value, ref Animations.crankradius, key);
-                                            break;
-                                        case "cranklength":
-                                            InternalFunctions.ParseNumber(value, ref Animations.cranklength, key);
-                                            break;
-                                        case "crankvariable_l":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.crankvariable_L, key);
-                                            break;
-                                        case "crankvariable_r":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.crankvariable_R, key);
-                                            break;
-                                        case "crankrotation_l":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.crankrotation_L, key);
-                                            break;
-                                        case "crankrotation_r":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.crankrotation_R, key);
-                                            break;
-                                        case "wheelrotation_variable":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.wheelrotation_variable, key);
-                                            break;
-                                        case "flashingdoorlight":
-                                            InternalFunctions.ValidateIndex(value, ref Animations.doorlight, key);
-                                            break;
-                                            default:
-                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
-                                    }
-                                    break;
+			                    case "animations":
+			                        switch (key)
+			                        {
+			                            case "gear_yvariable_r":
+			                                InternalFunctions.ValidateIndex(value, ref Animations.gear_Yvariable_R, key);
+			                                break;
+			                            case "gear_zvariable_r":
+			                                InternalFunctions.ValidateIndex(value, ref Animations.gear_Zvariable_R, key);
+			                                break;
+			                            case "gear_yvariable_l":
+			                                InternalFunctions.ValidateIndex(value, ref Animations.gear_Yvariable_L, key);
+			                                break;
+			                            case "gear_zvariable_l":
+			                                InternalFunctions.ValidateIndex(value, ref Animations.gear_Zvariable_L, key);
+			                                break;
+			                            case "rodradius":
+			                                InternalFunctions.ParseNumber(value, ref Animations.rodradius, key);
+			                                break;
+			                            case "crankradius":
+			                                InternalFunctions.ParseNumber(value, ref Animations.crankradius, key);
+			                                break;
+			                            case "cranklength":
+			                                InternalFunctions.ParseNumber(value, ref Animations.cranklength, key);
+			                                break;
+			                            case "crankvariable_l":
+			                                InternalFunctions.ValidateIndex(value, ref Animations.crankvariable_L, key);
+			                                break;
+			                            case "crankvariable_r":
+			                                InternalFunctions.ValidateIndex(value, ref Animations.crankvariable_R, key);
+			                                break;
+			                            case "crankrotation_l":
+			                                InternalFunctions.ValidateIndex(value, ref Animations.crankrotation_L, key);
+			                                break;
+			                            case "crankrotation_r":
+			                                InternalFunctions.ValidateIndex(value, ref Animations.crankrotation_R, key);
+			                                break;
+			                            case "wheelrotation_variable":
+			                                InternalFunctions.ValidateIndex(value, ref Animations.wheelrotation_variable, key);
+			                                break;
+			                            case "flashingdoorlight":
+			                                InternalFunctions.ValidateIndex(value, ref Animations.doorlight, key);
+			                                break;
+			                            default:
+			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
+			                        }
+			                        break;
                                     
 
-                                case "keyassignments":
-                                    switch (key)
-                                    {
-                                            //No validation is necessary for key assignments
-                                            //Errors here simply mean they won't be matched
-                                        case "safetykey":
-                                            this.tractionmanager.safetykey = value;
-                                            break;
-                                        case "automatickey":
-                                            this.tractionmanager.automatickey = value;
-                                            break;
-                                        case "injectorkey":
-                                            this.tractionmanager.injectorkey = value;
-                                            break;
-                                        case "cutoffdownkey":
-                                            this.tractionmanager.cutoffdownkey = value;
-                                            break;
-                                        case "cutoffupkey":
-                                            this.tractionmanager.cutoffupkey = value;
-                                            break;
-                                        case "fuelkey":
-                                            this.tractionmanager.fuelkey = value;
-                                            break;
+			                    case "keyassignments":
+			                        switch (key)
+			                        {
+			                                //No validation is necessary for key assignments
+			                                //Errors here simply mean they won't be matched
+			                            case "safetykey":
+			                                this.tractionmanager.safetykey = value;
+			                                break;
+			                            case "automatickey":
+			                                this.tractionmanager.automatickey = value;
+			                                break;
+			                            case "injectorkey":
+			                                this.tractionmanager.injectorkey = value;
+			                                break;
+			                            case "cutoffdownkey":
+			                                this.tractionmanager.cutoffdownkey = value;
+			                                break;
+			                            case "cutoffupkey":
+			                                this.tractionmanager.cutoffupkey = value;
+			                                break;
+			                            case "fuelkey":
+			                                this.tractionmanager.fuelkey = value;
+			                                break;
 
-                                        case "wiperspeedup":
-                                            this.tractionmanager.wiperspeedup = value;
-                                            break;
-                                        case "wiperspeeddown":
-                                            this.tractionmanager.wiperspeeddown = value;
-                                            break;
-                                        case "isolatesafetykey":
-                                            this.tractionmanager.isolatesafetykey = value;
-                                            break;
-                                        case "gearupkey":
-                                            this.tractionmanager.gearupkey = value;
-                                            break;
-                                        case "geardownkey":
-                                            this.tractionmanager.geardownkey = value;
-                                            break;
-                                        case "drakey":
-                                            this.tractionmanager.DRAkey = value;
-                                            break;
-                                        case "customindicatorkey1":
-                                            this.tractionmanager.customindicatorkey1 = value;
-                                            break;
-                                        case "customindicatorkey2":
-                                            this.tractionmanager.customindicatorkey2 = value;
-                                            break;
-                                        case "customindicatorkey3":
-                                            this.tractionmanager.customindicatorkey3 = value;
-                                            break;
-                                        case "customindicatorkey4":
-                                            this.tractionmanager.customindicatorkey4 = value;
-                                            break;
-                                        case "customindicatorkey5":
-                                            this.tractionmanager.customindicatorkey5 = value;
-                                            break;
-                                        case "customindicatorkey6":
-                                            this.tractionmanager.customindicatorkey6 = value;
-                                            break;
-                                        case "customindicatorkey7":
-                                            this.tractionmanager.customindicatorkey7 = value;
-                                            break;
-                                        case "customindicatorkey8":
-                                            this.tractionmanager.customindicatorkey8 = value;
-                                            break;
-                                        case "customindicatorkey9":
-                                            this.tractionmanager.customindicatorkey9 = value;
-                                            break;
-                                        case "customindicatorkey10":
-                                            this.tractionmanager.customindicatorkey10 = value;
-                                            break;
-                                        case "frontpantographkey":
-                                            this.tractionmanager.frontpantographkey = value;
-                                            break;
-                                        case "rearpantographkey":
-                                            this.tractionmanager.rearpantographkey = value;
-                                            break;
-                                        case "advancedrivingkey":
-                                            this.tractionmanager.advancedrivingkey = value;
-                                            break;
-                                        default:
-                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
-                                    }
-                                    break;
+			                            case "wiperspeedup":
+			                                this.tractionmanager.wiperspeedup = value;
+			                                break;
+			                            case "wiperspeeddown":
+			                                this.tractionmanager.wiperspeeddown = value;
+			                                break;
+			                            case "isolatesafetykey":
+			                                this.tractionmanager.isolatesafetykey = value;
+			                                break;
+			                            case "gearupkey":
+			                                this.tractionmanager.gearupkey = value;
+			                                break;
+			                            case "geardownkey":
+			                                this.tractionmanager.geardownkey = value;
+			                                break;
+			                            case "drakey":
+			                                this.tractionmanager.DRAkey = value;
+			                                break;
+			                            case "customindicatorkey1":
+			                                this.tractionmanager.customindicatorkey1 = value;
+			                                break;
+			                            case "customindicatorkey2":
+			                                this.tractionmanager.customindicatorkey2 = value;
+			                                break;
+			                            case "customindicatorkey3":
+			                                this.tractionmanager.customindicatorkey3 = value;
+			                                break;
+			                            case "customindicatorkey4":
+			                                this.tractionmanager.customindicatorkey4 = value;
+			                                break;
+			                            case "customindicatorkey5":
+			                                this.tractionmanager.customindicatorkey5 = value;
+			                                break;
+			                            case "customindicatorkey6":
+			                                this.tractionmanager.customindicatorkey6 = value;
+			                                break;
+			                            case "customindicatorkey7":
+			                                this.tractionmanager.customindicatorkey7 = value;
+			                                break;
+			                            case "customindicatorkey8":
+			                                this.tractionmanager.customindicatorkey8 = value;
+			                                break;
+			                            case "customindicatorkey9":
+			                                this.tractionmanager.customindicatorkey9 = value;
+			                                break;
+			                            case "customindicatorkey10":
+			                                this.tractionmanager.customindicatorkey10 = value;
+			                                break;
+			                            case "frontpantographkey":
+			                                this.tractionmanager.frontpantographkey = value;
+			                                break;
+			                            case "rearpantographkey":
+			                                this.tractionmanager.rearpantographkey = value;
+			                                break;
+			                            case "advancedrivingkey":
+			                                this.tractionmanager.advancedrivingkey = value;
+			                                break;
+			                            default:
+			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
+			                        }
+			                        break;
 
-							}
-						}
-					}
-				}
+			                }
+			            }
+			        }
+			    }
 			}
 			//Check for null references and add all the devices
 			List<Device> devices = new List<Device>();
