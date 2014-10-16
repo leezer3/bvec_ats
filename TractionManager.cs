@@ -43,7 +43,7 @@ namespace Plugin
         public static int tractiontype;
 
         /// <summary>The underlying train.</summary>
-        private Train Train;
+        private readonly Train Train;
 
         //Default Variables
         internal int doorpowerlock = 0;

@@ -11,7 +11,7 @@ namespace Plugin
         // --- members ---
 
         /// <summary>The underlying train.</summary>
-        private Train Train;
+        private readonly Train Train;
 
         //Internal Variables
         internal double heatingtimer;

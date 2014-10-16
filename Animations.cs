@@ -8,7 +8,7 @@ namespace Plugin
     internal partial class Animations : Device
     {
         /// <summary>The underlying train.</summary>
-        private Train Train;
+        private readonly Train Train;
 
         //Variables
 
@@ -75,7 +75,7 @@ namespace Plugin
         internal double wheelpercentage;
         internal double degreesturned;
         internal double wheelrotation;
-        //Calculate the distance travelled
+        /// <summary>The distance travelled in meters</summary>
         internal double distancetravelled;
 
         /// <summary>Creates a new instance of this system.</summary>
@@ -122,7 +122,6 @@ namespace Plugin
         {
             
             //Steam Locomotive Valve Gear
-                /// <summary>The distance travelled in meters</summary>
                 distancetravelled = Train.trainlocation - Train.previouslocation;
                 //Then divide the distance travelled by the circumference to get us the percentage around the wheel travelled in this turn
                 double percentage = ((distancetravelled * 1000) / wheelcircumference) * 35;

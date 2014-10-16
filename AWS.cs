@@ -6,7 +6,7 @@ namespace Plugin
     internal partial class AWS : Device
     {
         /// <summary>The underlying train.</summary>
-        private Train Train;
+        private readonly Train Train;
         // --- members ---
         internal bool enabled;
         //Internal Variables
@@ -301,7 +301,7 @@ namespace Plugin
 
         }
 
-        /// <summary>Call this method to isolate the Automatic Warning System
+        /// <summary>Call this method to isolate the Automatic Warning System</summary>
         internal void Isolate()
         {
             

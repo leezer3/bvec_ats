@@ -7,7 +7,7 @@ namespace Plugin
     class Windscreen : Device
     {
         /// <summary>The underlying train.</summary>
-        private Train Train;
+        private readonly Train Train;
         // --- members ---
         internal bool enabled;
         //Internal Variables

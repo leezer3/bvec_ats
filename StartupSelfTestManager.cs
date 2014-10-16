@@ -6,7 +6,7 @@ namespace Plugin {
 	internal partial class StartupSelfTestManager : Device {
 		
 		// TODO: It is not yet possible for the startup/self-test procedure to fail rather than succeed.
-        private Train Train;
+        private readonly Train Train;
 		// members
 
         internal bool firststart;
