@@ -54,7 +54,8 @@ namespace Plugin {
         internal int firetemp;
         /// <summary>Whether we are currently shovelling coal</summary>
         internal bool shovelling;
-        
+        /// <summary>Stores whether the blowers are currently active</summary>
+        internal bool blowers;
 
 		// --- constants ---
         /// <summary>Is our transmission automatic</summary>
@@ -123,6 +124,10 @@ namespace Plugin {
         internal int fuelfillindicator = -1;
         /// <summary>The number of pressure units used per second by the whistle</summary>
         internal double klaxonpressureuse = -1;
+        /// <summary>The blowers factor for pressure increase</summary>
+        internal double blowers_pressurefactor = 1;
+        /// <summary>The blowers factor for the fire</summary>
+        internal double blowers_firefactor = 1;
 
         /// <summary>The starting mass of the fire</summary>
         internal double firestartmass = -1;
@@ -477,7 +482,7 @@ namespace Plugin {
                         int fire_tempchange;
                         if (firemass != 0)
                         {
-                            fire_tempchange = (int)Math.Ceiling((double)(((firemass * 0.5) - 10) / (firemass * 0.05)));
+                            fire_tempchange = (int)Math.Ceiling((double)(((firemass * 0.5) - 10) / (firemass * 0.05)) * blowers_firefactor);
                         }
                         else
                         {
@@ -496,7 +501,7 @@ namespace Plugin {
                             //Otherwise set to max
                             firetemp = 1000;
                         }
-                        finalsteamrate = (int)(((double)calculatedsteamrate / 1000) * firetemp);
+                        finalsteamrate = (int)((((double)calculatedsteamrate / 1000) * firetemp) * blowers_pressurefactor);
 
                     }
                 }

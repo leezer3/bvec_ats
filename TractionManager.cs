@@ -92,8 +92,8 @@ namespace Plugin
         internal string frontpantographkey;
         internal string rearpantographkey;
         internal string shovellingkey;
+        internal string blowerskey;
         internal string advancedrivingkey;
-        internal string doorskey = "K";
 
 
         //Arrays
@@ -618,18 +618,6 @@ namespace Plugin
                 }
             }
 
-            if (keypressed == doorskey)
-            {
-                if (Train.Doors == DoorStates.None)
-                {
-                    Train.Doors = DoorStates.Left;
-                }
-                else
-                {
-                    Train.Doors = DoorStates.None;
-                }
-            }
-
             if (keypressed == automatickey)
             {
                 //Toggle Automatic Cutoff/ Gears
@@ -809,6 +797,7 @@ namespace Plugin
                     reenabletpwsaws();
                 }
             }
+            //Toggle Pantographs
             if (keypressed == frontpantographkey)
             {
                 Train.electric.pantographtoggle(0);
@@ -816,6 +805,31 @@ namespace Plugin
             if (keypressed == rearpantographkey)
             {
                 Train.electric.pantographtoggle(1);
+            }
+            //Advanced steam locomotive functions
+            //Blowers
+            if (keypressed == blowerskey)
+            {
+                if (Train.steam.blowers == false)
+                {
+                    Train.steam.blowers = true;
+                }
+                else
+                {
+                    Train.steam.blowers = false;
+                }
+            }
+            //Shovel Coal
+            if (keypressed == shovellingkey)
+            {
+                if (Train.steam.shovelling == false)
+                {
+                    Train.steam.shovelling = true;
+                }
+                else
+                {
+                    Train.steam.shovelling = false;
+                }
             }
             if (keypressed == customindicatorkey1)
             {

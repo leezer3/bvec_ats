@@ -103,6 +103,9 @@ namespace Plugin {
         internal double trainlocation;
         internal double previouslocation;
         internal int direction;
+
+        /// <summary>The in-game time of day, in seconds.</summary>
+        internal static double SecondsSinceMidnight;
 		
 		/// <summary>The current value of the accelerometer.</summary>
 		internal double Acceleration;
@@ -353,6 +356,12 @@ namespace Plugin {
 			                            case "klaxonpressureuse":
 			                                InternalFunctions.ParseNumber(value, ref steam.klaxonpressureuse, key);
 			                                break;
+                                        case "blowers_pressurefactor":
+                                            InternalFunctions.ParseNumber(value, ref steam.blowers_pressurefactor, key);
+                                            break;
+                                        case "blowers_firefactor":
+                                            InternalFunctions.ParseNumber(value, ref steam.blowers_firefactor, key);
+                                            break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
@@ -902,6 +911,9 @@ namespace Plugin {
 			                            case "injectorkey":
 			                                this.tractionmanager.injectorkey = value;
 			                                break;
+                                        case "blowerskey":
+                                            this.tractionmanager.blowerskey = value;
+                                            break;
 			                            case "cutoffdownkey":
 			                                this.tractionmanager.cutoffdownkey = value;
 			                                break;
@@ -1116,6 +1128,8 @@ namespace Plugin {
                 {
                     this.direction = 2;
                 }
+                //Calculate in game time in easily accessible format
+                SecondsSinceMidnight = data.TotalTime.Seconds;
 			}
 		}
 		
@@ -1266,13 +1280,16 @@ namespace Plugin {
                 case 30:
                     {
                         //Door light trigger beacon
+                        //Set the timer for this station to the optional flag on the beacon
+                        //Then hit the trigger function
+                        Animations.stoptime = beacon.Optional;
                         Animations.doorlighttrigger();
                     }
                     break;
                 case 31:
                     {
                         //Door light timer
-
+                        Animations.departuretime = TimeSpan.Parse(Convert.ToString(beacon.Optional)).TotalSeconds;
                     }
                     break;
             }

@@ -1,5 +1,4 @@
 ﻿using System;
-
 using OpenBveApi.Runtime;
 
 namespace Plugin
@@ -22,12 +21,12 @@ namespace Plugin
         }
 
         /// <summary>Stores the time for which we will be stopped (Minus 30 seconds for the flashing door light)</summary>
-        internal static int doorlightime;
+        internal static int stoptime;
         internal double doorlighttimer;
         internal double doorlighttimer2;
         /// <summary>Stores whether the flashing door light is currently lit</summary>
         internal bool doorlighton;
-
+        internal static double departuretime;
         /// <summary>The panel variable for the flashing door light</summary>
         internal int doorlight = -1;
 
@@ -77,7 +76,7 @@ namespace Plugin
         internal double wheelrotation;
         /// <summary>The distance travelled in meters</summary>
         internal double distancetravelled;
-
+        
         /// <summary>Creates a new instance of this system.</summary>
         /// <param name="train">The train.</param>
         internal Animations(Train train)
@@ -113,6 +112,7 @@ namespace Plugin
             {
                 MyDoorLightState = DoorLightStates.InMotion;
             }
+
         }
 
         /// <summary>Is called every frame.</summary>
@@ -195,6 +195,8 @@ namespace Plugin
                 
 
             //Flashing door light
+            {
+                
                 if (MyDoorLightState == DoorLightStates.InMotion)
                 {
                     doorlighttimer = 0;
@@ -215,11 +217,18 @@ namespace Plugin
                 }
                 else if (MyDoorLightState == DoorLightStates.Countdown)
                 {
-                    doorlighttimer += data.ElapsedTime.Milliseconds;
-                    if (doorlighttimer > doorlightime)
+                    
+                    //We've opened our train doors-
+                    //Compare the current time with the departure time
+                    //Do nothing if we are early, just wait
+                    if (Train.SecondsSinceMidnight > (departuretime - stoptime))
                     {
-                        MyDoorLightState = DoorLightStates.DoorsClosing;
-                        doorlighttimer = 0;
+                        doorlighttimer += data.ElapsedTime.Milliseconds;
+                        if (doorlighttimer > stoptime)
+                        {
+                            MyDoorLightState = DoorLightStates.DoorsClosing;
+                            doorlighttimer = 0;
+                        }
                     }
                 }
                 else if (MyDoorLightState == DoorLightStates.DoorsClosing)
@@ -252,24 +261,18 @@ namespace Plugin
                         MyDoorLightState = DoorLightStates.InMotion;
                     }
                 }
+            }
         }
 
-        //These two functions are called by the beacon manager to set the door light state and timer
+        //Called by the beacon manager to set the door light state
         internal static void doorlighttrigger()
         {
             if (MyDoorLightState == DoorLightStates.InMotion)
             {
                 MyDoorLightState = DoorLightStates.Primed;
             }
-            else if (MyDoorLightState == DoorLightStates.DoorsClosed)
-            {
-                MyDoorLightState = DoorLightStates.InMotion;
-            }
         }
 
-        internal static void doorlightimer(int time)
-        {
-            Animations.doorlightime = time * 1000;
-        }
+
     }
 }
