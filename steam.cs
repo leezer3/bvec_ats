@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using OpenBveApi.Runtime;
 
 
@@ -24,6 +25,7 @@ namespace Plugin {
         internal int new_power;
         internal int pressureup;
         internal int pressureuse;
+	    internal static int steamheatlevel;
         /// <summary>Stores the current boiler pressure</summary>
         internal int stm_boilerpressure;
         /// <summary>Stores the current boiler water level</summary>
@@ -43,6 +45,7 @@ namespace Plugin {
         internal bool fuelling;
         internal double fuellingtimer;
         internal double klaxonpressuretimer;
+	    internal double steamheattimer;
         /// <summary>The basic rate at which water turns to steam per second under ideal conditions</summary>
         /// Calculated once at initilisation from the initial variables which are per minute
         internal int calculatedsteamrate;
@@ -128,7 +131,8 @@ namespace Plugin {
         internal double blowers_pressurefactor = 1;
         /// <summary>The blowers factor for the fire</summary>
         internal double blowers_firefactor = 1;
-
+        /// <summary>The number of pressure units used by each steam heating 'notch'</summary>
+	    internal double steamheatpressureuse = -1;
         /// <summary>The starting mass of the fire</summary>
         internal double firestartmass = -1;
         /// <summary>The maximum fire mass</summary>
@@ -156,6 +160,8 @@ namespace Plugin {
         internal int injectorindicator = -1;
         /// <summary>The panel index of the automatic cutoff & reverser indicator</summary>
         internal int automaticindicator = -1;
+        /// <summary>The panel index of the steam heat level indicator</summary>
+        internal int steamheatindicator = -1;
 
         //Sound Indicies
         /// <summary>The sound index played when the injectors are activated</summary>
@@ -486,7 +492,14 @@ namespace Plugin {
                         int fire_tempchange;
                         if (firemass != 0)
                         {
-                            fire_tempchange = (int)Math.Ceiling((double)(((firemass * 0.5) - 10) / (firemass * 0.05)) * blowers_firefactor);
+                            if (blowers == true)
+                            {
+                                fire_tempchange = (int)Math.Ceiling((double) (((firemass*0.5) - 10)/(firemass*0.05))*blowers_firefactor);
+                            }
+                            else
+                            {
+                                fire_tempchange = (int)Math.Ceiling((double)(((firemass * 0.5) - 10) / (firemass * 0.05)));
+                            }
                         }
                         else
                         {
@@ -505,13 +518,27 @@ namespace Plugin {
                             //Otherwise set to max
                             firetemp = 1000;
                         }
-                        finalsteamrate = (int)((((double)calculatedsteamrate / 1000) * firetemp) * blowers_pressurefactor);
+                        if (blowers == true)
+                        {
+                            finalsteamrate = (int) ((((double) calculatedsteamrate/1000)*firetemp)*blowers_pressurefactor);
+                        }
+                        else
+                        {
+                            finalsteamrate = (int)(((double)calculatedsteamrate / 1000) * firetemp);
+                        }
 
                     }
                 }
                 if (this.boilertimer > 1)
                 {
-                    pressureup = (int)(((boilerwatertosteamrate / 60) * boilertimer) * blowers_pressurefactor);
+                    if (blowers == true)
+                    {
+                        pressureup = (int) (((boilerwatertosteamrate/60)*boilertimer)*blowers_pressurefactor);
+                    }
+                    else
+                    {
+                        pressureup = (int)((boilerwatertosteamrate / 60) * boilertimer);
+                    }
                     stm_boilerpressure = stm_boilerpressure + pressureup;
                     stm_boilerwater = stm_boilerwater - pressureup;
                     //Blowoff
@@ -574,7 +601,7 @@ namespace Plugin {
                     stm_boilerpressure = stm_boilerpressure - ((int)injectorrate / 4);
                 }
             }
-
+		    
             //This section of code governs pressure usage
             if (stm_reverser != 0)
             {
@@ -596,13 +623,23 @@ namespace Plugin {
             if (klaxonpressureuse != -1 && (Train.tractionmanager.primaryklaxonplaying || Train.tractionmanager.secondaryklaxonplaying || Train.tractionmanager.musicklaxonplaying))
             {
                 this.klaxonpressuretimer += data.ElapsedTime.Seconds;
-                if (klaxonpressuretimer > 0.5)
+                if (klaxonpressuretimer > 1)
                 {
                     klaxonpressuretimer = 0.0;
-                    stm_boilerpressure = stm_boilerpressure - (int)(klaxonpressureuse / 2);
+                    stm_boilerpressure = stm_boilerpressure - (int)klaxonpressureuse;
                 }
             }
-            //This section of code fills our tanks from a water tower
+            //This section of code defines the pressure used by the train's steam heating system
+		    if (steamheatpressureuse != -1 && steamheatlevel != 0)
+		    {
+		        steamheattimer += data.ElapsedTime.Seconds;
+		        if (steamheattimer > 1)
+		        {
+		            stm_boilerpressure -= (int)(steamheatlevel*steamheatpressureuse);
+		            steamheattimer = 0;
+		        }
+		    }
+		    //This section of code fills our tanks from a water tower
             if (fuelling == true)
             {
                 fuellingtimer += data.ElapsedTime.Milliseconds;
@@ -619,15 +656,27 @@ namespace Plugin {
             //Pass data to the debug window
             if (AdvancedDriving.CheckInst != null)
             {
+                //Calculate total pressure usage figure
+                int debugpressureuse = pressureuse;
+                if (Train.tractionmanager.primaryklaxonplaying || Train.tractionmanager.secondaryklaxonplaying || Train.tractionmanager.musicklaxonplaying)
+                {
+                    debugpressureuse += (int)klaxonpressureuse;
+                }
+                if (steamheatpressureuse != -1 && steamheatlevel != 0)
+                {
+                    debugpressureuse += (int)(steamheatlevel*steamheatpressureuse);
+                }
                 tractionmanager.debuginformation[1] = Convert.ToString(stm_boilerpressure);
                 tractionmanager.debuginformation[2] = Convert.ToString(pressureup);
-                tractionmanager.debuginformation[3] = Convert.ToString(pressureuse);
+                tractionmanager.debuginformation[3] = Convert.ToString(debugpressureuse);
                 tractionmanager.debuginformation[4] = Convert.ToString(cutoff);
                 tractionmanager.debuginformation[5] = Convert.ToString(optimalcutoff);
                 tractionmanager.debuginformation[6] = Convert.ToString(firemass);
                 tractionmanager.debuginformation[7] = Convert.ToString(firetemp);
                 tractionmanager.debuginformation[8] = Convert.ToString(stm_injector);
                 tractionmanager.debuginformation[9] = Convert.ToString(blowers);
+                tractionmanager.debuginformation[10] = Convert.ToString(stm_boilerwater) + " of " + Convert.ToString(boilermaxwaterlevel);
+                tractionmanager.debuginformation[11] = Convert.ToString(fuel) + " of " + Convert.ToString(fuelcapacity);
             }
             {
                 //Set Panel Indicators
@@ -708,6 +757,10 @@ namespace Plugin {
                 {
                     this.Train.Panel[(blowoffindicator)] = 0;
 
+                }
+                if (steamheatindicator != -1)
+                {
+                    this.Train.Panel[(steamheatindicator)] = steamheatlevel;
                 }
             }
         {

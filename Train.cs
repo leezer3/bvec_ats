@@ -365,6 +365,12 @@ namespace Plugin {
                                         case "blowers_firefactor":
                                             InternalFunctions.ParseNumber(value, ref steam.blowers_firefactor, key);
                                             break;
+                                        case "steamheatindicator":
+                                            InternalFunctions.ValidateIndex(value, ref steam.steamheatindicator, key);
+                                            break;
+                                        case "steamheatpressureuse":
+                                            InternalFunctions.ParseNumber(value, ref steam.steamheatpressureuse, key);
+                                            break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
@@ -984,6 +990,13 @@ namespace Plugin {
 			                            case "advancedrivingkey":
 			                                this.tractionmanager.advancedrivingkey = value;
 			                                break;
+                                        case "steamheatincreasekey":
+                                            this.tractionmanager.steamheatincreasekey = value;
+			                                break;
+                                        case "steamheatdecreasekey":
+                                            this.tractionmanager.steamheatdecreasekey = value;
+                                            break;
+                                            break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }

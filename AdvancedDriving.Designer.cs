@@ -31,6 +31,11 @@
             this.label1 = new System.Windows.Forms.Label();
             this.debuglabel = new System.Windows.Forms.Label();
             this.steambox = new System.Windows.Forms.Panel();
+            this.blowers = new System.Windows.Forms.Label();
+            this.injectors = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.pressure = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
@@ -48,11 +53,11 @@
             this.label3 = new System.Windows.Forms.Label();
             this.userate = new System.Windows.Forms.Label();
             this.genrate = new System.Windows.Forms.Label();
-            this.blowers = new System.Windows.Forms.Label();
-            this.injectors = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.boilerlevel = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.fuellevel = new System.Windows.Forms.Label();
             this.steambox.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -77,6 +82,11 @@
             // 
             // steambox
             // 
+            this.steambox.Controls.Add(this.label2);
+            this.steambox.Controls.Add(this.boilerlevel);
+            this.steambox.Controls.Add(this.label17);
+            this.steambox.Controls.Add(this.label19);
+            this.steambox.Controls.Add(this.fuellevel);
             this.steambox.Controls.Add(this.blowers);
             this.steambox.Controls.Add(this.injectors);
             this.steambox.Controls.Add(this.label14);
@@ -101,8 +111,56 @@
             this.steambox.Controls.Add(this.genrate);
             this.steambox.Location = new System.Drawing.Point(12, 46);
             this.steambox.Name = "steambox";
-            this.steambox.Size = new System.Drawing.Size(263, 198);
+            this.steambox.Size = new System.Drawing.Size(263, 244);
             this.steambox.TabIndex = 2;
+            // 
+            // blowers
+            // 
+            this.blowers.AutoSize = true;
+            this.blowers.Location = new System.Drawing.Point(116, 164);
+            this.blowers.Name = "blowers";
+            this.blowers.Size = new System.Drawing.Size(35, 13);
+            this.blowers.TabIndex = 22;
+            this.blowers.Text = "label8";
+            // 
+            // injectors
+            // 
+            this.injectors.AutoSize = true;
+            this.injectors.Location = new System.Drawing.Point(116, 151);
+            this.injectors.Name = "injectors";
+            this.injectors.Size = new System.Drawing.Size(35, 13);
+            this.injectors.TabIndex = 21;
+            this.injectors.Text = "label8";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label14.Location = new System.Drawing.Point(4, 164);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(95, 13);
+            this.label14.TabIndex = 20;
+            this.label14.Text = "Blowers Active:";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label15.Location = new System.Drawing.Point(4, 151);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(100, 13);
+            this.label15.TabIndex = 19;
+            this.label15.Text = "Injectors Active:";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label16.Location = new System.Drawing.Point(4, 136);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(127, 15);
+            this.label16.TabIndex = 18;
+            this.label16.Text = "Injectors and Blowers:";
             // 
             // label12
             // 
@@ -136,7 +194,7 @@
             // firetemp
             // 
             this.firetemp.AutoSize = true;
-            this.firetemp.Location = new System.Drawing.Point(114, 164);
+            this.firetemp.Location = new System.Drawing.Point(116, 205);
             this.firetemp.Name = "firetemp";
             this.firetemp.Size = new System.Drawing.Size(35, 13);
             this.firetemp.TabIndex = 14;
@@ -145,7 +203,7 @@
             // firemass
             // 
             this.firemass.AutoSize = true;
-            this.firemass.Location = new System.Drawing.Point(114, 151);
+            this.firemass.Location = new System.Drawing.Point(116, 192);
             this.firemass.Name = "firemass";
             this.firemass.Size = new System.Drawing.Size(35, 13);
             this.firemass.TabIndex = 13;
@@ -155,7 +213,7 @@
             // 
             this.label10.AutoSize = true;
             this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label10.Location = new System.Drawing.Point(4, 164);
+            this.label10.Location = new System.Drawing.Point(4, 205);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(107, 13);
             this.label10.TabIndex = 12;
@@ -165,7 +223,7 @@
             // 
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(4, 151);
+            this.label9.Location = new System.Drawing.Point(4, 192);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(65, 13);
             this.label9.TabIndex = 11;
@@ -175,7 +233,7 @@
             // 
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.Location = new System.Drawing.Point(4, 136);
+            this.label8.Location = new System.Drawing.Point(4, 177);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(68, 15);
             this.label8.TabIndex = 10;
@@ -184,7 +242,7 @@
             // optimalcutoff
             // 
             this.optimalcutoff.AutoSize = true;
-            this.optimalcutoff.Location = new System.Drawing.Point(117, 82);
+            this.optimalcutoff.Location = new System.Drawing.Point(116, 123);
             this.optimalcutoff.Name = "optimalcutoff";
             this.optimalcutoff.Size = new System.Drawing.Size(35, 13);
             this.optimalcutoff.TabIndex = 9;
@@ -193,7 +251,7 @@
             // currentcutoff
             // 
             this.currentcutoff.AutoSize = true;
-            this.currentcutoff.Location = new System.Drawing.Point(117, 69);
+            this.currentcutoff.Location = new System.Drawing.Point(116, 110);
             this.currentcutoff.Name = "currentcutoff";
             this.currentcutoff.Size = new System.Drawing.Size(35, 13);
             this.currentcutoff.TabIndex = 8;
@@ -203,7 +261,7 @@
             // 
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(3, 82);
+            this.label7.Location = new System.Drawing.Point(3, 123);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(91, 13);
             this.label7.TabIndex = 7;
@@ -213,7 +271,7 @@
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(3, 69);
+            this.label6.Location = new System.Drawing.Point(3, 110);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(90, 13);
             this.label6.TabIndex = 6;
@@ -223,7 +281,7 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(4, 54);
+            this.label5.Location = new System.Drawing.Point(4, 95);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(41, 15);
             this.label5.TabIndex = 5;
@@ -252,7 +310,7 @@
             // userate
             // 
             this.userate.AutoSize = true;
-            this.userate.Location = new System.Drawing.Point(114, 41);
+            this.userate.Location = new System.Drawing.Point(116, 41);
             this.userate.Name = "userate";
             this.userate.Size = new System.Drawing.Size(35, 13);
             this.userate.TabIndex = 2;
@@ -261,66 +319,66 @@
             // genrate
             // 
             this.genrate.AutoSize = true;
-            this.genrate.Location = new System.Drawing.Point(114, 28);
+            this.genrate.Location = new System.Drawing.Point(116, 28);
             this.genrate.Name = "genrate";
             this.genrate.Size = new System.Drawing.Size(35, 13);
             this.genrate.TabIndex = 1;
             this.genrate.Text = "label3";
             // 
-            // blowers
+            // label2
             // 
-            this.blowers.AutoSize = true;
-            this.blowers.Location = new System.Drawing.Point(114, 123);
-            this.blowers.Name = "blowers";
-            this.blowers.Size = new System.Drawing.Size(35, 13);
-            this.blowers.TabIndex = 22;
-            this.blowers.Text = "label8";
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(2, 69);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(78, 13);
+            this.label2.TabIndex = 29;
+            this.label2.Text = "Boiler Level:";
             // 
-            // injectors
+            // boilerlevel
             // 
-            this.injectors.AutoSize = true;
-            this.injectors.Location = new System.Drawing.Point(114, 110);
-            this.injectors.Name = "injectors";
-            this.injectors.Size = new System.Drawing.Size(35, 13);
-            this.injectors.TabIndex = 21;
-            this.injectors.Text = "label8";
+            this.boilerlevel.AutoSize = true;
+            this.boilerlevel.Location = new System.Drawing.Point(116, 69);
+            this.boilerlevel.Name = "boilerlevel";
+            this.boilerlevel.Size = new System.Drawing.Size(35, 13);
+            this.boilerlevel.TabIndex = 28;
+            this.boilerlevel.Text = "label3";
             // 
-            // label14
+            // label17
             // 
-            this.label14.AutoSize = true;
-            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label14.Location = new System.Drawing.Point(4, 123);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(95, 13);
-            this.label14.TabIndex = 20;
-            this.label14.Text = "Blowers Active:";
+            this.label17.AutoSize = true;
+            this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label17.Location = new System.Drawing.Point(2, 54);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(80, 15);
+            this.label17.TabIndex = 27;
+            this.label17.Text = "Water Levels:";
             // 
-            // label15
+            // label19
             // 
-            this.label15.AutoSize = true;
-            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.Location = new System.Drawing.Point(4, 110);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(100, 13);
-            this.label15.TabIndex = 19;
-            this.label15.Text = "Injectors Active:";
+            this.label19.AutoSize = true;
+            this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label19.Location = new System.Drawing.Point(2, 82);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(81, 13);
+            this.label19.TabIndex = 25;
+            this.label19.Text = "Tanks Level:";
             // 
-            // label16
+            // fuellevel
             // 
-            this.label16.AutoSize = true;
-            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label16.Location = new System.Drawing.Point(4, 95);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(127, 15);
-            this.label16.TabIndex = 18;
-            this.label16.Text = "Injectors and Blowers:";
+            this.fuellevel.AutoSize = true;
+            this.fuellevel.Location = new System.Drawing.Point(116, 82);
+            this.fuellevel.Name = "fuellevel";
+            this.fuellevel.Size = new System.Drawing.Size(35, 13);
+            this.fuellevel.TabIndex = 23;
+            this.fuellevel.Text = "label3";
             // 
             // AdvancedDriving
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(294, 271);
+            this.ClientSize = new System.Drawing.Size(294, 302);
             this.Controls.Add(this.steambox);
             this.Controls.Add(this.debuglabel);
             this.Controls.Add(this.label1);
@@ -361,5 +419,10 @@
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label boilerlevel;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label fuellevel;
     }
 }

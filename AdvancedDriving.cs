@@ -108,6 +108,8 @@ namespace Plugin
                 firetemp.Text = debuginformation[7];
                 injectors.Text = debuginformation[8];
                 blowers.Text = debuginformation[9];
+                boilerlevel.Text = debuginformation[10];
+                fuellevel.Text = debuginformation[11];
             }
         }
 

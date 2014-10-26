@@ -94,6 +94,8 @@ namespace Plugin
         internal string shovellingkey;
         internal string blowerskey;
         internal string advancedrivingkey;
+        internal string steamheatincreasekey;
+        internal string steamheatdecreasekey;
 
 
         //Arrays
@@ -993,7 +995,20 @@ namespace Plugin
                     }
                 }
             }
-            
+            if (keypressed == steamheatincreasekey)
+            {
+                if (steam.steamheatlevel < 5)
+                {
+                    steam.steamheatlevel++;
+                }
+            }
+            if (keypressed == steamheatdecreasekey)
+            {
+                if (steam.steamheatlevel > 0)
+                {
+                    steam.steamheatlevel--;
+                }
+            }
         }
 
         internal override void KeyUp(VirtualKeys key)
