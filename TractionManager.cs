@@ -471,6 +471,18 @@ namespace Plugin
                         }
                     }
                 }
+                else
+                {
+                    this.Train.Panel[klaxonarray[0]] = 0;
+                    if (klaxonarray[2] != 500)
+                    {
+                        this.Train.Panel[klaxonarray[2]] = 0;
+                    }
+                    if (klaxonarray[4] != 500)
+                    {
+                        this.Train.Panel[klaxonarray[4]] = 0;
+                    }
+                }
             }
             {
                 //Custom Indicators

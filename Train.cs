@@ -353,6 +353,9 @@ namespace Plugin {
 			                            case "blowoffsound":
 			                                InternalFunctions.ValidateIndex(value, ref steam.blowoffsound, key);
 			                                break;
+                                        case "blowoffindicator":
+                                            InternalFunctions.ValidateIndex(value, ref steam.blowoffindicator, key);
+                                            break;
 			                            case "klaxonpressureuse":
 			                                InternalFunctions.ParseNumber(value, ref steam.klaxonpressureuse, key);
 			                                break;
@@ -742,7 +745,7 @@ namespace Plugin {
 			                                try
 			                                {
 			                                    string[] tpwssplit1 = value.Split(',');
-			                                    for (int j = 0; j < tpwssplit1.Length; j++)
+			                                    for (var j = 0; j < tpwssplit1.Length; j++)
 			                                    {
 			                                        if (j == 0)
 			                                        {

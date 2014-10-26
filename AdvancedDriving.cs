@@ -106,6 +106,8 @@ namespace Plugin
                 optimalcutoff.Text = debuginformation[5];
                 firemass.Text = debuginformation[6];
                 firetemp.Text = debuginformation[7];
+                injectors.Text = debuginformation[8];
+                blowers.Text = debuginformation[9];
             }
         }
 

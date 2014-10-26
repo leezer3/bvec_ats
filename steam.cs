@@ -162,8 +162,12 @@ namespace Plugin {
         internal int injectorsound = -1;
         /// <summary>The sound index played when the boiler blows off excess pressure</summary>
         internal int blowoffsound = -1;
+        /// <summary>The panel index triggered played when the boiler blows off excess pressure</summary>
+        internal int blowoffindicator = -1;
 
-
+        //Used to run the blowoff timer
+	    internal bool blowofftriggered;
+	    internal double blowofftimer;
         //Arrays
         int[] heatingarray;
 		
@@ -507,7 +511,7 @@ namespace Plugin {
                 }
                 if (this.boilertimer > 1)
                 {
-                    pressureup = ((int)boilerwatertosteamrate / 60) * (int)boilertimer;
+                    pressureup = (int)(((boilerwatertosteamrate / 60) * boilertimer) * blowers_pressurefactor);
                     stm_boilerpressure = stm_boilerpressure + pressureup;
                     stm_boilerwater = stm_boilerwater - pressureup;
                     //Blowoff
@@ -516,9 +520,10 @@ namespace Plugin {
                         stm_boilerpressure = (int)boilermaxpressure;
                         if (blowoffsound != -1)
                         {
-                            SoundManager.Play(blowoffsound, 1.0, 1.0, false);
+                            SoundManager.Play(blowoffsound, 2.0, 1.0, false);
                         }
-                        
+                        blowofftriggered = true;
+
                     }
                     else if (stm_boilerpressure > boilermaxpressure)
                     {
@@ -537,10 +542,21 @@ namespace Plugin {
                 if (stm_boilerwater > boilermaxwaterlevel / 2 && stm_boilerpressure > boilermaxpressure / 4)
                 {
                     stm_injector = false;
+                    if (pressureuse > pressureup * 1.5)
+                    {
+                        //Turn on the blowers if we're using 50% more pressure than we're generating
+                        blowers = true;
+                    }
+                    else
+                    {
+                        blowers = false;
+                    }
                 }
                 else
                 {
+                    //Blowers shouldn't be on at the same time as the injectors
                     stm_injector = true;
+                    blowers = false;
                 }
             }
 
@@ -610,6 +626,8 @@ namespace Plugin {
                 tractionmanager.debuginformation[5] = Convert.ToString(optimalcutoff);
                 tractionmanager.debuginformation[6] = Convert.ToString(firemass);
                 tractionmanager.debuginformation[7] = Convert.ToString(firetemp);
+                tractionmanager.debuginformation[8] = Convert.ToString(stm_injector);
+                tractionmanager.debuginformation[9] = Convert.ToString(blowers);
             }
             {
                 //Set Panel Indicators
@@ -674,6 +692,22 @@ namespace Plugin {
                     {
                         this.Train.Panel[(fuelfillindicator)] = 1;
                     }
+                }
+                if (blowofftriggered == true)
+                {
+                    this.Train.Panel[(blowoffindicator)] = 1;
+                    //Run a 10 second timer for the blowoff index to display
+                    this.blowofftimer += data.ElapsedTime.Seconds;
+                    if (this.blowofftimer > 10)
+                    {
+                        this.blowofftriggered = false;
+                        this.blowofftimer = 0;
+                    }
+                }
+                else
+                {
+                    this.Train.Panel[(blowoffindicator)] = 0;
+
                 }
             }
         {

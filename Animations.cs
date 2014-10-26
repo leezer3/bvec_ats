@@ -69,11 +69,12 @@ namespace Plugin
         /// <summary>The Z position of the piston crank [Right]</summary>
         internal double cranklocation_R;
         internal double crankangle_R;
+        internal double cranklocation_L;
+        internal double crankangle_L;
         /// <summary>The circumference in millimeters</summary>
         internal double wheelcircumference;
         internal double wheelpercentage;
         internal double degreesturned;
-        internal double wheelrotation;
         /// <summary>The distance travelled in meters</summary>
         internal double distancetravelled;
         
@@ -171,15 +172,7 @@ namespace Plugin
                 if (wheelrotation_variable != -1)
                 {
                     //Calculate the wheel rotation value- Use this rather than an animated formula, as otherwise the gear and wheel may become out of sync
-                    if (wheelrotation <= 360 && wheelrotation >= 0)
-                    {
-                        wheelrotation += degreesturned;
-                    }
-                    else
-                    {
-                        wheelrotation = 0 + degreesturned;
-                    }
-                    this.Train.Panel[wheelrotation_variable] = 360 - (int)(((Math.PI / 180) * degreesturned) * 1000);
+                    this.Train.Panel[wheelrotation_variable] = (int)(((Math.PI / 180) * (360 - degreesturned)) * 1000);
                 }
 
                 //Piston Crosshead Location Right
@@ -192,7 +185,17 @@ namespace Plugin
                     crankangle_R = Math.Asin(crankradius * Math.Sin((Math.PI / 180) * (degreesturned + 90)) / cranklength);
                     this.Train.Panel[crankrotation_R] = (int)((crankangle_R * 1000) /2);
                 }
-                
+
+                //Piston Crosshead Location Left
+                if (crankvariable_L != -1 && crankrotation_L != -1 && crankradius != 0 && cranklength != 0)
+                {
+                    //We've already worked out the number of degrees turned for the main crankshaft.
+                    //Work out the crank throw distance
+                    cranklocation_L = crankradius * Math.Cos((Math.PI / 180) * (degreesturned + 180)) + Math.Sqrt(Math.Pow(cranklength, 2) - Math.Pow(crankradius, 2) * Math.Pow(Math.Sin((Math.PI / 180) * (degreesturned + 180)), 2));
+                    this.Train.Panel[crankvariable_L] = (int)cranklocation_L;
+                    crankangle_L = Math.Asin(crankradius * Math.Sin((Math.PI / 180) * (degreesturned + 180)) / cranklength);
+                    this.Train.Panel[crankrotation_L] = (int)((crankangle_L * 1000) / 2);
+                }
 
             //Flashing door light
             {
