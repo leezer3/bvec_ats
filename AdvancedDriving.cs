@@ -110,6 +110,7 @@ namespace Plugin
                 blowers.Text = debuginformation[9];
                 boilerlevel.Text = debuginformation[10];
                 fuellevel.Text = debuginformation[11];
+                automatic.Text = debuginformation[12];
             }
         }
 

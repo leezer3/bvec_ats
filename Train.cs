@@ -348,7 +348,18 @@ namespace Plugin {
 			                                InternalFunctions.ValidateIndex(value, ref steam.automaticindicator, key);
 			                                break;
 			                            case "injectorsound":
-			                                InternalFunctions.ValidateIndex(value, ref steam.injectorsound, key);
+			                                    string[] injectorsplit = value.Split(',');
+			                                    for (int k = 0; k < injectorsplit.Length; k++)
+			                                    {
+			                                        if (k == 0)
+			                                        {
+			                                            InternalFunctions.ValidateIndex(injectorsplit[0], ref steam.injectorloopsound, key);
+			                                        }
+			                                        else
+			                                        {
+                                                        InternalFunctions.ValidateIndex(injectorsplit[1], ref steam.injectorclanksound, key);
+			                                        }
+			                                    }
 			                                break;
 			                            case "blowoffsound":
 			                                InternalFunctions.ValidateIndex(value, ref steam.blowoffsound, key);

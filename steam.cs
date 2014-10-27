@@ -164,12 +164,16 @@ namespace Plugin {
         internal int steamheatindicator = -1;
 
         //Sound Indicies
-        /// <summary>The sound index played when the injectors are activated</summary>
-        internal int injectorsound = -1;
+        /// <summary>The sound index played looped whilst the injectors are active</summary>
+        internal int injectorloopsound = -1;
+        /// <summary>The sound index played when the injectors are activated/ deactivated</summary>
+        internal int injectorclanksound = -1;
         /// <summary>The sound index played when the boiler blows off excess pressure</summary>
         internal int blowoffsound = -1;
         /// <summary>The panel index triggered played when the boiler blows off excess pressure</summary>
         internal int blowoffindicator = -1;
+
+	    internal bool injectorclank;
 
         //Used to run the blowoff timer
 	    internal bool blowofftriggered;
@@ -677,6 +681,14 @@ namespace Plugin {
                 tractionmanager.debuginformation[9] = Convert.ToString(blowers);
                 tractionmanager.debuginformation[10] = Convert.ToString(stm_boilerwater) + " of " + Convert.ToString(boilermaxwaterlevel);
                 tractionmanager.debuginformation[11] = Convert.ToString(fuel) + " of " + Convert.ToString(fuelcapacity);
+                if(automatic !=-1)
+                {
+                    tractionmanager.debuginformation[12] = "True";
+                }
+                else
+                {
+                    tractionmanager.debuginformation[12] = "False";
+                }
             }
             {
                 //Set Panel Indicators
@@ -765,15 +777,38 @@ namespace Plugin {
             }
         {
             //Sounds
-            if (this.injectorsound != -1)
+            if (this.injectorloopsound != -1)
             {
                 if (stm_injector == true)
                 {
-                    SoundManager.Play(injectorsound, 1.0, 1.0, true);
+                    if (injectorclank == false)
+                    {
+                        if (injectorclanksound != -1)
+                        {
+                            SoundManager.Play(injectorclanksound, 2.0, 1.0, false);
+                        }
+                        injectorclank = true;
+                    }
+                    else
+                    {
+                        if (!SoundManager.IsPlaying(injectorclanksound) || injectorclanksound == -1)
+                        {
+                            SoundManager.Play(injectorloopsound, 2.0, 1.0, true);
+                        }
+                    }
+                    
                 }
                 else
                 {
-                    SoundManager.Stop(injectorsound);
+                    injectorclank = false;
+                    if (SoundManager.IsPlaying(injectorloopsound))
+                    {
+                        SoundManager.Stop(injectorloopsound);
+                        if (injectorclanksound != -1)
+                        {
+                            SoundManager.Play(injectorclanksound, 2.0, 1.0, false);
+                        }
+                    }
                 }
             }
             if (overheatalarm != -1)
