@@ -31,6 +31,14 @@
             this.label1 = new System.Windows.Forms.Label();
             this.debuglabel = new System.Windows.Forms.Label();
             this.steambox = new System.Windows.Forms.Panel();
+            this.automatic = new System.Windows.Forms.Label();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.boilerlevel = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.fuellevel = new System.Windows.Forms.Label();
             this.blowers = new System.Windows.Forms.Label();
             this.injectors = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
@@ -52,14 +60,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.userate = new System.Windows.Forms.Label();
             this.genrate = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.boilerlevel = new System.Windows.Forms.Label();
-            this.label17 = new System.Windows.Forms.Label();
-            this.label19 = new System.Windows.Forms.Label();
-            this.fuellevel = new System.Windows.Forms.Label();
-            this.label13 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
-            this.automatic = new System.Windows.Forms.Label();
+            this.label18 = new System.Windows.Forms.Label();
+            this.trainspeed = new System.Windows.Forms.Label();
             this.steambox.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -113,10 +115,86 @@
             this.steambox.Controls.Add(this.label3);
             this.steambox.Controls.Add(this.userate);
             this.steambox.Controls.Add(this.genrate);
-            this.steambox.Location = new System.Drawing.Point(12, 46);
+            this.steambox.Location = new System.Drawing.Point(12, 81);
             this.steambox.Name = "steambox";
-            this.steambox.Size = new System.Drawing.Size(263, 244);
+            this.steambox.Size = new System.Drawing.Size(263, 229);
             this.steambox.TabIndex = 2;
+            // 
+            // automatic
+            // 
+            this.automatic.AutoSize = true;
+            this.automatic.Location = new System.Drawing.Point(116, 112);
+            this.automatic.Name = "automatic";
+            this.automatic.Size = new System.Drawing.Size(35, 13);
+            this.automatic.TabIndex = 32;
+            this.automatic.Text = "label8";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(282, 97);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(35, 13);
+            this.label13.TabIndex = 31;
+            this.label13.Text = "label8";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label16.Location = new System.Drawing.Point(4, 112);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(111, 13);
+            this.label16.TabIndex = 30;
+            this.label16.Text = "Automatic Driving:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(2, 69);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(78, 13);
+            this.label2.TabIndex = 29;
+            this.label2.Text = "Boiler Level:";
+            // 
+            // boilerlevel
+            // 
+            this.boilerlevel.AutoSize = true;
+            this.boilerlevel.Location = new System.Drawing.Point(116, 69);
+            this.boilerlevel.Name = "boilerlevel";
+            this.boilerlevel.Size = new System.Drawing.Size(35, 13);
+            this.boilerlevel.TabIndex = 28;
+            this.boilerlevel.Text = "label3";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label17.Location = new System.Drawing.Point(2, 54);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(80, 15);
+            this.label17.TabIndex = 27;
+            this.label17.Text = "Water Levels:";
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label19.Location = new System.Drawing.Point(2, 82);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(81, 13);
+            this.label19.TabIndex = 25;
+            this.label19.Text = "Tanks Level:";
+            // 
+            // fuellevel
+            // 
+            this.fuellevel.AutoSize = true;
+            this.fuellevel.Location = new System.Drawing.Point(116, 82);
+            this.fuellevel.Name = "fuellevel";
+            this.fuellevel.Size = new System.Drawing.Size(35, 13);
+            this.fuellevel.TabIndex = 23;
+            this.fuellevel.Text = "label3";
             // 
             // blowers
             // 
@@ -275,7 +353,7 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(4, 95);
+            this.label5.Location = new System.Drawing.Point(2, 95);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(164, 15);
             this.label5.TabIndex = 5;
@@ -319,88 +397,33 @@
             this.genrate.TabIndex = 1;
             this.genrate.Text = "label3";
             // 
-            // label2
+            // label18
             // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(2, 69);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(78, 13);
-            this.label2.TabIndex = 29;
-            this.label2.Text = "Boiler Level:";
+            this.label18.AutoSize = true;
+            this.label18.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label18.Location = new System.Drawing.Point(13, 43);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(89, 15);
+            this.label18.TabIndex = 3;
+            this.label18.Text = "Current Speed:";
             // 
-            // boilerlevel
+            // trainspeed
             // 
-            this.boilerlevel.AutoSize = true;
-            this.boilerlevel.Location = new System.Drawing.Point(116, 69);
-            this.boilerlevel.Name = "boilerlevel";
-            this.boilerlevel.Size = new System.Drawing.Size(35, 13);
-            this.boilerlevel.TabIndex = 28;
-            this.boilerlevel.Text = "label3";
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label17.Location = new System.Drawing.Point(2, 54);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(80, 15);
-            this.label17.TabIndex = 27;
-            this.label17.Text = "Water Levels:";
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label19.Location = new System.Drawing.Point(2, 82);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(81, 13);
-            this.label19.TabIndex = 25;
-            this.label19.Text = "Tanks Level:";
-            // 
-            // fuellevel
-            // 
-            this.fuellevel.AutoSize = true;
-            this.fuellevel.Location = new System.Drawing.Point(116, 82);
-            this.fuellevel.Name = "fuellevel";
-            this.fuellevel.Size = new System.Drawing.Size(35, 13);
-            this.fuellevel.TabIndex = 23;
-            this.fuellevel.Text = "label3";
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(282, 97);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(35, 13);
-            this.label13.TabIndex = 31;
-            this.label13.Text = "label8";
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label16.Location = new System.Drawing.Point(4, 112);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(111, 13);
-            this.label16.TabIndex = 30;
-            this.label16.Text = "Automatic Driving:";
-            // 
-            // automatic
-            // 
-            this.automatic.AutoSize = true;
-            this.automatic.Location = new System.Drawing.Point(116, 112);
-            this.automatic.Name = "automatic";
-            this.automatic.Size = new System.Drawing.Size(35, 13);
-            this.automatic.TabIndex = 32;
-            this.automatic.Text = "label8";
+            this.trainspeed.AutoSize = true;
+            this.trainspeed.Location = new System.Drawing.Point(16, 62);
+            this.trainspeed.Name = "trainspeed";
+            this.trainspeed.Size = new System.Drawing.Size(41, 13);
+            this.trainspeed.TabIndex = 4;
+            this.trainspeed.Text = "label20";
             // 
             // AdvancedDriving
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(294, 302);
+            this.ClientSize = new System.Drawing.Size(294, 322);
+            this.Controls.Add(this.trainspeed);
+            this.Controls.Add(this.label18);
             this.Controls.Add(this.steambox);
             this.Controls.Add(this.debuglabel);
             this.Controls.Add(this.label1);
@@ -448,5 +471,7 @@
         private System.Windows.Forms.Label automatic;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.Label trainspeed;
     }
 }

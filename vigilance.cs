@@ -105,6 +105,7 @@ namespace Plugin
             else
             {
                 Train.drastate = true;
+                tractionmanager.demandpowercutoff();
             }
             Train.overspeedtripped = false;
             DeadmansHandleState = DeadmanStates.None;
@@ -290,11 +291,6 @@ namespace Plugin
                     tractionmanager.demandbrakeapplication();
                 }
 
-                if (Train.drastate == true)
-                {
-                    //DRA is enabled, cut the power
-                    data.Handles.PowerNotch = 0;
-                }
                 {
                     //Set Panel Variables
                     if (draindicator != -1)

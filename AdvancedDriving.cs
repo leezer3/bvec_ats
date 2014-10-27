@@ -78,6 +78,7 @@ namespace Plugin
         internal void Elapse(string[] debuginformation, int tractiontype)
         {
             debuglabel.Text = debuginformation[0];
+            trainspeed.Text = debuginformation[13];
             //Only attempt to display steam related debug information if this is a steam locomotive
             if (tractiontype == 0)
             {

@@ -37,7 +37,16 @@ namespace Plugin
          * <para>3. Steam locomotive pressure generation rate</para>
          * <para>4. Steam locomotice pressure usage rate</para>
          * <para>5. Steam locomotive current cutoff</para>
-         * <para>6. Steam locomotive optimal cutoff</para></summary> */
+         * <para>6. Steam locomotive optimal cutoff</para>
+         * <para>7. Steam locomotive fire mass</para>
+         * <para>8. Steam locomotive fire temperature</para>
+         * <para>9. Steam locomotive injectors state</para>
+         * <para>10. Steam locomotive blowers state</para>
+         * <para>11. Steam locomotive boiler water levels</para>
+         * <para>12. Steam locomotive tanks water levels</para>
+         * <para>13. Steam locomotive automatic cutoff state</para>
+         * <para>14. Train speed</para></summary> */
+        //These will probably be renumbered at some stage....
 
         public static string[] debuginformation = new string[20];
         public static int tractiontype;
@@ -520,6 +529,7 @@ namespace Plugin
                 else
                 {
                     debuginformation[0] = data.DebugMessage;
+                    debuginformation[13] = Convert.ToString(Train.trainspeed) + " km/h";
                     AdvancedDriving.CreateInst.Elapse(debuginformation, tractiontype);
                 }
             }
