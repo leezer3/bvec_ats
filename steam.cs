@@ -131,6 +131,8 @@ namespace Plugin {
         internal double blowers_pressurefactor = 1;
         /// <summary>The blowers factor for the fire</summary>
         internal double blowers_firefactor = 1;
+        /// <summary>The sound index to be played whilst the blowers are active</summary>
+	    internal int blowersound = -1;
         /// <summary>The number of pressure units used by each steam heating 'notch'</summary>
 	    internal double steamheatpressureuse = -1;
         /// <summary>The starting mass of the fire</summary>
@@ -809,6 +811,17 @@ namespace Plugin {
                             SoundManager.Play(injectorclanksound, 2.0, 1.0, false);
                         }
                     }
+                }
+            }
+            if (blowersound != -1)
+            {
+                if (blowers == true && !SoundManager.IsPlaying(blowersound))
+                {
+                    SoundManager.Play(blowersound, 2.0, 1.0, true);
+                }
+                else if (blowers == false)
+                {
+                    SoundManager.Stop(blowersound);
                 }
             }
             if (overheatalarm != -1)

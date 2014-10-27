@@ -376,6 +376,9 @@ namespace Plugin {
                                         case "blowers_firefactor":
                                             InternalFunctions.ParseNumber(value, ref steam.blowers_firefactor, key);
                                             break;
+                                        case "blowersound":
+                                            InternalFunctions.ValidateIndex(value, ref steam.blowersound, key);
+                                            break;
                                         case "steamheatindicator":
                                             InternalFunctions.ValidateIndex(value, ref steam.steamheatindicator, key);
                                             break;
