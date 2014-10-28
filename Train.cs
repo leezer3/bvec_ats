@@ -385,6 +385,20 @@ namespace Plugin {
                                         case "steamheatpressureuse":
                                             InternalFunctions.ParseNumber(value, ref steam.steamheatpressureuse, key);
                                             break;
+                                        case "cylindercocks_pressureuse":
+                                            string[] cylindercocksplit = value.Split(',');
+                                            for (int k = 0; k < cylindercocksplit.Length; k++)
+                                            {
+                                                if (k == 0)
+                                                {
+                                                    InternalFunctions.ParseNumber(cylindercocksplit[0], ref steam.cylindercocks_basepressureuse, key);
+                                                }
+                                                else
+                                                {
+                                                    InternalFunctions.ParseNumber(cylindercocksplit[1], ref steam.cylindercocks_notchpressureuse, key);
+                                                }
+                                            }
+                                            break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
@@ -914,6 +928,12 @@ namespace Plugin {
 			                            case "flashingdoorlight":
 			                                InternalFunctions.ValidateIndex(value, ref Animations.doorlight, key);
 			                                break;
+                                        case "cylinderpuff_l":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.cylinderpuff_L, key);
+                                            break;
+                                        case "cylinderpuff_r":
+                                            InternalFunctions.ValidateIndex(value, ref Animations.cylinderpuff_R, key);
+                                            break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
@@ -1010,6 +1030,8 @@ namespace Plugin {
                                         case "steamheatdecreasekey":
                                             this.tractionmanager.steamheatdecreasekey = value;
                                             break;
+                                        case "cylindercockskey":
+                                            this.tractionmanager.cylindercockskey = value;
                                             break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");

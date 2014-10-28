@@ -20,5 +20,22 @@
             /// <summary>The doors have closed.</summary>
             DoorsClosed = 5,
         }
+
+        /// <summary>Possible states of the cylinder cocks steam puff</summary>
+        internal enum CylinderPuffStates
+        {
+            /// <summary>The cylinder cock is closed and emitting no steam.</summary>
+            CockClosed = 0,
+            /// <summary>The cylinder cock is open, and the train is stationary with no regulator applied.</summary>
+            OpenStationary = 1,
+            /// <summary>The cylinder cock is open, and the train is stationary with no regulator applied.</summary>
+            OpenStationaryPowered = 2,
+            /// <summary>The cylinder cock is open, and the piston is moving on the outward stroke- No puff.</summary>
+            OpenNoPuff = 3,
+            /// <summary>The cylinder cock is open, and the piston is moving on the inbound stroke with power applied- Large puff</summary>
+            OpenPuffingPowered = 4,
+            /// <summary>The cylinder cock is open, and the piston is moving on the inbound stroke with no power applied- Small puff.</summary>
+            OpenPuffingUnpowered = 5,
+        }
     }
 }

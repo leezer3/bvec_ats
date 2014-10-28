@@ -30,8 +30,7 @@ namespace Plugin {
         internal int stm_boilerpressure;
         /// <summary>Stores the current boiler water level</summary>
         internal int stm_boilerwater;
-        internal double boilertimer;
-        internal double draintimer;
+
         /// <summary>Stores whether the injectors are currently active</summary>
         internal bool stm_injector;
         /// <summary>Stores the current water level in the tanks</summary>
@@ -43,9 +42,7 @@ namespace Plugin {
         internal double cutofftimer;
         /// <summary>Stores whether we are currently taking on coal & water</summary>
         internal bool fuelling;
-        internal double fuellingtimer;
-        internal double klaxonpressuretimer;
-	    internal double steamheattimer;
+
         /// <summary>The basic rate at which water turns to steam per second under ideal conditions</summary>
         /// Calculated once at initilisation from the initial variables which are per minute
         internal int calculatedsteamrate;
@@ -143,7 +140,13 @@ namespace Plugin {
         internal double firestartemp = 500;
         /// <summary>The number of units added per second whilst coal is being shovelled</summary>
         internal double shovellingrate = 10;
+        /// <summary>Stores whether the cylinder cocks are currently open</summary>
+	    internal static bool cylindercocks;
 
+        /// <summary>The base pressure use per second when the cylinder cocks are open</summary>
+	    internal double cylindercocks_basepressureuse = 0;
+        /// <summary>The pressure use of each throttle notch whilst the cylinder cocks are open</summary>
+	    internal double cylindercocks_notchpressureuse = 0;
         /// <summary>Stores whether advanced firing is enabled</summary>
         internal int advancedfiring = -1;
 
@@ -180,6 +183,8 @@ namespace Plugin {
         //Used to run the blowoff timer
 	    internal bool blowofftriggered;
 	    internal double blowofftimer;
+
+	    internal double maintimer;
         //Arrays
         int[] heatingarray;
 		
@@ -189,11 +194,10 @@ namespace Plugin {
 		/// <param name="train">The train.</param>
 		internal steam(Train train) {
 			this.Train = train;
-            this.boilertimer = 0.0;
-            this.draintimer = 0.0;
             this.cutofftimer = 0.0;
+		    this.maintimer = 0.0;
 
-            
+
 		}
 		
 		//<param name="mode">The initialization mode.</param>
@@ -212,8 +216,8 @@ namespace Plugin {
                 stm_boilerwater = (int)boilerstartwaterlevel;
             }
             fuel = (int)fuelstartamount;
-            this.boilertimer = 0.0;
-            this.draintimer = 0.0;
+            this.cutofftimer = 0.0;
+            this.maintimer = 0.0;
 
             string[] splitheatingrate = heatingrate.Split(',');
             heatingarray = new int[splitheatingrate.Length];
@@ -470,8 +474,8 @@ namespace Plugin {
             {
                 //This section of code generates pressure and operates the blowoff
 
-                //First elapse the timer- Used for both the fire and the pressure generation
-                this.boilertimer += data.ElapsedTime.Seconds;
+                //First elapse the main timer function
+                this.maintimer += data.ElapsedTime.Seconds;
 
                 //This section of code handles the fire simulator
                 if (advancedfiring == -1)
@@ -482,7 +486,7 @@ namespace Plugin {
                 else
                 {
                     //Advanced firing
-                    if (this.boilertimer > 1)
+                    if (this.maintimer > 1)
                     {
                         //Check whether we can shovel coal
                         //Firemass must be below maximum and shovelling true [Non automatic]
@@ -535,15 +539,15 @@ namespace Plugin {
 
                     }
                 }
-                if (this.boilertimer > 1)
+                if (this.maintimer > 1)
                 {
                     if (blowers == true)
                     {
-                        pressureup = (int) (((boilerwatertosteamrate/60)*boilertimer)*blowers_pressurefactor);
+                        pressureup = (int) (((boilerwatertosteamrate/60)*maintimer)*blowers_pressurefactor);
                     }
                     else
                     {
-                        pressureup = (int)((boilerwatertosteamrate / 60) * boilertimer);
+                        pressureup = (int)((boilerwatertosteamrate / 60) * maintimer);
                     }
                     stm_boilerpressure = stm_boilerpressure + pressureup;
                     stm_boilerwater = stm_boilerwater - pressureup;
@@ -563,8 +567,6 @@ namespace Plugin {
                         stm_boilerpressure = stm_boilerpressure - 4;
                     }
                     
-                    
-                    boilertimer = 0.0;
                 }
                 
             }
@@ -594,7 +596,7 @@ namespace Plugin {
             }
 
             //This section of code operates the injectors
-            if (stm_injector == true)
+            if (stm_injector == true && this.maintimer > 1)
             {
                 if (stm_boilerpressure > 0 && stm_boilerwater < boilermaxwaterlevel)
                 {
@@ -611,47 +613,43 @@ namespace Plugin {
             //This section of code governs pressure usage
             if (stm_reverser != 0)
             {
-                
-                this.draintimer += data.ElapsedTime.Seconds;
                 double regpruse = ((double)Train.Handles.PowerNotch / (double)this.Train.Specs.PowerNotches) * regulatorpressureuse;
                 //32
                 float cutprboost = Math.Abs((float)cutoff) / Math.Abs((float)cutoffmax);
                 //1
                 float spdpruse = 1 + Math.Abs((float)data.Vehicle.Speed.KilometersPerHour) / 25;
-                if (draintimer > 1)
+                if (maintimer > 1)
                 {
                     pressureuse = (int)(regpruse * cutprboost * spdpruse);
                     stm_boilerpressure = stm_boilerpressure - pressureuse;
-                    draintimer = 0.0;
                 }
             }
             //This section of code governs the pressure used by the horn
             if (klaxonpressureuse != -1 && (Train.tractionmanager.primaryklaxonplaying || Train.tractionmanager.secondaryklaxonplaying || Train.tractionmanager.musicklaxonplaying))
             {
-                this.klaxonpressuretimer += data.ElapsedTime.Seconds;
-                if (klaxonpressuretimer > 1)
+                if (this.maintimer > 1)
                 {
-                    klaxonpressuretimer = 0.0;
                     stm_boilerpressure = stm_boilerpressure - (int)klaxonpressureuse;
                 }
             }
             //This section of code defines the pressure used by the train's steam heating system
 		    if (steamheatpressureuse != -1 && steamheatlevel != 0)
 		    {
-		        steamheattimer += data.ElapsedTime.Seconds;
-		        if (steamheattimer > 1)
+		        if (maintimer > 1)
 		        {
 		            stm_boilerpressure -= (int)(steamheatlevel*steamheatpressureuse);
-		            steamheattimer = 0;
 		        }
+		    }
+            //This section of code defines the pressure used by the cylinder cocks when open
+		    if (cylindercocks == true && this.maintimer > 1)
+		    {
+		        stm_boilerpressure -= (int)(cylindercocks_basepressureuse + (cylindercocks_notchpressureuse*data.Handles.PowerNotch));
 		    }
 		    //This section of code fills our tanks from a water tower
             if (fuelling == true)
             {
-                fuellingtimer += data.ElapsedTime.Milliseconds;
-                if (fuellingtimer > 1000)
+                if (maintimer > 1)
                 {
-                    fuellingtimer = 0.0;
                     fuel += (int)fuelfillspeed;
                 }
                 if (fuel > fuelcapacity)
@@ -836,7 +834,11 @@ namespace Plugin {
                 }
             }
         }
-
+            //Reset the main timer if it's over 1 second
+		    if (this.maintimer > 1)
+		    {
+		        this.maintimer = 0.0;
+		    }
         }
 	}
 }

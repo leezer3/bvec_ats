@@ -14,12 +14,27 @@ namespace Plugin
 
         private static DoorLightStates MyDoorLightState;
 
-        /// <summary>Gets the current warning state of the Automatic Warning System.</summary>
+        /// <summary>Gets the current warning state of the flashing doors light.</summary>
         internal DoorLightStates DoorLightState
         {
             get { return MyDoorLightState; }
         }
 
+        private static CylinderPuffStates CylinderPuffState_L;
+
+        /// <summary>Gets the current warning state of the Automatic Warning System.</summary>
+        internal CylinderPuffStates CylinderPuffStateL
+        {
+            get { return CylinderPuffState_L; }
+        }
+
+        private static CylinderPuffStates CylinderPuffState_R;
+
+        /// <summary>Gets the current warning state of the Automatic Warning System.</summary>
+        internal CylinderPuffStates CylinderPuffStateR
+        {
+            get { return CylinderPuffState_R; }
+        }
         /// <summary>Stores the time for which we will be stopped (Minus 30 seconds for the flashing door light)</summary>
         internal static int stoptime;
         internal double doorlighttimer;
@@ -29,6 +44,11 @@ namespace Plugin
         internal static double departuretime;
         /// <summary>The panel variable for the flashing door light</summary>
         internal int doorlight = -1;
+
+        /// <summary>The variable for the left cylinder puff</summary>
+        internal int cylinderpuff_L = -1;
+        /// <summary>The variable for the right cylinder puff</summary>
+        internal int cylinderpuff_R = -1;
 
         /// <summary>The Y variable for the valve gear motion [Right]</summary>
         internal int gear_Yvariable_R = -1;
@@ -197,6 +217,89 @@ namespace Plugin
                     this.Train.Panel[crankrotation_L] = (int)((crankangle_L * 1000) / 2);
                 }
 
+            //Cylinder cocks puff state is handled in the animations class, but pressure usage is handled in the steam traction class
+            if (this.Train.steam != null && cylinderpuff_L != -1)
+            {
+                if (steam.cylindercocks == true)
+                {
+                    if (Train.trainspeed == 0 && Train.Handles.PowerNotch == 0)
+                    {
+                        CylinderPuffState_L = CylinderPuffStates.OpenStationary;
+                    }
+                    else if (Train.trainspeed == 0 && Train.Handles.PowerNotch > 0)
+                    {
+                        CylinderPuffState_L = CylinderPuffStates.OpenStationaryPowered;
+                    }
+                    else if (Train.trainspeed > 0 && Train.Handles.PowerNotch == 0)
+                    {
+                        if (wheelpercentage > 30 && wheelpercentage < 70)
+                        {
+                            CylinderPuffState_L = CylinderPuffStates.OpenPuffingUnpowered;
+                        }
+                        else
+                        {
+                            CylinderPuffState_L = CylinderPuffState_L = CylinderPuffStates.OpenNoPuff;
+                        }
+                    }
+                    else
+                    {
+                        if (wheelpercentage > 30 && wheelpercentage < 70)
+                        {
+                            CylinderPuffState_L = CylinderPuffStates.OpenPuffingPowered;
+                        }
+                        else
+                        {
+                            CylinderPuffState_L = CylinderPuffState_L = CylinderPuffStates.OpenNoPuff;
+                        }
+                    }
+                }
+                else
+                {
+                    CylinderPuffState_L = CylinderPuffStates.CockClosed;
+                }
+                this.Train.Panel[(cylinderpuff_L)] = (int)CylinderPuffState_L;
+            }
+            if (this.Train.steam != null && cylinderpuff_R != -1)
+            {
+                if (steam.cylindercocks == true)
+                {
+                    if (Train.trainspeed == 0 && Train.Handles.PowerNotch == 0)
+                    {
+                        CylinderPuffState_R = CylinderPuffStates.OpenStationary;
+                    }
+                    else if (Train.trainspeed == 0 && Train.Handles.PowerNotch > 0)
+                    {
+                        CylinderPuffState_R = CylinderPuffStates.OpenStationaryPowered;
+                    }
+                    else if (Train.trainspeed > 0 && Train.Handles.PowerNotch == 0)
+                    {
+                        if (wheelpercentage > 5 && wheelpercentage < 45)
+                        {
+                            CylinderPuffState_R = CylinderPuffStates.OpenPuffingUnpowered;
+                        }
+                        else
+                        {
+                            CylinderPuffState_R = CylinderPuffState_L = CylinderPuffStates.OpenNoPuff;
+                        }
+                    }
+                    else
+                    {
+                        if (wheelpercentage > 5 && wheelpercentage < 45)
+                        {
+                            CylinderPuffState_R = CylinderPuffStates.OpenPuffingPowered;
+                        }
+                        else
+                        {
+                            CylinderPuffState_R = CylinderPuffState_L = CylinderPuffStates.OpenNoPuff;
+                        }
+                    }
+                }
+                else
+                {
+                    CylinderPuffState_R = CylinderPuffStates.CockClosed;
+                }
+                this.Train.Panel[(cylinderpuff_R)] = (int)CylinderPuffState_R;
+            }
             //Flashing door light
             {
                 

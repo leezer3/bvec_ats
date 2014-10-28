@@ -105,6 +105,7 @@ namespace Plugin
         internal string advancedrivingkey;
         internal string steamheatincreasekey;
         internal string steamheatdecreasekey;
+        internal string cylindercockskey;
 
 
         //Arrays
@@ -694,22 +695,7 @@ namespace Plugin
                     }
                 }
             }
-            if (keypressed == cutoffdownkey)
-            {
-                //Cutoff Up
-                if (Train.steam != null)
-                {
-                    Train.steam.cutoffstate = 1;
-                }
-            }
-            if (keypressed == cutoffupkey)
-            {
-                //Cutoff Down
-                if (Train.steam != null)
-                {
-                    Train.steam.cutoffstate = -1;
-                }
-            }
+
             if (keypressed == safetykey)
             {
                 //Reset Overspeed Trip
@@ -830,31 +816,7 @@ namespace Plugin
             {
                 Train.electric.pantographtoggle(1);
             }
-            //Advanced steam locomotive functions
-            //Blowers
-            if (keypressed == blowerskey)
-            {
-                if (Train.steam.blowers == false)
-                {
-                    Train.steam.blowers = true;
-                }
-                else
-                {
-                    Train.steam.blowers = false;
-                }
-            }
-            //Shovel Coal
-            if (keypressed == shovellingkey)
-            {
-                if (Train.steam.shovelling == false)
-                {
-                    Train.steam.shovelling = true;
-                }
-                else
-                {
-                    Train.steam.shovelling = false;
-                }
-            }
+            
             if (keypressed == customindicatorkey1)
             {
                 //Toggle Custom Indicator 1
@@ -1005,18 +967,74 @@ namespace Plugin
                     }
                 }
             }
-            if (keypressed == steamheatincreasekey)
+
+            //Advanced steam locomotive functions
+            if (Train.steam != null)
             {
-                if (steam.steamheatlevel < 5)
+                if (keypressed == cutoffdownkey)
                 {
-                    steam.steamheatlevel++;
+                    //Cutoff Up
+                    if (Train.steam != null)
+                    {
+                        Train.steam.cutoffstate = 1;
+                    }
                 }
-            }
-            if (keypressed == steamheatdecreasekey)
-            {
-                if (steam.steamheatlevel > 0)
+                if (keypressed == cutoffupkey)
                 {
-                    steam.steamheatlevel--;
+                    //Cutoff Down
+                    if (Train.steam != null)
+                    {
+                        Train.steam.cutoffstate = -1;
+                    }
+                }
+                //Blowers
+                if (keypressed == blowerskey)
+                {
+                    if (Train.steam.blowers == false)
+                    {
+                        Train.steam.blowers = true;
+                    }
+                    else
+                    {
+                        Train.steam.blowers = false;
+                    }
+                }
+                //Shovel Coal
+                if (keypressed == shovellingkey)
+                {
+                    if (Train.steam.shovelling == false)
+                    {
+                        Train.steam.shovelling = true;
+                    }
+                    else
+                    {
+                        Train.steam.shovelling = false;
+                    }
+                }
+                if (keypressed == steamheatincreasekey)
+                {
+                    if (steam.steamheatlevel < 5)
+                    {
+                        steam.steamheatlevel++;
+                    }
+                }
+                if (keypressed == steamheatdecreasekey)
+                {
+                    if (steam.steamheatlevel > 0)
+                    {
+                        steam.steamheatlevel--;
+                    }
+                }
+                if (keypressed == cylindercockskey)
+                {
+                    if (steam.cylindercocks == false)
+                    {
+                        steam.cylindercocks = true;
+                    }
+                    else
+                    {
+                        steam.cylindercocks = false;
+                    }
                 }
             }
         }
