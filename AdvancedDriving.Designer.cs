@@ -62,6 +62,8 @@
             this.genrate = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.trainspeed = new System.Windows.Forms.Label();
+            this.cylindercocks = new System.Windows.Forms.Label();
+            this.label21 = new System.Windows.Forms.Label();
             this.steambox.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -86,6 +88,8 @@
             // 
             // steambox
             // 
+            this.steambox.Controls.Add(this.cylindercocks);
+            this.steambox.Controls.Add(this.label21);
             this.steambox.Controls.Add(this.automatic);
             this.steambox.Controls.Add(this.label13);
             this.steambox.Controls.Add(this.label16);
@@ -117,7 +121,7 @@
             this.steambox.Controls.Add(this.genrate);
             this.steambox.Location = new System.Drawing.Point(12, 81);
             this.steambox.Name = "steambox";
-            this.steambox.Size = new System.Drawing.Size(263, 229);
+            this.steambox.Size = new System.Drawing.Size(263, 239);
             this.steambox.TabIndex = 2;
             // 
             // automatic
@@ -266,7 +270,7 @@
             // firetemp
             // 
             this.firetemp.AutoSize = true;
-            this.firetemp.Location = new System.Drawing.Point(116, 205);
+            this.firetemp.Location = new System.Drawing.Point(116, 220);
             this.firetemp.Name = "firetemp";
             this.firetemp.Size = new System.Drawing.Size(35, 13);
             this.firetemp.TabIndex = 14;
@@ -275,7 +279,7 @@
             // firemass
             // 
             this.firemass.AutoSize = true;
-            this.firemass.Location = new System.Drawing.Point(116, 192);
+            this.firemass.Location = new System.Drawing.Point(116, 207);
             this.firemass.Name = "firemass";
             this.firemass.Size = new System.Drawing.Size(35, 13);
             this.firemass.TabIndex = 13;
@@ -285,7 +289,7 @@
             // 
             this.label10.AutoSize = true;
             this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label10.Location = new System.Drawing.Point(4, 205);
+            this.label10.Location = new System.Drawing.Point(4, 220);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(107, 13);
             this.label10.TabIndex = 12;
@@ -295,7 +299,7 @@
             // 
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(4, 192);
+            this.label9.Location = new System.Drawing.Point(4, 207);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(65, 13);
             this.label9.TabIndex = 11;
@@ -305,7 +309,7 @@
             // 
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.Location = new System.Drawing.Point(4, 177);
+            this.label8.Location = new System.Drawing.Point(4, 192);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(68, 15);
             this.label8.TabIndex = 10;
@@ -355,9 +359,9 @@
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label5.Location = new System.Drawing.Point(2, 95);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(164, 15);
+            this.label5.Size = new System.Drawing.Size(149, 15);
             this.label5.TabIndex = 5;
-            this.label5.Text = "Cutoff, Injectors and Blowers:";
+            this.label5.Text = "Steam Locomotive Status:";
             // 
             // label4
             // 
@@ -416,6 +420,25 @@
             this.trainspeed.TabIndex = 4;
             this.trainspeed.Text = "label20";
             // 
+            // cylindercocks
+            // 
+            this.cylindercocks.AutoSize = true;
+            this.cylindercocks.Location = new System.Drawing.Point(116, 179);
+            this.cylindercocks.Name = "cylindercocks";
+            this.cylindercocks.Size = new System.Drawing.Size(35, 13);
+            this.cylindercocks.TabIndex = 34;
+            this.cylindercocks.Text = "label8";
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label21.Location = new System.Drawing.Point(4, 179);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(95, 13);
+            this.label21.TabIndex = 33;
+            this.label21.Text = "Cylinder Cocks:";
+            // 
             // AdvancedDriving
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -473,5 +496,7 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.Label trainspeed;
+        private System.Windows.Forms.Label cylindercocks;
+        private System.Windows.Forms.Label label21;
     }
 }

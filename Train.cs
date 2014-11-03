@@ -154,6 +154,9 @@ namespace Plugin {
         /// <summary>TPWS System</summary>
         internal TPWS TPWS;
 
+        /// <summary>SCMT System</summary>
+        internal SCMT SCMT;
+
         /// <summary>Startup Self-Test Manager</summary>
         internal StartupSelfTestManager StartupSelfTestManager;
 
@@ -196,6 +199,7 @@ namespace Plugin {
             this.StartupSelfTestManager = new StartupSelfTestManager(this);
             this.AWS = new AWS(this);
             this.TPWS = new TPWS(this);
+            this.SCMT = new SCMT(this);
             this.Windscreen = new Windscreen(this);
             this.Animations = new Animations(this);
 			string[] lines = File.ReadAllLines(file, Encoding.UTF8);
@@ -231,6 +235,9 @@ namespace Plugin {
 			                case "tpws":
 			                    this.TPWS.enabled = true;
 			                    break;
+                            case "scmt":
+                                this.SCMT.enabled = true;
+                                break;
 			                case "interlocks":
 			                    //Twiddle
 			                    break;
@@ -255,7 +262,7 @@ namespace Plugin {
 			                    case "steam":
 			                        switch (key) {
 			                            case "automatic":
-			                                InternalFunctions.ValidateSetting(value, ref steam.automatic, key);
+			                                InternalFunctions.ParseBool(value, ref steam.automatic, key);
 			                                break;
 			                            case "heatingpart":
 			                                InternalFunctions.ValidateSetting(value, ref steam.heatingpart, key);
@@ -524,7 +531,7 @@ namespace Plugin {
 			                        switch (key)
 			                        {
 			                            case "automatic":
-			                                InternalFunctions.ValidateSetting(value, ref diesel.automatic, key);
+			                                InternalFunctions.ParseBool(value, ref diesel.automatic, key);
 			                                break;
 			                            case "heatingpart":
 			                                InternalFunctions.ValidateSetting(value, ref diesel.heatingpart, key);
@@ -1084,6 +1091,11 @@ namespace Plugin {
                 devices.Add(this.TPWS);
             }
 
+            if (this.SCMT != null)
+            {
+                devices.Add(this.TPWS);
+            }
+
             if (this.Windscreen != null)
             {
                 devices.Add(this.Windscreen);
@@ -1420,6 +1432,57 @@ namespace Plugin {
                             /* Train Protection and Warning System Overspeed Sensor induction loop - permanent speed restriction */
                             TPWS.ArmOss(beacon.Optional);
                             break;
+                    }
+                    //SCMT Safety System Beacons
+                    if (this.SCMT.enabled == true)
+                    {
+                        if (beacon.Type == 44002 || beacon.Type == 44003 || beacon.Type == 44004)
+                        {
+                            //Trigger a SCMT alert
+                            SCMT.trigger();
+                            //Set the beacon type and signal data for the recieved beacon
+                            SCMT.beacon_type = beacon.Type;
+                            SCMT.beacon_signal = beacon.Signal;
+                            //Now parse the beacon type and react appropriately
+                            switch (beacon.Type)
+                            {
+                                case 44002:
+                                    //Trigger if the signal for the last beacon 44005 recieved was at a danger aspect
+                                    if (SCMT.beacon_44005 == 4)
+                                    {
+                                        //Set the SCMT last beacon type recieved to 44004
+                                        SCMT.beacon_type = 44004;
+                                        //Reset the blue light timer for SCMT
+                                    }
+                                    break;
+                                case 44003:
+                                    SCMT.beacon_speed = SCMT.speed;
+                                    SCMT.beacon_type = 44004;
+                                    //Turn off blue light timer & turn off blue light
+                                    break;
+                                case 44004:
+                                    SCMT.speed = beacon.Optional;
+                                    SCMT.beacon_speed = beacon.Optional;
+                                    break;
+                            }
+                            //Set the maximum permissable and alert speeds
+                            SCMT.maxspeed = SCMT.beacon_speed;
+                            SCMT.alertspeed = SCMT.alertspeed + 2;
+                        }
+                        if (beacon.Type == 44005)
+                        {
+                            if (SCMT.beacon_44005 == 3 && SCMT.curveflag == false)
+                            {
+                                SCMT.curveflag = true;
+                            }
+                            else
+                            {
+                                SCMT.curveflag = false;
+                            }
+                            //Set the aspect data and distance to this signal
+                            SCMT.beacon_44005 = beacon.Signal.Aspect;
+                            SCMT.beacon_distance = beacon.Signal.Distance;
+                        }
                     }
                 }
             }

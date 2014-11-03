@@ -4,8 +4,8 @@ using System.Globalization;
 
 namespace Plugin
 {
-    /// <summary>Represents an electric locomotive.</summary>
-    internal class diesel : Device
+    /// <summary>Represents the traction modelling of the Italian SCMT system.</summary>
+    internal class SCMT_Traction : Device
     {
 
         // --- members ---
@@ -43,7 +43,7 @@ namespace Plugin
         internal int fadeoutratio;
 
         
-        
+
         //Default Variables
         /// <summary>A comma separated list of the train's gear ratios</summary>
         internal string gearratios = "0";
@@ -121,11 +121,33 @@ namespace Plugin
         /// <summary>An array storing the fuel usage for all the gears/ power notches</summary>
         int[] fuelarray;
 
+
+
+
+        //STORES PARAMATERS FOR OS_SZ_ATS TRACTION
+        internal bool lcm;
+        internal int lcm_state;
+        internal bool lca;
+        internal int flag;
+        /// <summary>Stores whether the set speed system is currently active</summary>
+        internal bool setspeed_active;
+        /// <summary>The current set speed</summary>
+        internal static int setpointspeed;
+        /// <summary>The maximum possible set speed</summary>
+        internal static int maxsetpointspeed;
+        /// <summary>The numeric state of the setpoint speed</summary>
+        internal static int setpointspeedstate;
+        /// <summary>The sound played when the setpoint speed is changed</summary>
+        internal static int setpointspeed_sound = -1;
+
+        internal static bool setspeedincrease_pressed;
+        internal static bool setspeeddecrease_pressed;
+
         // --- constructors ---
 
         /// <summary>Creates a new instance of this system.</summary>
         /// <param name="train">The train.</param>
-        internal diesel(Train train)
+        internal SCMT_Traction(Train train)
         {
             this.Train = train;
         }
@@ -254,7 +276,7 @@ namespace Plugin
                 }
                 else
                 {
-                    gearratio = geararray[geararray.Length -1];
+                    gearratio = geararray[geararray.Length - 1];
                 }
 
                 //Set fade in ratio for current gear
@@ -268,7 +290,7 @@ namespace Plugin
                 }
                 else
                 {
-                    fadeinratio = gearfadeinarray[gearfadeinarray.Length -1];
+                    fadeinratio = gearfadeinarray[gearfadeinarray.Length - 1];
                 }
 
 
@@ -283,7 +305,7 @@ namespace Plugin
                 }
                 else
                 {
-                    fadeoutratio = gearfadeoutarray[gearfadeoutarray.Length -1];
+                    fadeoutratio = gearfadeoutarray[gearfadeoutarray.Length - 1];
                 }
 
                 //If the fade in and fade out ratios would make this gear not work, set them both to zero
@@ -294,7 +316,7 @@ namespace Plugin
                 }
 
                 //Set current revolutions per minute
-                currentrevs = Math.Max(0,Math.Min(1000, Train.trainspeed * gearratio));
+                currentrevs = Math.Max(0, Math.Min(1000, Train.trainspeed * gearratio));
 
                 //Now calculate the maximumum power notch
                 int power_limit;
@@ -379,39 +401,6 @@ namespace Plugin
                 else
                 {
                     data.Handles.PowerNotch = 0;
-                }
-
-                //If revving the engine is allowed in neutral
-                if (allowneutralrevs == 1 && (gear == 0 || Train.Handles.Reverser == 0))
-                {
-                    currentrevs = (int)Math.Abs((1000 / Train.Specs.PowerNotches) * Train.Handles.PowerNotch * 0.9);
-                    
-                    //Play sounds based upon revs state
-                    if (revsupsound != -1 && revsdownsound != -1 && motorsound != -1)
-                    {
-                        double pitch = (double)Train.Handles.PowerNotch / (double)Train.Specs.PowerNotches;
-                        if (currentrevs > 0 && currentrevs > previousrevs)
-                        {
-                            SoundManager.Play(motorsound, 0.8, pitch, true);
-                            SoundManager.Play(revsupsound, 1.0, 1.0, false);
-                            SoundManager.Stop(revsdownsound);
-                            
-                        }
-                        else if (currentrevs >= 0 && currentrevs < previousrevs)
-                        {
-                            SoundManager.Play(motorsound, 0.8, pitch, true);
-                            SoundManager.Play(revsdownsound, 1.0, 1.0, false);
-                            SoundManager.Stop(revsupsound);
-                            
-                        }
-                        else if (currentrevs == 0)
-                        {
-                            SoundManager.Stop(revsupsound);
-                            SoundManager.Stop(revsdownsound);
-                            SoundManager.Stop(motorsound);
-                        }
-                        previousrevs = currentrevs;
-                    }
                 }
 
                 //Check we've got a maximum temperature and a heating part
@@ -543,7 +532,63 @@ namespace Plugin
             {
                 SoundManager.Stop(gearloopsound);
             }
-            
+
+            //Start SZ_ATS handling
+            if (lcm == false && Train.Handles.PowerNotch > 0)
+            {
+                lca = true;
+            }
+            if (lcm == true && lcm_state == 0)
+            {
+                lcm = false;
+            }
+            if (lcm_state > 0 && gear != 0)
+            {
+                setspeed_active = false;
+                setpointspeed = 0;
+                lca = false;
+                lcm = true;
+            }
+            else if (gear == 0)
+            {
+                lcm = false;
+                data.Handles.PowerNotch = 0;
+            }
+
+            if (maxsetpointspeed != -1)
+            {
+                //This handles the setpoint speed function
+                if (setpointspeed == 0 && lca == true)
+                {
+                    data.Handles.PowerNotch = 0;
+                }
+                if (Train.trainspeed > setpointspeed && flag == 0 && setpointspeed > 0 && lca == true &&
+                    data.Handles.PowerNotch > 0)
+                {
+                    //If we've exceeded the set point speed cut power
+                    flag = 1;
+                    tractionmanager.demandpowercutoff();
+                }
+                if (Train.trainspeed > setpointspeed + 1 && flag == 1 && lca == true && data.Handles.PowerNotch > 0)
+                {
+                    //If we're continuing to accelerate, demand a brake application
+                    tractionmanager.demandbrakeapplication();
+                    flag = 2;
+                }
+                if ((Train.trainspeed < setpointspeed && flag == 2 && lca == true) ||
+                    (lca == true && flag == 2 && data.Handles.PowerNotch == 0) || (lcm == true && flag == 2))
+                {
+                    tractionmanager.resetbrakeapplication();
+                    flag = 1;
+                }
+                if ((Train.trainspeed < setpointspeed - 2 && flag == 1 && lca == true) ||
+                    (lca == true && flag == 2 && data.Handles.PowerNotch == 0) || (lcm == true && flag == 1))
+                {
+                    tractionmanager.resetpowercutoff();
+                    flag = 0;
+                }
+            }
+
             {
                 //Panel Variables
                 if (!nogears)
@@ -620,5 +665,51 @@ namespace Plugin
             }
         }
 
+        //Runs the speed control function
+
+        /// <summary>Call from the traction manager to increase the set constant speed</summary>
+        internal static void increasesetspeed()
+        {
+            if (SCMT_Traction.setpointspeed < SCMT_Traction.maxsetpointspeed)
+            {
+                SCMT_Traction.setpointspeed += 5;
+                setpointspeedstate += 1;
+                if (setpointspeed_sound != -1)
+                {
+                    SoundManager.Play(setpointspeed_sound, 1.0, 1.0, false);
+                }
+                SCMT_Traction.setspeedincrease_pressed = true;
+                //Need to sort out a blinker for this
+                //Run the blinker in the main thread
+            }
+        }
+
+        /// <summary>Call from the traction manager to decrease the set constant speed</summary>
+        internal static void decreasesetspeed()
+        {
+            if (SCMT_Traction.setpointspeed > 0)
+            {
+                SCMT_Traction.setpointspeed -= 5;
+                setpointspeed -= 1;
+                if (setpointspeed_sound != -1)
+                {
+                    SoundManager.Play(setpointspeed_sound, 1.0, 1.0, false);
+                }
+                SCMT_Traction.setspeeddecrease_pressed = true;
+                //Need to sort out a blinker for this
+                //Run the blinker in the main thread
+            }
+        }
+
+        /// <summary>Call from the traction manager when a speed up/ down key is released</summary>
+        internal static void releasekey()
+        {
+            if (setpointspeed_sound != -1)
+            {
+                SoundManager.Play(setpointspeed_sound, 1.0, 1.0, false);
+            }
+            SCMT_Traction.setspeedincrease_pressed = false;
+            SCMT_Traction.setspeeddecrease_pressed = false;
+        }
     }
 }

@@ -106,6 +106,8 @@ namespace Plugin
         internal string steamheatincreasekey;
         internal string steamheatdecreasekey;
         internal string cylindercockskey;
+        internal string SCMTincreasespeed;
+        internal string SCMTdecreasespeed;
 
 
         //Arrays
@@ -648,24 +650,24 @@ namespace Plugin
                 //Toggle Automatic Cutoff/ Gears
                 if (Train.steam != null)
                 {
-                    if (Train.steam.automatic != -1)
+                    if (Train.steam.automatic == true)
                     {
-                        Train.steam.automatic = -1;
+                        Train.steam.automatic = false;
                     }
                     else
                     {
-                        Train.steam.automatic = 0;
+                        Train.steam.automatic = true;
                     }
                 }
                 else if (Train.diesel != null)
                 {
-                    if (Train.diesel.automatic != -1)
+                    if (Train.diesel.automatic == true)
                     {
-                        Train.diesel.automatic = -1;
+                        Train.diesel.automatic = false;
                     }
                     else
                     {
-                        Train.diesel.automatic = 0;
+                        Train.diesel.automatic = false;
                     }
                 }
             }
@@ -1037,6 +1039,17 @@ namespace Plugin
                     }
                 }
             }
+            if (Train.SCMT_Traction != null)
+            {
+                if (keypressed == SCMTincreasespeed)
+                {
+                    SCMT_Traction.increasesetspeed();
+                }
+                if (keypressed == SCMTdecreasespeed)
+                {
+                    SCMT_Traction.decreasesetspeed();
+                }
+            }
         }
 
         internal override void KeyUp(VirtualKeys key)
@@ -1114,6 +1127,13 @@ namespace Plugin
                         Train.drastate = false;
                         resetpowercutoff();
                     }
+                }
+            }
+            if (Train.SCMT_Traction != null)
+            {
+                if (keypressed == SCMTincreasespeed || keypressed == SCMTdecreasespeed)
+                {
+                    SCMT_Traction.releasekey();
                 }
             }
         }

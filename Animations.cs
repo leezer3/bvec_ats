@@ -232,7 +232,7 @@ namespace Plugin
                     }
                     else if (Train.trainspeed > 0 && Train.Handles.PowerNotch == 0)
                     {
-                        if (wheelpercentage > 30 && wheelpercentage < 70)
+                        if (wheelpercentage > 25 && wheelpercentage < 65)
                         {
                             CylinderPuffState_L = CylinderPuffStates.OpenPuffingUnpowered;
                         }

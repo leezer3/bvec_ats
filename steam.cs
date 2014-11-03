@@ -58,8 +58,8 @@ namespace Plugin {
         internal bool blowers;
 
 		// --- constants ---
-        /// <summary>Is our transmission automatic</summary>
-        internal int automatic = -1;
+	    /// <summary>Is our transmission automatic</summary>
+	    internal bool automatic;
 
 		/// <summary>Do we heave a part that heats up?</summary>
 		internal int heatingpart = 0;
@@ -148,7 +148,7 @@ namespace Plugin {
         /// <summary>The pressure use of each throttle notch whilst the cylinder cocks are open</summary>
 	    internal double cylindercocks_notchpressureuse = 0;
         /// <summary>Stores whether advanced firing is enabled</summary>
-        internal int advancedfiring = -1;
+        internal bool advancedfiring;
 
         //Panel Indicies
         /// <summary>The panel index of the reverser indicator</summary>
@@ -307,7 +307,7 @@ namespace Plugin {
             }
 
             //First try to set automatic cutoff without calculating
-            if (automatic != -1 && Train.trainspeed == 0)
+            if (automatic == true && Train.trainspeed == 0)
             {
 
                 if (Train.Handles.Reverser == 0)
@@ -388,7 +388,7 @@ namespace Plugin {
                         optimalcutoff = cutoffmax - speed * cutoffratio / 10;
                         new_power = Math.Max((int)(this.Train.Specs.PowerNotches - ((optimalcutoff - cutoff) < 0 ? -(optimalcutoff - cutoff) : (optimalcutoff - cutoff)) / (int)cutoffdeviation), 0);
                         //Automagically set cutofff
-                        if (automatic != -1)
+                        if (automatic == true)
                         {
 
                             cutoff = (int)Math.Max(optimalcutoff, cutoffineffective + 1);
@@ -411,7 +411,7 @@ namespace Plugin {
                         optimalcutoff = cutoffmin + speed * cutoffratio / 10;
                         new_power = Math.Max((int)(this.Train.Specs.PowerNotches - ((optimalcutoff - cutoff) < 0 ? -(optimalcutoff - cutoff) : (optimalcutoff - cutoff)) / (int)cutoffdeviation), 0);
                         //Automagically set cutoff
-                        if (automatic != -1)
+                        if (automatic == true)
                         {
                             cutoff = (int)Math.Min(optimalcutoff, -cutoffineffective - 1);
                         }
@@ -478,7 +478,7 @@ namespace Plugin {
                 this.maintimer += data.ElapsedTime.Seconds;
 
                 //This section of code handles the fire simulator
-                if (advancedfiring == -1)
+                if (advancedfiring == false)
                 {
                     //Advanced firing is not enabled, use the standard boiler water to steam rate
                     finalsteamrate = calculatedsteamrate;
@@ -492,7 +492,7 @@ namespace Plugin {
                         //Firemass must be below maximum and shovelling true [Non automatic]
                         //If automatic firing is on, only shovel coal if we are below 50% of max fire mass- Change???
                         //Use automatic behaviour if no shovelling key is set as obviously we can't shovel coal manually with no key
-                        if (shovelling == true && firemass < maximumfiremass || automatic != -1 && firemass < (firemass / 2) && firemass < maximumfiremass
+                        if (shovelling == true && firemass < maximumfiremass || automatic == true && firemass < (firemass / 2) && firemass < maximumfiremass
                             || String.IsNullOrEmpty(Train.tractionmanager.shovellingkey) && firemass < (firemass / 2) && firemass < maximumfiremass)
                         {
                             //Add the amount of coal shovelled per second to the fire mass & decrease it from the fire temperature
@@ -571,7 +571,7 @@ namespace Plugin {
                 
             }
 
-            if (automatic != -1)
+            if (automatic == true)
             {
                 //This section of code operates the automatic injectors
                 if (stm_boilerwater > boilermaxwaterlevel / 2 && stm_boilerpressure > boilermaxpressure / 4)
@@ -670,6 +670,10 @@ namespace Plugin {
                 {
                     debugpressureuse += (int)(steamheatlevel*steamheatpressureuse);
                 }
+                if (cylindercocks == true)
+                {
+                    debugpressureuse += (int)(cylindercocks_basepressureuse + (cylindercocks_notchpressureuse * data.Handles.PowerNotch));
+                }
                 tractionmanager.debuginformation[1] = Convert.ToString(stm_boilerpressure);
                 tractionmanager.debuginformation[2] = Convert.ToString(pressureup);
                 tractionmanager.debuginformation[3] = Convert.ToString(debugpressureuse);
@@ -681,14 +685,16 @@ namespace Plugin {
                 tractionmanager.debuginformation[9] = Convert.ToString(blowers);
                 tractionmanager.debuginformation[10] = Convert.ToString(stm_boilerwater) + " of " + Convert.ToString(boilermaxwaterlevel);
                 tractionmanager.debuginformation[11] = Convert.ToString(fuel) + " of " + Convert.ToString(fuelcapacity);
-                if(automatic !=-1)
+                tractionmanager.debuginformation[12] = Convert.ToString(automatic);
+                if (cylindercocks == true)
                 {
-                    tractionmanager.debuginformation[12] = "True";
+                    tractionmanager.debuginformation[14] = "Open";    
                 }
                 else
                 {
-                    tractionmanager.debuginformation[12] = "False";
+                    tractionmanager.debuginformation[14] = "Closed";    
                 }
+
             }
             {
                 //Set Panel Indicators
@@ -723,7 +729,7 @@ namespace Plugin {
                 }
                 if (automaticindicator != -1)
                 {
-                    if (automatic == -1)
+                    if (automatic == false)
                     {
                         this.Train.Panel[(automaticindicator)] = 0;
                     }
@@ -754,25 +760,28 @@ namespace Plugin {
                         this.Train.Panel[(fuelfillindicator)] = 1;
                     }
                 }
-                if (blowofftriggered == true)
+                if (blowoffindicator != -1)
                 {
-                    this.Train.Panel[(blowoffindicator)] = 1;
-                    //Run a 10 second timer for the blowoff index to display
-                    this.blowofftimer += data.ElapsedTime.Seconds;
-                    if (this.blowofftimer > 10)
+                    if (blowofftriggered == true)
                     {
-                        this.blowofftriggered = false;
-                        this.blowofftimer = 0;
+                        this.Train.Panel[(blowoffindicator)] = 1;
+                        //Run a 10 second timer for the blowoff index to display
+                        this.blowofftimer += data.ElapsedTime.Seconds;
+                        if (this.blowofftimer > 10)
+                        {
+                            this.blowofftriggered = false;
+                            this.blowofftimer = 0;
+                        }
                     }
-                }
-                else
-                {
-                    this.Train.Panel[(blowoffindicator)] = 0;
+                    else
+                    {
+                        this.Train.Panel[(blowoffindicator)] = 0;
 
-                }
-                if (steamheatindicator != -1)
-                {
-                    this.Train.Panel[(steamheatindicator)] = steamheatlevel;
+                    }
+                    if (steamheatindicator != -1)
+                    {
+                        this.Train.Panel[(steamheatindicator)] = steamheatlevel;
+                    }
                 }
             }
         {

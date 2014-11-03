@@ -617,6 +617,34 @@ namespace Plugin
             }
 
         }
+
+        //Call this function to parse a number input into a bool
+        /// <summary>Parses a bool type setting from a string input</summary>
+        internal static void ParseBool(string input, ref bool output, string failingvalue)
+        {
+            try
+            {
+                if (input == "-1" || input == "false")
+                {
+                    output = false;
+                }
+                else
+                {
+                    output = true;
+                }
+            }
+            catch
+            {
+                //Catch all exceptions
+                using (StreamWriter sw = File.AppendText(Path.Combine(trainfolder, "error.log")))
+                {
+                    //Write out upgrade errors to log file
+                    sw.WriteLine("The paramater " + failingvalue + " failed to parse correctly");
+                }
+
+            }
+
+        }
         //Call this function to log an occured error in parsing a string to an array of values
         internal static void LogError(string failingvalue)
         {
