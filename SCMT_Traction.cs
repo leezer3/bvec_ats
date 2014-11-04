@@ -1,4 +1,8 @@
-﻿using System;
+﻿/* This file contains code originally derived from that developed by Stefano Zilocchi & licenced under the GPL.
+ * Relicenced under BSD 2-Clause with permission
+ */
+
+using System;
 using OpenBveApi.Runtime;
 using System.Globalization;
 
@@ -18,7 +22,7 @@ namespace Plugin
         internal double currentheat;
         internal bool nogears;
         /// <summary>The current gear</summary>
-        internal int gear = 0;
+        internal static int gear = 0;
         internal int totalgears = 0;
         internal int currentrevs;
         internal static bool gearsblocked = false;
@@ -125,10 +129,25 @@ namespace Plugin
 
 
         //STORES PARAMATERS FOR OS_SZ_ATS TRACTION
-        internal bool lcm;
+        internal static bool lcm;
         internal int lcm_state;
         internal bool lca;
         internal int flag;
+        internal static bool Avv;
+        internal static bool ConsAvv;
+        internal static bool ChiaveBanco;
+        internal static int BatteryVoltage;
+        internal static int indlcm;
+        internal static int indattesa;
+        internal static bool flagavv;
+        /// <summary>Stores whether the battery timer is currently active</summary>
+        internal static bool batterytimer_active;
+        /// <summary>Stores the timer value for the battery timer</summary>
+        internal static double batterytimer_timer;
+        /// <summary>Stores whether the starter is currently active</summary>
+        internal static bool starter_active;
+        /// <summary>Stores the timer value for the starter</summary>
+        internal static double starter_timer;
         /// <summary>Stores whether the set speed system is currently active</summary>
         internal bool setspeed_active;
         /// <summary>The current set speed</summary>
@@ -339,13 +358,13 @@ namespace Plugin
                 //Automatic gears are handled here
                 if (automatic == true)
                 {
-                    if (diesel.gearsblocked == true)
+                    if (SCMT_Traction.gearsblocked == true)
                     {
                         power_limit = 0;
                         //Stop, drop to N with no power applied and the gears will unblock
                         if (Train.trainspeed == 0 && Train.Handles.Reverser == 0 && Train.Handles.PowerNotch == 0)
                         {
-                            diesel.gearsblocked = false;
+                            SCMT_Traction.gearsblocked = false;
                         }
                     }
 
@@ -354,7 +373,7 @@ namespace Plugin
                     {
                         gearplayed = false;
                         //If we aren't in gear & gears aren't blocked
-                        if (gear == 0 && diesel.gearsblocked == false)
+                        if (gear == 0 && SCMT_Traction.gearsblocked == false)
                         {
                             gear = 1;
                             gearchange();
@@ -588,6 +607,42 @@ namespace Plugin
                     flag = 0;
                 }
             }
+            //Handles the starter motor
+            if (flagavv == true)
+            {
+                if (starter_active == true)
+                {
+                    starter_timer += data.ElapsedTime.Milliseconds;
+                    if (starter_timer > 2000)
+                    {
+                        Avv = true;
+                        //Play SUNOAVV
+                        //Play SUONOSOTTOFONDO looping
+                        //Blink indicator AvariaGen
+                        //Then show
+                        batterytimer_timer = 0.0;
+                    }
+
+                    if (Avv == true && (SCMT.testscmt == 4 || SCMT.testscmt == 0))
+                    {
+                        if (gear == 0)
+                        {
+                            lcm = true;
+                            gear = 1;
+                        }
+                    }
+
+                    if (batterytimer_active == true)
+                    {
+                        batterytimer_timer += data.ElapsedTime.Milliseconds;
+                        if (batterytimer_timer > 3000)
+                        {
+                            BatteryVoltage = 29;
+                            batterytimer_active = false;
+                        }
+                    }
+                }
+            }
 
             {
                 //Panel Variables
@@ -710,6 +765,127 @@ namespace Plugin
             }
             SCMT_Traction.setspeedincrease_pressed = false;
             SCMT_Traction.setspeeddecrease_pressed = false;
+        }
+
+        /// <summary>Call from the traction manager when the key counter key is pressed</summary>
+        /// Something to do with turning the key to start permission?
+        internal static void AbilitaBanco()
+        {
+            if (ConsAvv == false && SCMT.testscmt == 0)
+            {
+                if (ChiaveBanco == false)
+                {
+                    //Blink Abbanco indicator
+                    //Then show
+
+                    //Show waiting indicator
+                    //Reset hold timer
+                }
+                else
+                {
+                    //Blink Abbanco indicator
+                    //Then show
+                }
+
+                ChiaveBanco = false;
+                //Play key turned to bench and start permission sound
+                //SUONOCONSAVV
+            }
+        }
+
+        /// <summary>Call from the traction manager when the consent to start key is pressed</summary>
+        /// Check if engine can be started
+        internal static void ConsensoAvviamento()
+        {
+            if (ConsAvv == false && ChiaveBanco == true)
+            {
+                //Blink consent to start indicator
+                //Then show
+                ConsAvv = true;
+                //Play key turned to bench and start permission sound
+                //SUONOCONSAVV
+            }
+            else if (ConsAvv == true && ChiaveBanco == true)
+            {
+                //Blink consent to start indicator
+                //Then show
+                ConsAvv = false;
+                //Play key turned to bench and start permission sound
+                //SUONOCONSAVV
+            }
+
+            if (ConsAvv == false && Avv == true)
+            {
+                Avv = false;
+                SCMT_Traction.gear = 0;
+                //Stop SUONOSOTTOFONDO
+                //Play SUONOARR
+                BatteryVoltage = 23;
+                //Blink AvaraiaGen
+                //Then show
+
+                //Set indcontgiri [Tachometer]
+                //indgas [Digital fuel gauge?]
+                // to -50
+                indattesa = -1;
+                //Reset hold timer
+
+            }
+        }
+
+        /// <summary>Call from the traction manager when the engine start key is pressed</summary>
+        internal static void Avviamento()
+        {
+            //Blink indicator Avviam
+            //Then show
+            if (ConsAvv == true && Avv == false && Train.Handles.Reverser == 0 && indlcm == 0 && indattesa == 0)
+            {
+                flagavv = true;
+                if (starter_active == false)
+                {
+                    starter_active = true;
+                    starter_timer = 0;
+                }
+            }
+        }
+
+        /// <summary>Call from the traction manager when the engine start key is released</summary>
+        internal static void AvviamentoReleased()
+        {
+            //Blink indicator Avviam
+            //Then show
+            flagavv = false;
+            starter_active = false;
+        }
+
+        /// <summary>Call from the traction manager when the engine shutdown key is pressed</summary>
+        internal static void Spegnimento()
+        {
+            //Blink indicator Arresto
+            //Then show
+            if (Avv == true)
+            {
+                //Stop SUONOSOTTOFONDO
+                //Play SUONOARR
+                Avv = false;
+                lcm = false;
+                SCMT_Traction.gear = 0;
+                BatteryVoltage = 23;
+                //Set indcontgiri [Tachometer]
+                //indgas [Digital fuel gauge?]
+                // to -50
+                //Blink AvaraiaGen
+                //Then show
+                indattesa = -1;
+                starter_timer = 0;
+            }
+        }
+
+        /// <summary>Call from the traction manager when the engine shutdown key is released</summary>
+        internal static void SpegnimentoReleased()
+        {
+            //Blink indicator Arresto
+            //Then show
         }
     }
 }

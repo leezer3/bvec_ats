@@ -1,4 +1,8 @@
-﻿using OpenBveApi.Runtime;
+﻿/* This file contains code originally derived from that developed by Stefano Zilocchi & licenced under the GPL.
+ * Relicenced under BSD 2-Clause with permission
+ */
+
+using OpenBveApi.Runtime;
 
 namespace Plugin
 {
@@ -56,7 +60,7 @@ namespace Plugin
         //Stores whether the red light has been triggered
         internal bool spiarossi_act;
         /// <summary>The image used for the SCMT self-test sequence.</summary>
-        internal int testscmt;
+        internal static int testscmt;
         //Sound Variables
         /// <summary>Trigger sound for SCMT safety device.</summary>
         internal int sound_scmt = -1;
@@ -149,6 +153,8 @@ namespace Plugin
             }
         }
 
+        /// <summary>This function is called by the main elapse function to check whether we're currently in an alert state.</summary>
+        /// Consider moving back into the main function loop at some point?
         internal void SCMT_intervention()
         {
             if (testscmt_state == 0 || SCMT_Alert == false)
@@ -167,10 +173,14 @@ namespace Plugin
             if (tgtraz_active == true && spiarossi_act == false && testscmt_state == 4)
             {
                 //INCOMPLETE- TRACTION MODELLING NOT IMPLEMENTED YET
-                if(Train.Handles.BrakeNotch == 0)
+                if (Train.Handles.BrakeNotch == 0)
+                {
+                    
+                }
             }
         }
 
+        /// <summary>This function is called by the main elapse function to calculate the current requireed braking curve.</summary>
         internal void brakecurve(double time)
         {
             //Run through the braking curve

@@ -157,6 +157,9 @@ namespace Plugin {
         /// <summary>SCMT System</summary>
         internal SCMT SCMT;
 
+        /// <summary>SCMT Traction Modelling System</summary>
+        internal SCMT_Traction SCMT_Traction;
+
         /// <summary>Startup Self-Test Manager</summary>
         internal StartupSelfTestManager StartupSelfTestManager;
 
