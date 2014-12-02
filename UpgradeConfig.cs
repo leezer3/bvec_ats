@@ -320,7 +320,7 @@ namespace Plugin
 			                        splitarray[3] = Int32.Parse(splitklaxonindicator[j]);
 			                    }
 			                }
-			                string finishedvalue = "klaxonindicator=" + string.Join(",", Array.ConvertAll<int, String>(splitarray, Convert.ToString));
+			                string finishedvalue = "klaxonindicator=" + string.Join(",", Array.ConvertAll(splitarray, Convert.ToString));
 			                interlocks.Add(finishedvalue);
 			                break;
 			            case "customindicators":
@@ -339,7 +339,7 @@ namespace Plugin
 			                        k++;
 			                    }
 			                }
-			                string finishedvalue1 = "customindicators=" + string.Join(",", Array.ConvertAll<int, String>(splitarray1, Convert.ToString));
+			                string finishedvalue1 = "customindicators=" + string.Join(",", Array.ConvertAll(splitarray1, Convert.ToString));
 			                interlocks.Add(finishedvalue1);
 			                break;
 			                //VALUES TO BE ADDED TO THE WINDSCREEN SECTION OF THE CONFIGURATION FILE

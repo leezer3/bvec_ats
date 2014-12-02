@@ -95,6 +95,7 @@
     <Compile Include="Animations.cs" />
     <Compile Include="Animations.DoorLightStates.cs" />
     <Compile Include="SCMT.cs" />
+    <Compile Include="SCMT.Traction.Timers.cs" />
     <Compile Include="SCMT_Traction.cs" />
     <Compile Include="vigilance.DeadmanStates.cs" />
     <Compile Include="diesel.cs" />

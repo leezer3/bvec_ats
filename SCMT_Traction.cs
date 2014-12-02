@@ -3,13 +3,14 @@
  */
 
 using System;
+using System.Data.Odbc;
 using OpenBveApi.Runtime;
 using System.Globalization;
 
 namespace Plugin
 {
     /// <summary>Represents the traction modelling of the Italian SCMT system.</summary>
-    internal class SCMT_Traction : Device
+    internal partial class SCMT_Traction : Device
     {
 
         // --- members ---
@@ -125,7 +126,8 @@ namespace Plugin
         /// <summary>An array storing the fuel usage for all the gears/ power notches</summary>
         int[] fuelarray;
 
-
+        //PROVIDES A STATIC COPY OF THE REVERSER POSITION
+        internal static int reverserposition;
 
 
         //STORES PARAMATERS FOR OS_SZ_ATS TRACTION
@@ -139,7 +141,45 @@ namespace Plugin
         internal static int BatteryVoltage;
         internal static int indlcm;
         internal static int indattesa;
+        internal static bool attessa;
+        /// <summary>Waiting timer</summary>
+        internal static Timer AttessaTimer;
         internal static bool flagavv;
+        internal bool flagfe;
+        
+        /// <summary>Stores the current SCMT test state</summary>
+        internal static int testscmt;
+        //Three timers triggered by the SCMT self-test sequence
+        //Self-test timer??
+        internal static Timer SCMTtesttimer;
+        //Buttons timer
+        internal static Timer timertestpulsanti;
+        //Static, waiting timer??
+        internal static Timer timerScariche;
+        //SCMT Self-test lights timers
+        internal static Timer timerRitSpegscmt;
+
+        internal static bool flagspiascmt;
+        //Exhaust sequence??
+        internal static int seqScarico;
+        //Test buttons
+        internal int testpulsanti;
+        /// <summary>Stores the revs counter value [REFACTOR TO SEPARATE STORE WHEN PANEL IMPLEMENTED]</summary>
+        internal int indcontgiri;
+        /// <summary>Tachometer of some description?? [REFACTOR TO SEPARATE STORE WHEN PANEL IMPLEMENTED]</summary>
+        internal int indgas;
+        internal bool flagcarr;
+        /// <summary>Stores whether diagnostic mode is active [Under 4km/h]</summary>
+        internal bool flagmonitor;
+        /// <summary>Stores the timer value for the trolley brakes</summary>
+        internal double trolleybraketimer;
+        //Used by the dynometer
+        internal double v1;
+        internal double v2;
+        /// <summary>Stores the current dynometer value</summary>
+        internal double dynometer;
+        /// <summary>Stores the timer value for the dynometer</summary>
+        internal static double dynometertimer;
         /// <summary>Stores whether the battery timer is currently active</summary>
         internal static bool batterytimer_active;
         /// <summary>Stores the timer value for the battery timer</summary>
@@ -263,6 +303,7 @@ namespace Plugin
             }
 
             fuel = (int)fuelstartamount;
+            reverserposition = Train.Handles.Reverser;
         }
 
 
@@ -272,9 +313,7 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
-
-
-
+            reverserposition = Train.Handles.Reverser;
             //If reverser is put into neutral when moving, block the gears
             if (reversercontrol != 0 && Train.trainspeed > 0 && Train.Handles.Reverser == 0)
             {
@@ -643,6 +682,338 @@ namespace Plugin
                     }
                 }
             }
+            //Handles the dynameter
+            {
+                dynometertimer += data.ElapsedTime.Milliseconds;
+                if (dynometertimer > 200)
+                {
+                    v1 = v2;
+                    v2 = Train.trainspeed;
+                    if ((v1 != 0 && v2 != 0 && Train.Handles.BrakeNotch < 1 && (Train.Handles.PowerNotch > 0 || Train.Handles.PowerNotch > 0)) ||
+                        (v1 != 0 && v2 != 0 && Train.Handles.BrakeNotch >= 1) && Train.Handles.Reverser != 0 && Train.trainspeed > 10)
+                    {
+                        dynometer = (((v2 - v1)/3.6))/0.2*100;
+                        if (dynometer < -100)
+                        {
+                            dynometer = -100;
+                        }
+                    }
+                    else
+                    {
+                        dynometer = 0;
+                    }
+                    dynometertimer = 0.0;
+                }
+            }
+            //Handles the trolley brakes
+            {
+                if (flagcarr == false && Train.Handles.BrakeNotch >= 1 && data.Vehicle.BcPressure > 5000)
+                {
+                    trolleybraketimer += data.ElapsedTime.Milliseconds;
+                    if (trolleybraketimer > 1000)
+                    {
+                        flagcarr = true;
+                        //Set INDCARRFREN to 1
+                        trolleybraketimer = 0;
+                    }
+                }
+                else if (flagcarr == true && Train.Handles.BrakeNotch < 1 && data.Vehicle.BcPressure < 5000)
+                {
+                    trolleybraketimer += data.ElapsedTime.Milliseconds;
+                    if (trolleybraketimer > 2500)
+                    {
+                        //Set INDCARRFREN to 0
+                        flagcarr = false;
+                        trolleybraketimer = 0;
+                    }
+                }
+            }
+            //Handles the diagnostic display at under 4km/h
+            {
+                if (Train.trainspeed > 4 && flagmonitor == false)
+                {
+                    //Set INDSPEGNMON to 1
+                    flagmonitor = true;
+                }
+                else if (Train.trainspeed == 0 && flagmonitor == true)
+                {
+                    //Set INDSPEGNMON to 0
+                    flagmonitor = false;
+                }
+            }
+
+            //Handles the revs counter
+            {
+                if (Avv == true)
+                {
+                    if (data.Handles.BrakeNotch == 0)
+                    {
+                        if (Train.trainspeed < 40)
+                        {
+                            indcontgiri = (int)dynometer + 10;
+                            indgas = (int)dynometer + 110;
+                        }
+                        else
+                        {
+                            indcontgiri = (int)dynometer;
+                            indgas = (int) dynometer + 50;
+                        }
+                    }
+                    else if (data.Handles.BrakeNotch > 0)
+                    {
+                        if ((int) Math.Abs(dynometer) < 130)
+                        {
+                            indcontgiri = (int) Math.Abs(dynometer) + 40;
+                            indgas = (int) Math.Abs(dynometer) + 120;
+                        }
+                        else
+                        {
+                            indcontgiri = 150;
+                            indgas = 230;
+                        }
+                    }
+                }
+            }
+            //Literal translation appears to be faith/ belief?
+            //Stops brake notch #1 intervening at certain speeds
+            {
+                if (Train.Handles.BrakeNotch == 1 && Train.trainspeed < 40 && flagfe == false)
+                {
+                    data.Handles.BrakeNotch = 0;
+                }
+                else if (Train.Handles.BrakeNotch == 1 && Train.trainspeed >= 40)
+                {
+                    data.Handles.BrakeNotch = 1;
+                    flagfe = true;
+                }
+                else if (Train.Handles.BrakeNotch == 1 && Train.trainspeed <= 35 && flagfe == true)
+                {
+                    data.Handles.BrakeNotch = 0;
+                    flagfe = false;
+                }
+            }
+            //Waiting function
+            {
+                if (indattesa == 1)
+                {
+                    if (AttessaTimer.TimerActive == true)
+                    {
+                        AttessaTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (AttessaTimer.TimeElapsed > 7000)
+                        {
+                            indattesa = 0;
+                            AttessaTimer.TimerActive = false;
+                        }
+                    }
+                }
+            }
+            //Self-test function
+            {
+                if (SCMTtesttimer.TimerActive == true)
+                {
+                    if (testscmt == 1)
+                    {
+                        SCMTtesttimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (SCMTtesttimer.TimeElapsed > 35000)
+                        {
+                            SCMTtesttimer.TimeElapsed = 0;
+                            testscmt = 2;
+                            SCMTtesttimer.TimerActive = false;
+                        }
+                    }
+                }
+                if (timerScariche.TimerActive == true)
+                {
+                    timerScariche.TimeElapsed += data.ElapsedTime.Milliseconds;
+                    if (seqScarico == 0)
+                    {
+                        if (timerScariche.TimeElapsed > 100)
+                        {
+                            timerScariche.TimeElapsed = 0;
+                            data.Handles.BrakeNotch = 7;
+                            seqScarico = 1;
+                        }
+                    }
+                    if (seqScarico == 1)
+                    {
+                        if (timerScariche.TimeElapsed > 10000)
+                        {
+                            timerScariche.TimeElapsed = 0;
+                            data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                            if (Train.Handles.BrakeNotch > 2)
+                            {
+                                testscmt = 5;
+                                //Stop sunoscmton from playing
+                                SCMTtesttimer.TimerActive = false;
+                                timertestpulsanti.TimerActive = false;
+                                timerScariche.TimerActive = false;
+                            }
+                            seqScarico = 2;
+                        }
+                    }
+                    if (seqScarico == 2)
+                    {
+                        if (timerScariche.TimeElapsed > 4000)
+                        {
+                            timerScariche.TimeElapsed = 0;
+                            data.Handles.BrakeNotch = 5;
+                            seqScarico = 3;
+                        }
+                    }
+                    if (seqScarico == 3)
+                    {
+                        if (timerScariche.TimeElapsed > 1000)
+                        {
+                            timerScariche.TimeElapsed = 0;
+                            data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                            seqScarico = 4;
+                        }
+                    }
+                    if (seqScarico == 4)
+                    {
+                        if (timerScariche.TimeElapsed > 500)
+                        {
+                            timerScariche.TimeElapsed = 0;
+                            data.Handles.BrakeNotch = 5;
+                            seqScarico = 5;
+                        }
+                    }
+                    if (seqScarico == 5)
+                    {
+                        if (timerScariche.TimeElapsed > 1000)
+                        {
+                            timerScariche.TimeElapsed = 0;
+                            data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                            seqScarico = 6;
+                        }
+                    }
+                    if (seqScarico == 6)
+                    {
+                        if (timerScariche.TimeElapsed > 10500)
+                        {
+                            timerScariche.TimeElapsed = 0;
+                            data.Handles.BrakeNotch = 5;
+                            seqScarico = 7;
+                        }
+                    }
+                    if (seqScarico == 7)
+                    {
+                        if (timerScariche.TimeElapsed > 500)
+                        {
+                            timerScariche.TimeElapsed = 0;
+                            data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                            seqScarico = 8;
+                        }
+                    }
+                    if (seqScarico == 8)
+                    {
+                        if (timerScariche.TimeElapsed > 500)
+                        {
+                            timerScariche.TimeElapsed = 0;
+                            data.Handles.BrakeNotch = 5;
+                            seqScarico = 9;
+                        }
+                    }
+                    if (seqScarico == 9)
+                    {
+                        if (timerScariche.TimeElapsed > 300)
+                        {
+                            timerScariche.TimeElapsed = 0;
+                            data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                            seqScarico = 10;
+                            timerScariche.TimerActive = false;
+                        }
+                    }
+                }
+                if (timerRitSpegscmt.TimerActive == true)
+                {
+                    timerRitSpegscmt.TimeElapsed += data.ElapsedTime.Milliseconds;
+                    if (timerRitSpegscmt.TimeElapsed > 6000)
+                    {
+                        timerRitSpegscmt.TimerActive = false;
+                    }
+
+                }
+            }
+            //Runs the buttons during self-test
+            {
+                if (timertestpulsanti.TimerActive == true)
+                {
+                    timertestpulsanti.TimeElapsed += data.ElapsedTime.Milliseconds;
+                    if (testpulsanti == 8)
+                    {
+                        if(timertestpulsanti.TimeElapsed > 23000)
+                        {
+                            timertestpulsanti.TimeElapsed = 0;
+                            testpulsanti = 0;
+                        }
+                    }
+                    if (testpulsanti == 0)
+                    {
+                        if (timertestpulsanti.TimeElapsed > 150)
+                        {
+                            timertestpulsanti.TimeElapsed = 0;
+                            testpulsanti = 1;
+                        }
+                    }
+                    if (testpulsanti == 1)
+                    {
+                        if (timertestpulsanti.TimeElapsed > 150)
+                        {
+                            timertestpulsanti.TimeElapsed = 0;
+                            testpulsanti = 2;
+                        }
+                    }
+                    if (testpulsanti == 2)
+                    {
+                        if (timertestpulsanti.TimeElapsed > 150)
+                        {
+                            timertestpulsanti.TimeElapsed = 0;
+                            testpulsanti = 3;
+                        }
+                    }
+                    if (testpulsanti == 3)
+                    {
+                        if (timertestpulsanti.TimeElapsed > 150)
+                        {
+                            timertestpulsanti.TimeElapsed = 0;
+                            testpulsanti = 4;
+                        }
+                    }
+                    if (testpulsanti == 4)
+                    {
+                        if (timertestpulsanti.TimeElapsed > 150)
+                        {
+                            timertestpulsanti.TimeElapsed = 0;
+                            testpulsanti = 5;
+                        }
+                    }
+                    if (testpulsanti == 5)
+                    {
+                        if (timertestpulsanti.TimeElapsed > 150)
+                        {
+                            timertestpulsanti.TimeElapsed = 0;
+                            testpulsanti = 6;
+                        }
+                    }
+                    if (testpulsanti == 6)
+                    {
+                        if (timertestpulsanti.TimeElapsed > 150)
+                        {
+                            timertestpulsanti.TimeElapsed = 0;
+                            testpulsanti = 7;
+                        }
+                    }
+                    if (testpulsanti == 7)
+                    {
+                        if (timertestpulsanti.TimeElapsed > 150)
+                        {
+                            timertestpulsanti.TimerActive = false;
+                            testpulsanti = 8;
+                        }
+                    }
+                }
+            }
 
             {
                 //Panel Variables
@@ -779,7 +1150,7 @@ namespace Plugin
                     //Then show
 
                     //Show waiting indicator
-                    //Reset hold timer
+                    AttessaTimer.TimeElapsed = 0;
                 }
                 else
                 {
@@ -828,7 +1199,7 @@ namespace Plugin
                 //indgas [Digital fuel gauge?]
                 // to -50
                 indattesa = -1;
-                //Reset hold timer
+                AttessaTimer.TimeElapsed = 0;
 
             }
         }
@@ -838,7 +1209,7 @@ namespace Plugin
         {
             //Blink indicator Avviam
             //Then show
-            if (ConsAvv == true && Avv == false && Train.Handles.Reverser == 0 && indlcm == 0 && indattesa == 0)
+            if (ConsAvv == true && Avv == false && reverserposition == 0 && indlcm == 0 && indattesa == 0)
             {
                 flagavv = true;
                 if (starter_active == false)
@@ -877,7 +1248,7 @@ namespace Plugin
                 //Blink AvaraiaGen
                 //Then show
                 indattesa = -1;
-                starter_timer = 0;
+                AttessaTimer.TimeElapsed = 0;
             }
         }
 
@@ -886,6 +1257,87 @@ namespace Plugin
         {
             //Blink indicator Arresto
             //Then show
+        }
+
+        /// <summary>Call from the traction manager when the LCM Up key is pressed</summary>
+        internal static void LCMup()
+        {
+            if (indlcm < 8)
+            {
+                indlcm += 1;
+                //Play sunoimpvel
+                lcm = true;
+            }
+
+            if (lcm == true)
+            {
+                //Set power handle to the indlcm value
+            }
+        }
+
+        /// <summary>Call from the traction manager when the LCM Down key is pressed</summary>
+        internal static void LCMdown()
+        {
+            if (indlcm > 0)
+            {
+                indlcm -= 1;
+                //Play sunoimpvel
+                //Set power handle to the indlcm value
+            }
+
+            if (lcm == true)
+            {
+                //set power handle to indlcm value
+                if (indlcm == 0)
+                {
+                    lcm = false;
+                }
+            }
+        }
+
+        /// <summary>Call from the traction manager when the SCMT Test key is pressed</summary>
+        internal static void TestSCMT()
+        {
+            if (testscmt == 0 && ChiaveBanco == true && Train.trainspeed == 0)
+            {
+                testscmt = 1;
+                SCMTtesttimer.TimeElapsed = 0;
+                timertestpulsanti.TimeElapsed = 0;
+                timerScariche.TimeElapsed = 0;
+                //Play sumoconsavv
+                //Play sunoscmton
+            }
+            else if (testscmt == 2 && Train.trainspeed == 0)
+            {
+                testscmt = 3;
+                //Play sunoconfdati
+            }
+            else if (testscmt == 3 && Train.trainspeed == 0)
+            {
+                testscmt = 4;
+                //Play sunoconfdati
+                timerRitSpegscmt.TimeElapsed = 0;
+            }
+            else if (testscmt == 4 && Train.trainspeed == 0)
+            {
+                if (timerRitSpegscmt.TimeElapsed > 5000 || timerRitSpegscmt.TimerActive == false)
+                {
+                    testscmt = 0;
+                    flagspiascmt = false;
+                    SCMT.spiaSCMT = 1;
+                    //Play sunoconsavv
+                    seqScarico = 0;
+                    timerRitSpegscmt.TimerActive = false;
+                }
+            }
+            else if (testscmt == 5)
+            {
+                testscmt = 0;
+                flagspiascmt = false;
+                SCMT.spiaSCMT = 1;
+                //Play sunoconsavv
+                seqScarico = 0;
+            }
         }
     }
 }

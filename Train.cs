@@ -97,7 +97,7 @@ namespace Plugin {
 		// --- acceleration ---
 
         /// <summary>The speed.</summary>
-        internal int trainspeed;
+        internal static int trainspeed;
 
         /// <summary>The current location of the train.</summary>
         internal double trainlocation;
@@ -632,6 +632,9 @@ namespace Plugin {
 			                                    InternalFunctions.LogError("gearloopsound");
 			                                }
 			                                break;
+                                        case "reversercontrol":
+                                            InternalFunctions.ValidateSetting(value, ref diesel.reversercontrol, key);
+                                            break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 
@@ -1120,6 +1123,11 @@ namespace Plugin {
 			for (int i = this.Devices.Length - 1; i >= 0; i--) {
 				this.Devices[i].Initialize(mode);
 			}
+            // --- panel ---
+            for (int i = 0; i < this.Panel.Length; i++)
+            {
+                this.Panel[i] = 0;
+            }
 		}
 		
 		/// <summary>Is called every frame.</summary>
@@ -1128,10 +1136,7 @@ namespace Plugin {
             
 			this.PluginInitializing = false;
 			if (data.ElapsedTime.Seconds > 0.0 & data.ElapsedTime.Seconds < 1.0) {
-				// --- panel ---
-				for (int i = 0; i < this.Panel.Length; i++) {
-					this.Panel[i] = 0;
-				}
+				
 				// --- devices ---
 				this.State = data.Vehicle;
 				this.Handles = new ReadOnlyHandles(data.Handles);
@@ -1178,7 +1183,7 @@ namespace Plugin {
 				}
 				
                 //Set the global speed, direction and starting location variables
-                this.trainspeed = (int)data.Vehicle.Speed.KilometersPerHour;
+                trainspeed = (int)data.Vehicle.Speed.KilometersPerHour;
                 this.previouslocation = this.trainlocation;
                 this.trainlocation = data.Vehicle.Location;
                 

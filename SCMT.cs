@@ -52,7 +52,7 @@ namespace Plugin
 
         //Panel Variables
         /// <summary>SCMT Safety Intervention Light.</summary>
-        internal int spiaSCMT = -1;
+        internal static int spiaSCMT = -1;
         /// <summary>Blue light for SCMT safety device.</summary>
         internal int spiablue = -1;
         /// <summary>Red light for SCMT safety device.</summary>

@@ -56,7 +56,7 @@ namespace Plugin
         /// <summary>The total capacity of the fuel tanks</summary>
         internal double fuelcapacity = 20000;
         /// <summary>The behaviour when the reverser is placed into neutral with the train in motion</summary>
-        internal double reversercontrol = 0;
+        internal int reversercontrol = 0;
         /// <summary>A comma separated list of the heating rates for each throttle notch</summary>
         internal string heatingrate = "0";
         /// <summary>The total number of fuel units filled per second whilst fuelling is active</summary>
