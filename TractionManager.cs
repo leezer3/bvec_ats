@@ -98,16 +98,31 @@ namespace Plugin
         internal string customindicatorkey8 = "";
         internal string customindicatorkey9 = "";
         internal string customindicatorkey10 = "";
+
+        //NEW KEYS ADDED FOR BVEC_ATS
+
+        //Front/ rear pantographs
         internal string frontpantographkey;
         internal string rearpantographkey;
+        //Steam locomotive functions
         internal string shovellingkey;
         internal string blowerskey;
         internal string advancedrivingkey;
         internal string steamheatincreasekey;
         internal string steamheatdecreasekey;
         internal string cylindercockskey;
+
+        //KEYS ADDED BY OS_SZ_ATS
+
         internal string SCMTincreasespeed;
         internal string SCMTdecreasespeed;
+        internal string AbilitaBancoKey;
+        internal string ConsensoAvviamentoKey;
+        internal string AvviamentoKey;
+        internal string SpegnimentoKey;
+        internal string LCMupKey;
+        internal string LCMdownkey;
+        internal string TestSCMTKey;
 
 
         //Arrays
@@ -1049,6 +1064,34 @@ namespace Plugin
                 {
                     SCMT_Traction.decreasesetspeed();
                 }
+                if (keypressed == AbilitaBancoKey)
+                {
+                    SCMT_Traction.AbilitaBanco();
+                }
+                if (keypressed == ConsensoAvviamentoKey)
+                {
+                    SCMT_Traction.ConsensoAvviamento();
+                }
+                if (keypressed == AvviamentoKey)
+                {
+                    SCMT_Traction.Avviamento();
+                }
+                if (keypressed == SpegnimentoKey)
+                {
+                    SCMT_Traction.Spegnimento();
+                }
+                if (keypressed == LCMupKey)
+                {
+                    SCMT_Traction.LCMup();
+                }
+                if (keypressed == LCMdownkey)
+                {
+                    SCMT_Traction.LCMdown();
+                }
+                if (keypressed == TestSCMTKey)
+                {
+                    SCMT_Traction.TestSCMT();
+                }
             }
         }
 
@@ -1134,6 +1177,14 @@ namespace Plugin
                 if (keypressed == SCMTincreasespeed || keypressed == SCMTdecreasespeed)
                 {
                     SCMT_Traction.releasekey();
+                }
+                if (keypressed == AvviamentoKey)
+                {
+                    SCMT_Traction.AvviamentoReleased();
+                }
+                if (keypressed == SpegnimentoKey)
+                {
+                    SCMT_Traction.SpegnimentoReleased();
                 }
             }
         }

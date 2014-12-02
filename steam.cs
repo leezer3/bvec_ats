@@ -703,15 +703,15 @@ namespace Plugin {
                 }
                 if (boilerpressureindicator != -1)
                 {
-                    this.Train.Panel[(boilerpressureindicator)] = (int)stm_boilerpressure;
+                    this.Train.Panel[(boilerpressureindicator)] = stm_boilerpressure;
                 }
                 if (boilerwaterlevelindicator != -1)
                 {
-                    this.Train.Panel[(boilerwaterlevelindicator)] = (int)stm_boilerwater;
+                    this.Train.Panel[(boilerwaterlevelindicator)] = stm_boilerwater;
                 }
                 if (fuelindicator != -1)
                 {
-                    this.Train.Panel[(fuelindicator)] = (int)fuel;
+                    this.Train.Panel[(fuelindicator)] = fuel;
                 }
                 if (injectorindicator != -1)
                 {

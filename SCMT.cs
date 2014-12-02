@@ -17,7 +17,7 @@ namespace Plugin
 
         //Internal Status
         /// <summary>Whether a SCMT alert has been triggered</summary>
-        internal bool SCMT_Alert;
+        internal static bool SCMT_Alert;
         /// <summary>The data type of the last beacon recieved</summary>
         internal int beacon_type;
         /// <summary>The signal data of the last beacon recieved</summary>
@@ -48,19 +48,27 @@ namespace Plugin
         internal double alarmtimer;
         internal int phase;
         //Stores the state value of the SCMT self-test [Move to ENUM later]
-        internal int testscmt_state;
+        //internal int testscmt_state;
 
         //Panel Variables
         /// <summary>SCMT Safety Intervention Light.</summary>
         internal static int spiaSCMT = -1;
         /// <summary>Blue light for SCMT safety device.</summary>
         internal int spiablue = -1;
+        //Stores whether the blue light has been triggered
+        internal bool spiablue_act;
         /// <summary>Red light for SCMT safety device.</summary>
         internal int spiarossi = -1;
         //Stores whether the red light has been triggered
         internal bool spiarossi_act;
-        /// <summary>The image used for the SCMT self-test sequence.</summary>
+        /// <summary>The SCMT self-test sequence state.</summary>
         internal static int testscmt;
+        /// <summary>The SCMT self-test sequence panel variable.</summary>
+        internal int testscmt_variable;
+
+        internal SCMT_Traction.Timer SpiabluTimer;
+        internal SCMT_Traction.Timer SpiaRossiTimer;
+
         //Sound Variables
         /// <summary>Trigger sound for SCMT safety device.</summary>
         internal int sound_scmt = -1;
@@ -107,8 +115,65 @@ namespace Plugin
                         brakecurve(data.ElapsedTime.Milliseconds);
                     }
                     //The last code block figured out the maxiumum permissable speeds
-                    //Now we need to set the interventions- Call the interventions function
-                    SCMT_intervention();
+                    //Now run the interventions
+                    if (testscmt != 0 && SCMT_Alert == true)
+                    {
+                        //First check the trainspeed and reset the overspeed trip if applicable
+                        if (Train.trainspeed < alertspeed + 1)
+                        {
+                            //If we're no longer over the alert speed, reset the overspeed device
+                            Train.overspeedtripped = false;
+
+                            alarmtimeractive = false;
+                            //If the tgtraz is active, the red light is not lit and we're in state 4
+                            if (tgtraz_active == true && spiarossi_act == false && testscmt == 4)
+                            {
+                                if (SCMT_Traction.indlcm >= 0 && Train.Handles.PowerNotch == 0)
+                                {
+                                    data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                                    data.Handles.PowerNotch = SCMT_Traction.indlcm;
+                                }
+                                else
+                                {
+                                    data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                                    data.Handles.PowerNotch = Train.Handles.PowerNotch;
+                                }
+                                tgtraz_active = false;
+                            }
+                            if (SpiabluTimer.TimerActive == true)
+                            {
+                                SpiabluTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                                if (SpiabluTimer.TimeElapsed > 500)
+                                {
+                                    if (spiablue_act == true)
+                                    {
+                                        spiablue_act = false;
+                                    }
+                                    else
+                                    {
+                                        spiablue_act = true;
+                                    }
+                                    SpiabluTimer.TimeElapsed = 0;
+                                }
+                            }
+                            if (SpiaRossiTimer.TimerActive == true)
+                            {
+                                SpiaRossiTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                                if (SpiaRossiTimer.TimeElapsed > 500)
+                                {
+                                    if (spiarossi_act == true)
+                                    {
+                                        spiarossi_act = false;
+                                    }
+                                    else
+                                    {
+                                        spiarossi_act = true;
+                                    }
+                                    SpiaRossiTimer.TimeElapsed = 0;
+                                }
+                            }
+                        }
+                    }
                 }
 
 
@@ -134,7 +199,19 @@ namespace Plugin
                             this.Train.Panel[spiarossi] = 1;
                         }
                     }
+                    if (spiablue != -1)
+                    {
+                        if (spiablue_act == true)
+                        {
+                            this.Train.Panel[spiablue] = 1;
+                        }
+                        else
+                        {
+                            this.Train.Panel[spiablue] = 0;
+                        }
+                    }
                 }
+
 
             }
         }
@@ -142,7 +219,7 @@ namespace Plugin
         //Call this function from the main beacon manager
         internal void trigger()
         {
-            if (this.SCMT_Alert == false)
+            if (SCMT_Alert == false)
             {
                 SCMT_Alert = true;
                 //Trigger audible alert if this is set
@@ -157,27 +234,7 @@ namespace Plugin
         /// Consider moving back into the main function loop at some point?
         internal void SCMT_intervention()
         {
-            if (testscmt_state == 0 || SCMT_Alert == false)
-            {
-                //Simply return if we're not in a SCMT alert or the test phase is at zero (Uninitialised)
-                return;
-            }
-            //First check the trainspeed and reset the overspeed trip if applicable
-            if (Train.trainspeed < alertspeed + 1)
-            {
-                //If we're no longer over the alert speed, reset the overspeed device
-                Train.overspeedtripped = false;
-            }
-            alarmtimeractive = false;
-            //If the tgtraz is active, the red light is not lit and we're in state 4
-            if (tgtraz_active == true && spiarossi_act == false && testscmt_state == 4)
-            {
-                //INCOMPLETE- TRACTION MODELLING NOT IMPLEMENTED YET
-                if (Train.Handles.BrakeNotch == 0)
-                {
-                    
-                }
-            }
+            
         }
 
         /// <summary>This function is called by the main elapse function to calculate the current requireed braking curve.</summary>

@@ -3,7 +3,6 @@
  */
 
 using System;
-using System.Data.Odbc;
 using OpenBveApi.Runtime;
 using System.Globalization;
 
@@ -147,8 +146,10 @@ namespace Plugin
         internal static bool flagavv;
         internal bool flagfe;
         
-        /// <summary>Stores the current SCMT test state</summary>
-        internal static int testscmt;
+        //Indicators
+        internal static Indicator Abbanco;
+        internal static Indicator ConsAvviam;
+
         //Three timers triggered by the SCMT self-test sequence
         //Self-test timer??
         internal static Timer SCMTtesttimer;
@@ -811,13 +812,13 @@ namespace Plugin
             {
                 if (SCMTtesttimer.TimerActive == true)
                 {
-                    if (testscmt == 1)
+                    if (SCMT.testscmt == 1)
                     {
                         SCMTtesttimer.TimeElapsed += data.ElapsedTime.Milliseconds;
                         if (SCMTtesttimer.TimeElapsed > 35000)
                         {
                             SCMTtesttimer.TimeElapsed = 0;
-                            testscmt = 2;
+                            SCMT.testscmt = 2;
                             SCMTtesttimer.TimerActive = false;
                         }
                     }
@@ -842,7 +843,7 @@ namespace Plugin
                             data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
                             if (Train.Handles.BrakeNotch > 2)
                             {
-                                testscmt = 5;
+                                SCMT.testscmt = 5;
                                 //Stop sunoscmton from playing
                                 SCMTtesttimer.TimerActive = false;
                                 timertestpulsanti.TimerActive = false;
@@ -1146,16 +1147,15 @@ namespace Plugin
             {
                 if (ChiaveBanco == false)
                 {
-                    //Blink Abbanco indicator
-                    //Then show
+                    Abbanco.FlashOnce = true;
+                    Abbanco.FlashInterval = 1000;
 
                     //Show waiting indicator
                     AttessaTimer.TimeElapsed = 0;
                 }
                 else
                 {
-                    //Blink Abbanco indicator
-                    //Then show
+                    SCMT.testscmt = 0;
                 }
 
                 ChiaveBanco = false;
@@ -1170,16 +1170,12 @@ namespace Plugin
         {
             if (ConsAvv == false && ChiaveBanco == true)
             {
-                //Blink consent to start indicator
-                //Then show
                 ConsAvv = true;
                 //Play key turned to bench and start permission sound
                 //SUONOCONSAVV
             }
             else if (ConsAvv == true && ChiaveBanco == true)
             {
-                //Blink consent to start indicator
-                //Then show
                 ConsAvv = false;
                 //Play key turned to bench and start permission sound
                 //SUONOCONSAVV
@@ -1298,43 +1294,43 @@ namespace Plugin
         /// <summary>Call from the traction manager when the SCMT Test key is pressed</summary>
         internal static void TestSCMT()
         {
-            if (testscmt == 0 && ChiaveBanco == true && Train.trainspeed == 0)
+            if (SCMT.testscmt == 0 && ChiaveBanco == true && Train.trainspeed == 0)
             {
-                testscmt = 1;
+                SCMT.testscmt = 1;
                 SCMTtesttimer.TimeElapsed = 0;
                 timertestpulsanti.TimeElapsed = 0;
                 timerScariche.TimeElapsed = 0;
                 //Play sumoconsavv
                 //Play sunoscmton
             }
-            else if (testscmt == 2 && Train.trainspeed == 0)
+            else if (SCMT.testscmt == 2 && Train.trainspeed == 0)
             {
-                testscmt = 3;
+                SCMT.testscmt = 3;
                 //Play sunoconfdati
             }
-            else if (testscmt == 3 && Train.trainspeed == 0)
+            else if (SCMT.testscmt == 3 && Train.trainspeed == 0)
             {
-                testscmt = 4;
+                SCMT.testscmt = 4;
                 //Play sunoconfdati
                 timerRitSpegscmt.TimeElapsed = 0;
             }
-            else if (testscmt == 4 && Train.trainspeed == 0)
+            else if (SCMT.testscmt == 4 && Train.trainspeed == 0)
             {
                 if (timerRitSpegscmt.TimeElapsed > 5000 || timerRitSpegscmt.TimerActive == false)
                 {
-                    testscmt = 0;
+                    SCMT.testscmt = 0;
                     flagspiascmt = false;
-                    SCMT.spiaSCMT = 1;
+                    SCMT.SCMT_Alert = true;
                     //Play sunoconsavv
                     seqScarico = 0;
                     timerRitSpegscmt.TimerActive = false;
                 }
             }
-            else if (testscmt == 5)
+            else if (SCMT.testscmt == 5)
             {
-                testscmt = 0;
+                SCMT.testscmt = 0;
                 flagspiascmt = false;
-                SCMT.spiaSCMT = 1;
+                SCMT.SCMT_Alert = true;
                 //Play sunoconsavv
                 seqScarico = 0;
             }

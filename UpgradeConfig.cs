@@ -392,8 +392,12 @@ namespace Plugin
             //Create new configuration file and cycle through the newly created arrays to upgrade the original configuration file.
             using (StreamWriter sw = File.CreateText(Path.Combine(trainpath, "BVEC_Ats.cfg")))
             {
-                //Write out the generator version and warning
-                sw.WriteLine(";GenVersion=1");
+                /*Write out the generator version and warning
+                 *      Version 1 files handle OS_ATS only
+                 *      Version 2 files handle OS_SZ_ATS files
+                 * TODO: Re-generate files if a version 1 file is detected with OS_SZ_ATS present
+                */
+                sw.WriteLine(";GenVersion=2");
                 sw.WriteLine(";DELETE THE ABOVE LINE IF YOU MODIFY THIS FILE");
                 sw.WriteLine();
                 //Traction Type First

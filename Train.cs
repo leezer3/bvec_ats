@@ -757,6 +757,24 @@ namespace Plugin {
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
 			                        break;
+                                    //Handles SCMT traction parameters
+                               case "scmt":
+			                        switch (key)
+			                        {
+                                        case "spiablu":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT.spiablue, key);
+                                            break;
+                                        case "spiarossi":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT.spiarossi, key);
+                                            break;
+                                        case "spiascmt":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT.spiaSCMT, key);
+                                            break;
+                                        case "testscmt":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT.testscmt_variable, key);
+                                            break;
+			                        }
+			                        break;
 			                    case "aws":
 			                        switch (key)
 			                        {
