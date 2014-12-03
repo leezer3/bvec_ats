@@ -45,11 +45,18 @@ namespace Plugin
         /// <summary>The panel variable for the flashing door light</summary>
         internal int doorlight = -1;
 
+
+        /// <summary>Stores the current value of the headcode</summary>
+        internal static int headcodestate;
+        /// <summary>Stores the possible number of headcode states</summary>
+        internal static int totalheadcodestates;
+        /// <summary>Stores whether the flashing door light is currently lit</summary>
+        internal int headcodeindex = -1;
+
         /// <summary>The variable for the left cylinder puff</summary>
         internal int cylinderpuff_L = -1;
         /// <summary>The variable for the right cylinder puff</summary>
         internal int cylinderpuff_R = -1;
-
         /// <summary>The Y variable for the valve gear motion [Right]</summary>
         internal int gear_Yvariable_R = -1;
         /// <summary>The Z variable for the valve gear motion [Right]</summary>
@@ -133,7 +140,7 @@ namespace Plugin
             {
                 MyDoorLightState = DoorLightStates.InMotion;
             }
-
+            headcodestate = 0;
         }
 
         /// <summary>Is called every frame.</summary>
@@ -368,6 +375,13 @@ namespace Plugin
                     }
                 }
             }
+            //Headcode state
+            {
+                if (headcodeindex != 1)
+                {
+                    this.Train.Panel[headcodeindex] = headcodestate;
+                }
+            }
         }
 
         //Called by the beacon manager to set the door light state
@@ -376,6 +390,19 @@ namespace Plugin
             if (MyDoorLightState == DoorLightStates.InMotion)
             {
                 MyDoorLightState = DoorLightStates.Primed;
+            }
+        }
+
+        //Called from the Traction Manager when headcodes toggle is pressed
+        internal static void headcodetoggle()
+        {
+            if (headcodestate < totalheadcodestates)
+            {
+                headcodestate += 1;
+            }
+            else
+            {
+                headcodestate = 0;
             }
         }
 

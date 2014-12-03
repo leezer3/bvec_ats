@@ -49,7 +49,7 @@ namespace Plugin {
                 //If it exists
                 try
                 {
-                    if (generatorversion.StartsWith(";GenVersion="))
+                    if (generatorversion != null && generatorversion.StartsWith(";GenVersion="))
                     {
                         string versiontext = Regex.Match(generatorversion, @"\d+").Value;
                         int version = Int32.Parse(versiontext);

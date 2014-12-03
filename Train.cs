@@ -965,6 +965,27 @@ namespace Plugin {
                                         case "cylinderpuff_r":
                                             InternalFunctions.ValidateIndex(value, ref Animations.cylinderpuff_R, key);
                                             break;
+                                        case "headcodeindicator":
+                                            try
+                                            {
+                                                string[] headcodesplit = value.Split(',');
+                                                for (int k = 0; k < headcodesplit.Length; k++)
+                                                {
+                                                    if (k == 0)
+                                                    {
+                                                        this.Animations.headcodeindex = Convert.ToInt32(headcodesplit[0]);
+                                                    }
+                                                    else
+                                                    {
+                                                        Animations.totalheadcodestates = Convert.ToInt32(headcodesplit[1]);
+                                                    }
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("tpwsindicator2");
+                                            }
+                                            break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
@@ -1063,6 +1084,9 @@ namespace Plugin {
                                             break;
                                         case "cylindercockskey":
                                             this.tractionmanager.cylindercockskey = value;
+                                            break;
+                                        case "headcodekey":
+                                            this.tractionmanager.headcodekey = value;
                                             break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");

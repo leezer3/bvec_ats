@@ -43,9 +43,7 @@ namespace Plugin
         //The variable for this
         internal int trgraz;
 
-        //Internal Variables
-        internal bool alarmtimeractive;
-        internal double alarmtimer;
+
         internal int phase;
         //Stores the state value of the SCMT self-test [Move to ENUM later]
         //internal int testscmt_state;
@@ -65,10 +63,23 @@ namespace Plugin
         internal static int testscmt;
         /// <summary>The SCMT self-test sequence panel variable.</summary>
         internal int testscmt_variable;
+        //Default from OS_ATS??
+        //Appears to be in seconds
+        internal int tpwsstopdelay;
+        //Brake flag has been triggered
+        internal bool flagbrake;
+        //We can now rearm I think
+        internal bool flagriarmo;
 
+        internal int brakeNotchDemanded;
         internal SCMT_Traction.Timer SpiabluTimer;
         internal SCMT_Traction.Timer SpiaRossiTimer;
-
+        internal SCMT_Traction.Timer StopTimer;
+        //Rearm timer?
+        internal SCMT_Traction.Timer riarmoTimer;
+        internal SCMT_Traction.Timer SrTimer;
+        internal SCMT_Traction.Timer OverrideTimer;
+        internal SCMT_Traction.Timer AlarmTimer;
         //Sound Variables
         /// <summary>Trigger sound for SCMT safety device.</summary>
         internal int sound_scmt = -1;
@@ -124,7 +135,7 @@ namespace Plugin
                             //If we're no longer over the alert speed, reset the overspeed device
                             Train.overspeedtripped = false;
 
-                            alarmtimeractive = false;
+                            AlarmTimer.TimerActive = false;
                             //If the tgtraz is active, the red light is not lit and we're in state 4
                             if (tgtraz_active == true && spiarossi_act == false && testscmt == 4)
                             {
@@ -172,6 +183,120 @@ namespace Plugin
                                     SpiaRossiTimer.TimeElapsed = 0;
                                 }
                             }
+                            if (riarmoTimer.TimerActive == true)
+                            {
+                                riarmoTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                                if (riarmoTimer.TimeElapsed > 300)
+                                {
+                                    if (brakeNotchDemanded == 0)
+                                    {
+                                        //Start brake demand indicator blinking?
+                                        //Or does it want the indicator state toggled?
+                                    }
+                                    else
+                                    {
+                                        //Stop brake demand indicator blinking?
+                                    }
+                                    riarmoTimer.TimeElapsed = 0;
+                                }
+                                StopTimer.TimerActive = true;
+                                StopTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                                if ((Train.trainspeed < beacon_speed + 2 && beacon_speed > 30 && flagbrake == false) || (Train.trainspeed == 0 && StopTimer.TimeElapsed > (tpwsstopdelay*1000)) && trainstop == true)
+                                {
+                                    riarmoTimer.TimerActive = false;
+                                    //Start brake demand indicator blinking?
+                                    flagriarmo = true;
+                                }
+                            }
+                            if (trainstop == false)
+                            {
+                                SrTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                                if (SrTimer.TimeElapsed > 5000)
+                                {
+                                    SrTimer.TimerActive = false;
+                                }
+                                if (OverrideTimer.TimerActive == true)
+                                {
+                                    if (beacon_type == 4403)
+                                    {
+                                        OverrideTimer.TimerActive = false;
+                                        //Set stop override indicator
+                                        //Set sr indicator
+                                        beacon_type = 4402;
+                                        beacon_speed = 30;
+                                        maxspeed = beacon_speed;
+                                        SrTimer.TimeElapsed = 0;
+                                    }
+                                }
+                                else if ((beacon_type == 4402 && Train.trainspeed > alertspeed) || (beacon_type == 4403 && beacon_signal.Aspect == 0))
+                                {
+                                    if (Train.trainspeed > alertspeed && beacon_type == 4403)
+                                    {
+                                        if (AlarmTimer.TimerActive == false)
+                                        {
+                                            AlarmTimer.TimerActive = true;
+                                            AlarmTimer.TimeElapsed = 0;
+                                        }
+                                        //Play looped overspeed alarm- Probably need to disable the base BVEC_ATS overspeed alarm
+                                        spiarossi_act = true;
+                                        if (Train.Handles.BrakeNotch == 0 && data.Handles.BrakeNotch == 0 && testscmt == 4)
+                                        {
+                                            data.Handles.PowerNotch = 0;
+                                            data.Handles.BrakeNotch = 1;
+                                            tgtraz_active = true;
+                                        }
+                                        if (Train.trainspeed > maxspeed + 4)
+                                        {
+                                            //Play looped TPWSWarningSound
+                                            //Needs new traction manager SCMT brake function- Call EB
+                                            trainstop = true;
+                                            StopTimer.TimerActive = false;
+                                            twpsRelease = false;
+                                            AlarmTimer.TimerActive = false;
+                                            if (riarmoTimer.TimerActive == false)
+                                            {
+                                                riarmoTimer.TimerActive = true;
+                                            }
+                                            if (SpiaRossiTimer.TimerActive == false && spiarossi_act == false)
+                                            {
+                                                SpiaRossiTimer.TimerActive = true;
+                                                //maybe needs to be a separate whatsit, come back to this
+                                                spiarossi_act = true;
+                                            }
+                                        }
+                                        
+                                    }
+                                }
+                                else
+                                {
+                                    //Blink traintrip indicator
+                                    //Play tpwswarningsound looping
+                                    //Traction manager SCMT EB
+                                    trainstop = true;
+                                    StopTimer.TimerActive = false;
+                                    tpwsRelease = false;
+                                    flagbrake = true;
+                                    if (riarmoTimer.TimerActive == false)
+                                    {
+                                        riarmoTimer.TimerActive = true;
+                                    }
+                                    if (SpiaRossiTimer.TimerActive == false && spiarossi_act == false)
+                                    {
+                                        SpiaRossiTimer.TimerActive = true;
+                                        spiarossi_act = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    //Show brakedemand indicator
+                    //Show traintrip indicator
+                    //Show stopoverrideindicator
+                    if (Train.trainspeed == 0)
+                    {
+                        if (StopTimer.TimerActive == false)
+                        {
+                            StopTimer.TimerActive = true;
                         }
                     }
                 }
@@ -230,13 +355,6 @@ namespace Plugin
             }
         }
 
-        /// <summary>This function is called by the main elapse function to check whether we're currently in an alert state.</summary>
-        /// Consider moving back into the main function loop at some point?
-        internal void SCMT_intervention()
-        {
-            
-        }
-
         /// <summary>This function is called by the main elapse function to calculate the current requireed braking curve.</summary>
         internal void brakecurve(double time)
         {
@@ -244,10 +362,10 @@ namespace Plugin
             if (beacon_distance < 1200 && beacon_distance > 1000)
             {
                 alertspeed = 117;
-                if (alarmtimeractive == true)
+                if (AlarmTimer.TimerActive == true)
                 {
-                    alarmtimer += time;
-                    if (alarmtimer > 5000)
+                    AlarmTimer.TimeElapsed += time;
+                    if (AlarmTimer.TimeElapsed > 5000)
                     {
                         maxspeed = 115;
                     }
@@ -256,10 +374,10 @@ namespace Plugin
             else if (beacon_distance < 1000 && beacon_distance > 800)
             {
                 alertspeed = 102;
-                if (alarmtimeractive == true)
+                if (AlarmTimer.TimerActive == true)
                 {
-                    alarmtimer += time;
-                    if (alarmtimer > 5000)
+                    AlarmTimer.TimeElapsed += time;
+                    if (AlarmTimer.TimeElapsed > 5000)
                     {
                         maxspeed = 100;
                     }
@@ -268,10 +386,10 @@ namespace Plugin
             if (beacon_distance < 800 && beacon_distance > 700)
             {
                 alertspeed = 92;
-                if (alarmtimeractive == true)
+                if (AlarmTimer.TimerActive == true)
                 {
-                    alarmtimer += time;
-                    if (alarmtimer > 5000)
+                    AlarmTimer.TimeElapsed += time;
+                    if (AlarmTimer.TimeElapsed > 5000)
                     {
                         maxspeed = 90;
                     }
@@ -280,10 +398,10 @@ namespace Plugin
             if (beacon_distance < 700 && beacon_distance > 600)
             {
                 alertspeed = 82;
-                if (alarmtimeractive == true)
+                if (AlarmTimer.TimerActive == true)
                 {
-                    alarmtimer += time;
-                    if (alarmtimer > 5000)
+                    AlarmTimer.TimeElapsed += time;
+                    if (AlarmTimer.TimeElapsed > 5000)
                     {
                         maxspeed = 80;
                     }
@@ -292,10 +410,10 @@ namespace Plugin
             if (beacon_distance < 600 && beacon_distance > 500)
             {
                 alertspeed = 72;
-                if (alarmtimeractive == true)
+                if (AlarmTimer.TimerActive == true)
                 {
-                    alarmtimer += time;
-                    if (alarmtimer > 5000)
+                    AlarmTimer.TimeElapsed += time;
+                    if (AlarmTimer.TimeElapsed > 5000)
                     {
                         maxspeed = 70;
                     }
@@ -304,10 +422,10 @@ namespace Plugin
             if (beacon_distance < 500 && beacon_distance > 400)
             {
                 alertspeed = 62;
-                if (alarmtimeractive == true)
+                if (AlarmTimer.TimerActive == true)
                 {
-                    alarmtimer += time;
-                    if (alarmtimer > 5000)
+                    AlarmTimer.TimeElapsed += time;
+                    if (AlarmTimer.TimeElapsed > 5000)
                     {
                         maxspeed = 60;
                     }
@@ -316,10 +434,10 @@ namespace Plugin
             if (beacon_distance < 400 && beacon_distance > 300)
             {
                 alertspeed = 45;
-                if (alarmtimeractive == true)
+                if (AlarmTimer.TimerActive == true)
                 {
-                    alarmtimer += time;
-                    if (alarmtimer > 5000)
+                    AlarmTimer.TimeElapsed += time;
+                    if (AlarmTimer.TimeElapsed > 5000)
                     {
                         maxspeed = 43;
                     }
@@ -328,10 +446,10 @@ namespace Plugin
             if (beacon_distance < 300 && beacon_distance > 220)
             {
                 alertspeed = 33;
-                if (alarmtimeractive == true)
+                if (AlarmTimer.TimerActive == true)
                 {
-                    alarmtimer += time;
-                    if (alarmtimer > 5000)
+                    AlarmTimer.TimeElapsed += time;
+                    if (AlarmTimer.TimeElapsed > 5000)
                     {
                         maxspeed = 31;
                     }

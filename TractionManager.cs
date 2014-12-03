@@ -98,7 +98,7 @@ namespace Plugin
         internal string customindicatorkey8 = "";
         internal string customindicatorkey9 = "";
         internal string customindicatorkey10 = "";
-
+        internal string headcodekey = "";
         //NEW KEYS ADDED FOR BVEC_ATS
 
         //Front/ rear pantographs
@@ -984,7 +984,10 @@ namespace Plugin
                     }
                 }
             }
-
+            if (keypressed == headcodekey)
+            {
+                Animations.headcodetoggle();
+            }
             //Advanced steam locomotive functions
             if (Train.steam != null)
             {
