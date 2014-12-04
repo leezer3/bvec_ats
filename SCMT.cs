@@ -84,7 +84,8 @@ namespace Plugin
         /// <summary>Trigger sound for SCMT safety device.</summary>
         internal int sound_scmt = -1;
 
-        
+        internal bool trainstop;
+        internal bool tpwsRelease;
 
         internal SCMT(Train train)
         {
@@ -251,7 +252,7 @@ namespace Plugin
                                             //Needs new traction manager SCMT brake function- Call EB
                                             trainstop = true;
                                             StopTimer.TimerActive = false;
-                                            twpsRelease = false;
+                                            tpwsRelease = false;
                                             AlarmTimer.TimerActive = false;
                                             if (riarmoTimer.TimerActive == false)
                                             {

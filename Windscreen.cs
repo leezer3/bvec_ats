@@ -11,30 +11,50 @@ namespace Plugin
         // --- members ---
         internal bool enabled;
         //Internal Variables
+
+        /// <summary>Stores whether it is currently raining.</summary>
         internal bool israining;
+        /// <summary>The current rain intensity.</summary>
         internal int rainintensity;
         internal int droptimer;
+        /// <summary>The next drop to be placed on the windscreen.</summary>
         internal int nextdrop;
+        /// <summary>The current wiper speed.</summary>
         internal int wiperspeed = 0;
+        /// <summary>The current position of the windscreen wiper.</summary>
         internal int currentwiperposition;
+        /// <summary>Stores whether the wiper is moving R-L or L-R.</summary>
         internal int wiperdirection;
         internal double wipermovetimer;
         internal bool heldwipers;
         internal double wiperheldtimer;
 
         //Default Variables
+        /// <summary>The panel index at which raindrop positions start.</summary>
         internal int dropstartindex = 0;
+        /// <summary>The total number of available drop positions.</summary>
         internal int numberofdrops = 0;
+        /// <summary>The panel index of the windscreen wiper.</summary>
         internal int wiperindex = -1;
+        /// <summary>Stores whether the wipers rest position is on the left or the right.</summary>
         internal double wiperholdposition = 0;
+        /// <summary>The time in milliseconds for the wiper to pass from left to right.</summary>
         internal double wiperrate = 1000;
+        /// <summary>The time in milliseconds for which the wiper should pause at the hold position.</summary>
         internal double wiperdelay = 0;
+        /// <summary>The sound index for the first raindrop sound.</summary>
         internal int dropsound1 = -1;
+        /// <summary>The sound index for the second raindrop sound.</summary>
         internal int dropsound2 = 0;
+        /// <summary>The sound played when the wipers move with 20% or less of the available drops on the windscreen.</summary>
         internal int drywipesound = -1;
+        /// <summary>The sound played when the wipers move with over 20% of the available drops on the windscreen.</summary>
         internal int wetwipesound = -1;
+        /// <summary>Determines whether the wipers sound should be played when the wipers move from either side, or only from the hold position.</summary>
         internal int wipersoundbehaviour = 0;
+        /// <summary>The panel index for the windscreen wipers switch.</summary>
         internal int wiperswitchindex = -1;
+        /// <summary>The sound index played when the windscreen wipers switch is moved.</summary>
         internal int wiperswitchsound = -1;
         
         //Arrays

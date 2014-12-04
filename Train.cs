@@ -983,7 +983,7 @@ namespace Plugin {
                                             }
                                             catch
                                             {
-                                                InternalFunctions.LogError("tpwsindicator2");
+                                                InternalFunctions.LogError("headcodeindicator");
                                             }
                                             break;
 			                            default:

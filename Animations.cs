@@ -50,7 +50,7 @@ namespace Plugin
         internal static int headcodestate;
         /// <summary>Stores the possible number of headcode states</summary>
         internal static int totalheadcodestates;
-        /// <summary>Stores whether the flashing door light is currently lit</summary>
+        /// <summary>Stores the current state of the headcode indicator</summary>
         internal int headcodeindex = -1;
 
         /// <summary>The variable for the left cylinder puff</summary>
@@ -377,7 +377,7 @@ namespace Plugin
             }
             //Headcode state
             {
-                if (headcodeindex != 1)
+                if (headcodeindex != -1)
                 {
                     this.Train.Panel[headcodeindex] = headcodestate;
                 }
@@ -396,13 +396,16 @@ namespace Plugin
         //Called from the Traction Manager when headcodes toggle is pressed
         internal static void headcodetoggle()
         {
-            if (headcodestate < totalheadcodestates)
+            if (totalheadcodestates != 0)
             {
-                headcodestate += 1;
-            }
-            else
-            {
-                headcodestate = 0;
+                if (headcodestate < totalheadcodestates)
+                {
+                    headcodestate += 1;
+                }
+                else
+                {
+                    headcodestate = 0;
+                }
             }
         }
 
