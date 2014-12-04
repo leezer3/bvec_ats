@@ -19,7 +19,9 @@ namespace Plugin
         internal bool nogears;
         /// <summary>The current gear</summary>
         internal int gear = 0;
+        /// <summary>The total number of gears fitted to this train</summary>
         internal int totalgears = 0;
+        /// <summary>The current RPM of the engine</summary>
         internal int currentrevs;
         internal static bool gearsblocked = false;
         internal bool gearplayed = true;

@@ -50,7 +50,7 @@ namespace Plugin
         internal static int headcodestate;
         /// <summary>Stores the possible number of headcode states</summary>
         internal static int totalheadcodestates;
-        /// <summary>Stores the current state of the headcode indicator</summary>
+        /// <summary>The panel index of the headcode indicator</summary>
         internal int headcodeindex = -1;
 
         /// <summary>The variable for the left cylinder puff</summary>

@@ -9,22 +9,35 @@ namespace Plugin
     internal class tractionmanager : Device
     {
         // --- members ---
+        /// <summary>Power cutoff has been demaned</summary>
         internal static bool powercutoffdemanded;
+        /// <summary>A safety system has triggered a brake intervention</summary>
         private static bool brakedemanded;
         private static bool neutralrvrtripped;
+        /// <summary>The engine has overheated</summary>
         internal static bool overheated;
         internal bool canisolate;
         internal bool safetyisolated;
+        /// <summary>The total distance travelled</summary>
         internal double travelled;
+        /// <summary>The 100km digit of the travel meter</summary>
         internal int travel100;
+        /// <summary>The 10km digit of the travel meter</summary>
         internal int travel10;
+        /// <summary>The 100m digit of the travel meter</summary>
         internal int travel1;
+        /// <summary>The 10m digit of the travel meter</summary>
         internal int travel01;
+        /// <summary>The 1m digit of the travel meter</summary>
         internal int travel001;
+        /// <summary>Stores whether the primary klaxon is playing</summary>
         internal bool primaryklaxonplaying;
+        /// <summary>Stores whether the secondary klaxon is playing</summary>
         internal bool secondaryklaxonplaying;
+        /// <summary>Stores whether the music klaxon is playing</summary>
         internal bool musicklaxonplaying;
         internal double klaxonindicatortimer;
+        /// <summary>Stores whether the door state is triggering power cutoff or a brake intervention</summary>
         internal bool doorlock;
 
         //Debug/ Advanced Driving Window Functions
@@ -55,11 +68,17 @@ namespace Plugin
         private readonly Train Train;
 
         //Default Variables
+        /// <summary>The panel index lit when the door state is cutting off the power</summary>
         internal int doorpowerlock = 0;
+        /// <summary>The panel index lit when the door state is applying a brake intervention</summary>
         internal int doorapplybrake = 0;
         internal int neutralrvrbrake = 0;
         internal int neutralrvrbrakereset = 0;
+        /// <summary>The panel index of the direction indicator</summary>
         internal int directionindicator = -1;
+        /// <summary>The panel index of the reverser handle</summary>
+        /// Whilst OpenBVE provides a native implementation for this, the actual reverser handle may be altered
+        /// for example by the plugin's cutoff state
         internal int reverserindex = -1;
         internal int travelmeter100 = -1;
         internal int travelmeter10 = -1;

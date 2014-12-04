@@ -20,24 +20,39 @@ namespace Plugin
 
         /// <summary>Default paramaters</summary>
         /// Used if no value is loaded from the config file
+        /// <summary>Stores the current type of overspeed control in use</summary>
         internal int overspeedcontrol = 0;
+        /// <summary>The speed at which an overspeed warning will be triggered in km/h</summary>
         internal double warningspeed = -1;
+        /// <summary>The speed at which an overspeed intervention will be triggered in km/h</summary>
         internal double overspeed = 1000;
+        /// <summary>The speed at which an overspeed intervention will automatically be cancelled in km/h</summary>
         internal double safespeed = 0;
+        /// <summary>The panel index of the overspeed indicator</summary>
         internal int overspeedindicator = -1;
+        /// <summary>The sound index of the audible overspeed alarm</summary>
         internal int overspeedalarm = -1;
+        /// <summary>The time for which you may be overspeed before an intervention is triggered</summary>
         internal double overspeedtime = 0;
-
+        /// <summary>Stores the vigilance times for each power notch</summary>
         internal string vigilancetimes = "60000";
+        /// <summary>Defines whether a vigilance intervention may be automatically released</summary>
         internal int vigilanceautorelease = 0;
+        /// <summary>Defines whether a vigilance intervention is cancellable</summary>
         internal int vigilancecancellable = 0;
         internal double vigilancedelay1 = 3000;
         internal double vigilancedelay2 = 3000;
+        /// <summary>The panel index for the vigilance lamp</summary>
         internal int vigilancelamp = -1;
+        /// <summary>Stores whether a Drivers Reminder Appliance [DRA] is fitted</summary>
         internal int draenabled = -1;
+        /// <summary>Defines the starting state for the DRA</summary>
         internal int drastartstate = -1;
+        /// <summary>The panel index for the DRA</summary>
         internal int draindicator = -1;
+        /// <summary>Defines whether the vigilance timer can be reset by any key, or only the vigilance key</summary>
         internal int independantvigilance = 0;
+        /// <summary>The speed below which vigilance is inactive</summary>
         internal double vigilanceinactivespeed = 0;
         /// <summary>Timers</summary>
         internal double overspeedtimer;
@@ -48,6 +63,7 @@ namespace Plugin
         internal double deadmansbraketimer;
 
         //Sound Indicies
+        /// <summary>The sound index for the audible vigilance alarm</summary>
         internal int vigilancealarm = -1;
 
 

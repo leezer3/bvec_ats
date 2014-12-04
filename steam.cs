@@ -110,12 +110,14 @@ namespace Plugin {
         internal double injectorrate = 100;
         /// <summary>The number of pressure units used per second at maximum regulator</summary>
         internal double regulatorpressureuse = 32;
+        /// <summary>The time taken in milliseconds to increase the cutoff by one step</summary>
         internal double cutoffchangespeed = 40;
-        internal double cutoffchangetest = 1;
+        /// <summary>The starting boiler water level</summary>
         internal double boilerstartwaterlevel = -1;
         /// <summary>The pressure at which the boiler blowoff will operate</summary>
         internal double blowoffpressure = 21000;
         internal string heatingrate = "0";
+        /// <summary>The number of fuel units added per second whilst fuelling</summary>
         internal double fuelfillspeed = 50;
         /// <summary>The capacity of the fuel tanks</summary>
         internal double fuelcapacity = 20000;
@@ -174,9 +176,9 @@ namespace Plugin {
         internal int injectorclanksound = -1;
         /// <summary>The sound index played when the boiler blows off excess pressure</summary>
         internal int blowoffsound = -1;
-        /// <summary>The panel index triggered played when the boiler blows off excess pressure</summary>
+        /// <summary>The panel index shown whilst the boiler blows off excess pressure</summary>
         internal int blowoffindicator = -1;
-
+        /// <summary>The sound index played when an injector is toggled on or off</summary>
 	    internal bool injectorclank;
 
         //Used to run the blowoff timer
