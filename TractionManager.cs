@@ -342,10 +342,13 @@ namespace Plugin
 
             if (tractionmanager.brakedemanded == true)
             {
-                if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
+                if (Train.AWS != null)
                 {
-                    data.DebugMessage = "EB Brakes demanded by AWS System";
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                    if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
+                    {
+                        data.DebugMessage = "EB Brakes demanded by AWS System";
+                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                    }
                 }
                 else if (Train.overspeedtripped == true)
                 {
@@ -357,10 +360,15 @@ namespace Plugin
                     data.DebugMessage = "EB Brakes demanded by deadman's handle";
                     data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                 }
-                else if (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand || Train.TPWS.SafetyState == TPWS.SafetyStates.BrakeDemandAcknowledged || Train.TPWS.SafetyState == TPWS.SafetyStates.BrakesAppliedCountingDown)
-                {
-                    data.DebugMessage = "EB Brakes demanded by TPWS Device";
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                else if (Train.TPWS != null)
+                {              
+                    if (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand ||
+                        Train.TPWS.SafetyState == TPWS.SafetyStates.BrakeDemandAcknowledged ||
+                        Train.TPWS.SafetyState == TPWS.SafetyStates.BrakesAppliedCountingDown)
+                    {
+                        data.DebugMessage = "EB Brakes demanded by TPWS Device";
+                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                    }
                 }
                 else if (doorlock == true)
                 {
@@ -380,9 +388,28 @@ namespace Plugin
                         data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                     }
                 }
+                if (Train.SCMT != null)
+                {
+                    if (SCMT.EBDemanded == true)
+                    {
+                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                        data.DebugMessage = "EB Brakes demanded by SCMT Safety System";
+                    }
+                }
                 else
                 {
                     data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                }
+            }
+            else if (Train.SCMT != null)
+            {
+                if (SCMT.brakeNotchDemanded != 0 && SCMT.brakeNotchDemanded > Train.Handles.BrakeNotch)
+                {
+                    data.Handles.BrakeNotch = SCMT.brakeNotchDemanded;
+                }
+                else
+                {
+                    data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
                 }
             }
             else

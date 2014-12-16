@@ -64,6 +64,8 @@ namespace Plugin {
                                 }
                                 catch (Exception)
                                 {
+                                    properties.FailureReason = "An error occured whilst attempting to upgrade the OS_ATS configuration.";
+                                    return false;
                                 }
                             }
                         }

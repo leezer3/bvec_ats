@@ -60,7 +60,7 @@ namespace Plugin
         /// <summary>The total capacity of the fuel tanks</summary>
         internal double fuelcapacity = 20000;
         /// <summary>The behaviour when the reverser is placed into neutral with the train in motion</summary>
-        internal double reversercontrol = 0;
+        internal int reversercontrol = 0;
         /// <summary>A comma separated list of the heating rates for each throttle notch</summary>
         internal string heatingrate = "0";
         /// <summary>The total number of fuel units filled per second whilst fuelling is active</summary>
@@ -113,6 +113,14 @@ namespace Plugin
         /// <summary>The sound index played whilst the motor is revving in netural</summary>
         internal int motorsound = -1;
 
+        internal int sunoavv = -1;
+        internal static int sunoconsavv = -1;
+        internal static int sunosottofondo = -1;
+        internal static int sunoarr = -1;
+        internal static int sunoimpvel = -1;
+        internal static int sunoscmton = -1;
+        internal static int sunoconfdati = -1;
+
         //Arrays
         /// <summary>An array storing the ratio for all the train's gears</summary>
         int[] geararray;
@@ -149,6 +157,9 @@ namespace Plugin
         //Indicators
         internal static Indicator Abbanco;
         internal static Indicator ConsAvviam;
+        internal static Indicator AvariaGen;
+        internal static Indicator Avviam;
+        internal static Indicator Arresto;
 
         //Three timers triggered by the SCMT self-test sequence
         //Self-test timer??
@@ -159,6 +170,10 @@ namespace Plugin
         internal static Timer timerScariche;
         //SCMT Self-test lights timers
         internal static Timer timerRitSpegscmt;
+        //Battery Timer
+        internal static Timer BatteryTimer;
+        //Starter Timer
+        internal static Timer StarterTimer;
 
         internal static bool flagspiascmt;
         //Exhaust sequence??
@@ -182,13 +197,7 @@ namespace Plugin
         /// <summary>Stores the timer value for the dynometer</summary>
         internal static double dynometertimer;
         /// <summary>Stores whether the battery timer is currently active</summary>
-        internal static bool batterytimer_active;
-        /// <summary>Stores the timer value for the battery timer</summary>
-        internal static double batterytimer_timer;
-        /// <summary>Stores whether the starter is currently active</summary>
-        internal static bool starter_active;
-        /// <summary>Stores the timer value for the starter</summary>
-        internal static double starter_timer;
+        
         /// <summary>Stores whether the set speed system is currently active</summary>
         internal bool setspeed_active;
         /// <summary>The current set speed</summary>
@@ -650,17 +659,27 @@ namespace Plugin
             //Handles the starter motor
             if (flagavv == true)
             {
-                if (starter_active == true)
+                if (StarterTimer.TimerActive == true)
                 {
-                    starter_timer += data.ElapsedTime.Milliseconds;
-                    if (starter_timer > 2000)
+                    StarterTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                    if (StarterTimer.TimeElapsed > 2000)
                     {
                         Avv = true;
                         //Play SUNOAVV
+                        if (sunoavv != -1)
+                        {
+                            SoundManager.Play(sunoavv, 1.0, 1.0, false);
+                        }
                         //Play SUONOSOTTOFONDO looping
-                        //Blink indicator AvariaGen
-                        //Then show
-                        batterytimer_timer = 0.0;
+                        if (sunosottofondo != -1)
+                        {
+                            SoundManager.Play(sunosottofondo, 1.0, 1.0, true);
+                        }
+
+                        BatteryTimer.TimerActive = true;
+                        BatteryTimer.TimeElapsed = 0.0;
+                        AvariaGen.IndicatorState = IndicatorStates.Flashing;
+                        AvariaGen.Lit = false;
                     }
 
                     if (Avv == true && (SCMT.testscmt == 4 || SCMT.testscmt == 0))
@@ -672,13 +691,13 @@ namespace Plugin
                         }
                     }
 
-                    if (batterytimer_active == true)
+                    if (BatteryTimer.TimerActive == true)
                     {
-                        batterytimer_timer += data.ElapsedTime.Milliseconds;
-                        if (batterytimer_timer > 3000)
+                        BatteryTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (BatteryTimer.TimeElapsed > 3000)
                         {
                             BatteryVoltage = 29;
-                            batterytimer_active = false;
+                            BatteryTimer.TimerActive = false;
                         }
                     }
                 }
@@ -1081,6 +1100,57 @@ namespace Plugin
                     }
                 }
             }
+            {
+                //Indicators
+                if (Abbanco.PanelIndex != -1)
+                {
+                    if (Abbanco.IndicatorState == IndicatorStates.Solid)
+                    {
+                        Abbanco.Lit = true;
+                    }
+                    else if (Abbanco.IndicatorState == IndicatorStates.Flashing)
+                    {
+                        Abbanco.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (Abbanco.TimeElapsed > 1000)
+                        {
+                            if (Abbanco.Lit == true)
+                            {
+                                Abbanco.Lit = false;
+                            }
+                            else
+                            {
+                                Abbanco.Lit = true;
+                            }
+                            Abbanco.TimeElapsed = 0.0;
+                        }
+                    }
+
+                }
+                if (ConsAvviam.PanelIndex != -1)
+                {
+                    if (ConsAvviam.IndicatorState == IndicatorStates.Solid)
+                    {
+                        ConsAvviam.Lit = true;
+                    }
+                    else if (ConsAvviam.IndicatorState == IndicatorStates.Flashing)
+                    {
+                        ConsAvviam.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (ConsAvviam.TimeElapsed > 1000)
+                        {
+                            if (ConsAvviam.Lit == true)
+                            {
+                                ConsAvviam.Lit = false;
+                            }
+                            else
+                            {
+                                ConsAvviam.Lit = true;
+                            }
+                            Abbanco.TimeElapsed = 0.0;
+                        }
+                    }
+
+                }
+            }
         }
 
         /// <summary>Triggers the gear change sound</summary>
@@ -1147,9 +1217,7 @@ namespace Plugin
             {
                 if (ChiaveBanco == false)
                 {
-                    Abbanco.FlashOnce = true;
-                    Abbanco.FlashInterval = 1000;
-
+                    Abbanco.IndicatorState = IndicatorStates.Flashing;
                     //Show waiting indicator
                     AttessaTimer.TimeElapsed = 0;
                 }
@@ -1160,7 +1228,10 @@ namespace Plugin
 
                 ChiaveBanco = false;
                 //Play key turned to bench and start permission sound
-                //SUONOCONSAVV
+                if (sunoconsavv != -1)
+                {
+                    SoundManager.Play(sunoconsavv, 1.0, 1.0, false);
+                }
             }
         }
 
@@ -1172,30 +1243,43 @@ namespace Plugin
             {
                 ConsAvv = true;
                 //Play key turned to bench and start permission sound
-                //SUONOCONSAVV
+                if (sunoconsavv != -1)
+                {
+                    SoundManager.Play(sunoconsavv, 1.0, 1.0, false);
+                }
             }
             else if (ConsAvv == true && ChiaveBanco == true)
             {
                 ConsAvv = false;
                 //Play key turned to bench and start permission sound
-                //SUONOCONSAVV
+                if (sunoconsavv != -1)
+                {
+                    SoundManager.Play(sunoconsavv, 1.0, 1.0, false);
+                }
             }
 
             if (ConsAvv == false && Avv == true)
             {
                 Avv = false;
                 SCMT_Traction.gear = 0;
-                //Stop SUONOSOTTOFONDO
-                //Play SUONOARR
+                if (sunosottofondo != -1)
+                {
+                    SoundManager.Play(sunosottofondo, 1.0, 1.0, false);
+                }
+                if (sunoarr != -1)
+                {
+                    SoundManager.Play(sunoarr, 1.0, 1.0, false);
+                }
                 BatteryVoltage = 23;
-                //Blink AvaraiaGen
-                //Then show
-
+                AvariaGen.IndicatorState = IndicatorStates.Flashing;
+                AvariaGen.Lit = true;
+                
                 //Set indcontgiri [Tachometer]
                 //indgas [Digital fuel gauge?]
                 // to -50
                 indattesa = -1;
                 AttessaTimer.TimeElapsed = 0;
+                AttessaTimer.TimerActive = true;
 
             }
         }
@@ -1208,10 +1292,10 @@ namespace Plugin
             if (ConsAvv == true && Avv == false && reverserposition == 0 && indlcm == 0 && indattesa == 0)
             {
                 flagavv = true;
-                if (starter_active == false)
+                if (StarterTimer.TimerActive == false)
                 {
-                    starter_active = true;
-                    starter_timer = 0;
+                    StarterTimer.TimerActive = true;
+                    StarterTimer.TimeElapsed = 0.0;
                 }
             }
         }
@@ -1219,17 +1303,18 @@ namespace Plugin
         /// <summary>Call from the traction manager when the engine start key is released</summary>
         internal static void AvviamentoReleased()
         {
-            //Blink indicator Avviam
-            //Then show
+            Avviam.IndicatorState = IndicatorStates.Flashing;
+            Avviam.Lit = false;
             flagavv = false;
-            starter_active = false;
+            StarterTimer.TimerActive = false;
         }
 
         /// <summary>Call from the traction manager when the engine shutdown key is pressed</summary>
         internal static void Spegnimento()
         {
             //Blink indicator Arresto
-            //Then show
+            Arresto.IndicatorState = IndicatorStates.Flashing;
+            Arresto.Lit = true;
             if (Avv == true)
             {
                 //Stop SUONOSOTTOFONDO
@@ -1241,9 +1326,10 @@ namespace Plugin
                 //Set indcontgiri [Tachometer]
                 //indgas [Digital fuel gauge?]
                 // to -50
-                //Blink AvaraiaGen
-                //Then show
-                indattesa = -1;
+                AvariaGen.IndicatorState = IndicatorStates.Flashing;
+                AvariaGen.Lit = true;
+                indattesa = 1;
+                AttessaTimer.TimerActive = true;
                 AttessaTimer.TimeElapsed = 0;
             }
         }
@@ -1251,8 +1337,8 @@ namespace Plugin
         /// <summary>Call from the traction manager when the engine shutdown key is released</summary>
         internal static void SpegnimentoReleased()
         {
-            //Blink indicator Arresto
-            //Then show
+            Arresto.IndicatorState = IndicatorStates.Flashing;
+            Arresto.Lit = false;
         }
 
         /// <summary>Call from the traction manager when the LCM Up key is pressed</summary>
@@ -1261,7 +1347,10 @@ namespace Plugin
             if (indlcm < 8)
             {
                 indlcm += 1;
-                //Play sunoimpvel
+                if (sunoimpvel != -1)
+                {
+                    SoundManager.Play(sunoimpvel, 1.0, 1.0, false);
+                }
                 lcm = true;
             }
 
@@ -1277,7 +1366,10 @@ namespace Plugin
             if (indlcm > 0)
             {
                 indlcm -= 1;
-                //Play sunoimpvel
+                if (sunoimpvel != -1)
+                {
+                    SoundManager.Play(sunoimpvel, 1.0, 1.0, false);
+                }
                 //Set power handle to the indlcm value
             }
 
@@ -1300,18 +1392,30 @@ namespace Plugin
                 SCMTtesttimer.TimeElapsed = 0;
                 timertestpulsanti.TimeElapsed = 0;
                 timerScariche.TimeElapsed = 0;
-                //Play sumoconsavv
-                //Play sunoscmton
+                if (sunoconsavv != -1)
+                {
+                    SoundManager.Play(sunoconsavv, 1.0, 1.0, false);
+                }
+                if (sunoscmton != -1)
+                {
+                    SoundManager.Play(sunoscmton, 1.0, 1.0, false);
+                }
             }
             else if (SCMT.testscmt == 2 && Train.trainspeed == 0)
             {
                 SCMT.testscmt = 3;
-                //Play sunoconfdati
+                if (sunoconfdati != -1)
+                {
+                    SoundManager.Play(sunoconfdati, 1.0, 1.0, false);
+                }
             }
             else if (SCMT.testscmt == 3 && Train.trainspeed == 0)
             {
                 SCMT.testscmt = 4;
-                //Play sunoconfdati
+                if (sunoconfdati != -1)
+                {
+                    SoundManager.Play(sunoconfdati, 1.0, 1.0, false);
+                }
                 timerRitSpegscmt.TimeElapsed = 0;
             }
             else if (SCMT.testscmt == 4 && Train.trainspeed == 0)
@@ -1321,7 +1425,10 @@ namespace Plugin
                     SCMT.testscmt = 0;
                     flagspiascmt = false;
                     SCMT.SCMT_Alert = true;
-                    //Play sunoconsavv
+                    if (sunoconsavv != -1)
+                    {
+                        SoundManager.Play(sunoconsavv, 1.0, 1.0, false);
+                    }
                     seqScarico = 0;
                     timerRitSpegscmt.TimerActive = false;
                 }
@@ -1331,7 +1438,10 @@ namespace Plugin
                 SCMT.testscmt = 0;
                 flagspiascmt = false;
                 SCMT.SCMT_Alert = true;
-                //Play sunoconsavv
+                if (sunoconsavv != -1)
+                {
+                    SoundManager.Play(sunoconsavv, 1.0, 1.0, false);
+                }
                 seqScarico = 0;
             }
         }

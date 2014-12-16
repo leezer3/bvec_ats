@@ -71,7 +71,7 @@ namespace Plugin
         //We can now rearm I think
         internal bool flagriarmo;
 
-        internal int brakeNotchDemanded;
+        internal static int brakeNotchDemanded;
         internal SCMT_Traction.Timer SpiabluTimer;
         internal SCMT_Traction.Timer SpiaRossiTimer;
         internal SCMT_Traction.Timer StopTimer;
@@ -80,12 +80,22 @@ namespace Plugin
         internal SCMT_Traction.Timer SrTimer;
         internal SCMT_Traction.Timer OverrideTimer;
         internal SCMT_Traction.Timer AlarmTimer;
+
+        internal SCMT_Traction.Indicator BrakeDemandIndicator;
+        internal SCMT_Traction.Indicator TrainstopOverrideIndicator;
+        internal SCMT_Traction.Indicator TraintripIndicator;
+
+        internal bool awsStop;
+        internal bool awsRelease;
+        internal bool tpwsRelease;
+
+        internal static bool EBDemanded;
         //Sound Variables
         /// <summary>Trigger sound for SCMT safety device.</summary>
         internal int sound_scmt = -1;
 
         internal bool trainstop;
-        internal bool tpwsRelease;
+
 
         internal SCMT(Train train)
         {
@@ -142,12 +152,12 @@ namespace Plugin
                             {
                                 if (SCMT_Traction.indlcm >= 0 && Train.Handles.PowerNotch == 0)
                                 {
-                                    data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                                    brakeNotchDemanded = Train.Handles.BrakeNotch;
                                     data.Handles.PowerNotch = SCMT_Traction.indlcm;
                                 }
                                 else
                                 {
-                                    data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                                    brakeNotchDemanded = Train.Handles.BrakeNotch;
                                     data.Handles.PowerNotch = Train.Handles.PowerNotch;
                                 }
                                 tgtraz_active = false;
@@ -193,10 +203,13 @@ namespace Plugin
                                     {
                                         //Start brake demand indicator blinking?
                                         //Or does it want the indicator state toggled?
+                                        BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Flashing;
+                                        
                                     }
                                     else
                                     {
                                         //Stop brake demand indicator blinking?
+                                        BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
                                     }
                                     riarmoTimer.TimeElapsed = 0;
                                 }
@@ -206,6 +219,7 @@ namespace Plugin
                                 {
                                     riarmoTimer.TimerActive = false;
                                     //Start brake demand indicator blinking?
+                                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Flashing;
                                     flagriarmo = true;
                                 }
                             }
@@ -222,6 +236,7 @@ namespace Plugin
                                     {
                                         OverrideTimer.TimerActive = false;
                                         //Set stop override indicator
+                                        TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
                                         //Set sr indicator
                                         beacon_type = 4402;
                                         beacon_speed = 30;
@@ -240,16 +255,16 @@ namespace Plugin
                                         }
                                         //Play looped overspeed alarm- Probably need to disable the base BVEC_ATS overspeed alarm
                                         spiarossi_act = true;
-                                        if (Train.Handles.BrakeNotch == 0 && data.Handles.BrakeNotch == 0 && testscmt == 4)
+                                        if (Train.Handles.BrakeNotch == 0 && brakeNotchDemanded == 0 && testscmt == 4)
                                         {
                                             data.Handles.PowerNotch = 0;
-                                            data.Handles.BrakeNotch = 1;
+                                            brakeNotchDemanded = 1;
                                             tgtraz_active = true;
                                         }
                                         if (Train.trainspeed > maxspeed + 4)
                                         {
                                             //Play looped TPWSWarningSound
-                                            //Needs new traction manager SCMT brake function- Call EB
+                                            EBDemanded = true;
                                             trainstop = true;
                                             StopTimer.TimerActive = false;
                                             tpwsRelease = false;
@@ -271,8 +286,9 @@ namespace Plugin
                                 else
                                 {
                                     //Blink traintrip indicator
+                                    TraintripIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Flashing;
                                     //Play tpwswarningsound looping
-                                    //Traction manager SCMT EB
+                                    EBDemanded = true;
                                     trainstop = true;
                                     StopTimer.TimerActive = false;
                                     tpwsRelease = false;
@@ -288,16 +304,6 @@ namespace Plugin
                                     }
                                 }
                             }
-                        }
-                    }
-                    //Show brakedemand indicator
-                    //Show traintrip indicator
-                    //Show stopoverrideindicator
-                    if (Train.trainspeed == 0)
-                    {
-                        if (StopTimer.TimerActive == false)
-                        {
-                            StopTimer.TimerActive = true;
                         }
                     }
                 }
@@ -337,7 +343,56 @@ namespace Plugin
                         }
                     }
                 }
+                //Brake Demand Indicator
+                if (BrakeDemandIndicator.PanelIndex != -1)
+                {
+                    if (BrakeDemandIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
+                    {
+                        BrakeDemandIndicator.Lit = true;
+                    }
+                    else if (BrakeDemandIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
+                    {
+                        BrakeDemandIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (BrakeDemandIndicator.TimeElapsed > 500)
+                        {
+                            if (BrakeDemandIndicator.Lit == true)
+                            {
+                                BrakeDemandIndicator.Lit = false;
+                            }
+                            else
+                            {
+                                BrakeDemandIndicator.Lit = true;
+                            }
+                            BrakeDemandIndicator.TimeElapsed = 0.0;
+                        }
+                    }
+                }
 
+                //Trainstop Override Indicator
+                //Repurposed by SCMT
+                if (TrainstopOverrideIndicator.PanelIndex != -1)
+                {
+                    if (TrainstopOverrideIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
+                    {
+                        TrainstopOverrideIndicator.Lit = true;
+                    }
+                    else if (TrainstopOverrideIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
+                    {
+                        TrainstopOverrideIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (TrainstopOverrideIndicator.TimeElapsed > 500)
+                        {
+                            if (TrainstopOverrideIndicator.Lit == true)
+                            {
+                                TrainstopOverrideIndicator.Lit = false;
+                            }
+                            else
+                            {
+                                TrainstopOverrideIndicator.Lit = true;
+                            }
+                            TrainstopOverrideIndicator.TimeElapsed = 0.0;
+                        }
+                    }
+                }
 
             }
         }

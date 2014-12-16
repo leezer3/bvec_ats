@@ -13,13 +13,19 @@
         /// <summary>Represents a flashing indicator.</summary>
         internal struct Indicator
         {
-
-            public bool Flashing;
-            public bool FlashOnce;
-            public bool Solid;
+            public int PanelIndex;
             public double FlashInterval;
             public double TimeElapsed;
-            public int IndicatorState;
+            public bool Lit;
+            public IndicatorStates IndicatorState;
+
+        }
+
+        internal enum IndicatorStates
+        {
+            Off = 0,
+            Flashing = 1,
+            Solid = 2,
         }
     }
 }
