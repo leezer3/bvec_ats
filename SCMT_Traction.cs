@@ -17,6 +17,8 @@ namespace Plugin
         /// <summary>The underlying train.</summary>
         private readonly Train Train;
 
+        internal bool enabled;
+
         //Internal Variables
         internal double heatingtimer;
         internal double currentheat;
@@ -323,832 +325,842 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
-            reverserposition = Train.Handles.Reverser;
-            //If reverser is put into neutral when moving, block the gears
-            if (reversercontrol != 0 && Train.trainspeed > 0 && Train.Handles.Reverser == 0)
+            if (enabled == true)
             {
-                diesel.gearsblocked = true;
-            }
-
-            if (!nogears)
-            {
-
-                //Set gear ratio for current gear
-                if (gear == 0)
+                reverserposition = Train.Handles.Reverser;
+                //If reverser is put into neutral when moving, block the gears
+                if (reversercontrol != 0 && Train.trainspeed > 0 && Train.Handles.Reverser == 0)
                 {
-                    gearratio = 0;
-                }
-                else if (gear <= geararray.Length)
-                {
-                    gearratio = geararray[gear - 1];
-                }
-                else
-                {
-                    gearratio = geararray[geararray.Length - 1];
+                    diesel.gearsblocked = true;
                 }
 
-                //Set fade in ratio for current gear
-                if (gear == 0)
+                if (!nogears)
                 {
-                    fadeinratio = 0;
-                }
-                else if (gear <= gearfadeinarray.Length)
-                {
-                    fadeinratio = gearfadeinarray[gear - 1];
-                }
-                else
-                {
-                    fadeinratio = gearfadeinarray[gearfadeinarray.Length - 1];
-                }
 
-
-                //Set fade out ratio for current gear
-                if (gear == 0)
-                {
-                    fadeoutratio = 0;
-                }
-                else if (gear >= gearfadeoutarray.Length)
-                {
-                    fadeoutratio = gearfadeoutarray[gear - 1];
-                }
-                else
-                {
-                    fadeoutratio = gearfadeoutarray[gearfadeoutarray.Length - 1];
-                }
-
-                //If the fade in and fade out ratios would make this gear not work, set them both to zero
-                if (fadeinratio + fadeoutratio >= 1000)
-                {
-                    fadeinratio = 0;
-                    fadeoutratio = 0;
-                }
-
-                //Set current revolutions per minute
-                currentrevs = Math.Max(0, Math.Min(1000, Train.trainspeed * gearratio));
-
-                //Now calculate the maximumum power notch
-                int power_limit;
-                if (currentrevs < fadeinratio)
-                {
-                    power_limit = (int)((float)currentrevs / fadeinratio * this.Train.Specs.PowerNotches);
-                }
-                else if (currentrevs > 1000 - fadeoutratio)
-                {
-                    power_limit = (int)(this.Train.Specs.PowerNotches - (float)(currentrevs - (1000 - fadeoutratio)) / fadeoutratio * this.Train.Specs.PowerNotches);
-                }
-                else
-                {
-                    power_limit = this.Train.Specs.PowerNotches;
-                }
-
-
-                //Next we need to set the gears
-                //Manual gears are handled in the KeyUp function
-                //Automatic gears are handled here
-                if (automatic == true)
-                {
-                    if (SCMT_Traction.gearsblocked == true)
+                    //Set gear ratio for current gear
+                    if (gear == 0)
                     {
-                        power_limit = 0;
-                        //Stop, drop to N with no power applied and the gears will unblock
-                        if (Train.trainspeed == 0 && Train.Handles.Reverser == 0 && Train.Handles.PowerNotch == 0)
-                        {
-                            SCMT_Traction.gearsblocked = false;
-                        }
+                        gearratio = 0;
                     }
-
-                    //Test if all handles are in a position for a gear to be activated
-                    if (Train.Handles.Reverser != 0 && Train.Handles.PowerNotch != 0 && Train.Handles.BrakeNotch == 0)
+                    else if (gear <= geararray.Length)
                     {
-                        gearplayed = false;
-                        //If we aren't in gear & gears aren't blocked
-                        if (gear == 0 && SCMT_Traction.gearsblocked == false)
-                        {
-                            gear = 1;
-                            gearchange();
-                            Train.diesel.gearloop = false;
-                            Train.diesel.gearlooptimer = 0.0;
-                        }
-
-                        if (currentrevs > Math.Min((2000 - fadeoutratio) / 2, 800) && gear < totalgears - 1)
-                        {
-                            gear++;
-                            gearchange();
-                            Train.diesel.gearloop = false;
-                            Train.diesel.gearlooptimer = 0.0;
-                        }
-                        //Change down
-                        else if (currentrevs < Math.Max(fadeinratio / 2, 200) && gear > 1)
-                        {
-                            gear--;
-                            gearchange();
-                            Train.diesel.gearloop = false;
-                            Train.diesel.gearlooptimer = 0.0;
-                        }
-
-
-                    }
-                    //If we're stopped with the power off, drop out of gear
-                    else if (Train.Handles.Reverser == 0 && Train.Handles.PowerNotch == 0)
-                    {
-                        gear = 0;
-                        if (gearplayed == false)
-                        {
-                            gearchange();
-                            gearplayed = true;
-                        }
-
-                    }
-                }
-
-                //Finally set the power notch
-                if (gear != 0)
-                {
-                    data.Handles.PowerNotch = Math.Min(power_limit, this.Train.Handles.PowerNotch);
-                }
-                else
-                {
-                    data.Handles.PowerNotch = 0;
-                }
-
-                //Check we've got a maximum temperature and a heating part
-                if (overheat != 0 && heatingpart != 0)
-                {
-                    this.heatingtimer += data.ElapsedTime.Milliseconds;
-                    if (heatingpart == 0 | overheat == 0)
-                    {
-                        //No heating part or overheat temperature not set
-                        this.temperature = 0.0;
-                        this.heatingtimer = 0.0;
-                    }
-                    else if (heatingpart == 1)
-                    {
-                        //Heats based upon power notch
-                        if (this.heatingtimer > 1000)
-                        {
-                            this.heatingtimer = 0.0;
-                            if (Train.Handles.PowerNotch == 0)
-                            {
-                                currentheat = heatingarray[0];
-                            }
-                            else if (Train.Handles.PowerNotch < heatingarray.Length)
-                            {
-                                currentheat = heatingarray[Train.Handles.PowerNotch];
-                            }
-                            else
-                            {
-                                currentheat = heatingarray[heatingarray.Length - 1];
-                            }
-                            temperature += currentheat;
-                        }
+                        gearratio = geararray[gear - 1];
                     }
                     else
                     {
-                        //Heats based upon RPM
-                        int revspercentage = currentrevs / 100;
-                        if (this.heatingtimer > 1000)
+                        gearratio = geararray[geararray.Length - 1];
+                    }
+
+                    //Set fade in ratio for current gear
+                    if (gear == 0)
+                    {
+                        fadeinratio = 0;
+                    }
+                    else if (gear <= gearfadeinarray.Length)
+                    {
+                        fadeinratio = gearfadeinarray[gear - 1];
+                    }
+                    else
+                    {
+                        fadeinratio = gearfadeinarray[gearfadeinarray.Length - 1];
+                    }
+
+
+                    //Set fade out ratio for current gear
+                    if (gear == 0)
+                    {
+                        fadeoutratio = 0;
+                    }
+                    else if (gear >= gearfadeoutarray.Length)
+                    {
+                        fadeoutratio = gearfadeoutarray[gear - 1];
+                    }
+                    else
+                    {
+                        fadeoutratio = gearfadeoutarray[gearfadeoutarray.Length - 1];
+                    }
+
+                    //If the fade in and fade out ratios would make this gear not work, set them both to zero
+                    if (fadeinratio + fadeoutratio >= 1000)
+                    {
+                        fadeinratio = 0;
+                        fadeoutratio = 0;
+                    }
+
+                    //Set current revolutions per minute
+                    currentrevs = Math.Max(0, Math.Min(1000, Train.trainspeed*gearratio));
+
+                    //Now calculate the maximumum power notch
+                    int power_limit;
+                    if (currentrevs < fadeinratio)
+                    {
+                        power_limit = (int) ((float) currentrevs/fadeinratio*this.Train.Specs.PowerNotches);
+                    }
+                    else if (currentrevs > 1000 - fadeoutratio)
+                    {
+                        power_limit =
+                            (int)
+                                (this.Train.Specs.PowerNotches -
+                                 (float) (currentrevs - (1000 - fadeoutratio))/fadeoutratio*
+                                 this.Train.Specs.PowerNotches);
+                    }
+                    else
+                    {
+                        power_limit = this.Train.Specs.PowerNotches;
+                    }
+
+
+                    //Next we need to set the gears
+                    //Manual gears are handled in the KeyUp function
+                    //Automatic gears are handled here
+                    if (automatic == true)
+                    {
+                        if (SCMT_Traction.gearsblocked == true)
                         {
+                            power_limit = 0;
+                            //Stop, drop to N with no power applied and the gears will unblock
+                            if (Train.trainspeed == 0 && Train.Handles.Reverser == 0 && Train.Handles.PowerNotch == 0)
+                            {
+                                SCMT_Traction.gearsblocked = false;
+                            }
+                        }
+
+                        //Test if all handles are in a position for a gear to be activated
+                        if (Train.Handles.Reverser != 0 && Train.Handles.PowerNotch != 0 &&
+                            Train.Handles.BrakeNotch == 0)
+                        {
+                            gearplayed = false;
+                            //If we aren't in gear & gears aren't blocked
+                            if (gear == 0 && SCMT_Traction.gearsblocked == false)
+                            {
+                                gear = 1;
+                                gearchange();
+                                Train.diesel.gearloop = false;
+                                Train.diesel.gearlooptimer = 0.0;
+                            }
+
+                            if (currentrevs > Math.Min((2000 - fadeoutratio)/2, 800) && gear < totalgears - 1)
+                            {
+                                gear++;
+                                gearchange();
+                                Train.diesel.gearloop = false;
+                                Train.diesel.gearlooptimer = 0.0;
+                            }
+                                //Change down
+                            else if (currentrevs < Math.Max(fadeinratio/2, 200) && gear > 1)
+                            {
+                                gear--;
+                                gearchange();
+                                Train.diesel.gearloop = false;
+                                Train.diesel.gearlooptimer = 0.0;
+                            }
+
+
+                        }
+                            //If we're stopped with the power off, drop out of gear
+                        else if (Train.Handles.Reverser == 0 && Train.Handles.PowerNotch == 0)
+                        {
+                            gear = 0;
+                            if (gearplayed == false)
+                            {
+                                gearchange();
+                                gearplayed = true;
+                            }
+
+                        }
+                    }
+
+                    //Finally set the power notch
+                    if (gear != 0)
+                    {
+                        data.Handles.PowerNotch = Math.Min(power_limit, this.Train.Handles.PowerNotch);
+                    }
+                    else
+                    {
+                        data.Handles.PowerNotch = 0;
+                    }
+
+                    //Check we've got a maximum temperature and a heating part
+                    if (overheat != 0 && heatingpart != 0)
+                    {
+                        this.heatingtimer += data.ElapsedTime.Milliseconds;
+                        if (heatingpart == 0 | overheat == 0)
+                        {
+                            //No heating part or overheat temperature not set
+                            this.temperature = 0.0;
                             this.heatingtimer = 0.0;
-                            if (revspercentage == 0)
-                            {
-                                currentheat = heatingarray[0];
-                            }
-                            else if (revspercentage < heatingarray.Length)
-                            {
-                                currentheat = heatingarray[revspercentage];
-                            }
-                            else
-                            {
-                                currentheat = heatingarray[heatingarray.Length - 1];
-                            }
-                            temperature += currentheat;
                         }
-                    }
-
-                    //Keep temperature below max & above zero
-                    if (temperature > overheat)
-                    {
-                        temperature = overheat;
-                        if (overheatresult == 1)
+                        else if (heatingpart == 1)
                         {
-                            tractionmanager.demandpowercutoff();
-                            tractionmanager.overheated = true;
+                            //Heats based upon power notch
+                            if (this.heatingtimer > 1000)
+                            {
+                                this.heatingtimer = 0.0;
+                                if (Train.Handles.PowerNotch == 0)
+                                {
+                                    currentheat = heatingarray[0];
+                                }
+                                else if (Train.Handles.PowerNotch < heatingarray.Length)
+                                {
+                                    currentheat = heatingarray[Train.Handles.PowerNotch];
+                                }
+                                else
+                                {
+                                    currentheat = heatingarray[heatingarray.Length - 1];
+                                }
+                                temperature += currentheat;
+                            }
+                        }
+                        else
+                        {
+                            //Heats based upon RPM
+                            int revspercentage = currentrevs/100;
+                            if (this.heatingtimer > 1000)
+                            {
+                                this.heatingtimer = 0.0;
+                                if (revspercentage == 0)
+                                {
+                                    currentheat = heatingarray[0];
+                                }
+                                else if (revspercentage < heatingarray.Length)
+                                {
+                                    currentheat = heatingarray[revspercentage];
+                                }
+                                else
+                                {
+                                    currentheat = heatingarray[heatingarray.Length - 1];
+                                }
+                                temperature += currentheat;
+                            }
+                        }
+
+                        //Keep temperature below max & above zero
+                        if (temperature > overheat)
+                        {
+                            temperature = overheat;
+                            if (overheatresult == 1)
+                            {
+                                tractionmanager.demandpowercutoff();
+                                tractionmanager.overheated = true;
+                            }
+                        }
+                        else if (temperature < overheat && temperature > 0)
+                        {
+                            tractionmanager.resetpowercutoff();
+                            tractionmanager.overheated = false;
+                        }
+                        else if (temperature < 0)
+                        {
+                            temperature = 0;
                         }
                     }
-                    else if (temperature < overheat && temperature > 0)
-                    {
-                        tractionmanager.resetpowercutoff();
-                        tractionmanager.overheated = false;
-                    }
-                    else if (temperature < 0)
-                    {
-                        temperature = 0;
-                    }
-                }
 
-            }
-            //This section of code uses fuel
-            fuelusetimer += data.ElapsedTime.Milliseconds;
-            if (fuelusetimer > 1000)
-            {
-                fuelusetimer = 0.0;
-                if (data.Handles.PowerNotch < fuelarray.Length)
-                {
-                    fuel -= fuelarray[data.Handles.PowerNotch];
                 }
-                else
+                //This section of code uses fuel
+                fuelusetimer += data.ElapsedTime.Milliseconds;
+                if (fuelusetimer > 1000)
                 {
-                    fuel -= fuelarray[fuelarray.Length - 1];
-                }
+                    fuelusetimer = 0.0;
+                    if (data.Handles.PowerNotch < fuelarray.Length)
+                    {
+                        fuel -= fuelarray[data.Handles.PowerNotch];
+                    }
+                    else
+                    {
+                        fuel -= fuelarray[fuelarray.Length - 1];
+                    }
 
-                if (fuel <= 0)
-                {
-                    fuel = 0;
+                    if (fuel <= 0)
+                    {
+                        fuel = 0;
+                    }
                 }
-            }
-            //This section of code fills our fuel tanks
-            if (fuelling == true)
-            {
-                fuellingtimer += data.ElapsedTime.Milliseconds;
-                if (fuellingtimer > 1000)
+                //This section of code fills our fuel tanks
+                if (fuelling == true)
                 {
-                    fuellingtimer = 0.0;
-                    fuel += (int)fuelfillspeed;
+                    fuellingtimer += data.ElapsedTime.Milliseconds;
+                    if (fuellingtimer > 1000)
+                    {
+                        fuellingtimer = 0.0;
+                        fuel += (int) fuelfillspeed;
+                    }
+                    if (fuel > fuelcapacity)
+                    {
+                        fuel = (int) fuelcapacity;
+                    }
                 }
-                if (fuel > fuelcapacity)
+                //This section of code runs the gear loop sound
+                if (gearloopsound != -1 && gear != 0)
                 {
-                    fuel = (int)fuelcapacity;
+                    //Start the timer
+                    gearlooptimer += data.ElapsedTime.Milliseconds;
+                    if (gearlooptimer > gearlooptime && gearloop == false)
+                    {
+                        //Start playback and reset our conditions
+                        gearloop = true;
+                        SoundManager.Play(gearloopsound, 1.0, 1.0, true);
+                    }
+                    else if (gearloop == false)
+                    {
+                        SoundManager.Stop(gearloopsound);
+                    }
                 }
-            }
-            //This section of code runs the gear loop sound
-            if (gearloopsound != -1 && gear != 0)
-            {
-                //Start the timer
-                gearlooptimer += data.ElapsedTime.Milliseconds;
-                if (gearlooptimer > gearlooptime && gearloop == false)
-                {
-                    //Start playback and reset our conditions
-                    gearloop = true;
-                    SoundManager.Play(gearloopsound, 1.0, 1.0, true);
-                }
-                else if (gearloop == false)
+                else if (gearloopsound != -1 && gear == 0)
                 {
                     SoundManager.Stop(gearloopsound);
                 }
-            }
-            else if (gearloopsound != -1 && gear == 0)
-            {
-                SoundManager.Stop(gearloopsound);
-            }
 
-            //Start SZ_ATS handling
-            if (lcm == false && Train.Handles.PowerNotch > 0)
-            {
-                lca = true;
-            }
-            if (lcm == true && lcm_state == 0)
-            {
-                lcm = false;
-            }
-            if (lcm_state > 0 && gear != 0)
-            {
-                setspeed_active = false;
-                setpointspeed = 0;
-                lca = false;
-                lcm = true;
-            }
-            else if (gear == 0)
-            {
-                lcm = false;
-                data.Handles.PowerNotch = 0;
-            }
-
-            if (maxsetpointspeed != -1)
-            {
-                //This handles the setpoint speed function
-                if (setpointspeed == 0 && lca == true)
+                //Start SZ_ATS handling
+                if (lcm == false && Train.Handles.PowerNotch > 0)
                 {
+                    lca = true;
+                }
+                if (lcm == true && lcm_state == 0)
+                {
+                    lcm = false;
+                }
+                if (lcm_state > 0 && gear != 0)
+                {
+                    setspeed_active = false;
+                    setpointspeed = 0;
+                    lca = false;
+                    lcm = true;
+                }
+                else if (gear == 0)
+                {
+                    lcm = false;
                     data.Handles.PowerNotch = 0;
                 }
-                if (Train.trainspeed > setpointspeed && flag == 0 && setpointspeed > 0 && lca == true &&
-                    data.Handles.PowerNotch > 0)
-                {
-                    //If we've exceeded the set point speed cut power
-                    flag = 1;
-                    tractionmanager.demandpowercutoff();
-                }
-                if (Train.trainspeed > setpointspeed + 1 && flag == 1 && lca == true && data.Handles.PowerNotch > 0)
-                {
-                    //If we're continuing to accelerate, demand a brake application
-                    tractionmanager.demandbrakeapplication();
-                    flag = 2;
-                }
-                if ((Train.trainspeed < setpointspeed && flag == 2 && lca == true) ||
-                    (lca == true && flag == 2 && data.Handles.PowerNotch == 0) || (lcm == true && flag == 2))
-                {
-                    tractionmanager.resetbrakeapplication();
-                    flag = 1;
-                }
-                if ((Train.trainspeed < setpointspeed - 2 && flag == 1 && lca == true) ||
-                    (lca == true && flag == 2 && data.Handles.PowerNotch == 0) || (lcm == true && flag == 1))
-                {
-                    tractionmanager.resetpowercutoff();
-                    flag = 0;
-                }
-            }
-            //Handles the starter motor
-            if (flagavv == true)
-            {
-                if (StarterTimer.TimerActive == true)
-                {
-                    StarterTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
-                    if (StarterTimer.TimeElapsed > 2000)
-                    {
-                        Avv = true;
-                        //Play SUNOAVV
-                        if (sunoavv != -1)
-                        {
-                            SoundManager.Play(sunoavv, 1.0, 1.0, false);
-                        }
-                        //Play SUONOSOTTOFONDO looping
-                        if (sunosottofondo != -1)
-                        {
-                            SoundManager.Play(sunosottofondo, 1.0, 1.0, true);
-                        }
 
-                        BatteryTimer.TimerActive = true;
-                        BatteryTimer.TimeElapsed = 0.0;
-                        AvariaGen.IndicatorState = IndicatorStates.Flashing;
-                        AvariaGen.Lit = false;
-                    }
-
-                    if (Avv == true && (SCMT.testscmt == 4 || SCMT.testscmt == 0))
+                if (maxsetpointspeed != -1)
+                {
+                    //This handles the setpoint speed function
+                    if (setpointspeed == 0 && lca == true)
                     {
-                        if (gear == 0)
+                        data.Handles.PowerNotch = 0;
+                    }
+                    if (Train.trainspeed > setpointspeed && flag == 0 && setpointspeed > 0 && lca == true &&
+                        data.Handles.PowerNotch > 0)
+                    {
+                        //If we've exceeded the set point speed cut power
+                        flag = 1;
+                        tractionmanager.demandpowercutoff();
+                    }
+                    if (Train.trainspeed > setpointspeed + 1 && flag == 1 && lca == true && data.Handles.PowerNotch > 0)
+                    {
+                        //If we're continuing to accelerate, demand a brake application
+                        tractionmanager.demandbrakeapplication();
+                        flag = 2;
+                    }
+                    if ((Train.trainspeed < setpointspeed && flag == 2 && lca == true) ||
+                        (lca == true && flag == 2 && data.Handles.PowerNotch == 0) || (lcm == true && flag == 2))
+                    {
+                        tractionmanager.resetbrakeapplication();
+                        flag = 1;
+                    }
+                    if ((Train.trainspeed < setpointspeed - 2 && flag == 1 && lca == true) ||
+                        (lca == true && flag == 2 && data.Handles.PowerNotch == 0) || (lcm == true && flag == 1))
+                    {
+                        tractionmanager.resetpowercutoff();
+                        flag = 0;
+                    }
+                }
+                //Handles the starter motor
+                if (flagavv == true)
+                {
+                    if (StarterTimer.TimerActive == true)
+                    {
+                        StarterTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (StarterTimer.TimeElapsed > 2000)
                         {
-                            lcm = true;
-                            gear = 1;
-                        }
-                    }
-
-                    if (BatteryTimer.TimerActive == true)
-                    {
-                        BatteryTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
-                        if (BatteryTimer.TimeElapsed > 3000)
-                        {
-                            BatteryVoltage = 29;
-                            BatteryTimer.TimerActive = false;
-                        }
-                    }
-                }
-            }
-            //Handles the dynameter
-            {
-                dynometertimer += data.ElapsedTime.Milliseconds;
-                if (dynometertimer > 200)
-                {
-                    v1 = v2;
-                    v2 = Train.trainspeed;
-                    if ((v1 != 0 && v2 != 0 && Train.Handles.BrakeNotch < 1 && (Train.Handles.PowerNotch > 0 || Train.Handles.PowerNotch > 0)) ||
-                        (v1 != 0 && v2 != 0 && Train.Handles.BrakeNotch >= 1) && Train.Handles.Reverser != 0 && Train.trainspeed > 10)
-                    {
-                        dynometer = (((v2 - v1)/3.6))/0.2*100;
-                        if (dynometer < -100)
-                        {
-                            dynometer = -100;
-                        }
-                    }
-                    else
-                    {
-                        dynometer = 0;
-                    }
-                    dynometertimer = 0.0;
-                }
-            }
-            //Handles the trolley brakes
-            {
-                if (flagcarr == false && Train.Handles.BrakeNotch >= 1 && data.Vehicle.BcPressure > 5000)
-                {
-                    trolleybraketimer += data.ElapsedTime.Milliseconds;
-                    if (trolleybraketimer > 1000)
-                    {
-                        flagcarr = true;
-                        //Set INDCARRFREN to 1
-                        trolleybraketimer = 0;
-                    }
-                }
-                else if (flagcarr == true && Train.Handles.BrakeNotch < 1 && data.Vehicle.BcPressure < 5000)
-                {
-                    trolleybraketimer += data.ElapsedTime.Milliseconds;
-                    if (trolleybraketimer > 2500)
-                    {
-                        //Set INDCARRFREN to 0
-                        flagcarr = false;
-                        trolleybraketimer = 0;
-                    }
-                }
-            }
-            //Handles the diagnostic display at under 4km/h
-            {
-                if (Train.trainspeed > 4 && flagmonitor == false)
-                {
-                    //Set INDSPEGNMON to 1
-                    flagmonitor = true;
-                }
-                else if (Train.trainspeed == 0 && flagmonitor == true)
-                {
-                    //Set INDSPEGNMON to 0
-                    flagmonitor = false;
-                }
-            }
-
-            //Handles the revs counter
-            {
-                if (Avv == true)
-                {
-                    if (data.Handles.BrakeNotch == 0)
-                    {
-                        if (Train.trainspeed < 40)
-                        {
-                            indcontgiri = (int)dynometer + 10;
-                            indgas = (int)dynometer + 110;
-                        }
-                        else
-                        {
-                            indcontgiri = (int)dynometer;
-                            indgas = (int) dynometer + 50;
-                        }
-                    }
-                    else if (data.Handles.BrakeNotch > 0)
-                    {
-                        if ((int) Math.Abs(dynometer) < 130)
-                        {
-                            indcontgiri = (int) Math.Abs(dynometer) + 40;
-                            indgas = (int) Math.Abs(dynometer) + 120;
-                        }
-                        else
-                        {
-                            indcontgiri = 150;
-                            indgas = 230;
-                        }
-                    }
-                }
-            }
-            //Literal translation appears to be faith/ belief?
-            //Stops brake notch #1 intervening at certain speeds
-            {
-                if (Train.Handles.BrakeNotch == 1 && Train.trainspeed < 40 && flagfe == false)
-                {
-                    data.Handles.BrakeNotch = 0;
-                }
-                else if (Train.Handles.BrakeNotch == 1 && Train.trainspeed >= 40)
-                {
-                    data.Handles.BrakeNotch = 1;
-                    flagfe = true;
-                }
-                else if (Train.Handles.BrakeNotch == 1 && Train.trainspeed <= 35 && flagfe == true)
-                {
-                    data.Handles.BrakeNotch = 0;
-                    flagfe = false;
-                }
-            }
-            //Waiting function
-            {
-                if (indattesa == 1)
-                {
-                    if (AttessaTimer.TimerActive == true)
-                    {
-                        AttessaTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
-                        if (AttessaTimer.TimeElapsed > 7000)
-                        {
-                            indattesa = 0;
-                            AttessaTimer.TimerActive = false;
-                        }
-                    }
-                }
-            }
-            //Self-test function
-            {
-                if (SCMTtesttimer.TimerActive == true)
-                {
-                    if (SCMT.testscmt == 1)
-                    {
-                        SCMTtesttimer.TimeElapsed += data.ElapsedTime.Milliseconds;
-                        if (SCMTtesttimer.TimeElapsed > 35000)
-                        {
-                            SCMTtesttimer.TimeElapsed = 0;
-                            SCMT.testscmt = 2;
-                            SCMTtesttimer.TimerActive = false;
-                        }
-                    }
-                }
-                if (timerScariche.TimerActive == true)
-                {
-                    timerScariche.TimeElapsed += data.ElapsedTime.Milliseconds;
-                    if (seqScarico == 0)
-                    {
-                        if (timerScariche.TimeElapsed > 100)
-                        {
-                            timerScariche.TimeElapsed = 0;
-                            data.Handles.BrakeNotch = 7;
-                            seqScarico = 1;
-                        }
-                    }
-                    if (seqScarico == 1)
-                    {
-                        if (timerScariche.TimeElapsed > 10000)
-                        {
-                            timerScariche.TimeElapsed = 0;
-                            data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
-                            if (Train.Handles.BrakeNotch > 2)
+                            Avv = true;
+                            //Play SUNOAVV
+                            if (sunoavv != -1)
                             {
-                                SCMT.testscmt = 5;
-                                //Stop sunoscmton from playing
+                                SoundManager.Play(sunoavv, 1.0, 1.0, false);
+                            }
+                            //Play SUONOSOTTOFONDO looping
+                            if (sunosottofondo != -1)
+                            {
+                                SoundManager.Play(sunosottofondo, 1.0, 1.0, true);
+                            }
+
+                            BatteryTimer.TimerActive = true;
+                            BatteryTimer.TimeElapsed = 0.0;
+                            AvariaGen.IndicatorState = IndicatorStates.Flashing;
+                            AvariaGen.Lit = false;
+                        }
+
+                        if (Avv == true && (SCMT.testscmt == 4 || SCMT.testscmt == 0))
+                        {
+                            if (gear == 0)
+                            {
+                                lcm = true;
+                                gear = 1;
+                            }
+                        }
+
+                        if (BatteryTimer.TimerActive == true)
+                        {
+                            BatteryTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                            if (BatteryTimer.TimeElapsed > 3000)
+                            {
+                                BatteryVoltage = 29;
+                                BatteryTimer.TimerActive = false;
+                            }
+                        }
+                    }
+                }
+                //Handles the dynameter
+                {
+                    dynometertimer += data.ElapsedTime.Milliseconds;
+                    if (dynometertimer > 200)
+                    {
+                        v1 = v2;
+                        v2 = Train.trainspeed;
+                        if ((v1 != 0 && v2 != 0 && Train.Handles.BrakeNotch < 1 &&
+                             (Train.Handles.PowerNotch > 0 || Train.Handles.PowerNotch > 0)) ||
+                            (v1 != 0 && v2 != 0 && Train.Handles.BrakeNotch >= 1) && Train.Handles.Reverser != 0 &&
+                            Train.trainspeed > 10)
+                        {
+                            dynometer = (((v2 - v1)/3.6))/0.2*100;
+                            if (dynometer < -100)
+                            {
+                                dynometer = -100;
+                            }
+                        }
+                        else
+                        {
+                            dynometer = 0;
+                        }
+                        dynometertimer = 0.0;
+                    }
+                }
+                //Handles the trolley brakes
+                {
+                    if (flagcarr == false && Train.Handles.BrakeNotch >= 1 && data.Vehicle.BcPressure > 5000)
+                    {
+                        trolleybraketimer += data.ElapsedTime.Milliseconds;
+                        if (trolleybraketimer > 1000)
+                        {
+                            flagcarr = true;
+                            //Set INDCARRFREN to 1
+                            trolleybraketimer = 0;
+                        }
+                    }
+                    else if (flagcarr == true && Train.Handles.BrakeNotch < 1 && data.Vehicle.BcPressure < 5000)
+                    {
+                        trolleybraketimer += data.ElapsedTime.Milliseconds;
+                        if (trolleybraketimer > 2500)
+                        {
+                            //Set INDCARRFREN to 0
+                            flagcarr = false;
+                            trolleybraketimer = 0;
+                        }
+                    }
+                }
+                //Handles the diagnostic display at under 4km/h
+                {
+                    if (Train.trainspeed > 4 && flagmonitor == false)
+                    {
+                        //Set INDSPEGNMON to 1
+                        flagmonitor = true;
+                    }
+                    else if (Train.trainspeed == 0 && flagmonitor == true)
+                    {
+                        //Set INDSPEGNMON to 0
+                        flagmonitor = false;
+                    }
+                }
+
+                //Handles the revs counter
+                {
+                    if (Avv == true)
+                    {
+                        if (data.Handles.BrakeNotch == 0)
+                        {
+                            if (Train.trainspeed < 40)
+                            {
+                                indcontgiri = (int) dynometer + 10;
+                                indgas = (int) dynometer + 110;
+                            }
+                            else
+                            {
+                                indcontgiri = (int) dynometer;
+                                indgas = (int) dynometer + 50;
+                            }
+                        }
+                        else if (data.Handles.BrakeNotch > 0)
+                        {
+                            if ((int) Math.Abs(dynometer) < 130)
+                            {
+                                indcontgiri = (int) Math.Abs(dynometer) + 40;
+                                indgas = (int) Math.Abs(dynometer) + 120;
+                            }
+                            else
+                            {
+                                indcontgiri = 150;
+                                indgas = 230;
+                            }
+                        }
+                    }
+                }
+                //Literal translation appears to be faith/ belief?
+                //Stops brake notch #1 intervening at certain speeds
+                {
+                    if (Train.Handles.BrakeNotch == 1 && Train.trainspeed < 40 && flagfe == false)
+                    {
+                        data.Handles.BrakeNotch = 0;
+                    }
+                    else if (Train.Handles.BrakeNotch == 1 && Train.trainspeed >= 40)
+                    {
+                        data.Handles.BrakeNotch = 1;
+                        flagfe = true;
+                    }
+                    else if (Train.Handles.BrakeNotch == 1 && Train.trainspeed <= 35 && flagfe == true)
+                    {
+                        data.Handles.BrakeNotch = 0;
+                        flagfe = false;
+                    }
+                }
+                //Waiting function
+                {
+                    if (indattesa == 1)
+                    {
+                        if (AttessaTimer.TimerActive == true)
+                        {
+                            AttessaTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                            if (AttessaTimer.TimeElapsed > 7000)
+                            {
+                                indattesa = 0;
+                                AttessaTimer.TimerActive = false;
+                            }
+                        }
+                    }
+                }
+                //Self-test function
+                {
+                    if (SCMTtesttimer.TimerActive == true)
+                    {
+                        if (SCMT.testscmt == 1)
+                        {
+                            SCMTtesttimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                            if (SCMTtesttimer.TimeElapsed > 35000)
+                            {
+                                SCMTtesttimer.TimeElapsed = 0;
+                                SCMT.testscmt = 2;
                                 SCMTtesttimer.TimerActive = false;
-                                timertestpulsanti.TimerActive = false;
+                            }
+                        }
+                    }
+                    if (timerScariche.TimerActive == true)
+                    {
+                        timerScariche.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (seqScarico == 0)
+                        {
+                            if (timerScariche.TimeElapsed > 100)
+                            {
+                                timerScariche.TimeElapsed = 0;
+                                data.Handles.BrakeNotch = 7;
+                                seqScarico = 1;
+                            }
+                        }
+                        if (seqScarico == 1)
+                        {
+                            if (timerScariche.TimeElapsed > 10000)
+                            {
+                                timerScariche.TimeElapsed = 0;
+                                data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                                if (Train.Handles.BrakeNotch > 2)
+                                {
+                                    SCMT.testscmt = 5;
+                                    //Stop sunoscmton from playing
+                                    SCMTtesttimer.TimerActive = false;
+                                    timertestpulsanti.TimerActive = false;
+                                    timerScariche.TimerActive = false;
+                                }
+                                seqScarico = 2;
+                            }
+                        }
+                        if (seqScarico == 2)
+                        {
+                            if (timerScariche.TimeElapsed > 4000)
+                            {
+                                timerScariche.TimeElapsed = 0;
+                                data.Handles.BrakeNotch = 5;
+                                seqScarico = 3;
+                            }
+                        }
+                        if (seqScarico == 3)
+                        {
+                            if (timerScariche.TimeElapsed > 1000)
+                            {
+                                timerScariche.TimeElapsed = 0;
+                                data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                                seqScarico = 4;
+                            }
+                        }
+                        if (seqScarico == 4)
+                        {
+                            if (timerScariche.TimeElapsed > 500)
+                            {
+                                timerScariche.TimeElapsed = 0;
+                                data.Handles.BrakeNotch = 5;
+                                seqScarico = 5;
+                            }
+                        }
+                        if (seqScarico == 5)
+                        {
+                            if (timerScariche.TimeElapsed > 1000)
+                            {
+                                timerScariche.TimeElapsed = 0;
+                                data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                                seqScarico = 6;
+                            }
+                        }
+                        if (seqScarico == 6)
+                        {
+                            if (timerScariche.TimeElapsed > 10500)
+                            {
+                                timerScariche.TimeElapsed = 0;
+                                data.Handles.BrakeNotch = 5;
+                                seqScarico = 7;
+                            }
+                        }
+                        if (seqScarico == 7)
+                        {
+                            if (timerScariche.TimeElapsed > 500)
+                            {
+                                timerScariche.TimeElapsed = 0;
+                                data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                                seqScarico = 8;
+                            }
+                        }
+                        if (seqScarico == 8)
+                        {
+                            if (timerScariche.TimeElapsed > 500)
+                            {
+                                timerScariche.TimeElapsed = 0;
+                                data.Handles.BrakeNotch = 5;
+                                seqScarico = 9;
+                            }
+                        }
+                        if (seqScarico == 9)
+                        {
+                            if (timerScariche.TimeElapsed > 300)
+                            {
+                                timerScariche.TimeElapsed = 0;
+                                data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
+                                seqScarico = 10;
                                 timerScariche.TimerActive = false;
                             }
-                            seqScarico = 2;
                         }
                     }
-                    if (seqScarico == 2)
+                    if (timerRitSpegscmt.TimerActive == true)
                     {
-                        if (timerScariche.TimeElapsed > 4000)
+                        timerRitSpegscmt.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (timerRitSpegscmt.TimeElapsed > 6000)
                         {
-                            timerScariche.TimeElapsed = 0;
-                            data.Handles.BrakeNotch = 5;
-                            seqScarico = 3;
+                            timerRitSpegscmt.TimerActive = false;
                         }
-                    }
-                    if (seqScarico == 3)
-                    {
-                        if (timerScariche.TimeElapsed > 1000)
-                        {
-                            timerScariche.TimeElapsed = 0;
-                            data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
-                            seqScarico = 4;
-                        }
-                    }
-                    if (seqScarico == 4)
-                    {
-                        if (timerScariche.TimeElapsed > 500)
-                        {
-                            timerScariche.TimeElapsed = 0;
-                            data.Handles.BrakeNotch = 5;
-                            seqScarico = 5;
-                        }
-                    }
-                    if (seqScarico == 5)
-                    {
-                        if (timerScariche.TimeElapsed > 1000)
-                        {
-                            timerScariche.TimeElapsed = 0;
-                            data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
-                            seqScarico = 6;
-                        }
-                    }
-                    if (seqScarico == 6)
-                    {
-                        if (timerScariche.TimeElapsed > 10500)
-                        {
-                            timerScariche.TimeElapsed = 0;
-                            data.Handles.BrakeNotch = 5;
-                            seqScarico = 7;
-                        }
-                    }
-                    if (seqScarico == 7)
-                    {
-                        if (timerScariche.TimeElapsed > 500)
-                        {
-                            timerScariche.TimeElapsed = 0;
-                            data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
-                            seqScarico = 8;
-                        }
-                    }
-                    if (seqScarico == 8)
-                    {
-                        if (timerScariche.TimeElapsed > 500)
-                        {
-                            timerScariche.TimeElapsed = 0;
-                            data.Handles.BrakeNotch = 5;
-                            seqScarico = 9;
-                        }
-                    }
-                    if (seqScarico == 9)
-                    {
-                        if (timerScariche.TimeElapsed > 300)
-                        {
-                            timerScariche.TimeElapsed = 0;
-                            data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
-                            seqScarico = 10;
-                            timerScariche.TimerActive = false;
-                        }
-                    }
-                }
-                if (timerRitSpegscmt.TimerActive == true)
-                {
-                    timerRitSpegscmt.TimeElapsed += data.ElapsedTime.Milliseconds;
-                    if (timerRitSpegscmt.TimeElapsed > 6000)
-                    {
-                        timerRitSpegscmt.TimerActive = false;
-                    }
 
+                    }
                 }
-            }
-            //Runs the buttons during self-test
-            {
-                if (timertestpulsanti.TimerActive == true)
+                //Runs the buttons during self-test
                 {
-                    timertestpulsanti.TimeElapsed += data.ElapsedTime.Milliseconds;
-                    if (testpulsanti == 8)
+                    if (timertestpulsanti.TimerActive == true)
                     {
-                        if(timertestpulsanti.TimeElapsed > 23000)
+                        timertestpulsanti.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (testpulsanti == 8)
                         {
-                            timertestpulsanti.TimeElapsed = 0;
-                            testpulsanti = 0;
+                            if (timertestpulsanti.TimeElapsed > 23000)
+                            {
+                                timertestpulsanti.TimeElapsed = 0;
+                                testpulsanti = 0;
+                            }
                         }
-                    }
-                    if (testpulsanti == 0)
-                    {
-                        if (timertestpulsanti.TimeElapsed > 150)
+                        if (testpulsanti == 0)
                         {
-                            timertestpulsanti.TimeElapsed = 0;
-                            testpulsanti = 1;
+                            if (timertestpulsanti.TimeElapsed > 150)
+                            {
+                                timertestpulsanti.TimeElapsed = 0;
+                                testpulsanti = 1;
+                            }
                         }
-                    }
-                    if (testpulsanti == 1)
-                    {
-                        if (timertestpulsanti.TimeElapsed > 150)
+                        if (testpulsanti == 1)
                         {
-                            timertestpulsanti.TimeElapsed = 0;
-                            testpulsanti = 2;
+                            if (timertestpulsanti.TimeElapsed > 150)
+                            {
+                                timertestpulsanti.TimeElapsed = 0;
+                                testpulsanti = 2;
+                            }
                         }
-                    }
-                    if (testpulsanti == 2)
-                    {
-                        if (timertestpulsanti.TimeElapsed > 150)
+                        if (testpulsanti == 2)
                         {
-                            timertestpulsanti.TimeElapsed = 0;
-                            testpulsanti = 3;
+                            if (timertestpulsanti.TimeElapsed > 150)
+                            {
+                                timertestpulsanti.TimeElapsed = 0;
+                                testpulsanti = 3;
+                            }
                         }
-                    }
-                    if (testpulsanti == 3)
-                    {
-                        if (timertestpulsanti.TimeElapsed > 150)
+                        if (testpulsanti == 3)
                         {
-                            timertestpulsanti.TimeElapsed = 0;
-                            testpulsanti = 4;
+                            if (timertestpulsanti.TimeElapsed > 150)
+                            {
+                                timertestpulsanti.TimeElapsed = 0;
+                                testpulsanti = 4;
+                            }
                         }
-                    }
-                    if (testpulsanti == 4)
-                    {
-                        if (timertestpulsanti.TimeElapsed > 150)
+                        if (testpulsanti == 4)
                         {
-                            timertestpulsanti.TimeElapsed = 0;
-                            testpulsanti = 5;
+                            if (timertestpulsanti.TimeElapsed > 150)
+                            {
+                                timertestpulsanti.TimeElapsed = 0;
+                                testpulsanti = 5;
+                            }
                         }
-                    }
-                    if (testpulsanti == 5)
-                    {
-                        if (timertestpulsanti.TimeElapsed > 150)
+                        if (testpulsanti == 5)
                         {
-                            timertestpulsanti.TimeElapsed = 0;
-                            testpulsanti = 6;
+                            if (timertestpulsanti.TimeElapsed > 150)
+                            {
+                                timertestpulsanti.TimeElapsed = 0;
+                                testpulsanti = 6;
+                            }
                         }
-                    }
-                    if (testpulsanti == 6)
-                    {
-                        if (timertestpulsanti.TimeElapsed > 150)
+                        if (testpulsanti == 6)
                         {
-                            timertestpulsanti.TimeElapsed = 0;
-                            testpulsanti = 7;
+                            if (timertestpulsanti.TimeElapsed > 150)
+                            {
+                                timertestpulsanti.TimeElapsed = 0;
+                                testpulsanti = 7;
+                            }
                         }
-                    }
-                    if (testpulsanti == 7)
-                    {
-                        if (timertestpulsanti.TimeElapsed > 150)
+                        if (testpulsanti == 7)
                         {
-                            timertestpulsanti.TimerActive = false;
-                            testpulsanti = 8;
+                            if (timertestpulsanti.TimeElapsed > 150)
+                            {
+                                timertestpulsanti.TimerActive = false;
+                                testpulsanti = 8;
+                            }
                         }
                     }
                 }
-            }
 
-            {
-                //Panel Variables
-                if (!nogears)
                 {
-                    if (gearindicator != -1)
+                    //Panel Variables
+                    if (!nogears)
                     {
-                        this.Train.Panel[(gearindicator)] = gear;
-                    }
-                    if (tachometer != -1)
-                    {
-                        this.Train.Panel[(tachometer)] = currentrevs;
-                    }
-                }
-                if (automaticindicator != -1)
-                {
-                    if (automatic == false)
-                    {
-                        this.Train.Panel[(automaticindicator)] = 0;
-                    }
-                    else
-                    {
-                        this.Train.Panel[(automaticindicator)] = 1;
-                    }
-                }
-                if (thermometer != -1)
-                {
-                    this.Train.Panel[(thermometer)] = (int)temperature;
-                }
-                if (overheatindicator != -1)
-                {
-                    if (temperature > overheatwarn)
-                    {
-                        this.Train.Panel[(overheatindicator)] = 1;
-                    }
-                    else
-                    {
-                        this.Train.Panel[(overheatindicator)] = 0;
-                    }
-                }
-                if (fuelindicator != -1)
-                {
-                    this.Train.Panel[(fuelindicator)] = fuel;
-                }
-                if (fuelfillindicator != -1)
-                {
-                    if (fuelling == true)
-                    {
-                        this.Train.Panel[(fuelfillindicator)] = 1;
-                    }
-                }
-            }
-            {
-                //Sounds
-                if (overheatalarm != -1)
-                {
-                    if (temperature > overheatwarn)
-                    {
-                        SoundManager.Play(overheatalarm, 1.0, 1.0, true);
-                    }
-                    else
-                    {
-                        SoundManager.Stop(overheatalarm);
-                    }
-                }
-            }
-            {
-                //Indicators
-                if (Abbanco.PanelIndex != -1)
-                {
-                    if (Abbanco.IndicatorState == IndicatorStates.Solid)
-                    {
-                        Abbanco.Lit = true;
-                    }
-                    else if (Abbanco.IndicatorState == IndicatorStates.Flashing)
-                    {
-                        Abbanco.TimeElapsed += data.ElapsedTime.Milliseconds;
-                        if (Abbanco.TimeElapsed > 1000)
+                        if (gearindicator != -1)
                         {
-                            if (Abbanco.Lit == true)
-                            {
-                                Abbanco.Lit = false;
-                            }
-                            else
-                            {
-                                Abbanco.Lit = true;
-                            }
-                            Abbanco.TimeElapsed = 0.0;
+                            this.Train.Panel[(gearindicator)] = gear;
+                        }
+                        if (tachometer != -1)
+                        {
+                            this.Train.Panel[(tachometer)] = currentrevs;
                         }
                     }
-
-                }
-                if (ConsAvviam.PanelIndex != -1)
-                {
-                    if (ConsAvviam.IndicatorState == IndicatorStates.Solid)
+                    if (automaticindicator != -1)
                     {
-                        ConsAvviam.Lit = true;
-                    }
-                    else if (ConsAvviam.IndicatorState == IndicatorStates.Flashing)
-                    {
-                        ConsAvviam.TimeElapsed += data.ElapsedTime.Milliseconds;
-                        if (ConsAvviam.TimeElapsed > 1000)
+                        if (automatic == false)
                         {
-                            if (ConsAvviam.Lit == true)
-                            {
-                                ConsAvviam.Lit = false;
-                            }
-                            else
-                            {
-                                ConsAvviam.Lit = true;
-                            }
-                            Abbanco.TimeElapsed = 0.0;
+                            this.Train.Panel[(automaticindicator)] = 0;
+                        }
+                        else
+                        {
+                            this.Train.Panel[(automaticindicator)] = 1;
                         }
                     }
+                    if (thermometer != -1)
+                    {
+                        this.Train.Panel[(thermometer)] = (int) temperature;
+                    }
+                    if (overheatindicator != -1)
+                    {
+                        if (temperature > overheatwarn)
+                        {
+                            this.Train.Panel[(overheatindicator)] = 1;
+                        }
+                        else
+                        {
+                            this.Train.Panel[(overheatindicator)] = 0;
+                        }
+                    }
+                    if (fuelindicator != -1)
+                    {
+                        this.Train.Panel[(fuelindicator)] = fuel;
+                    }
+                    if (fuelfillindicator != -1)
+                    {
+                        if (fuelling == true)
+                        {
+                            this.Train.Panel[(fuelfillindicator)] = 1;
+                        }
+                    }
+                }
+                {
+                    //Sounds
+                    if (overheatalarm != -1)
+                    {
+                        if (temperature > overheatwarn)
+                        {
+                            SoundManager.Play(overheatalarm, 1.0, 1.0, true);
+                        }
+                        else
+                        {
+                            SoundManager.Stop(overheatalarm);
+                        }
+                    }
+                }
+                {
+                    //Indicators
+                    if (Abbanco.PanelIndex != -1)
+                    {
+                        if (Abbanco.IndicatorState == IndicatorStates.Solid)
+                        {
+                            Abbanco.Lit = true;
+                        }
+                        else if (Abbanco.IndicatorState == IndicatorStates.Flashing)
+                        {
+                            Abbanco.TimeElapsed += data.ElapsedTime.Milliseconds;
+                            if (Abbanco.TimeElapsed > 1000)
+                            {
+                                if (Abbanco.Lit == true)
+                                {
+                                    Abbanco.Lit = false;
+                                }
+                                else
+                                {
+                                    Abbanco.Lit = true;
+                                }
+                                Abbanco.TimeElapsed = 0.0;
+                            }
+                        }
 
+                    }
+                    if (ConsAvviam.PanelIndex != -1)
+                    {
+                        if (ConsAvviam.IndicatorState == IndicatorStates.Solid)
+                        {
+                            ConsAvviam.Lit = true;
+                        }
+                        else if (ConsAvviam.IndicatorState == IndicatorStates.Flashing)
+                        {
+                            ConsAvviam.TimeElapsed += data.ElapsedTime.Milliseconds;
+                            if (ConsAvviam.TimeElapsed > 1000)
+                            {
+                                if (ConsAvviam.Lit == true)
+                                {
+                                    ConsAvviam.Lit = false;
+                                }
+                                else
+                                {
+                                    ConsAvviam.Lit = true;
+                                }
+                                Abbanco.TimeElapsed = 0.0;
+                            }
+                        }
+
+                    }
                 }
             }
         }

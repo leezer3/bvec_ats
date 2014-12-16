@@ -160,6 +160,9 @@ namespace Plugin {
         /// <summary>SCMT Traction Modelling System</summary>
         internal SCMT_Traction SCMT_Traction;
 
+        /// <summary>CAWS System</summary>
+        internal CAWS CAWS;
+
         /// <summary>Startup Self-Test Manager</summary>
         internal StartupSelfTestManager StartupSelfTestManager;
 
@@ -201,8 +204,10 @@ namespace Plugin {
             this.tractionmanager = new tractionmanager(this);
             this.StartupSelfTestManager = new StartupSelfTestManager(this);
             this.AWS = new AWS(this);
+            this.CAWS = new CAWS(this);
             this.TPWS = new TPWS(this);
             this.SCMT = new SCMT(this);
+            this.SCMT_Traction = new SCMT_Traction(this);
             this.Windscreen = new Windscreen(this);
             this.Animations = new Animations(this);
 			string[] lines = File.ReadAllLines(file, Encoding.UTF8);
@@ -240,6 +245,10 @@ namespace Plugin {
 			                    break;
                             case "scmt":
                                 this.SCMT.enabled = true;
+			                    this.SCMT_Traction.enabled = true;
+                                break;
+                            case "caws":
+                                this.CAWS.enabled = true;
                                 break;
 			                case "interlocks":
 			                    //Twiddle
@@ -775,6 +784,27 @@ namespace Plugin {
                                             break;
 			                        }
 			                        break;
+                                    //Handles CAWS
+                               case "caws":
+                                    switch (key)
+                                    {
+                                        case "aspectindicator":
+                                            InternalFunctions.ValidateIndex(value, ref CAWS.AspectIndicator, key);
+                                            break;
+                                        case "ebindicator":
+                                            InternalFunctions.ValidateIndex(value, ref CAWS.EBIndicator, key);
+                                            break;
+                                        case "acknowledgementindicator":
+                                            InternalFunctions.ValidateIndex(value, ref CAWS.AcknowlegementIndicator, key);
+                                            break;
+                                        case "downgradesound":
+                                            InternalFunctions.ValidateIndex(value, ref CAWS.DowngradeSound, key);
+                                            break;
+                                        case "upgradesound":
+                                            InternalFunctions.ValidateIndex(value, ref CAWS.UpgradeSound, key);
+                                            break;
+                                    }
+                                    break;
 			                    case "aws":
 			                        switch (key)
 			                        {
@@ -1141,7 +1171,17 @@ namespace Plugin {
 
             if (this.SCMT != null)
             {
-                devices.Add(this.TPWS);
+                devices.Add(this.SCMT);
+            }
+
+            if (this.SCMT_Traction != null)
+            {
+                devices.Add(this.SCMT_Traction);
+            }
+
+            if (this.CAWS != null)
+            {
+                devices.Add(this.CAWS);
             }
 
             if (this.Windscreen != null)
@@ -1486,6 +1526,10 @@ namespace Plugin {
                     //SCMT Safety System Beacons
                     if (this.SCMT.enabled == true)
                     {
+                        if (SCMT.testscmt == 0)
+                        {
+                            return;
+                        }
                         if (beacon.Type == 44002 || beacon.Type == 44003 || beacon.Type == 44004)
                         {
                             //Trigger a SCMT alert
@@ -1503,12 +1547,15 @@ namespace Plugin {
                                         //Set the SCMT last beacon type recieved to 44004
                                         SCMT.beacon_type = 44004;
                                         //Reset the blue light timer for SCMT
+                                        SCMT.SpiabluTimer.TimerActive = true;
+                                        SCMT.SpiabluTimer.TimeElapsed = 0;
                                     }
                                     break;
                                 case 44003:
                                     SCMT.beacon_speed = SCMT.speed;
                                     SCMT.beacon_type = 44004;
-                                    //Turn off blue light timer & turn off blue light
+                                    SCMT.SpiabluTimer.TimerActive = false;
+                                    SCMT.spiablue_act = false;
                                     break;
                                 case 44004:
                                     SCMT.speed = beacon.Optional;

@@ -247,12 +247,7 @@ namespace Plugin {
 		/// <param name="signal">Signal information per section. In the array, index 0 is the current section, index 1 the upcoming section, and so on.</param>
 		/// <remarks>The signal array is guaranteed to have at least one element. When accessing elements other than index 0, you must check the bounds of the array first.</remarks>
 		public void SetSignal(SignalData[] signal) {
-			/*
-             int aspect = signal[0].Aspect;
-			if (aspect != this.LastAspect) {
-				// TODO: Your old SetSignal code goes here.
-			}
-             */
+            this.Train.SetSignal(signal);
 		}
 		
 

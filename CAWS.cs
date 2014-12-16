@@ -1,0 +1,190 @@
+﻿using OpenBveApi.Runtime;
+
+namespace Plugin
+{
+    internal class CAWS : Device
+    {
+        /// <summary>The underlying train.</summary>
+        private readonly Train Train;
+        
+        // --- members ---
+        internal bool enabled;
+
+        /// <summary>The current aspect.</summary>
+        private int CurrentAspect = 0;
+
+        /// <summary>The location of the next signal.</summary>
+        private double NextSignalLocation = double.MaxValue;
+
+        /// <summary>The aspect of the next signal.</summary>
+        private int NextSignalAspect = 0;
+
+        /// <summary>The countdown for the acknowledgement switch. If zero, the switch is inactive.</summary>
+        internal static double AcknowledgementCountdown = 0.0;
+
+        /// <summary>The countdown for the emergency brake operation. If zero, the brakes are inactive.</summary>
+        internal double EmergencyBrakeCountdown = 0.0;
+
+        /// <summary>The panel index of the CAWS aspect indcator.</summary>
+        internal int AspectIndicator = -1;
+
+        /// <summary>The sound index of the CAWS downgrade sound.</summary>
+        internal int DowngradeSound = -1;
+
+        /// <summary>The sound index of the CAWS upgrade sound.</summary>
+        internal int UpgradeSound = -1;
+
+        /// <summary>The panel index of the CAWS EB Indicator.</summary>
+        internal int EBIndicator = -1;
+
+        /// <summary>The panel index of the CAWS EB Indicator.</summary>
+        internal int AcknowlegementIndicator = -1;
+
+        /// <summary>The current vehicle state.</summary>
+        private VehicleState CurrentVehicleState = null;
+
+        internal CAWS(Train train)
+        {
+            this.Train = train;
+        }
+
+        internal override void Initialize(InitializationModes mode)
+        {
+            AcknowledgementCountdown = 0.0;
+            EmergencyBrakeCountdown = 0.0;
+        }
+
+        /// <summary>Is called every frame.</summary>
+        /// <param name="data">The data.</param>
+        /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
+        internal override void Elapse(ElapseData data, ref bool blocking)
+        {
+            if (this.enabled)
+            {
+                bool playDowngradeSound = false;
+                CurrentVehicleState = data.Vehicle;
+                if (NextSignalLocation < double.MaxValue)
+                {
+                    double distance = NextSignalLocation - data.Vehicle.Location;
+                    if (distance < 350.0)
+                    {
+                        if (NextSignalAspect < CurrentAspect)
+                        {
+                            AcknowledgementCountdown = 7.0;
+                        }
+                        else if (NextSignalAspect > CurrentAspect)
+                        {
+                            if (UpgradeSound != -1)
+                            {
+                                SoundManager.Play(UpgradeSound, 1.0, 1.0, false);
+                            }
+                        }
+                        CurrentAspect = NextSignalAspect;
+                        NextSignalLocation = double.MaxValue;
+                    }
+                }
+                if (data.ElapsedTime.Seconds > 0.0 & data.ElapsedTime.Seconds < 1.0)
+                {
+                    if (EmergencyBrakeCountdown > 0.0)
+                    {
+                        EmergencyBrakeCountdown -= data.ElapsedTime.Seconds;
+                        if (EmergencyBrakeCountdown < 0.0)
+                        {
+                            EmergencyBrakeCountdown = 0.0;
+                            AcknowledgementCountdown = 0.0;
+                            tractionmanager.resetbrakeapplication();
+                        }
+                        else
+                        {
+                            if (EBIndicator != -1)
+                            {
+                                this.Train.Panel[EBIndicator] = 1;
+                            }
+                            tractionmanager.demandbrakeapplication();
+                        }
+                    }
+                    else if (AcknowledgementCountdown > 0.0)
+                    {
+                        AcknowledgementCountdown -= data.ElapsedTime.Seconds;
+                        if (AcknowledgementCountdown < 0.0)
+                        {
+                            AcknowledgementCountdown = 0.0;
+                            EmergencyBrakeCountdown = 60.0;
+                        }
+                        else
+                        {
+                            if (AcknowlegementIndicator != -1)
+                            {
+                                this.Train.Panel[AcknowlegementIndicator] = 1;
+                            }
+                            playDowngradeSound = true;
+                        }
+                    }
+                }
+                //Panel Indicators
+                if (AspectIndicator != -1)
+                {
+                    this.Train.Panel[AspectIndicator] = CurrentAspect;
+                }
+                //Sounds
+                if (playDowngradeSound)
+                {
+                    if (DowngradeSound != -1)
+                    {
+                        SoundManager.Play(DowngradeSound, 1.0, 1.0, true);
+                    }
+                }
+                else
+                {
+                    if (DowngradeSound != -1)
+                    {
+                        SoundManager.Stop(DowngradeSound);
+                    }
+                }
+            }
+        }
+
+        /// <summary>Is called to inform about signals.</summary>
+        /// <param name="signal">The signal data.</param>
+        internal override void SetSignal(SignalData[] signal)
+        {
+
+            int newAspect;
+            if (signal.Length >= 2)
+            {
+                if (signal[1].Distance < 350.0)
+                {
+                    newAspect = signal[1].Aspect;
+                    NextSignalLocation = double.MaxValue;
+                }
+                else
+                {
+                    newAspect = signal[0].Aspect;
+                    NextSignalLocation = CurrentVehicleState != null ? CurrentVehicleState.Location + signal[1].Distance : double.MaxValue;
+                    NextSignalAspect = signal[1].Aspect;
+                }
+            }
+            else
+            {
+                newAspect = signal[0].Aspect;
+                NextSignalLocation = double.MaxValue;
+            }
+            if (newAspect < CurrentAspect)
+            {
+                if (EmergencyBrakeCountdown == 0.0)
+                {
+                    AcknowledgementCountdown = 7.0;
+                }
+            }
+            else if (newAspect > CurrentAspect)
+            {
+                if (UpgradeSound != -1)
+                {
+                    SoundManager.Play(UpgradeSound, 1.0, 1.0, false);
+                }
+            }
+            CurrentAspect = newAspect;
+
+        }
+    }
+}

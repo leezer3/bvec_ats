@@ -84,10 +84,13 @@ namespace Plugin
         internal SCMT_Traction.Indicator BrakeDemandIndicator;
         internal SCMT_Traction.Indicator TrainstopOverrideIndicator;
         internal SCMT_Traction.Indicator TraintripIndicator;
+        internal SCMT_Traction.Indicator srIndicator;
 
         internal bool awsStop;
         internal bool awsRelease;
         internal bool tpwsRelease;
+        internal double tpwstopdelay;
+        internal double tpwsoverridelifetime;
 
         internal static bool EBDemanded;
         //Sound Variables
@@ -105,7 +108,19 @@ namespace Plugin
         //<param name="mode">The initialization mode.</param>
         internal override void Initialize(InitializationModes mode)
         {
-
+            //Load indicators default values
+            BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+            BrakeDemandIndicator.Lit = false;
+            BrakeDemandIndicator.FlashInterval = 1000;
+            TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+            TrainstopOverrideIndicator.Lit = false;
+            TrainstopOverrideIndicator.FlashInterval = 1000;
+            TraintripIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+            TraintripIndicator.Lit = false;
+            TraintripIndicator.FlashInterval = 1000;
+            srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+            srIndicator.Lit = false;
+            srIndicator.FlashInterval = 1000;
         }
 
         internal void Reinitialise(InitializationModes mode)
@@ -229,15 +244,19 @@ namespace Plugin
                                 if (SrTimer.TimeElapsed > 5000)
                                 {
                                     SrTimer.TimerActive = false;
+                                    srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                                    srIndicator.Lit = false;
                                 }
                                 if (OverrideTimer.TimerActive == true)
                                 {
                                     if (beacon_type == 4403)
                                     {
                                         OverrideTimer.TimerActive = false;
-                                        //Set stop override indicator
                                         TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
-                                        //Set sr indicator
+                                        TrainstopOverrideIndicator.Lit = false;
+                                        srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                                        srIndicator.Lit = true;
+                                        TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
                                         beacon_type = 4402;
                                         beacon_speed = 30;
                                         maxspeed = beacon_speed;
@@ -308,6 +327,41 @@ namespace Plugin
                     }
                 }
 
+                if (Train.trainspeed == 0)
+                {
+                    if (StopTimer.TimerActive == false)
+                    {
+                        StopTimer.TimerActive = true;
+                        StopTimer.TimeElapsed = 0;
+                    }
+                    else
+                    {
+                        if (awsRelease == true)
+                        {
+                            //Set AWS indicator to -1
+                            awsStop = false;
+                            awsRelease = false;
+                        }
+                        if (tpwsRelease == true && StopTimer.TimeElapsed > tpwstopdelay*1000)
+                        {
+                            tractionmanager.resetbrakeapplication();
+                            BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                            BrakeDemandIndicator.Lit = false;
+                            tpwsRelease = false;
+                            trainstop = false;
+                        }
+                        
+                    }
+                }
+                if (OverrideTimer.TimerActive == true)
+                {
+                    OverrideTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                    if (OverrideTimer.TimeElapsed > tpwsoverridelifetime*1000)
+                    {
+                        TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                        TrainstopOverrideIndicator.Lit = false;
+                    }
+                }
 
                 //Set Panel Lights
                 if (spiaSCMT != -1)

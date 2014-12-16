@@ -281,7 +281,8 @@ namespace Plugin
                 //This section of code should delete drops
                 if (heldwipers == false)
                 {
-                    int dropremove = Math.Min(49, (int)(currentwiperposition / (100 / numberofdrops)));
+                    //int dropremove = Math.Min(49, (int)(currentwiperposition / (100 / numberofdrops)));
+                    int dropremove = Math.Min(numberofdrops -1,(int)(currentwiperposition / (100.0 / numberofdrops)));
                     droparray[dropremove] = false;
                 }
 
@@ -294,6 +295,10 @@ namespace Plugin
                         if (x == true)
                         {
                             this.Train.Panel[(i + dropstartindex - 1)] = 1;
+                        }
+                        else
+                        {
+                            this.Train.Panel[(i + dropstartindex - 1)] = 0;
                         }
                     }
                 }
