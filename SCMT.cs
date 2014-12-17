@@ -2,6 +2,7 @@
  * Relicenced under BSD 2-Clause with permission
  */
 
+using System.Globalization;
 using OpenBveApi.Runtime;
 
 namespace Plugin
@@ -96,14 +97,15 @@ namespace Plugin
         //Sound Variables
         /// <summary>Trigger sound for SCMT safety device.</summary>
         internal int sound_scmt = -1;
-
         internal bool trainstop;
-
+        
 
         internal SCMT(Train train)
         {
             this.Train = train;
         }
+
+        
 
         //<param name="mode">The initialization mode.</param>
         internal override void Initialize(InitializationModes mode)
@@ -121,6 +123,7 @@ namespace Plugin
             srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
             srIndicator.Lit = false;
             srIndicator.FlashInterval = 1000;
+            
         }
 
         internal void Reinitialise(InitializationModes mode)

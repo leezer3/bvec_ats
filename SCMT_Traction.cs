@@ -148,8 +148,12 @@ namespace Plugin
         internal static bool ConsAvv;
         internal static bool ChiaveBanco;
         internal static int BatteryVoltage;
+        /// <summary>The current position of the LCM</summary>
         internal static int indlcm;
+        /// <summary>The panel indicator for the LCM</summary>
+        internal int indlcm_variable = -1;
         internal static int indattesa;
+        internal int indattesa_variable = -1;
         internal static bool attessa;
         /// <summary>Waiting timer</summary>
         internal static Timer AttessaTimer;
@@ -162,6 +166,8 @@ namespace Plugin
         internal static Indicator AvariaGen;
         internal static Indicator Avviam;
         internal static Indicator Arresto;
+        internal static Indicator ImpvelSu;
+        internal static Indicator ImpvelGiu;
 
         //Three timers triggered by the SCMT self-test sequence
         //Self-test timer??
@@ -181,7 +187,10 @@ namespace Plugin
         //Exhaust sequence??
         internal static int seqScarico;
         //Test buttons
-        internal int testpulsanti;
+        /// <summary>The current state of the SCMT self-test buttons</summary>
+        internal int testpulsanti_State;
+        /// <summary>The panel index for the SCMT self-test buttons</summary>
+        internal int testpulsanti = -1;
         /// <summary>Stores the revs counter value [REFACTOR TO SEPARATE STORE WHEN PANEL IMPLEMENTED]</summary>
         internal int indcontgiri;
         /// <summary>Tachometer of some description?? [REFACTOR TO SEPARATE STORE WHEN PANEL IMPLEMENTED]</summary>
@@ -213,6 +222,12 @@ namespace Plugin
 
         internal static bool setspeedincrease_pressed;
         internal static bool setspeeddecrease_pressed;
+        
+        /// <summary>Comma separated pair of values- Setpoint speed indicator and maximum speed.</summary>
+        internal string indimpvelpressed;
+
+        internal int setpointspeed_indicator;
+        internal int indcarrfren = -1;
 
         // --- constructors ---
 
@@ -267,6 +282,30 @@ namespace Plugin
             catch
             {
                 InternalFunctions.LogError("gearfadeoutrange");
+            }
+            //Setpoint speed
+            try
+            {
+                string[] setpointarray = indimpvelpressed.Split(',');
+                switch (setpointarray.Length)
+                {
+                    case 0:
+                        setpointspeed_indicator = -1;
+                        maxsetpointspeed = 1000;
+                        break;
+                    case 1:
+                        setpointspeed_indicator = Int32.Parse(setpointarray[0], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                        maxsetpointspeed = 1000;
+                        break;
+                    default:
+                        setpointspeed_indicator = Int32.Parse(setpointarray[0], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                        maxsetpointspeed = Int32.Parse(setpointarray[1], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                        break;
+                }
+            }
+            catch
+            {
+                InternalFunctions.LogError("indimpvelpressed");
             }
 
             //Test if we have any gears
@@ -744,7 +783,6 @@ namespace Plugin
                         if (trolleybraketimer > 1000)
                         {
                             flagcarr = true;
-                            //Set INDCARRFREN to 1
                             trolleybraketimer = 0;
                         }
                     }
@@ -753,7 +791,6 @@ namespace Plugin
                         trolleybraketimer += data.ElapsedTime.Milliseconds;
                         if (trolleybraketimer > 2500)
                         {
-                            //Set INDCARRFREN to 0
                             flagcarr = false;
                             trolleybraketimer = 0;
                         }
@@ -874,7 +911,10 @@ namespace Plugin
                                 if (Train.Handles.BrakeNotch > 2)
                                 {
                                     SCMT.testscmt = 5;
-                                    //Stop sunoscmton from playing
+                                    if (sunoscmton != -1)
+                                    {
+                                        SoundManager.Stop(sunoscmton);
+                                    }
                                     SCMTtesttimer.TimerActive = false;
                                     timertestpulsanti.TimerActive = false;
                                     timerScariche.TimerActive = false;
@@ -971,76 +1011,76 @@ namespace Plugin
                     if (timertestpulsanti.TimerActive == true)
                     {
                         timertestpulsanti.TimeElapsed += data.ElapsedTime.Milliseconds;
-                        if (testpulsanti == 8)
+                        if (testpulsanti_State == 8)
                         {
                             if (timertestpulsanti.TimeElapsed > 23000)
                             {
                                 timertestpulsanti.TimeElapsed = 0;
-                                testpulsanti = 0;
+                                testpulsanti_State = 0;
                             }
                         }
-                        if (testpulsanti == 0)
+                        if (testpulsanti_State == 0)
                         {
                             if (timertestpulsanti.TimeElapsed > 150)
                             {
                                 timertestpulsanti.TimeElapsed = 0;
-                                testpulsanti = 1;
+                                testpulsanti_State = 1;
                             }
                         }
-                        if (testpulsanti == 1)
+                        if (testpulsanti_State == 1)
                         {
                             if (timertestpulsanti.TimeElapsed > 150)
                             {
                                 timertestpulsanti.TimeElapsed = 0;
-                                testpulsanti = 2;
+                                testpulsanti_State = 2;
                             }
                         }
-                        if (testpulsanti == 2)
+                        if (testpulsanti_State == 2)
                         {
                             if (timertestpulsanti.TimeElapsed > 150)
                             {
                                 timertestpulsanti.TimeElapsed = 0;
-                                testpulsanti = 3;
+                                testpulsanti_State = 3;
                             }
                         }
-                        if (testpulsanti == 3)
+                        if (testpulsanti_State == 3)
                         {
                             if (timertestpulsanti.TimeElapsed > 150)
                             {
                                 timertestpulsanti.TimeElapsed = 0;
-                                testpulsanti = 4;
+                                testpulsanti_State = 4;
                             }
                         }
-                        if (testpulsanti == 4)
+                        if (testpulsanti_State == 4)
                         {
                             if (timertestpulsanti.TimeElapsed > 150)
                             {
                                 timertestpulsanti.TimeElapsed = 0;
-                                testpulsanti = 5;
+                                testpulsanti_State = 5;
                             }
                         }
-                        if (testpulsanti == 5)
+                        if (testpulsanti_State == 5)
                         {
                             if (timertestpulsanti.TimeElapsed > 150)
                             {
                                 timertestpulsanti.TimeElapsed = 0;
-                                testpulsanti = 6;
+                                testpulsanti_State = 6;
                             }
                         }
-                        if (testpulsanti == 6)
+                        if (testpulsanti_State == 6)
                         {
                             if (timertestpulsanti.TimeElapsed > 150)
                             {
                                 timertestpulsanti.TimeElapsed = 0;
-                                testpulsanti = 7;
+                                testpulsanti_State = 7;
                             }
                         }
-                        if (testpulsanti == 7)
+                        if (testpulsanti_State == 7)
                         {
                             if (timertestpulsanti.TimeElapsed > 150)
                             {
                                 timertestpulsanti.TimerActive = false;
-                                testpulsanti = 8;
+                                testpulsanti_State = 8;
                             }
                         }
                     }
@@ -1094,6 +1134,34 @@ namespace Plugin
                         if (fuelling == true)
                         {
                             this.Train.Panel[(fuelfillindicator)] = 1;
+                        }
+                    }
+                    //SCMT Panel Indexes
+                    if (testpulsanti != -1)
+                    {
+                        this.Train.Panel[testpulsanti] = testpulsanti_State;
+                    }
+                    if (indlcm_variable != -1)
+                    {
+                        this.Train.Panel[indlcm_variable] = indlcm;
+                    }
+                    if (setpointspeed_indicator != -1)
+                    {
+                        this.Train.Panel[setpointspeed_indicator] = setpointspeed;
+                    }
+                    if (indattesa_variable != -1)
+                    {
+                        this.Train.Panel[indattesa_variable] = indattesa;
+                    }
+                    if (indcarrfren != -1)
+                    {
+                        if (flagcarr == true)
+                        {
+                            this.Train.Panel[indcarrfren] = 1;
+                        }
+                        else
+                        {
+                            this.Train.Panel[indcarrfren] = 0;
                         }
                     }
                 }
@@ -1188,8 +1256,7 @@ namespace Plugin
                     SoundManager.Play(setpointspeed_sound, 1.0, 1.0, false);
                 }
                 SCMT_Traction.setspeedincrease_pressed = true;
-                //Need to sort out a blinker for this
-                //Run the blinker in the main thread
+                ImpvelSu.IndicatorState = IndicatorStates.Flashing;
             }
         }
 
@@ -1205,8 +1272,7 @@ namespace Plugin
                     SoundManager.Play(setpointspeed_sound, 1.0, 1.0, false);
                 }
                 SCMT_Traction.setspeeddecrease_pressed = true;
-                //Need to sort out a blinker for this
-                //Run the blinker in the main thread
+                ImpvelGiu.IndicatorState = IndicatorStates.Flashing;
             }
         }
 
@@ -1219,6 +1285,8 @@ namespace Plugin
             }
             SCMT_Traction.setspeedincrease_pressed = false;
             SCMT_Traction.setspeeddecrease_pressed = false;
+            ImpvelSu.IndicatorState = IndicatorStates.Off;
+            ImpvelGiu.IndicatorState = IndicatorStates.Off;
         }
 
         /// <summary>Call from the traction manager when the key counter key is pressed</summary>

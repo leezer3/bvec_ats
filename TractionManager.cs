@@ -142,6 +142,7 @@ namespace Plugin
         internal string LCMupKey;
         internal string LCMdownkey;
         internal string TestSCMTKey;
+        internal string CAWSKey = "S";
 
 
         //Arrays
@@ -1172,7 +1173,7 @@ namespace Plugin
             }
             if (Train.CAWS.enabled == true)
             {
-                if (key == VirtualKeys.S)
+                if (keypressed == CAWSKey)
                 {
                     if (CAWS.AcknowledgementCountdown > 0.0)
                     {

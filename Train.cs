@@ -766,7 +766,7 @@ namespace Plugin {
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
 			                        break;
-                                    //Handles SCMT traction parameters
+                                    //Handles SCMT & associated traction parameters
                                case "scmt":
 			                        switch (key)
 			                        {
@@ -779,10 +779,67 @@ namespace Plugin {
                                         case "spiascmt":
                                             InternalFunctions.ValidateIndex(value, ref SCMT.spiaSCMT, key);
                                             break;
+                                        case "indsr":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT.srIndicator.PanelIndex, key);
+                                            break;
+                                        case "traintrip":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT.TraintripIndicator.PanelIndex, key);
+                                            break;
                                         case "testscmt":
                                             InternalFunctions.ValidateIndex(value, ref SCMT.testscmt_variable, key);
                                             break;
-			                        }
+                                        case "testpulsanti":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.testpulsanti, key);
+                                            break;
+                                        case "sunoscmton":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoscmton, key);
+                                            break;
+                                        case "sunoconfdati":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoconfdati, key);
+                                            break;
+                                        case "sunoinsscmt":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT.sound_scmt, key);
+                                            break;
+                                        case "indlcm":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.indlcm_variable, key);
+                                            break;
+                                        case "indimpvelpressedsu":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.ImpvelSu.PanelIndex, key);
+                                            break;
+                                        case "indimpvelpressedgiu":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.ImpvelGiu.PanelIndex, key);
+                                            break;
+                                        case "sunoimpvel":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoimpvel, key);
+                                            break;
+                                        case "indabbanco":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.Abbanco.PanelIndex, key);
+                                            break;
+                                        case "sunoconsavv":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoconsavv, key);
+                                            break;
+                                        case "indconsavv":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.ConsAvviam.PanelIndex, key);
+                                            break;
+                                        case "indavv":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.Avviam.PanelIndex, key);
+                                            break;
+                                        case "sunoavv":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoavv, key);
+                                            break;
+                                        case "indarr":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.Arresto.PanelIndex, key);
+                                            break;
+                                        case "sunoarr":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoarr, key);
+                                            break;
+                                        case "indattesa":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.indattesa_variable, key);
+                                            break;
+                                        case "indacarrfren":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.indcarrfren, key);
+                                            break;
+                                    }
 			                        break;
                                     //Handles CAWS
                                case "caws":
@@ -1118,6 +1175,30 @@ namespace Plugin {
                                         case "headcodekey":
                                             this.tractionmanager.headcodekey = value;
                                             break;
+                                        case "cawskey":
+                                            this.tractionmanager.headcodekey = value;
+                                            break;
+                                            /* TODO: Add from SCMT these values:
+                                             * impvel++
+                                             * impvel--
+                                             * [INCREASE/ DECREASE SETPOINT SPEEDS]
+                                             * scmtkey
+                                             * [Key to turn SCMT system plate]
+                                             * lcmupkey
+                                             * lcmdownkey
+                                             * [Increase/ decrease the LCM]
+                                             * abbancokey
+                                             * [Turns the key counter, starter key??]
+                                             * consavvkey
+                                             * [Press to give permisson to start?]
+                                             * avvkey
+                                             * [Press to start the engines]
+                                             * spegnkey
+                                             * [Press to stop the engines]
+                                             * 
+                                             * Functions should already be implemented, requires adding these to traction manager
+                                             */
+                                             
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
