@@ -839,7 +839,28 @@ namespace Plugin {
                                         case "indacarrfren":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.indcarrfren, key);
                                             break;
-                                    }
+                                        case "accensionemot":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.AvariaGen.PanelIndex, key);
+			                                break;
+                                        case "indcontgiri":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.indcontgiri_variable, key);
+                                            break;
+                                        case "indgas":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.indgas_variable, key);
+                                            break;
+                                        case "inddinamometro":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.inddinamometro, key);
+                                            break;
+                                        case "indvoltbatt":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.indvoltbatt, key);
+                                            break;
+                                        case "indspegnmon":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.indspegnmon, key);
+                                            break;
+                                        case "sunosottofondo":
+                                            InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunosottofondo, key);
+                                            break;
+			                        }
 			                        break;
                                     //Handles CAWS
                                case "caws":
@@ -1176,7 +1197,34 @@ namespace Plugin {
                                             this.tractionmanager.headcodekey = value;
                                             break;
                                         case "cawskey":
-                                            this.tractionmanager.headcodekey = value;
+                                            this.tractionmanager.CAWSKey = value;
+                                            break;
+                                        case "scmt_impvelincrease":
+                                            this.tractionmanager.SCMTincreasespeed = value;
+                                            break;
+                                        case "scmt_impveldecrease":
+                                            this.tractionmanager.SCMTincreasespeed = value;
+                                            break;
+                                        case "scmtkey":
+                                            this.tractionmanager.TestSCMTKey = value;
+                                            break;
+                                        case "lcmupkey":
+                                            this.tractionmanager.LCMupKey = value;
+                                            break;
+                                        case "lcmdownkey":
+                                            this.tractionmanager.LCMdownkey = value;
+                                            break;
+                                        case "abbancokey":
+                                            this.tractionmanager.AbilitaBancoKey = value;
+                                            break;
+                                        case "consavvkey":
+                                            this.tractionmanager.ConsensoAvviamentoKey = value;
+                                            break;
+                                        case "avvkey":
+                                            this.tractionmanager.AvviamentoKey = value;
+                                            break;
+                                        case "spegnkey":
+                                            this.tractionmanager.SpegnimentoKey = value;
                                             break;
                                             /* TODO: Add from SCMT these values:
                                              * impvel++

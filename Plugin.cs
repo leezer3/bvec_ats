@@ -30,7 +30,10 @@ namespace Plugin {
             string configFile = Path.Combine(properties.TrainFolder, "BVEC_Ats.cfg");
             string OS_ATSDLL = Path.Combine(properties.TrainFolder, "OS_ATS1.dll");
             string SZ_ATSDLL = Path.Combine(properties.TrainFolder, "OS_SZ_ATS1.dll");
+            string SZ_ATSDLL_2 = Path.Combine(properties.TrainFolder, "OS_SZ_Ats2_0.dll");
             string OS_ATSconfigFile = Path.Combine(properties.TrainFolder, "OS_ATS1.cfg");
+            string SZ_ATSconfigFile = Path.Combine(properties.TrainFolder, "OS_SZ_ATS1.cfg");
+            string SZ_ATS_2configFile = Path.Combine(properties.TrainFolder, "OS_SZ_Ats2_0.cfg");
             InternalFunctions.trainfolder = properties.TrainFolder;
             //Delete error.log from previous run
             if (File.Exists(Path.Combine(properties.TrainFolder, "error.log")))
@@ -136,14 +139,63 @@ namespace Plugin {
             }
             else if (File.Exists(SZ_ATSDLL))
             {
-                //We haven't found an existing configuration, but have found an OS_SZ_ATS.dll file- This is blacklisted
-                //due to using custom parameters at present.
-                using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                //We've found an OS_SZ_ATS equipped train
+                //Upgrade for this is in alpha
+                try
                 {
-                    sw.WriteLine("OS_SZ_ATS & no BVEC_Ats.cfg detcted. Upgrading this configuration is not currently possible.");
+                    UpgradeOSSZATS.UpgradeConfigurationFile(SZ_ATSconfigFile, properties.TrainFolder);
                 }
-                properties.FailureReason = "OS_SZ_ATS & no BVEC_Ats.cfg detcted. Upgrading this configuration is not currently possible.";
-                return false;
+                catch (Exception)
+                {
+                    properties.FailureReason = "Error upgrading the existing OS_SZ_ATS configuration.";
+                    using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                    {
+                        sw.WriteLine("An existing OS_SZ_ATS configuration was found.");
+                        sw.WriteLine("However, an error occurred upgrading the existing OS_SZ_ATS configuration.");
+                    }
+                    return false;
+                }
+
+                try
+                {
+                    this.Train.LoadConfigurationFile(configFile);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    properties.FailureReason = "Error loading the configuration file: " + ex.Message;
+                    return false;
+                }
+            }
+            else if (File.Exists(SZ_ATSDLL_2))
+            {
+                //We've found an OS_SZ_ATS equipped train
+                //Upgrade for this is in alpha
+                try
+                {
+                    UpgradeOSSZATS.UpgradeConfigurationFile(SZ_ATS_2configFile, properties.TrainFolder);
+                }
+                catch (Exception)
+                {
+                    properties.FailureReason = "Error upgrading the existing OS_SZ_ATS configuration.";
+                    using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                    {
+                        sw.WriteLine("An existing OS_SZ_ATS configuration was found.");
+                        sw.WriteLine("However, an error occurred upgrading the existing OS_SZ_ATS configuration.");
+                    }
+                    return false;
+                }
+
+                try
+                {
+                    this.Train.LoadConfigurationFile(configFile);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    properties.FailureReason = "Error loading the configuration file: " + ex.Message;
+                    return false;
+                }
             }
             else
             {

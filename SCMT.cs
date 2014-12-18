@@ -2,7 +2,6 @@
  * Relicenced under BSD 2-Clause with permission
  */
 
-using System.Globalization;
 using OpenBveApi.Runtime;
 
 namespace Plugin
@@ -92,6 +91,9 @@ namespace Plugin
         internal bool tpwsRelease;
         internal double tpwstopdelay;
         internal double tpwsoverridelifetime;
+        internal int tpwswarningsound = -1;
+        internal int overspeedalarm = -1;
+        internal int awsindicator = -1;
 
         internal static bool EBDemanded;
         //Sound Variables
@@ -247,7 +249,7 @@ namespace Plugin
                                 if (SrTimer.TimeElapsed > 5000)
                                 {
                                     SrTimer.TimerActive = false;
-                                    srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                                    srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
                                     srIndicator.Lit = false;
                                 }
                                 if (OverrideTimer.TimerActive == true)
@@ -255,7 +257,7 @@ namespace Plugin
                                     if (beacon_type == 4403)
                                     {
                                         OverrideTimer.TimerActive = false;
-                                        TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                                        TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
                                         TrainstopOverrideIndicator.Lit = false;
                                         srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
                                         srIndicator.Lit = true;
@@ -275,7 +277,10 @@ namespace Plugin
                                             AlarmTimer.TimerActive = true;
                                             AlarmTimer.TimeElapsed = 0;
                                         }
-                                        //Play looped overspeed alarm- Probably need to disable the base BVEC_ATS overspeed alarm
+                                        if (overspeedalarm != -1)
+                                        {
+                                            SoundManager.Play(overspeedalarm, 1.0, 1.0, true);
+                                        }
                                         spiarossi_act = true;
                                         if (Train.Handles.BrakeNotch == 0 && brakeNotchDemanded == 0 && testscmt == 4)
                                         {
@@ -285,8 +290,12 @@ namespace Plugin
                                         }
                                         if (Train.trainspeed > maxspeed + 4)
                                         {
-                                            //Play looped TPWSWarningSound
+                                            if (tpwswarningsound != -1)
+                                            {
+                                                SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
+                                            }
                                             EBDemanded = true;
+                                            tractionmanager.demandbrakeapplication();
                                             trainstop = true;
                                             StopTimer.TimerActive = false;
                                             tpwsRelease = false;
@@ -309,7 +318,10 @@ namespace Plugin
                                 {
                                     //Blink traintrip indicator
                                     TraintripIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Flashing;
-                                    //Play tpwswarningsound looping
+                                    if (tpwswarningsound != -1)
+                                    {
+                                        SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
+                                    }
                                     EBDemanded = true;
                                     trainstop = true;
                                     StopTimer.TimerActive = false;
@@ -339,14 +351,24 @@ namespace Plugin
                     }
                     else
                     {
+                        /*
+                         * 
+                         * TODO:
+                         * Do we need the AWS release? Appears to only be triggered by the AWS startup test
+                         * 
+                         */
                         if (awsRelease == true)
                         {
-                            //Set AWS indicator to -1
+                            if (awsindicator != -1)
+                            {
+                                awsindicator = 0;
+                            }
                             awsStop = false;
                             awsRelease = false;
                         }
                         if (tpwsRelease == true && StopTimer.TimeElapsed > tpwstopdelay*1000)
                         {
+                            EBDemanded = false;
                             tractionmanager.resetbrakeapplication();
                             BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
                             BrakeDemandIndicator.Lit = false;
@@ -429,6 +451,7 @@ namespace Plugin
                 //Repurposed by SCMT
                 if (TrainstopOverrideIndicator.PanelIndex != -1)
                 {
+                    //Calculate state
                     if (TrainstopOverrideIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
                     {
                         TrainstopOverrideIndicator.Lit = true;
@@ -449,6 +472,91 @@ namespace Plugin
                             TrainstopOverrideIndicator.TimeElapsed = 0.0;
                         }
                     }
+                    else
+                    {
+                        TrainstopOverrideIndicator.Lit = false;
+                    }
+
+                    if (TrainstopOverrideIndicator.Lit == true)
+                    {
+                        this.Train.Panel[TrainstopOverrideIndicator.PanelIndex] = 1;
+                    }
+                    else
+                    {
+                        this.Train.Panel[TrainstopOverrideIndicator.PanelIndex] = 0;
+                    }
+                }
+                if (TraintripIndicator.PanelIndex != -1)
+                {
+                    if (TraintripIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
+                    {
+                        TraintripIndicator.Lit = true;
+                    }
+                    else if (TraintripIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
+                    {
+                        TraintripIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (TraintripIndicator.TimeElapsed > 500)
+                        {
+                            if (TraintripIndicator.Lit == true)
+                            {
+                                TraintripIndicator.Lit = false;
+                            }
+                            else
+                            {
+                                TraintripIndicator.Lit = true;
+                            }
+                            TraintripIndicator.TimeElapsed = 0.0;
+                        }
+                    }
+                    else
+                    {
+                        TraintripIndicator.Lit = false;
+                    }
+
+                    if (TraintripIndicator.Lit == true)
+                    {
+                        this.Train.Panel[TraintripIndicator.PanelIndex] = 1;
+                    }
+                    else
+                    {
+                        this.Train.Panel[TraintripIndicator.PanelIndex] = 0;
+                    }
+                }
+                if (srIndicator.PanelIndex != -1)
+                {
+                    if (srIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
+                    {
+                        srIndicator.Lit = true;
+                    }
+                    else if (srIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
+                    {
+                        srIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
+                        if (srIndicator.TimeElapsed > 500)
+                        {
+                            if (srIndicator.Lit == true)
+                            {
+                                srIndicator.Lit = false;
+                            }
+                            else
+                            {
+                                srIndicator.Lit = true;
+                            }
+                            srIndicator.TimeElapsed = 0.0;
+                        }
+                    }
+                    else
+                    {
+                        srIndicator.Lit = false;
+                    }
+
+                    if (srIndicator.Lit == true)
+                    {
+                        this.Train.Panel[srIndicator.PanelIndex] = 1;
+                    }
+                    else
+                    {
+                        this.Train.Panel[srIndicator.PanelIndex] = 0;
+                    }
                 }
 
             }
@@ -464,6 +572,56 @@ namespace Plugin
                 if (sound_scmt != -1)
                 {
                     SoundManager.Play(sound_scmt, 1.0, 1.0, false);
+                }
+            }
+        }
+
+        /// <summary>This function is called from the traction manager when the TPWS reset key is pressed.</summary>
+        internal void tpwsresetkey()
+        {
+            if (trainstop == true && this.enabled == true)
+            {
+                if (flagbrake == true)
+                {
+                    TraintripIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                    tractionmanager.resetbrakeapplication();
+                    TraintripIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+                    if (beacon_type == 44003)
+                    {
+                        beacon_type = 44004;
+                    }
+                    if (tpwswarningsound != -1)
+                    {
+                        SoundManager.Stop(tpwswarningsound);
+                    }
+                    flagbrake = false;
+                    flagriarmo = false;
+                    SpiaRossiTimer.TimerActive = false;
+                    spiarossi_act = false;
+                    //flagspiarossi = false; ???
+                }
+                else
+                {
+                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                    if (flagriarmo == true)
+                    {
+                        flagriarmo = false;
+                        tractionmanager.resetbrakeapplication();
+                        BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+                        trainstop = false;
+                        if (beacon_type == 44003)
+                        {
+                            beacon_type = 44004;
+                        }
+                        if (tpwswarningsound != -1)
+                        {
+                            SoundManager.Stop(tpwswarningsound);
+                        }
+                        SpiaRossiTimer.TimerActive = false;
+                        spiarossi_act = false;
+                    }
                 }
             }
         }

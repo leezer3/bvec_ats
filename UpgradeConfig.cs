@@ -535,6 +535,168 @@ namespace Plugin
 
 			}
     }
+
+    class UpgradeOSSZATS
+    {
+        internal static void UpgradeConfigurationFile(string file, string trainpath)
+        {
+            var SCMT = new List<string>();
+            var errors = new List<string>();
+            string[] lines = File.ReadAllLines(file, Encoding.UTF8);
+            foreach (string t in lines)
+            {
+                string line = t;
+                int semicolon = line.IndexOf(';');
+                if (semicolon >= 0)
+                {
+                    line = line.Substring(0, semicolon).Trim();
+                }
+                else
+                {
+                    line = line.Trim();
+                }
+                //Trim extra commas from the end of strings
+                //Stops the parser from attempting to read in blank values and causing issues
+                line = line.TrimEnd(',');
+                int equals = line.IndexOf('=');
+                if (@equals >= 0)
+                {
+                    string key = line.Substring(0, @equals).Trim().ToLowerInvariant();
+                    string value = line.Substring(@equals + 1).Trim();
+                    switch (key)
+                    {
+                        case "spiablu":
+                            SCMT.Add(line);
+                            break;
+                        case "spiarossi":
+                            SCMT.Add(line);
+                            break;
+                        case "spiascmt":
+                            SCMT.Add(line);
+                            break;
+                        case "indsr":
+                            SCMT.Add(line);
+                            break;
+                        case "traintrip":
+                            SCMT.Add(line);
+                            break;
+                        case "testscmt":
+                            SCMT.Add(line);
+                            break;
+                        case "testpulsanti":
+                            SCMT.Add(line);
+                            break;
+                        case "sunoscmton":
+                            SCMT.Add(line);
+                            break;
+                        case "sunoconfdati":
+                            SCMT.Add(line);
+                            break;
+                        case "sunoinsscmt":
+                            SCMT.Add(line);
+                            break;
+                        case "indlcm":
+                            SCMT.Add(line);
+                            break;
+                        case "indimpvelpressedsu":
+                            SCMT.Add(line);
+                            break;
+                        case "indimpvelpressedgiu":
+                            SCMT.Add(line);
+                            break;
+                        case "sunoimpvel":
+                            SCMT.Add(line);
+                            break;
+                        case "indabbanco":
+                            SCMT.Add(line);
+                            break;
+                        case "sunoconsavv":
+                            SCMT.Add(line);
+                            break;
+                        case "indconsavv":
+                            SCMT.Add(line);
+                            break;
+                        case "indavv":
+                            SCMT.Add(line);
+                            break;
+                        case "sunoavv":
+                            SCMT.Add(line);
+                            break;
+                        case "indarr":
+                            SCMT.Add(line);
+                            break;
+                        case "sunoarr":
+                            SCMT.Add(line);
+                            break;
+                        case "indattesa":
+                            SCMT.Add(line);
+                            break;
+                        case "indacarrfren":
+                            SCMT.Add(line);
+                            break;
+                        case "accensionemot":
+                            SCMT.Add(line);
+                            break;
+                        case "indcontgiri":
+                            SCMT.Add(line);
+                            break;
+                        case "indgas":
+                            SCMT.Add(line);
+                            break;
+                        case "inddinamometro":
+                            SCMT.Add(line);
+                            break;
+                        case "indvoltbatt":
+                            SCMT.Add(line);
+                            break;
+                        case "indspegnmon":
+                            SCMT.Add(line);
+                            break;
+                        case "sunosottofondo":
+                            SCMT.Add(line);
+                            break;
+                        default:
+                            errors.Add(line);
+                            break;
+                    }
+
+                    using (StreamWriter sw = File.CreateText(Path.Combine(trainpath, "BVEC_Ats.cfg")))
+                    {
+                        /*Write out the generator version and warning
+                         *      Version 1 files handle OS_ATS only
+                         *      Version 2 files handle OS_SZ_ATS files
+                         * TODO: Re-generate files if a version 1 file is detected with OS_SZ_ATS present
+                        */
+                        sw.WriteLine(";GenVersion=2");
+                        sw.WriteLine(";DELETE THE ABOVE LINE IF YOU MODIFY THIS FILE");
+                        sw.WriteLine();
+                        if (SCMT.Count > 0)
+                        {
+                            sw.WriteLine("[SCMT]");
+                            {
+                                foreach (string item in SCMT)
+                                {
+                                    sw.WriteLine(item);
+                                }
+                            }
+                        }
+                    }
+
+
+
+            using (StreamWriter sw = File.AppendText(Path.Combine(trainpath, "error.log")))
+            {
+                //Write out upgrade errors to log file
+                sw.WriteLine("The following unsupported paramaters were detected whilst attempting to upgrade the existing configuration file:");
+                foreach (string item in errors)
+                {
+                    sw.WriteLine(item);
+                }
+            }
+                }
+            }
+        }
+    }
     /// <summary>Functions used to validate inputs and log debug messages</summary>
     class InternalFunctions
     {

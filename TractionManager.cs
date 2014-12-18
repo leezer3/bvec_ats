@@ -409,6 +409,10 @@ namespace Plugin
             }
             else if (Train.SCMT != null)
             {
+                if (SCMT.EBDemanded == true)
+                {
+                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                }
                 if (SCMT.brakeNotchDemanded != 0 && SCMT.brakeNotchDemanded > Train.Handles.BrakeNotch)
                 {
                     data.Handles.BrakeNotch = SCMT.brakeNotchDemanded;
