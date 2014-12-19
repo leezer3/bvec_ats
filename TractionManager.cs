@@ -396,6 +396,11 @@ namespace Plugin
                         data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                         data.DebugMessage = "EB Brakes demanded by SCMT Safety System";
                     }
+                    if (SCMT_Traction.ConstantSpeedBrake == true)
+                    {
+                        data.Handles.BrakeNotch = 1;
+                        data.DebugMessage = "Brake Notch demanaded by SCMT Constant Speed Device";
+                    }
                 }
                 else if (Train.CAWS.enabled == true)
                 {

@@ -791,31 +791,34 @@ namespace Plugin {
                                         case "testpulsanti":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.testpulsanti, key);
                                             break;
-                                        case "sunoscmton":
+                                        case "suonoscmton":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoscmton, key);
                                             break;
-                                        case "sunoconfdati":
+                                        case "suonoconfdati":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoconfdati, key);
                                             break;
-                                        case "sunoinsscmt":
+                                        case "suonoinsscmt":
                                             InternalFunctions.ValidateIndex(value, ref SCMT.sound_scmt, key);
                                             break;
                                         case "indlcm":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.indlcm_variable, key);
                                             break;
+                                        case "indimpvelpressed":
+			                                SCMT_Traction.indimpvelpressed = value;
+			                                break;
                                         case "indimpvelpressedsu":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.ImpvelSu.PanelIndex, key);
                                             break;
                                         case "indimpvelpressedgiu":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.ImpvelGiu.PanelIndex, key);
                                             break;
-                                        case "sunoimpvel":
+                                        case "suonoimpvel":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoimpvel, key);
                                             break;
                                         case "indabbanco":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.Abbanco.PanelIndex, key);
                                             break;
-                                        case "sunoconsavv":
+                                        case "suonoconsavv":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoconsavv, key);
                                             break;
                                         case "indconsavv":
@@ -824,13 +827,13 @@ namespace Plugin {
                                         case "indavv":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.Avviam.PanelIndex, key);
                                             break;
-                                        case "sunoavv":
+                                        case "suonoavv":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoavv, key);
                                             break;
                                         case "indarr":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.Arresto.PanelIndex, key);
                                             break;
-                                        case "sunoarr":
+                                        case "suonoarr":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunoarr, key);
                                             break;
                                         case "indattesa":
@@ -857,7 +860,7 @@ namespace Plugin {
                                         case "indspegnmon":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.indspegnmon, key);
                                             break;
-                                        case "sunosottofondo":
+                                        case "suonosottofondo":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunosottofondo, key);
                                             break;
 			                        }
@@ -1199,11 +1202,11 @@ namespace Plugin {
                                         case "cawskey":
                                             this.tractionmanager.CAWSKey = value;
                                             break;
-                                        case "scmt_impvelincrease":
+                                        case "impvelsukey":
                                             this.tractionmanager.SCMTincreasespeed = value;
                                             break;
-                                        case "scmt_impveldecrease":
-                                            this.tractionmanager.SCMTincreasespeed = value;
+                                        case "impvelgiukey":
+                                            this.tractionmanager.SCMTdecreasespeed = value;
                                             break;
                                         case "scmtkey":
                                             this.tractionmanager.TestSCMTKey = value;

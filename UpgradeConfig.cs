@@ -541,6 +541,7 @@ namespace Plugin
         internal static void UpgradeConfigurationFile(string file, string trainpath)
         {
             var SCMT = new List<string>();
+            var keys = new List<string>();
             var errors = new List<string>();
             string[] lines = File.ReadAllLines(file, Encoding.UTF8);
             foreach (string t in lines)
@@ -563,6 +564,8 @@ namespace Plugin
                 {
                     string key = line.Substring(0, @equals).Trim().ToLowerInvariant();
                     string value = line.Substring(@equals + 1).Trim();
+                    string keyassignment = "";
+                    string failingvalue = "";
                     switch (key)
                     {
                         case "spiablu":
@@ -586,16 +589,19 @@ namespace Plugin
                         case "testpulsanti":
                             SCMT.Add(line);
                             break;
-                        case "sunoscmton":
+                        case "suonoscmton":
                             SCMT.Add(line);
                             break;
-                        case "sunoconfdati":
+                        case "suonoconfdati":
                             SCMT.Add(line);
                             break;
-                        case "sunoinsscmt":
+                        case "suonoinsscmt":
                             SCMT.Add(line);
                             break;
                         case "indlcm":
+                            SCMT.Add(line);
+                            break;
+                        case "indimpvelpressed":
                             SCMT.Add(line);
                             break;
                         case "indimpvelpressedsu":
@@ -604,13 +610,13 @@ namespace Plugin
                         case "indimpvelpressedgiu":
                             SCMT.Add(line);
                             break;
-                        case "sunoimpvel":
+                        case "suonoimpvel":
                             SCMT.Add(line);
                             break;
                         case "indabbanco":
                             SCMT.Add(line);
                             break;
-                        case "sunoconsavv":
+                        case "suonoconsavv":
                             SCMT.Add(line);
                             break;
                         case "indconsavv":
@@ -619,13 +625,13 @@ namespace Plugin
                         case "indavv":
                             SCMT.Add(line);
                             break;
-                        case "sunoavv":
+                        case "suonoavv":
                             SCMT.Add(line);
                             break;
                         case "indarr":
                             SCMT.Add(line);
                             break;
-                        case "sunoarr":
+                        case "suonoarr":
                             SCMT.Add(line);
                             break;
                         case "indattesa":
@@ -652,35 +658,91 @@ namespace Plugin
                         case "indspegnmon":
                             SCMT.Add(line);
                             break;
-                        case "sunosottofondo":
+                        case "suonosottofondo":
                             SCMT.Add(line);
+                            break;
+                            //Key Assignments
+                        case "scmtkey":
+                            InternalFunctions.UpgradeKey(value,ref keyassignment,failingvalue);
+                            keys.Add(key + "=" + keyassignment);
+                            break;
+                        case "lcmupkey":
+                            InternalFunctions.UpgradeKey(value, ref keyassignment, failingvalue);
+                            keys.Add(key + "=" + keyassignment);
+                            break;
+                        case "lcmdownkey":
+                            InternalFunctions.UpgradeKey(value, ref keyassignment, failingvalue);
+                            keys.Add(key + "=" + keyassignment);
+                            break;
+                        case "abbancokey":
+                            InternalFunctions.UpgradeKey(value, ref keyassignment, failingvalue);
+                            keys.Add(key + "=" + keyassignment);
+                            break;
+                        case "consavvkey":
+                            InternalFunctions.UpgradeKey(value, ref keyassignment, failingvalue);
+                            keys.Add(key + "=" + keyassignment);
+                            break;
+                        case "avvkey":
+                            InternalFunctions.UpgradeKey(value, ref keyassignment, failingvalue);
+                            keys.Add(key + "=" + keyassignment);
+                            break;
+                        case "spegnkey":
+                            InternalFunctions.UpgradeKey(value, ref keyassignment, failingvalue);
+                            keys.Add(key + "=" + keyassignment);
+                            break;
+                        case "impvel":
+                            var splits = value.Split(',');
+                            try
+                            {
+                                InternalFunctions.UpgradeKey(splits[0], ref keyassignment, failingvalue);
+                                keys.Add("impvelsukey" + "=" + keyassignment);
+                                InternalFunctions.UpgradeKey(splits[1], ref keyassignment, failingvalue);
+                                keys.Add("impvelgiukey" + "=" + keyassignment);
+                            }
+                            catch (Exception)
+                            {
+                                errors.Add("The key assignment impvel contains invalid data");
+                            }
                             break;
                         default:
                             errors.Add(line);
                             break;
                     }
 
-                    using (StreamWriter sw = File.CreateText(Path.Combine(trainpath, "BVEC_Ats.cfg")))
+                }
+
+            }
+            using (StreamWriter sw = File.CreateText(Path.Combine(trainpath, "BVEC_Ats.cfg")))
+            {
+                /*Write out the generator version and warning
+                 *      Version 1 files handle OS_ATS only
+                 *      Version 2 files handle OS_SZ_ATS files
+                 * TODO: Re-generate files if a version 1 file is detected with OS_SZ_ATS present
+                */
+                sw.WriteLine(";GenVersion=2");
+                sw.WriteLine(";DELETE THE ABOVE LINE IF YOU MODIFY THIS FILE");
+                sw.WriteLine();
+                if (SCMT.Count > 0)
+                {
+                    sw.WriteLine("[SCMT]");
                     {
-                        /*Write out the generator version and warning
-                         *      Version 1 files handle OS_ATS only
-                         *      Version 2 files handle OS_SZ_ATS files
-                         * TODO: Re-generate files if a version 1 file is detected with OS_SZ_ATS present
-                        */
-                        sw.WriteLine(";GenVersion=2");
-                        sw.WriteLine(";DELETE THE ABOVE LINE IF YOU MODIFY THIS FILE");
-                        sw.WriteLine();
-                        if (SCMT.Count > 0)
+                        foreach (string item in SCMT)
                         {
-                            sw.WriteLine("[SCMT]");
-                            {
-                                foreach (string item in SCMT)
-                                {
-                                    sw.WriteLine(item);
-                                }
-                            }
+                            sw.WriteLine(item);
                         }
                     }
+                }
+                if (keys.Count > 0)
+                {
+                    sw.WriteLine("[KeyAssignments]");
+                    {
+                        foreach (string item in keys)
+                        {
+                            sw.WriteLine(item);
+                        }
+                    }
+                }
+            }
 
 
 
@@ -693,9 +755,8 @@ namespace Plugin
                     sw.WriteLine(item);
                 }
             }
-                }
-            }
         }
+
     }
     /// <summary>Functions used to validate inputs and log debug messages</summary>
     class InternalFunctions
@@ -806,6 +867,74 @@ namespace Plugin
                 {
                     //Write out upgrade errors to log file
                     sw.WriteLine("The paramater " + failingvalue + " failed to parse correctly");
+                }
+
+            }
+
+        }
+        internal static void UpgradeKey(string input, ref string output, string failingvalue)
+        {
+            try
+            {
+                switch (input)
+                {
+                    case "0":
+                        output = "S";
+                        break;
+                    case "1":
+                        output = "A1";
+                        break;
+                    case "2":
+                        output = "A2";
+                        break;
+                    case "3":
+                        output = "B1";
+                        break;
+                    case "4":
+                        output = "B2";
+                        break;
+                    case "5":
+                        output = "C1";
+                        break;
+                    case "6":
+                        output = "C2";
+                        break;
+                    case "7":
+                        output = "D";
+                        break;
+                    case "8":
+                        output = "E";
+                        break;
+                    case "9":
+                        output = "F";
+                        break;
+                    case "10":
+                        output = "G";
+                        break;
+                    case "11":
+                        output = "H";
+                        break;
+                    case "12":
+                        output = "I";
+                        break;
+                    case "13":
+                        output = "J";
+                        break;
+                    case "14":
+                        output = "K";
+                        break;
+                    case "15":
+                        output = "L";
+                        break;
+                }
+            }
+            catch
+            {
+                //Catch all exceptions
+                using (StreamWriter sw = File.AppendText(Path.Combine(trainfolder, "error.log")))
+                {
+                    //Write out upgrade errors to log file
+                    sw.WriteLine("The paramater " + failingvalue + " is not a valid key assignment to be upgraded.");
                 }
 
             }

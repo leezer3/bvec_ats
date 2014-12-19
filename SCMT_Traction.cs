@@ -237,6 +237,9 @@ namespace Plugin
         internal int setpointspeed_indicator;
         internal int indcarrfren = -1;
 
+        internal static int powernotch_req;
+        internal static bool ConstantSpeedBrake;
+
         // --- constructors ---
 
         /// <summary>Creates a new instance of this system.</summary>
@@ -370,7 +373,7 @@ namespace Plugin
             ConsAvviam.IndicatorState = IndicatorStates.Off;
             ConsAvviam.Lit = false;
             ConsAvviam.FlashInterval = 1000;
-            AvariaGen.IndicatorState = IndicatorStates.Flashing;
+            AvariaGen.IndicatorState = IndicatorStates.Solid;
             AvariaGen.Lit = false;
             AvariaGen.FlashInterval = 1000;
             Avviam.IndicatorState = IndicatorStates.Off;
@@ -385,6 +388,12 @@ namespace Plugin
             ImpvelGiu.IndicatorState = IndicatorStates.Off;
             ImpvelGiu.Lit = false;
             ImpvelGiu.FlashInterval = 1000;
+            //Functions
+            seqScarico = 0;
+            setpointspeed = 0;
+            v1 = 0;
+            v2 = 0;
+            dynometer = 0;
         }
 
 
@@ -397,6 +406,13 @@ namespace Plugin
             if (enabled == true)
             {
                 reverserposition = Train.Handles.Reverser;
+                //Load LCM power notch if we are in LCM mode as opposed to constant speed mode
+                if (indlcm != 0)
+                {
+                    data.Handles.PowerNotch = indlcm;
+                    setpointspeed = 0;
+                    setpointspeedstate = 0;
+                }
                 //If reverser is put into neutral when moving, block the gears
                 if (reversercontrol != 0 && Train.trainspeed > 0 && Train.Handles.Reverser == 0)
                 {
@@ -715,20 +731,22 @@ namespace Plugin
                         flag = 1;
                         tractionmanager.demandpowercutoff();
                     }
-                    if (Train.trainspeed > setpointspeed + 1 && flag == 1 && lca == true && data.Handles.PowerNotch > 0)
+                    if (Train.trainspeed > setpointspeed + 1 && flag == 1 && lca == true && Train.Handles.PowerNotch > 0)
                     {
                         //If we're continuing to accelerate, demand a brake application
+                        ConstantSpeedBrake = true;
                         tractionmanager.demandbrakeapplication();
                         flag = 2;
                     }
                     if ((Train.trainspeed < setpointspeed && flag == 2 && lca == true) ||
-                        (lca == true && flag == 2 && data.Handles.PowerNotch == 0) || (lcm == true && flag == 2))
+                        (lca == true && flag == 2 && Train.Handles.PowerNotch == 0) || (lcm == true && flag == 2))
                     {
+                        ConstantSpeedBrake = false;
                         tractionmanager.resetbrakeapplication();
                         flag = 1;
                     }
                     if ((Train.trainspeed < setpointspeed - 2 && flag == 1 && lca == true) ||
-                        (lca == true && flag == 2 && data.Handles.PowerNotch == 0) || (lcm == true && flag == 1))
+                        (lca == true && flag == 2 && Train.Handles.PowerNotch == 0) || (lcm == true && flag == 1))
                     {
                         tractionmanager.resetpowercutoff();
                         flag = 0;
@@ -827,11 +845,11 @@ namespace Plugin
                 }
                 //Handles the diagnostic display at under 4km/h
                 {
-                    if (Train.trainspeed > 4 && flagmonitor == false)
+                    if (Train.trainspeed > 4)
                     {
                         flagmonitor = true;
                     }
-                    else if (Train.trainspeed == 0 && flagmonitor == true)
+                    else
                     {
                         flagmonitor = false;
                     }
@@ -1174,7 +1192,7 @@ namespace Plugin
                     }
                     if (setpointspeed_indicator != -1)
                     {
-                        this.Train.Panel[setpointspeed_indicator] = setpointspeed;
+                        this.Train.Panel[setpointspeed_indicator] = setpointspeedstate;
                     }
                     if (indattesa_variable != -1)
                     {
@@ -1521,7 +1539,7 @@ namespace Plugin
                     SoundManager.Play(setpointspeed_sound, 1.0, 1.0, false);
                 }
                 SCMT_Traction.setspeedincrease_pressed = true;
-                ImpvelSu.IndicatorState = IndicatorStates.Flashing;
+                ImpvelSu.IndicatorState = IndicatorStates.Solid;
             }
         }
 
@@ -1531,13 +1549,13 @@ namespace Plugin
             if (SCMT_Traction.setpointspeed > 0)
             {
                 SCMT_Traction.setpointspeed -= 5;
-                setpointspeed -= 1;
+                setpointspeedstate -= 1;
                 if (setpointspeed_sound != -1)
                 {
                     SoundManager.Play(setpointspeed_sound, 1.0, 1.0, false);
                 }
                 SCMT_Traction.setspeeddecrease_pressed = true;
-                ImpvelGiu.IndicatorState = IndicatorStates.Flashing;
+                ImpvelGiu.IndicatorState = IndicatorStates.Solid;
             }
         }
 
@@ -1562,9 +1580,11 @@ namespace Plugin
             {
                 if (ChiaveBanco == false)
                 {
-                    Abbanco.IndicatorState = IndicatorStates.Flashing;
+                    //Something odd with indicator states...
+                    Abbanco.IndicatorState = IndicatorStates.Solid;
                     indattesa = 1;
                     AttessaTimer.TimeElapsed = 0;
+                    AttessaTimer.TimerActive = true;
                 }
                 else
                 {
@@ -1572,7 +1592,7 @@ namespace Plugin
                     SCMT.testscmt = 0;
                 }
 
-                ChiaveBanco = false;
+                ChiaveBanco = !ChiaveBanco;
                 //Play key turned to bench and start permission sound
                 if (sunoconsavv != -1)
                 {
@@ -1588,7 +1608,7 @@ namespace Plugin
             if (ConsAvv == false && ChiaveBanco == true)
             {
                 ConsAvv = true;
-                ConsAvviam.IndicatorState = IndicatorStates.Flashing;
+                ConsAvviam.IndicatorState = IndicatorStates.Solid;
                 //Play key turned to bench and start permission sound
                 if (sunoconsavv != -1)
                 {
@@ -1609,7 +1629,7 @@ namespace Plugin
             if (ConsAvv == false && Avv == true)
             {
                 Avv = false;
-                AvariaGen.IndicatorState = IndicatorStates.Flashing;
+                AvariaGen.IndicatorState = IndicatorStates.Solid;
                 SCMT_Traction.gear = 0;
                 if (sunosottofondo != -1)
                 {
@@ -1620,11 +1640,9 @@ namespace Plugin
                     SoundManager.Play(sunoarr, 1.0, 1.0, false);
                 }
                 BatteryVoltage = 23;
-                AvariaGen.IndicatorState = IndicatorStates.Flashing;
-                AvariaGen.Lit = true;
                 indcontgiri = -50;
                 indgas = -50;
-                indattesa = -1;
+                indattesa = 1;
                 AttessaTimer.TimeElapsed = 0;
                 AttessaTimer.TimerActive = true;
 
@@ -1634,7 +1652,8 @@ namespace Plugin
         /// <summary>Call from the traction manager when the engine start key is pressed</summary>
         internal static void Avviamento()
         {
-            Avviam.IndicatorState = IndicatorStates.Flashing;
+            Avviam.IndicatorState = IndicatorStates.Solid;
+
             if (ConsAvv == true && Avv == false && reverserposition == 0 && indlcm == 0 && indattesa == 0)
             {
                 flagavv = true;
@@ -1703,7 +1722,7 @@ namespace Plugin
 
             if (lcm == true)
             {
-                //Set power handle to the indlcm value
+                powernotch_req = indlcm;
             }
         }
 
@@ -1717,12 +1736,12 @@ namespace Plugin
                 {
                     SoundManager.Play(sunoimpvel, 1.0, 1.0, false);
                 }
-                //Set power handle to the indlcm value
+                powernotch_req = indlcm;
             }
 
             if (lcm == true)
             {
-                //set power handle to indlcm value
+                powernotch_req = indlcm;
                 if (indlcm == 0)
                 {
                     lcm = false;

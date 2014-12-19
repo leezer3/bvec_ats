@@ -2,6 +2,7 @@
  * Relicenced under BSD 2-Clause with permission
  */
 
+using System.IO;
 using OpenBveApi.Runtime;
 
 namespace Plugin
@@ -96,6 +97,7 @@ namespace Plugin
         internal int awsindicator = -1;
 
         internal static bool EBDemanded;
+        
         //Sound Variables
         /// <summary>Trigger sound for SCMT safety device.</summary>
         internal int sound_scmt = -1;
@@ -125,7 +127,15 @@ namespace Plugin
             srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
             srIndicator.Lit = false;
             srIndicator.FlashInterval = 1000;
-            
+            //Initialise Default Paramaters
+            beacon_speed = 500;
+            speed = 500;
+            alertspeed = 500;
+            beacon_type = 44004;
+            beacon_signal = new SignalData(4,0);
+            beacon_44005 = 4;
+            beacon_distance = 0;
+            SCMT_Alert = true;
         }
 
         internal void Reinitialise(InitializationModes mode)
