@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Data.Odbc;
 using OpenBveApi.Runtime;
+using OpenBveApi.Sounds;
 
 
 namespace Plugin
@@ -17,6 +19,7 @@ namespace Plugin
         internal int trainspeed;
 
         internal DeadmanStates DeadmansHandleState;
+        internal VigilanteStates VigilanteState;
 
         /// <summary>Default paramaters</summary>
         /// Used if no value is loaded from the config file
@@ -62,6 +65,12 @@ namespace Plugin
         internal double deadmansalarmtimer;
         internal double deadmansbraketimer;
 
+        //The timer index for the Italian Vigilante device
+        internal double vigilanteTimer;
+        internal bool vigilante;
+        internal bool vigilanteTripped;
+        internal int vigilantePhase;
+
         //Sound Indicies
         /// <summary>The sound index for the audible vigilance alarm</summary>
         internal int vigilancealarm = -1;
@@ -73,6 +82,12 @@ namespace Plugin
         internal DeadmanStates DeadmansHandle
         {
             get { return this.DeadmansHandleState; }
+        }
+
+        /// <summary>Gets the current state of the Vigilante Device.</summary>
+        internal VigilanteStates VigilanteDevice
+        {
+            get { return this.VigilanteState; }
         }
 
         // --- constructors ---
@@ -299,6 +314,53 @@ namespace Plugin
                     }
 
                 }
+                if (Train.SCMT != null)
+                {
+                    if (vigilante == true && SCMT.testscmt == 4)
+                    {
+                        if (Train.trainspeed > 2 && VigilanteState == VigilanteStates.None)
+                        {
+                            VigilanteState = VigilanteStates.AlarmSounding;
+                        }
+                        else if (VigilanteState == VigilanteStates.AlarmSounding)
+                        {
+                            if (vigilancealarm != -1)
+                            {
+                                SoundManager.Play(vigilancealarm, 1.0, 1.0, true);
+                            }
+                            if (Train.trainspeed != 0)
+                            {
+                                vigilanteTimer += data.ElapsedTime.Milliseconds;
+                                if (vigilanteTimer > vigilancedelay1)
+                                {
+                                    VigilanteState = VigilanteStates.EbApplied;
+                                }
+                            }
+                        }
+                        else if (VigilanteState == VigilanteStates.EbApplied)
+                        {
+                            vigilanteTimer = 0.0;
+                            tractionmanager.demandbrakeapplication();
+                            if (vigilancealarm != -1)
+                            {
+                                SoundManager.Stop(vigilancealarm);
+                            }
+                            if (SCMT.tpwswarningsound != -1)
+                            {
+                                SoundManager.Play(SCMT.tpwswarningsound, 1.0, 1.0, true);
+                            }
+                        }
+                        else if (VigilanteState == VigilanteStates.OnService)
+                        {
+                            vigilanteTimer = 0.0;
+                            if (Train.trainspeed == 0)
+                            {
+                                VigilanteState = VigilanteStates.None;
+                            }
+                        }
+                    }
+                
+                }
 
                 //Consequences
                 if (Train.overspeedtripped == true)
@@ -341,7 +403,17 @@ namespace Plugin
                         {
                             this.Train.Panel[(vigilancelamp)] = 1;
                         }
-
+                        if (vigilante == true)
+                        {
+                            if (VigilanteState == VigilanteStates.AlarmSounding || VigilanteState == VigilanteStates.EbApplied)
+                            {
+                                this.Train.Panel[(vigilancelamp)] = 1;
+                            }
+                            else
+                            {
+                                this.Train.Panel[(vigilancelamp)] = 0;
+                            }
+                        }
                     }
                     
                 }
@@ -356,6 +428,23 @@ namespace Plugin
                         SoundManager.Stop(overspeedalarm);
                     }
                 }
+                
+                    
+                }
+        }
+
+        /// <summary>Call this function from the traction manager to attempt to reset a Vigilante intervention</summary>
+        internal void VigilanteReset()
+        {
+            if (Train.trainspeed == 0 && VigilanteState == VigilanteStates.EbApplied)
+            {
+                if (SCMT.tpwswarningsound != -1)
+                {
+                    SoundManager.Stop(SCMT.tpwswarningsound);
+                }
+                tractionmanager.resetbrakeapplication();
+                SCMT.spiarossi_act = false;
+                VigilanteState = VigilanteStates.None;
             }
         }
     }

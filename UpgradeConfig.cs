@@ -541,6 +541,7 @@ namespace Plugin
         internal static void UpgradeConfigurationFile(string file, string trainpath)
         {
             var SCMT = new List<string>();
+            var vigilance = new List<string>();
             var keys = new List<string>();
             var errors = new List<string>();
             string[] lines = File.ReadAllLines(file, Encoding.UTF8);
@@ -661,6 +662,9 @@ namespace Plugin
                         case "suonosottofondo":
                             SCMT.Add(line);
                             break;
+                        case "tpwsstopdelay":
+                            SCMT.Add(line);
+                            break;
                             //Key Assignments
                         case "scmtkey":
                             InternalFunctions.UpgradeKey(value,ref keyassignment,failingvalue);
@@ -704,6 +708,65 @@ namespace Plugin
                                 errors.Add("The key assignment impvel contains invalid data");
                             }
                             break;
+                        case "vigilante":
+                            vigilance.Add(line);
+                            break;
+                        //VALUES TO BE ADDED TO VIGILANCE SECTION OF CONFIGURATION FILE
+                        case "vigilance":
+                            //Change vigilance to deadmanshandle (Internal)
+                            vigilance.Add("deadmanshandle=" + value);
+                            break;
+                        case "overspeedcontrol":
+                            vigilance.Add(line);
+                            break;
+                        case "warningspeed":
+                            vigilance.Add(line);
+                            break;
+                        case "overspeed":
+                            vigilance.Add(line);
+                            break;
+                        case "overspeedalarm":
+                            vigilance.Add(line);
+                            break;
+                        case "safespeed":
+                            vigilance.Add(line);
+                            break;
+                        case "overspeedindicator":
+                            vigilance.Add(line);
+                            break;
+                        case "vigilanceinterval":
+                            vigilance.Add(line);
+                            break;
+                        case "vigilanceautorelease":
+                            vigilance.Add(line);
+                            break;
+                        case "vigilancecancellable":
+                            vigilance.Add(line);
+                            break;
+                        case "vigilancelamp":
+                            vigilance.Add(line);
+                            break;
+                        case "vigilancealarm":
+                            vigilance.Add(line);
+                            break;
+                        case "independentvigilance":
+                            vigilance.Add(line);
+                            break;
+                        case "vigilancedelay1":
+                            vigilance.Add(line);
+                            break;
+                        case "vigilancedelay2":
+                            vigilance.Add(line);
+                            break;
+                        case "vigilanceinactivespeed":
+                            vigilance.Add(line);
+                            break;
+                        case "reminderkey":
+                            vigilance.Add("draenabled=" + value);
+                            break;
+                        case "reminderindicator":
+                            vigilance.Add("draindicator=" + value);
+                            break;
                         default:
                             errors.Add(line);
                             break;
@@ -727,6 +790,16 @@ namespace Plugin
                     sw.WriteLine("[SCMT]");
                     {
                         foreach (string item in SCMT)
+                        {
+                            sw.WriteLine(item);
+                        }
+                    }
+                }
+                if (vigilance.Count > 0)
+                {
+                    sw.WriteLine("[Vigilance]");
+                    {
+                        foreach (string item in vigilance)
                         {
                             sw.WriteLine(item);
                         }

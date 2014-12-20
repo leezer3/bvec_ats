@@ -20,5 +20,17 @@
             /// <summary>The deadman's handle has applied the brakes.</summary>
             BrakesApplied = 5,
         }
+
+        internal enum VigilanteStates
+        {
+            /// <summary>The Vigilante device is inactive.</summary>
+            None = 0,
+            /// <summary>The train is moving and the alarm is sounding.</summary>
+            AlarmSounding = 1,
+            /// <summary>The train is moving and the alarm has been acknowledged</summary>
+            OnService = 2,
+            /// <summary>The alarm has not been cancelled in time and the EB has been applied.</summary>
+            EbApplied = 3,
+        }
     }
 }

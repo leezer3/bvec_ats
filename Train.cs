@@ -712,6 +712,9 @@ namespace Plugin {
 			                            case "vigilanceinactivespeed":
 			                                InternalFunctions.ParseNumber(value, ref vigilance.vigilanceinactivespeed, key);
 			                                break;
+                                        case "vigilante":
+                                            InternalFunctions.ParseBool(value, ref vigilance.vigilante, key);
+                                            break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
                                             
@@ -862,6 +865,9 @@ namespace Plugin {
                                             break;
                                         case "suonosottofondo":
                                             InternalFunctions.ValidateIndex(value, ref SCMT_Traction.sunosottofondo, key);
+                                            break;
+                                        case "tpwsstopdelay":
+                                            InternalFunctions.ParseNumber(value, ref SCMT.tpwsstopdelay, key);
                                             break;
 			                        }
 			                        break;
@@ -1228,6 +1234,12 @@ namespace Plugin {
                                             break;
                                         case "spegnkey":
                                             this.tractionmanager.SpegnimentoKey = value;
+                                            break;
+                                        case "vigilantekey":
+                                            this.tractionmanager.vigilantekey = value;
+                                            break;
+                                        case "vigilanteresetkey":
+                                            this.tractionmanager.vigilanteresetkey = value;
                                             break;
                                             /* TODO: Add from SCMT these values:
                                              * impvel++

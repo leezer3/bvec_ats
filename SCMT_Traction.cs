@@ -1756,8 +1756,11 @@ namespace Plugin
             {
                 SCMT.testscmt = 1;
                 SCMTtesttimer.TimeElapsed = 0;
+                SCMTtesttimer.TimerActive = true;
                 timertestpulsanti.TimeElapsed = 0;
+                timertestpulsanti.TimerActive = true;
                 timerScariche.TimeElapsed = 0;
+                timerScariche.TimerActive = true;
                 if (sunoconsavv != -1)
                 {
                     SoundManager.Play(sunoconsavv, 1.0, 1.0, false);

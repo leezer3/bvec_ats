@@ -59,14 +59,14 @@ namespace Plugin
         /// <summary>Red light for SCMT safety device.</summary>
         internal int spiarossi = -1;
         //Stores whether the red light has been triggered
-        internal bool spiarossi_act;
+        internal static bool spiarossi_act;
         /// <summary>The SCMT self-test sequence state.</summary>
         internal static int testscmt;
         /// <summary>The SCMT self-test sequence panel variable.</summary>
-        internal int testscmt_variable;
+        internal int testscmt_variable = -1;
         //Default from OS_ATS??
         //Appears to be in seconds
-        internal int tpwsstopdelay;
+        internal double tpwsstopdelay;
         //Brake flag has been triggered
         internal bool flagbrake;
         //We can now rearm I think
@@ -92,7 +92,7 @@ namespace Plugin
         internal bool tpwsRelease;
         internal double tpwstopdelay;
         internal double tpwsoverridelifetime;
-        internal int tpwswarningsound = -1;
+        internal static int tpwswarningsound = -1;
         internal int overspeedalarm = -1;
         internal int awsindicator = -1;
 
@@ -192,138 +192,143 @@ namespace Plugin
                                 }
                                 tgtraz_active = false;
                             }
-                            if (SpiabluTimer.TimerActive == true)
+                        }
+                        if (SpiabluTimer.TimerActive == true)
+                        {
+                            SpiabluTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                            if (SpiabluTimer.TimeElapsed > 500)
                             {
-                                SpiabluTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
-                                if (SpiabluTimer.TimeElapsed > 500)
+                                if (spiablue_act == true)
                                 {
-                                    if (spiablue_act == true)
-                                    {
-                                        spiablue_act = false;
-                                    }
-                                    else
-                                    {
-                                        spiablue_act = true;
-                                    }
-                                    SpiabluTimer.TimeElapsed = 0;
+                                    spiablue_act = false;
                                 }
+                                else
+                                {
+                                    spiablue_act = true;
+                                }
+                                SpiabluTimer.TimeElapsed = 0;
                             }
-                            if (SpiaRossiTimer.TimerActive == true)
+                        }
+                        if (SpiaRossiTimer.TimerActive == true)
+                        {
+                            SpiaRossiTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                            if (SpiaRossiTimer.TimeElapsed > 500)
                             {
-                                SpiaRossiTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
-                                if (SpiaRossiTimer.TimeElapsed > 500)
+                                if (spiarossi_act == true)
                                 {
-                                    if (spiarossi_act == true)
-                                    {
-                                        spiarossi_act = false;
-                                    }
-                                    else
-                                    {
-                                        spiarossi_act = true;
-                                    }
-                                    SpiaRossiTimer.TimeElapsed = 0;
+                                    spiarossi_act = false;
                                 }
+                                else
+                                {
+                                    spiarossi_act = true;
+                                }
+                                SpiaRossiTimer.TimeElapsed = 0;
                             }
-                            if (riarmoTimer.TimerActive == true)
+                        }
+                        if (riarmoTimer.TimerActive == true)
+                        {
+                            riarmoTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                            if (riarmoTimer.TimeElapsed > 300)
                             {
-                                riarmoTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
-                                if (riarmoTimer.TimeElapsed > 300)
+                                if (brakeNotchDemanded == 0)
                                 {
-                                    if (brakeNotchDemanded == 0)
-                                    {
-                                        //Start brake demand indicator blinking?
-                                        //Or does it want the indicator state toggled?
-                                        BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Flashing;
-                                        
-                                    }
-                                    else
-                                    {
-                                        //Stop brake demand indicator blinking?
-                                        BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
-                                    }
-                                    riarmoTimer.TimeElapsed = 0;
-                                }
-                                StopTimer.TimerActive = true;
-                                StopTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
-                                if ((Train.trainspeed < beacon_speed + 2 && beacon_speed > 30 && flagbrake == false) || (Train.trainspeed == 0 && StopTimer.TimeElapsed > (tpwsstopdelay*1000)) && trainstop == true)
-                                {
-                                    riarmoTimer.TimerActive = false;
                                     //Start brake demand indicator blinking?
-                                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Flashing;
-                                    flagriarmo = true;
+                                    //Or does it want the indicator state toggled?
+                                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+
+                                }
+                                else
+                                {
+                                    //Stop brake demand indicator blinking?
+                                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+                                }
+                                riarmoTimer.TimeElapsed = 0;
+                            }
+                            StopTimer.TimerActive = true;
+                            StopTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                            if ((Train.trainspeed < beacon_speed + 2 && beacon_speed > 30 && flagbrake == false) ||
+                                (Train.trainspeed == 0 && StopTimer.TimeElapsed > (tpwsstopdelay*1000)) &&
+                                trainstop == true)
+                            {
+                                riarmoTimer.TimerActive = false;
+                                //Start brake demand indicator blinking?
+                                BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Flashing;
+                                flagriarmo = true;
+                            }
+                        }
+                        if (trainstop == false)
+                        {
+                            SrTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                            if (SrTimer.TimeElapsed > 5000)
+                            {
+                                SrTimer.TimerActive = false;
+                                srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+                                srIndicator.Lit = false;
+                            }
+                            if (OverrideTimer.TimerActive == true)
+                            {
+                                if (beacon_type == 44003)
+                                {
+                                    OverrideTimer.TimerActive = false;
+                                    TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+                                    TrainstopOverrideIndicator.Lit = false;
+                                    srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                                    srIndicator.Lit = true;
+                                    TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                                    beacon_type = 44002;
+                                    beacon_speed = 30;
+                                    maxspeed = beacon_speed;
+                                    SrTimer.TimeElapsed = 0;
                                 }
                             }
-                            if (trainstop == false)
+                            else if ((beacon_type == 4402 && Train.trainspeed > alertspeed) ||
+                                     (beacon_type == 4403 && beacon_signal.Aspect == 0))
                             {
-                                SrTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
-                                if (SrTimer.TimeElapsed > 5000)
+                                if (Train.trainspeed > alertspeed && beacon_type == 44003)
                                 {
-                                    SrTimer.TimerActive = false;
-                                    srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
-                                    srIndicator.Lit = false;
-                                }
-                                if (OverrideTimer.TimerActive == true)
-                                {
-                                    if (beacon_type == 4403)
+                                    if (AlarmTimer.TimerActive == false)
                                     {
-                                        OverrideTimer.TimerActive = false;
-                                        TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
-                                        TrainstopOverrideIndicator.Lit = false;
-                                        srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
-                                        srIndicator.Lit = true;
-                                        TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
-                                        beacon_type = 4402;
-                                        beacon_speed = 30;
-                                        maxspeed = beacon_speed;
-                                        SrTimer.TimeElapsed = 0;
+                                        AlarmTimer.TimerActive = true;
+                                        AlarmTimer.TimeElapsed = 0;
                                     }
-                                }
-                                else if ((beacon_type == 4402 && Train.trainspeed > alertspeed) || (beacon_type == 4403 && beacon_signal.Aspect == 0))
-                                {
-                                    if (Train.trainspeed > alertspeed && beacon_type == 4403)
+                                    if (overspeedalarm != -1)
                                     {
-                                        if (AlarmTimer.TimerActive == false)
-                                        {
-                                            AlarmTimer.TimerActive = true;
-                                            AlarmTimer.TimeElapsed = 0;
-                                        }
-                                        if (overspeedalarm != -1)
-                                        {
-                                            SoundManager.Play(overspeedalarm, 1.0, 1.0, true);
-                                        }
-                                        spiarossi_act = true;
-                                        if (Train.Handles.BrakeNotch == 0 && brakeNotchDemanded == 0 && testscmt == 4)
-                                        {
-                                            data.Handles.PowerNotch = 0;
-                                            brakeNotchDemanded = 1;
-                                            tgtraz_active = true;
-                                        }
-                                        if (Train.trainspeed > maxspeed + 4)
-                                        {
-                                            if (tpwswarningsound != -1)
-                                            {
-                                                SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
-                                            }
-                                            EBDemanded = true;
-                                            tractionmanager.demandbrakeapplication();
-                                            trainstop = true;
-                                            StopTimer.TimerActive = false;
-                                            tpwsRelease = false;
-                                            AlarmTimer.TimerActive = false;
-                                            if (riarmoTimer.TimerActive == false)
-                                            {
-                                                riarmoTimer.TimerActive = true;
-                                            }
-                                            if (SpiaRossiTimer.TimerActive == false && spiarossi_act == false)
-                                            {
-                                                SpiaRossiTimer.TimerActive = true;
-                                                //maybe needs to be a separate whatsit, come back to this
-                                                spiarossi_act = true;
-                                            }
-                                        }
-                                        
+                                        SoundManager.Play(overspeedalarm, 1.0, 1.0, true);
                                     }
+                                    spiarossi_act = true;
+                                    if (Train.Handles.BrakeNotch == 0 && brakeNotchDemanded == 0 &&
+                                        testscmt == 4)
+                                    {
+                                        data.Handles.PowerNotch = 0;
+                                        brakeNotchDemanded = 1;
+                                        tgtraz_active = true;
+                                    }
+                                    if (Train.trainspeed > maxspeed + 4)
+                                    {
+                                        if (tpwswarningsound != -1)
+                                        {
+                                            SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
+                                        }
+                                        EBDemanded = true;
+                                        tractionmanager.demandbrakeapplication();
+                                        trainstop = true;
+                                        StopTimer.TimerActive = false;
+                                        tpwsRelease = false;
+                                        AlarmTimer.TimerActive = false;
+                                        if (riarmoTimer.TimerActive == false)
+                                        {
+                                            riarmoTimer.TimerActive = true;
+                                        }
+                                        if (SpiaRossiTimer.TimerActive == false && spiarossi_act == false)
+                                        {
+                                            SpiaRossiTimer.TimerActive = true;
+                                            //maybe needs to be a separate whatsit, come back to this
+                                            spiarossi_act = true;
+                                        }
+                                    }
+
                                 }
+
                                 else
                                 {
                                     //Blink traintrip indicator
@@ -351,226 +356,231 @@ namespace Plugin
                         }
                     }
                 }
+            }
 
-                if (Train.trainspeed == 0)
+            if (Train.trainspeed == 0)
+            {
+                if (StopTimer.TimerActive == false)
                 {
-                    if (StopTimer.TimerActive == false)
-                    {
-                        StopTimer.TimerActive = true;
-                        StopTimer.TimeElapsed = 0;
-                    }
-                    else
-                    {
-                        /*
+                    StopTimer.TimerActive = true;
+                    StopTimer.TimeElapsed = 0;
+                }
+                else
+                {
+                    /*
                          * 
                          * TODO:
                          * Do we need the AWS release? Appears to only be triggered by the AWS startup test
                          * 
                          */
-                        if (awsRelease == true)
+                    if (awsRelease == true)
+                    {
+                        if (awsindicator != -1)
                         {
-                            if (awsindicator != -1)
-                            {
-                                awsindicator = 0;
-                            }
-                            awsStop = false;
-                            awsRelease = false;
+                            awsindicator = 0;
                         }
-                        if (tpwsRelease == true && StopTimer.TimeElapsed > tpwstopdelay*1000)
-                        {
-                            EBDemanded = false;
-                            tractionmanager.resetbrakeapplication();
-                            BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
-                            BrakeDemandIndicator.Lit = false;
-                            tpwsRelease = false;
-                            trainstop = false;
-                        }
-                        
+                        awsStop = false;
+                        awsRelease = false;
                     }
-                }
-                if (OverrideTimer.TimerActive == true)
-                {
-                    OverrideTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
-                    if (OverrideTimer.TimeElapsed > tpwsoverridelifetime*1000)
+                    if (tpwsRelease == true && StopTimer.TimeElapsed > tpwstopdelay*1000)
                     {
-                        TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
-                        TrainstopOverrideIndicator.Lit = false;
-                    }
-                }
-
-                //Set Panel Lights
-                if (spiaSCMT != -1)
-                {
-                    if (SCMT_Alert == true)
-                    {
-                        this.Train.Panel[spiaSCMT] = 1;
-                    }
-                    else
-                    {
-                        this.Train.Panel[spiaSCMT] = 0;
-                    }
-                    if (spiarossi != -1)
-                    {
-                        if (spiarossi_act == false && (phase == 0 || phase == 2))
-                        {
-                            this.Train.Panel[spiarossi] = 0;
-                        }
-                        else
-                        {
-                            this.Train.Panel[spiarossi] = 1;
-                        }
-                    }
-                    if (spiablue != -1)
-                    {
-                        if (spiablue_act == true)
-                        {
-                            this.Train.Panel[spiablue] = 1;
-                        }
-                        else
-                        {
-                            this.Train.Panel[spiablue] = 0;
-                        }
-                    }
-                }
-                //Brake Demand Indicator
-                if (BrakeDemandIndicator.PanelIndex != -1)
-                {
-                    if (BrakeDemandIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
-                    {
-                        BrakeDemandIndicator.Lit = true;
-                    }
-                    else if (BrakeDemandIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
-                    {
-                        BrakeDemandIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
-                        if (BrakeDemandIndicator.TimeElapsed > 500)
-                        {
-                            if (BrakeDemandIndicator.Lit == true)
-                            {
-                                BrakeDemandIndicator.Lit = false;
-                            }
-                            else
-                            {
-                                BrakeDemandIndicator.Lit = true;
-                            }
-                            BrakeDemandIndicator.TimeElapsed = 0.0;
-                        }
-                    }
-                }
-
-                //Trainstop Override Indicator
-                //Repurposed by SCMT
-                if (TrainstopOverrideIndicator.PanelIndex != -1)
-                {
-                    //Calculate state
-                    if (TrainstopOverrideIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
-                    {
-                        TrainstopOverrideIndicator.Lit = true;
-                    }
-                    else if (TrainstopOverrideIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
-                    {
-                        TrainstopOverrideIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
-                        if (TrainstopOverrideIndicator.TimeElapsed > 500)
-                        {
-                            if (TrainstopOverrideIndicator.Lit == true)
-                            {
-                                TrainstopOverrideIndicator.Lit = false;
-                            }
-                            else
-                            {
-                                TrainstopOverrideIndicator.Lit = true;
-                            }
-                            TrainstopOverrideIndicator.TimeElapsed = 0.0;
-                        }
-                    }
-                    else
-                    {
-                        TrainstopOverrideIndicator.Lit = false;
+                        EBDemanded = false;
+                        tractionmanager.resetbrakeapplication();
+                        BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                        BrakeDemandIndicator.Lit = false;
+                        tpwsRelease = false;
+                        trainstop = false;
                     }
 
-                    if (TrainstopOverrideIndicator.Lit == true)
-                    {
-                        this.Train.Panel[TrainstopOverrideIndicator.PanelIndex] = 1;
-                    }
-                    else
-                    {
-                        this.Train.Panel[TrainstopOverrideIndicator.PanelIndex] = 0;
-                    }
                 }
-                if (TraintripIndicator.PanelIndex != -1)
-                {
-                    if (TraintripIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
-                    {
-                        TraintripIndicator.Lit = true;
-                    }
-                    else if (TraintripIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
-                    {
-                        TraintripIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
-                        if (TraintripIndicator.TimeElapsed > 500)
-                        {
-                            if (TraintripIndicator.Lit == true)
-                            {
-                                TraintripIndicator.Lit = false;
-                            }
-                            else
-                            {
-                                TraintripIndicator.Lit = true;
-                            }
-                            TraintripIndicator.TimeElapsed = 0.0;
-                        }
-                    }
-                    else
-                    {
-                        TraintripIndicator.Lit = false;
-                    }
-
-                    if (TraintripIndicator.Lit == true)
-                    {
-                        this.Train.Panel[TraintripIndicator.PanelIndex] = 1;
-                    }
-                    else
-                    {
-                        this.Train.Panel[TraintripIndicator.PanelIndex] = 0;
-                    }
-                }
-                if (srIndicator.PanelIndex != -1)
-                {
-                    if (srIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
-                    {
-                        srIndicator.Lit = true;
-                    }
-                    else if (srIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
-                    {
-                        srIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
-                        if (srIndicator.TimeElapsed > 500)
-                        {
-                            if (srIndicator.Lit == true)
-                            {
-                                srIndicator.Lit = false;
-                            }
-                            else
-                            {
-                                srIndicator.Lit = true;
-                            }
-                            srIndicator.TimeElapsed = 0.0;
-                        }
-                    }
-                    else
-                    {
-                        srIndicator.Lit = false;
-                    }
-
-                    if (srIndicator.Lit == true)
-                    {
-                        this.Train.Panel[srIndicator.PanelIndex] = 1;
-                    }
-                    else
-                    {
-                        this.Train.Panel[srIndicator.PanelIndex] = 0;
-                    }
-                }
-
             }
+            if (OverrideTimer.TimerActive == true)
+            {
+                OverrideTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                if (OverrideTimer.TimeElapsed > tpwsoverridelifetime*1000)
+                {
+                    TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                    TrainstopOverrideIndicator.Lit = false;
+                }
+            }
+
+            //Set Panel Lights
+            if (spiaSCMT != -1)
+            {
+                if (SCMT_Alert == true)
+                {
+                    this.Train.Panel[spiaSCMT] = 1;
+                }
+                else
+                {
+                    this.Train.Panel[spiaSCMT] = 0;
+                }
+                if (spiarossi != -1)
+                {
+                    if (spiarossi_act == false && (phase == 0 || phase == 2))
+                    {
+                        this.Train.Panel[spiarossi] = 0;
+                    }
+                    else
+                    {
+                        this.Train.Panel[spiarossi] = 1;
+                    }
+                }
+                if (spiablue != -1)
+                {
+                    if (spiablue_act == true)
+                    {
+                        this.Train.Panel[spiablue] = 1;
+                    }
+                    else
+                    {
+                        this.Train.Panel[spiablue] = 0;
+                    }
+                }
+                if (testscmt_variable != -1)
+                {
+                    this.Train.Panel[testscmt_variable] = testscmt;
+                }
+            }
+            //Brake Demand Indicator
+            if (BrakeDemandIndicator.PanelIndex != -1)
+            {
+                if (BrakeDemandIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
+                {
+                    BrakeDemandIndicator.Lit = true;
+                }
+                else if (BrakeDemandIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
+                {
+                    BrakeDemandIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
+                    if (BrakeDemandIndicator.TimeElapsed > 500)
+                    {
+                        if (BrakeDemandIndicator.Lit == true)
+                        {
+                            BrakeDemandIndicator.Lit = false;
+                        }
+                        else
+                        {
+                            BrakeDemandIndicator.Lit = true;
+                        }
+                        BrakeDemandIndicator.TimeElapsed = 0.0;
+                    }
+                }
+            }
+
+            //Trainstop Override Indicator
+            //Repurposed by SCMT
+            if (TrainstopOverrideIndicator.PanelIndex != -1)
+            {
+                //Calculate state
+                if (TrainstopOverrideIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
+                {
+                    TrainstopOverrideIndicator.Lit = true;
+                }
+                else if (TrainstopOverrideIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
+                {
+                    TrainstopOverrideIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
+                    if (TrainstopOverrideIndicator.TimeElapsed > 500)
+                    {
+                        if (TrainstopOverrideIndicator.Lit == true)
+                        {
+                            TrainstopOverrideIndicator.Lit = false;
+                        }
+                        else
+                        {
+                            TrainstopOverrideIndicator.Lit = true;
+                        }
+                        TrainstopOverrideIndicator.TimeElapsed = 0.0;
+                    }
+                }
+                else
+                {
+                    TrainstopOverrideIndicator.Lit = false;
+                }
+
+                if (TrainstopOverrideIndicator.Lit == true)
+                {
+                    this.Train.Panel[TrainstopOverrideIndicator.PanelIndex] = 1;
+                }
+                else
+                {
+                    this.Train.Panel[TrainstopOverrideIndicator.PanelIndex] = 0;
+                }
+            }
+            if (TraintripIndicator.PanelIndex != -1)
+            {
+                if (TraintripIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
+                {
+                    TraintripIndicator.Lit = true;
+                }
+                else if (TraintripIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
+                {
+                    TraintripIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
+                    if (TraintripIndicator.TimeElapsed > 500)
+                    {
+                        if (TraintripIndicator.Lit == true)
+                        {
+                            TraintripIndicator.Lit = false;
+                        }
+                        else
+                        {
+                            TraintripIndicator.Lit = true;
+                        }
+                        TraintripIndicator.TimeElapsed = 0.0;
+                    }
+                }
+                else
+                {
+                    TraintripIndicator.Lit = false;
+                }
+
+                if (TraintripIndicator.Lit == true)
+                {
+                    this.Train.Panel[TraintripIndicator.PanelIndex] = 1;
+                }
+                else
+                {
+                    this.Train.Panel[TraintripIndicator.PanelIndex] = 0;
+                }
+            }
+            if (srIndicator.PanelIndex != -1)
+            {
+                if (srIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
+                {
+                    srIndicator.Lit = true;
+                }
+                else if (srIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
+                {
+                    srIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
+                    if (srIndicator.TimeElapsed > 500)
+                    {
+                        if (srIndicator.Lit == true)
+                        {
+                            srIndicator.Lit = false;
+                        }
+                        else
+                        {
+                            srIndicator.Lit = true;
+                        }
+                        srIndicator.TimeElapsed = 0.0;
+                    }
+                }
+                else
+                {
+                    srIndicator.Lit = false;
+                }
+
+                if (srIndicator.Lit == true)
+                {
+                    this.Train.Panel[srIndicator.PanelIndex] = 1;
+                }
+                else
+                {
+                    this.Train.Panel[srIndicator.PanelIndex] = 0;
+                }
+            }
+
         }
+
 
         //Call this function from the main beacon manager
         internal void trigger()

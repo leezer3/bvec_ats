@@ -142,6 +142,12 @@ namespace Plugin
         internal string LCMupKey;
         internal string LCMdownkey;
         internal string TestSCMTKey;
+        //These used to use safetykey && tpwsresetkey
+        //tpwsreset doesn't exist, so move to their own key assignments
+        internal string vigilantekey;
+        internal string vigilanteresetkey;
+
+        //CAWS Key
         internal string CAWSKey = "S";
 
 
@@ -343,13 +349,11 @@ namespace Plugin
 
             if (tractionmanager.brakedemanded == true)
             {
-                if (Train.AWS != null)
+                if (Train.AWS.enabled == true && Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
                 {
-                    if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
-                    {
-                        data.DebugMessage = "EB Brakes demanded by AWS System";
-                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
-                    }
+                    data.DebugMessage = "EB Brakes demanded by AWS System";
+                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+
                 }
                 else if (Train.overspeedtripped == true)
                 {
@@ -361,15 +365,12 @@ namespace Plugin
                     data.DebugMessage = "EB Brakes demanded by deadman's handle";
                     data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                 }
-                else if (Train.TPWS != null)
-                {              
-                    if (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand ||
-                        Train.TPWS.SafetyState == TPWS.SafetyStates.BrakeDemandAcknowledged ||
-                        Train.TPWS.SafetyState == TPWS.SafetyStates.BrakesAppliedCountingDown)
-                    {
-                        data.DebugMessage = "EB Brakes demanded by TPWS Device";
-                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
-                    }
+                else if (Train.TPWS != null && (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand ||
+                                                Train.TPWS.SafetyState == TPWS.SafetyStates.BrakeDemandAcknowledged ||
+                                                Train.TPWS.SafetyState == TPWS.SafetyStates.BrakesAppliedCountingDown))
+                {
+                    data.DebugMessage = "EB Brakes demanded by TPWS Device";
+                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                 }
                 else if (doorlock == true)
                 {
@@ -389,18 +390,20 @@ namespace Plugin
                         data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                     }
                 }
-                if (Train.SCMT.enabled == true)
+                else if (Train.SCMT.enabled == true && SCMT.EBDemanded == true)
                 {
-                    if (SCMT.EBDemanded == true)
-                    {
-                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
-                        data.DebugMessage = "EB Brakes demanded by SCMT Safety System";
-                    }
-                    if (SCMT_Traction.ConstantSpeedBrake == true)
-                    {
-                        data.Handles.BrakeNotch = 1;
-                        data.DebugMessage = "Brake Notch demanaded by SCMT Constant Speed Device";
-                    }
+                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                    data.DebugMessage = "EB Brakes demanded by SCMT Safety System";
+                }
+                else if (Train.SCMT.enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
+                {
+                    data.Handles.BrakeNotch = 1;
+                    data.DebugMessage = "Brake Notch demanaded by SCMT Constant Speed Device";
+                }
+                else if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.EbApplied)
+                {
+                    data.Handles.BrakeNotch = Train.Specs.BrakeNotches + 1;
+                    data.DebugMessage = "EB Brakes demanded by Vigilante Device";
                 }
                 else if (Train.CAWS.enabled == true)
                 {
@@ -793,15 +796,17 @@ namespace Plugin
 
             if (keypressed == safetykey)
             {
-                //Reset Overspeed Trip
-                if ((Train.trainspeed == 0 || Train.vigilance.vigilancecancellable != 0) && Train.overspeedtripped == true)
-                {
-                    Train.overspeedtripped = false;
-                    resetbrakeapplication();
-                }
-
                 if (Train.vigilance != null)
                 {
+                    //Reset Overspeed Trip
+                    if ((Train.trainspeed == 0 || Train.vigilance.vigilancecancellable != 0) &&
+                        Train.overspeedtripped == true)
+                    {
+                        Train.overspeedtripped = false;
+                        resetbrakeapplication();
+                    }
+
+
                     //Reset deadman's handle if independant vigilance is selected & brakes have not been applied
                     if (Train.vigilance.independantvigilance != 0 &&
                         Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied)
@@ -1188,6 +1193,21 @@ namespace Plugin
                     {
                         CAWS.AcknowledgementCountdown = 0.0;
                     }
+                }
+            }
+            //Italian SCMT vigilante system
+            if (Train.vigilance.vigilante == true)
+            {
+                if (keypressed == vigilantekey)
+                {
+                    if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.AlarmSounding)
+                    {
+                        Train.vigilance.VigilanteState = vigilance.VigilanteStates.OnService;
+                    }
+                }
+                else if (keypressed == vigilanteresetkey)
+                {
+                    Train.vigilance.VigilanteReset();
                 }
             }
         }
