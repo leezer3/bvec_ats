@@ -502,7 +502,7 @@ namespace Plugin
                     {
                         //Apply brakes and trip the ACB/VCB
                         breakertrip();
-                        tractionmanager.demandbrakeapplication();
+                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                         if (pantographalarmsound != -1)
                         {
                             SoundManager.Play(pantographalarmsound, 1.0, 1.0, true);
@@ -584,7 +584,7 @@ namespace Plugin
                     {
                         //Apply brakes and trip the ACB/VCB
                         breakertrip();
-                        tractionmanager.demandbrakeapplication();
+                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                         if (pantographalarmsound != -1)
                         {
                             SoundManager.Play(pantographalarmsound, 1.0, 1.0, true);

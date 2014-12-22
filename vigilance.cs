@@ -173,7 +173,7 @@ namespace Plugin
                                     if (vigilanceautorelease != 0)
                                     {
                                         Train.overspeedtripped = false;
-                                        tractionmanager.resetbrakeapplication();
+                                        Train.tractionmanager.resetbrakeapplication();
                                     }
                                 }
                             }
@@ -298,11 +298,11 @@ namespace Plugin
                         else if (DeadmansHandleState == DeadmanStates.BrakesApplied)
                         {
                             //Demand brake application
-                            tractionmanager.demandbrakeapplication();
+                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                             //If we auto-release on coming to a full-stop
                             if (vigilanceautorelease != 0 && Train.trainspeed == 0)
                             {
-                                tractionmanager.resetbrakeapplication();
+                                Train.tractionmanager.resetbrakeapplication();
                                 deadmansalarmtimer = 0.0;
                                 deadmansbraketimer = 0.0;
                                 deadmanstimer = 0.0;
@@ -340,7 +340,7 @@ namespace Plugin
                         else if (VigilanteState == VigilanteStates.EbApplied)
                         {
                             vigilanteTimer = 0.0;
-                            tractionmanager.demandbrakeapplication();
+                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                             if (vigilancealarm != -1)
                             {
                                 SoundManager.Stop(vigilancealarm);
@@ -366,7 +366,7 @@ namespace Plugin
                 if (Train.overspeedtripped == true)
                 {
                     //Overspeed has tripped, apply service brakes
-                    tractionmanager.demandbrakeapplication();
+                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
                 }
 
                 {
@@ -442,7 +442,7 @@ namespace Plugin
                 {
                     SoundManager.Stop(SCMT.tpwswarningsound);
                 }
-                tractionmanager.resetbrakeapplication();
+                Train.tractionmanager.resetbrakeapplication();
                 SCMT.spiarossi_act = false;
                 VigilanteState = VigilanteStates.None;
             }

@@ -259,6 +259,9 @@ namespace Plugin {
 			                case "animations":
 			                    //Twiddle
 			                    break;
+                            case "settings":
+                                //Twiddle
+                                break;
 			                case "windscreen":
 			                    this.Windscreen.enabled = true;
 			                    break;
@@ -1107,7 +1110,15 @@ namespace Plugin {
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
 			                        break;
-                                    
+                                    //Handles some global settings
+                               case "settings":
+			                        switch (key)
+			                        {
+                                        case "independantreset":
+                                            InternalFunctions.ParseBool(value, ref tractionmanager.independantreset, key);
+			                                break;
+			                        }
+			                        break;
 
 			                    case "keyassignments":
 			                        switch (key)

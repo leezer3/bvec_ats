@@ -735,14 +735,14 @@ namespace Plugin
                     {
                         //If we're continuing to accelerate, demand a brake application
                         ConstantSpeedBrake = true;
-                        tractionmanager.demandbrakeapplication();
+                        Train.tractionmanager.demandbrakeapplication(1);
                         flag = 2;
                     }
                     if ((Train.trainspeed < setpointspeed && flag == 2 && lca == true) ||
                         (lca == true && flag == 2 && Train.Handles.PowerNotch == 0) || (lcm == true && flag == 2))
                     {
                         ConstantSpeedBrake = false;
-                        tractionmanager.resetbrakeapplication();
+                        Train.tractionmanager.resetbrakeapplication();
                         flag = 1;
                     }
                     if ((Train.trainspeed < setpointspeed - 2 && flag == 1 && lca == true) ||

@@ -92,7 +92,7 @@ namespace Plugin
                         {
                             EmergencyBrakeCountdown = 0.0;
                             AcknowledgementCountdown = 0.0;
-                            tractionmanager.resetbrakeapplication();
+                            Train.tractionmanager.resetbrakeapplication();
                         }
                         else
                         {
@@ -100,7 +100,7 @@ namespace Plugin
                             {
                                 this.Train.Panel[EBIndicator] = 1;
                             }
-                            tractionmanager.demandbrakeapplication();
+                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
                         }
                     }
                     else if (AcknowledgementCountdown > 0.0)

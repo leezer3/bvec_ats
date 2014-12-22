@@ -164,7 +164,7 @@ namespace Plugin
                         {
 
                             tractionmanager.demandpowercutoff();
-                            tractionmanager.demandbrakeapplication();
+                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                             /*                    if (Plugin.Diesel.Enabled) {
                                                     InterlockManager.DemandTractionPowerCutoff();*/
                         }
@@ -298,6 +298,7 @@ namespace Plugin
             this.suppressionlocation = 0;
             this.MySafetyState = SafetyStates.None;
             this.SunflowerState = SunflowerStates.Warn;
+            Train.tractionmanager.resetbrakeapplication();
 
         }
 

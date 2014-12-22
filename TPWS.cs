@@ -93,7 +93,7 @@ namespace Plugin
         {
             /* Unconditionally resets the Train Protection and Warning System, cancelling any warnings which are already in effect */
             this.Reinitialise(InitializationModes.OnService);
-            tractionmanager.resetbrakeapplication();
+            Train.tractionmanager.resetbrakeapplication();
         }
 
         /// <summary>Call this method from the Traction Manager to isolate the TPWS.</summary>
@@ -124,7 +124,7 @@ namespace Plugin
                         /* TPWS OSS is enabled with legacy behaviour, so check the train's current speed, and issue a Brake Demand if travelling too fast */
                         if (Train.trainspeed > this.osslastspeed)
                         {
-                            tractionmanager.demandbrakeapplication();
+                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches +1);
                             this.MySafetyState = SafetyStates.TssBrakeDemand;
                             this.osslastspeed = 0;
                         }
@@ -226,7 +226,7 @@ namespace Plugin
                     {
                         /* A TPWS Brake Demand has been issued.
                          * Increment the blink timer to enable the Brake Demand indicator to flash */
-                        tractionmanager.demandbrakeapplication();
+                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                         this.indicatorblinktimer = this.indicatorblinktimer + (int)data.ElapsedTime.Milliseconds;
                         if (this.indicatorblinktimer >= 0 && indicatorblinktimer < this.brakeindicatorblinkrate)
                         {
@@ -280,7 +280,7 @@ namespace Plugin
                         {
                             this.brakesappliedtimer = (int)this.brakesappliedtimeout;
                             this.MySafetyState = SafetyStates.None;
-                            tractionmanager.resetbrakeapplication();
+                            Train.tractionmanager.resetbrakeapplication();
                             //InterlockManager.RequestTractionPowerReset();
                         }
                     }
@@ -334,7 +334,7 @@ namespace Plugin
                         this.Reinitialise(InitializationModes.OnService);
                         /* Issue the brake demand */
                         this.MySafetyState = SafetyStates.TssBrakeDemand;
-                        tractionmanager.demandbrakeapplication();
+                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                   //      if (Plugin.Diesel.Enabled)
                   //      {
                   //          InterlockManager.DemandTractionPowerCutoff();

@@ -310,7 +310,7 @@ namespace Plugin
                                             SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
                                         }
                                         EBDemanded = true;
-                                        tractionmanager.demandbrakeapplication();
+                                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                                         trainstop = true;
                                         StopTimer.TimerActive = false;
                                         tpwsRelease = false;
@@ -385,7 +385,7 @@ namespace Plugin
                     if (tpwsRelease == true && StopTimer.TimeElapsed > tpwstopdelay*1000)
                     {
                         EBDemanded = false;
-                        tractionmanager.resetbrakeapplication();
+                        Train.tractionmanager.resetbrakeapplication();
                         BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
                         BrakeDemandIndicator.Lit = false;
                         tpwsRelease = false;
@@ -605,7 +605,7 @@ namespace Plugin
                 {
                     TraintripIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
                     BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
-                    tractionmanager.resetbrakeapplication();
+                    Train.tractionmanager.resetbrakeapplication();
                     TraintripIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
                     BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
                     if (beacon_type == 44003)
@@ -628,7 +628,7 @@ namespace Plugin
                     if (flagriarmo == true)
                     {
                         flagriarmo = false;
-                        tractionmanager.resetbrakeapplication();
+                        Train.tractionmanager.resetbrakeapplication();
                         BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
                         trainstop = false;
                         if (beacon_type == 44003)

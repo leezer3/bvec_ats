@@ -12,7 +12,9 @@ namespace Plugin
         /// <summary>Power cutoff has been demaned</summary>
         internal static bool powercutoffdemanded;
         /// <summary>A safety system has triggered a brake intervention</summary>
-        private static bool brakedemanded;
+        private bool brakedemanded;
+        /// <summary>The current safety system brake notch demanded</summary>
+        internal static int currentbrakenotch;
         private static bool neutralrvrtripped;
         /// <summary>The engine has overheated</summary>
         internal static bool overheated;
@@ -40,6 +42,7 @@ namespace Plugin
         /// <summary>Stores whether the door state is triggering power cutoff or a brake intervention</summary>
         internal bool doorlock;
 
+        internal bool independantreset;
         //Debug/ Advanced Driving Window Functions
         //
         //Is it currently visible?
@@ -241,9 +244,9 @@ namespace Plugin
                     doorlock = true;
                 }
 
-                if (doorapplybrake == 1 && tractionmanager.brakedemanded == false)
+                if (doorapplybrake == 1 && brakedemanded == false)
                 {
-                    tractionmanager.demandbrakeapplication();
+                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
                     data.DebugMessage = "Brakes demanded by open doors";
                     doorlock = true;
                 }
@@ -251,10 +254,10 @@ namespace Plugin
             }
             else
             {
-                if ((tractionmanager.powercutoffdemanded == true || tractionmanager.brakedemanded == true) && doorlock == true)
+                if ((tractionmanager.powercutoffdemanded == true || brakedemanded == true) && doorlock == true)
                 {
                     tractionmanager.resetpowercutoff();
-                    tractionmanager.resetbrakeapplication();
+                    Train.tractionmanager.resetbrakeapplication();
                     doorlock = false;
                 }
 
@@ -266,7 +269,7 @@ namespace Plugin
                 {
                     if (Train.Handles.Reverser == 0)
                     {
-                        tractionmanager.demandbrakeapplication();
+                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
                         tractionmanager.neutralrvrtripped = true;
                     }
                 }
@@ -274,7 +277,7 @@ namespace Plugin
                 {
                     if (Train.Handles.Reverser == 0)
                     {
-                        tractionmanager.demandbrakeapplication();
+                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
                         tractionmanager.neutralrvrtripped = true;
                     }
                 }
@@ -284,19 +287,19 @@ namespace Plugin
                     //OS_ATS Default behaviour
                     if (neutralrvrbrakereset == 0 && Train.Handles.Reverser != 0)
                     {
-                        tractionmanager.resetbrakeapplication();
+                        Train.tractionmanager.resetbrakeapplication();
                         tractionmanager.neutralrvrtripped = false;
                     }
                     //Behaviour 1- Train must come to a full stand before brakes are reset
                     if (neutralrvrbrakereset == 1 && Train.trainspeed == 0)
                     {
-                        tractionmanager.resetbrakeapplication();
+                        Train.tractionmanager.resetbrakeapplication();
                         tractionmanager.neutralrvrtripped = false;
                     }
                     //Behaviour 2- Train must come to a full stand and driver applies full service brakes before reset
                     if (neutralrvrbrakereset == 2 && Train.Handles.BrakeNotch == this.Train.Specs.BrakeNotches && Train.trainspeed == 0)
                     {
-                        tractionmanager.resetbrakeapplication();
+                        Train.tractionmanager.resetbrakeapplication();
                         tractionmanager.neutralrvrtripped = false;
                     }
                 }
@@ -347,88 +350,60 @@ namespace Plugin
                 data.Handles.PowerNotch = 0;
             }
 
-            if (tractionmanager.brakedemanded == true)
+            if (brakedemanded == true)
             {
+                //Set brake notch demanded
+                data.Handles.BrakeNotch = currentbrakenotch;
+                //Update debug messages
                 if (Train.AWS.enabled == true && Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
                 {
                     data.DebugMessage = "EB Brakes demanded by AWS System";
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
-
                 }
                 else if (Train.overspeedtripped == true)
                 {
                     data.DebugMessage = "Service Brakes demanded by overspeed device";
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
                 }
                 else if (Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
                 {
                     data.DebugMessage = "EB Brakes demanded by deadman's handle";
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                 }
                 else if (Train.TPWS != null && (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand ||
                                                 Train.TPWS.SafetyState == TPWS.SafetyStates.BrakeDemandAcknowledged ||
                                                 Train.TPWS.SafetyState == TPWS.SafetyStates.BrakesAppliedCountingDown))
                 {
                     data.DebugMessage = "EB Brakes demanded by TPWS Device";
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                 }
                 else if (doorlock == true)
                 {
                     data.DebugMessage = "Service Brakes demanded by open doors";
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
                 }
                 else if (tractionmanager.neutralrvrtripped)
                 {
                     if (neutralrvrbrake == 1)
                     {
                         data.DebugMessage = "Service Brakes demanded by neutral reverser";
-                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
                     }
                     else if (neutralrvrbrake == 2)
                     {
                         data.DebugMessage = "EB Brakes demanded by neutral reverser";
-                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                     }
                 }
                 else if (Train.SCMT.enabled == true && SCMT.EBDemanded == true)
                 {
                     data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
-                    data.DebugMessage = "EB Brakes demanded by SCMT Safety System";
                 }
                 else if (Train.SCMT.enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
                 {
-                    data.Handles.BrakeNotch = 1;
                     data.DebugMessage = "Brake Notch demanaded by SCMT Constant Speed Device";
                 }
                 else if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.EbApplied)
                 {
-                    data.Handles.BrakeNotch = Train.Specs.BrakeNotches + 1;
                     data.DebugMessage = "EB Brakes demanded by Vigilante Device";
                 }
                 else if (Train.CAWS.enabled == true)
                 {
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                     data.DebugMessage = "EB Brakes demanded by CAWS Safety System";
-                }
-                else
-                {
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
-                }
-            }
-            else if (Train.SCMT != null)
-            {
-                if (SCMT.EBDemanded == true)
-                {
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
-                }
-                if (SCMT.brakeNotchDemanded != 0 && SCMT.brakeNotchDemanded > Train.Handles.BrakeNotch)
-                {
-                    data.Handles.BrakeNotch = SCMT.brakeNotchDemanded;
-                }
-                else
-                {
-                    data.Handles.BrakeNotch = Train.Handles.BrakeNotch;
-                }
+                }      
             }
             else
             {
@@ -652,18 +627,80 @@ namespace Plugin
         }
 
         //Call this function from a safety system to demand a brake application
-        /// <summary>Unconditionally demands a brake application from the traction manager.</summary>
-        internal static void demandbrakeapplication()
+        /// <summary>Demands a brake application from the traction manager.</summary>
+        /// <remarks>Takes the notch demanded as the paramater. If this notch is less than the current notch, do not change notch.</remarks>
+        internal void demandbrakeapplication(int notchdemanded)
         {
-            tractionmanager.brakedemanded = true;
+            brakedemanded = true;
+            if (notchdemanded > currentbrakenotch)
+            {
+                currentbrakenotch = notchdemanded;
+            }
         }
 
-        //Call this function from a safety system to reset a brake application
-        /// <summary>Unconditionally resets a brake application from the traction manager.</summary>
-        internal static void resetbrakeapplication()
+        /// <summary>Attempts to reset a brake application from the traction manager.</summary>
+        /// <remarks>If independantreset is enabled, then the conditions for reseting all safety systems must be met to release
+        /// a brake application.
+        /// The default OS_ATS behaviour is to reset all applications at once.</remarks>
+        internal void resetbrakeapplication()
         {
-
-            tractionmanager.brakedemanded = false;
+            if (independantreset == true)
+            {
+                if (Train.AWS.enabled == true && Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
+                {
+                    return;
+                }
+                if (Train.overspeedtripped == true)
+                {
+                    return;
+                }
+                if (Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+                {
+                    return;
+                }
+                if (Train.TPWS != null && (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand ||
+                                                Train.TPWS.SafetyState == TPWS.SafetyStates.BrakeDemandAcknowledged ||
+                                                Train.TPWS.SafetyState == TPWS.SafetyStates.BrakesAppliedCountingDown))
+                {
+                    return;
+                }
+                if (doorlock == true)
+                {
+                    return;
+                }
+                if (tractionmanager.neutralrvrtripped && neutralrvrbrake == 2)
+                {
+                    return;
+                }
+                if (Train.SCMT.enabled == true && SCMT.EBDemanded == true)
+                {
+                    return;
+                }
+                if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.EbApplied)
+                {
+                    return;
+                }
+                if (Train.CAWS.enabled == true && Train.CAWS.EmergencyBrakeCountdown < 0.0)
+                {
+                    return;
+                }
+                //These conditions set a different brake notch to EB
+                //
+                //Set service brakes as reverser is in neutral
+                if (tractionmanager.neutralrvrtripped && neutralrvrbrake == 1)
+                {
+                    currentbrakenotch = Train.Specs.BrakeNotches;
+                    return;
+                }
+                //Set brake notch 1 for SCMT constant speed device
+                if (Train.SCMT.enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
+                {
+                    currentbrakenotch = 1;
+                    return;
+                }
+            }
+            currentbrakenotch = 0;
+            brakedemanded = false;
         }
 
         //Call this function to attempt to isolate or re-enable the TPWS & AWS Systems
