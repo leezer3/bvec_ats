@@ -61,7 +61,7 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="OpenBveApi">
-      <HintPath>D:\OBVE\OpenBveApi.dll</HintPath>
+      <HintPath>..\..\obve\OpenBveApi.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -95,6 +95,8 @@
     <Compile Include="Animations.cs" />
     <Compile Include="Animations.DoorLightStates.cs" />
     <Compile Include="CAWS.cs" />
+    <Compile Include="PZB.cs" />
+    <Compile Include="PZB.SafetyStates.cs" />
     <Compile Include="SCMT.cs" />
     <Compile Include="SCMT.Traction.Timers.cs" />
     <Compile Include="SCMT_Traction.cs" />
