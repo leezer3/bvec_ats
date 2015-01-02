@@ -60,6 +60,8 @@ namespace Plugin
         {
             AcknowledgementCountdown = 0.0;
             EmergencyBrakeCountdown = 0.0;
+            EBApplied = false;
+            AcknowledgementPending = false;
         }
 
         /// <summary>Is called every frame.</summary>
@@ -79,7 +81,7 @@ namespace Plugin
                         {
                             AcknowledgementCountdown = 7.0;
                         }
-                        else if (NextSignalAspect > CurrentAspect)
+                        else if (NextSignalAspect > CurrentAspect && EBApplied != false)
                         {
                             if (UpgradeSound != -1)
                             {
@@ -194,14 +196,14 @@ namespace Plugin
                 newAspect = signal[0].Aspect;
                 NextSignalLocation = double.MaxValue;
             }
-            if (newAspect < CurrentAspect)
+            if (newAspect < CurrentAspect && EBApplied == false)
             {
                 if (EmergencyBrakeCountdown == 0.0)
                 {
                     AcknowledgementCountdown = 7.0;
                 }
             }
-            else if (newAspect > CurrentAspect)
+            else if (newAspect > CurrentAspect && EBApplied == false)
             {
                 if (UpgradeSound != -1)
                 {
