@@ -61,7 +61,7 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="OpenBveApi">
-      <HintPath>..\..\obve\OpenBveApi.dll</HintPath>
+      <HintPath>..\OpenBveApi.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />

@@ -13,6 +13,8 @@ namespace Plugin
         /// <summary>The current aspect.</summary>
         private int CurrentAspect = 0;
 
+        private int PendingAspect;
+
         /// <summary>The location of the next signal.</summary>
         private double NextSignalLocation = double.MaxValue;
 
@@ -38,7 +40,7 @@ namespace Plugin
         internal int EBIndicator = -1;
 
         /// <summary>The panel index of the CAWS EB Indicator.</summary>
-        internal int AcknowlegementIndicator = -1;
+        internal static int AcknowlegementIndicator = -1;
 
         /// <summary>The current vehicle state.</summary>
         private VehicleState CurrentVehicleState = null;
@@ -47,6 +49,12 @@ namespace Plugin
         {
             this.Train = train;
         }
+
+        /// <summary>Whether there is a pending un-acknowledged CAWS alert.</summary>
+        internal static bool AcknowledgementPending;
+
+        /// <summary>Stores whether CAWS has a current EB application.</summary>
+        internal bool EBApplied;
 
         internal override void Initialize(InitializationModes mode)
         {
@@ -61,7 +69,6 @@ namespace Plugin
         {
             if (this.enabled)
             {
-                bool playDowngradeSound = false;
                 CurrentVehicleState = data.Vehicle;
                 if (NextSignalLocation < double.MaxValue)
                 {
@@ -90,53 +97,71 @@ namespace Plugin
                         EmergencyBrakeCountdown -= data.ElapsedTime.Seconds;
                         if (EmergencyBrakeCountdown < 0.0)
                         {
+                            EBApplied = false;
+                            CurrentAspect = PendingAspect;
                             EmergencyBrakeCountdown = 0.0;
                             AcknowledgementCountdown = 0.0;
                             Train.tractionmanager.resetbrakeapplication();
                         }
                         else
                         {
-                            if (EBIndicator != -1)
-                            {
-                                this.Train.Panel[EBIndicator] = 1;
-                            }
-                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
+                            EBApplied = true;
+                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                         }
                     }
                     else if (AcknowledgementCountdown > 0.0)
                     {
+                        
+                        AcknowledgementPending = true;
                         AcknowledgementCountdown -= data.ElapsedTime.Seconds;
                         if (AcknowledgementCountdown < 0.0)
                         {
                             AcknowledgementCountdown = 0.0;
                             EmergencyBrakeCountdown = 60.0;
-                        }
-                        else
-                        {
-                            if (AcknowlegementIndicator != -1)
-                            {
-                                this.Train.Panel[AcknowlegementIndicator] = 1;
-                            }
-                            playDowngradeSound = true;
+                            AcknowledgementPending = false;
                         }
                     }
                 }
+                
                 //Panel Indicators
                 if (AspectIndicator != -1)
                 {
                     this.Train.Panel[AspectIndicator] = CurrentAspect;
+                    if (EBApplied == true)
+                    {
+                        this.Train.Panel[AspectIndicator] = 0;
+                    }
+                }
+                if (AcknowlegementIndicator != -1)
+                {
+                    if (AcknowledgementPending == true)
+                    {
+                        this.Train.Panel[AcknowlegementIndicator] = 1;
+                    }
+                    else
+                    {
+                        this.Train.Panel[AcknowlegementIndicator] = 0;
+                    }
+                }
+                if (EBIndicator != -1)
+                {
+                    if (EBApplied == true)
+                    {
+                        this.Train.Panel[EBIndicator] = 1;
+                    }
+                    else
+                    {
+                        this.Train.Panel[EBIndicator] = 0;
+                    }
                 }
                 //Sounds
-                if (playDowngradeSound)
+                if (DowngradeSound != -1)
                 {
-                    if (DowngradeSound != -1)
+                    if (AcknowledgementPending == true)
                     {
                         SoundManager.Play(DowngradeSound, 1.0, 1.0, true);
                     }
-                }
-                else
-                {
-                    if (DowngradeSound != -1)
+                    else
                     {
                         SoundManager.Stop(DowngradeSound);
                     }
@@ -183,7 +208,14 @@ namespace Plugin
                     SoundManager.Play(UpgradeSound, 1.0, 1.0, false);
                 }
             }
-            CurrentAspect = newAspect;
+            if (EBApplied == false)
+            {
+                CurrentAspect = newAspect;
+            }
+            else
+            {
+                PendingAspect = newAspect;
+            }
 
         }
     }

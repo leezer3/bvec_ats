@@ -22,13 +22,16 @@ on these operating systems:
 MIGRATING FROM OS_ATS [DEVELOPERS & END USERS]
 ----------------------------------------------
 
+End Users:
 BVEC_ATS supports an automatic upgrade of an existing OS_ATS 
 configuration file.
 OS_ATS1.dll and OS_ATS1.cfg must be present in the same directory as BVEC_ATS.dll
 [On Linux & Mac, the case of these two filenames must match]
 
-Whilst most paramaters are identical, some differ. Please see configuration and
-the online documentation for further details.
+Devlopers:
+If you are migrating from OS_ATS, first allow the plugin to perform an automatic upgrade.
+Whilst the form for most paramaters are identical, some differ slightly. 
+Please see configuration and the online documentation for further details.
   
 CONFIGURATION
 -------------
@@ -39,7 +42,7 @@ for full details on how to configure this plugin.
 BUILDING THE PLUGIN
 -------------------
 
-This plugin has been developed in Visual Studio 2010, C#.Net 2.0
+This plugin has been developed in Visual Studio 2010, C#.Net 4.0
 It should compile without trouble in both Visual Studio & SharpDevelop
 if a reference is added to OpenBVEapi.dll [Found in your OpenBVE directory]
 

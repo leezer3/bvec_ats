@@ -363,9 +363,16 @@ namespace Plugin
                 {
                     data.DebugMessage = "Service Brakes demanded by overspeed device";
                 }
-                else if (Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+                else if (Train.vigilance != null)
                 {
-                    data.DebugMessage = "EB Brakes demanded by deadman's handle";
+                    if (Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+                    {
+                        data.DebugMessage = "EB Brakes demanded by deadman's handle";
+                    }
+                    else if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.EbApplied)
+                    {
+                        data.DebugMessage = "EB Brakes demanded by Vigilante Device";
+                    }
                 }
                 else if (Train.TPWS != null && (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand ||
                                                 Train.TPWS.SafetyState == TPWS.SafetyStates.BrakeDemandAcknowledged ||
@@ -396,14 +403,10 @@ namespace Plugin
                 {
                     data.DebugMessage = "Brake Notch demanaded by SCMT Constant Speed Device";
                 }
-                else if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.EbApplied)
-                {
-                    data.DebugMessage = "EB Brakes demanded by Vigilante Device";
-                }
                 else if (Train.CAWS.enabled == true)
                 {
                     data.DebugMessage = "EB Brakes demanded by CAWS Safety System";
-                }      
+                }
             }
             else
             {
@@ -1229,11 +1232,12 @@ namespace Plugin
                     if (CAWS.AcknowledgementCountdown > 0.0)
                     {
                         CAWS.AcknowledgementCountdown = 0.0;
+                        CAWS.AcknowledgementPending = false;
                     }
                 }
             }
             //Italian SCMT vigilante system
-            if (Train.vigilance.vigilante == true)
+            if (Train.vigilance != null && Train.vigilance.vigilante == true)
             {
                 if (keypressed == vigilantekey)
                 {
