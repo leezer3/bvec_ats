@@ -163,6 +163,9 @@ namespace Plugin {
         /// <summary>CAWS System</summary>
         internal CAWS CAWS;
 
+        /// <summary>PZB System</summary>
+	    internal PZB PZB;
+
         /// <summary>Startup Self-Test Manager</summary>
         internal StartupSelfTestManager StartupSelfTestManager;
 
@@ -1734,6 +1737,18 @@ namespace Plugin {
                             //Set the aspect data and distance to this signal
                             SCMT.beacon_44005 = beacon.Signal.Aspect;
                             SCMT.beacon_distance = beacon.Signal.Distance;
+                        }
+                    }
+                    if (this.PZB.enabled == true)
+                    {
+                        switch (beacon.Type)
+                        {
+                            case 2000:
+                                //Home signal standard inductors
+                                break;
+                            case 2001:
+                                //Home signal speed restrictive inductors
+                                break;
                         }
                     }
                 }
