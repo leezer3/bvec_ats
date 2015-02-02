@@ -317,7 +317,7 @@ namespace Plugin
                 {
                     data.DebugMessage = "Power cutoff demanded by DRA Appliance";
                 }
-                else if (electric.powergap == true)
+                else if (Train.electric.powergap == true)
                 {
                     if (Train.electric.FrontPantographState != electric.PantographStates.OnService && Train.electric.RearPantographState != electric.PantographStates.OnService)
                     {
@@ -328,7 +328,7 @@ namespace Plugin
                         data.DebugMessage = "Power cutoff demanded by electric conductor power gap";
                     }
                 }
-                else if (electric.breakertripped == true)
+                else if (Train.electric.breakertripped == true)
                 {
                     if (Train.electric.FrontPantographState != electric.PantographStates.OnService && Train.electric.RearPantographState != electric.PantographStates.OnService)
                     {
@@ -922,7 +922,7 @@ namespace Plugin
                 //ACB/ VCB toggle
                 if (Train.electric != null)
                 {
-                    electric.breakertrip();
+                    Train.electric.breakertrip();
                 }
             }
             if (keypressed == wiperspeeddown)
@@ -1162,27 +1162,27 @@ namespace Plugin
                 }
                 if (keypressed == steamheatincreasekey)
                 {
-                    if (steam.steamheatlevel < 5)
+                    if (Train.steam.steamheatlevel < 5)
                     {
-                        steam.steamheatlevel++;
+                        Train.steam.steamheatlevel++;
                     }
                 }
                 if (keypressed == steamheatdecreasekey)
                 {
-                    if (steam.steamheatlevel > 0)
+                    if (Train.steam.steamheatlevel > 0)
                     {
-                        steam.steamheatlevel--;
+                        Train.steam.steamheatlevel--;
                     }
                 }
                 if (keypressed == cylindercockskey)
                 {
-                    if (steam.cylindercocks == false)
+                    if (Train.steam.cylindercocks == false)
                     {
-                        steam.cylindercocks = true;
+                        Train.steam.cylindercocks = true;
                     }
                     else
                     {
-                        steam.cylindercocks = false;
+                        Train.steam.cylindercocks = false;
                     }
                 }
             }
@@ -1386,7 +1386,7 @@ namespace Plugin
             //Trigger electric powerloop sound timer
             if (Train.electric != null)
             {
-                electric.powerloop = false;
+                Train.electric.powerloop = false;
                 Train.electric.powerlooptimer = 0.0;
             }
         }

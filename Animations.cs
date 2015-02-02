@@ -227,7 +227,7 @@ namespace Plugin
             //Cylinder cocks puff state is handled in the animations class, but pressure usage is handled in the steam traction class
             if (this.Train.steam != null && cylinderpuff_L != -1)
             {
-                if (steam.cylindercocks == true)
+                if (Train.steam.cylindercocks == true)
                 {
                     if (Train.trainspeed == 0 && Train.Handles.PowerNotch == 0)
                     {
@@ -268,7 +268,7 @@ namespace Plugin
             }
             if (this.Train.steam != null && cylinderpuff_R != -1)
             {
-                if (steam.cylindercocks == true)
+                if (Train.steam.cylindercocks == true)
                 {
                     if (Train.trainspeed == 0 && Train.Handles.PowerNotch == 0)
                     {

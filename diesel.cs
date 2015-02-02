@@ -23,7 +23,7 @@ namespace Plugin
         internal int totalgears = 0;
         /// <summary>The current RPM of the engine</summary>
         internal int currentrevs;
-        internal static bool gearsblocked = false;
+        internal bool gearsblocked = false;
         internal bool gearplayed = true;
         internal int previousrevs;
         /// <summary>The current engine temperature</summary>
@@ -239,7 +239,7 @@ namespace Plugin
             //If reverser is put into neutral when moving, block the gears
             if (reversercontrol != 0 && Train.trainspeed > 0 && Train.Handles.Reverser == 0)
             {
-                diesel.gearsblocked = true;
+                Train.diesel.gearsblocked = true;
             }
 
             if (!nogears)
@@ -319,13 +319,13 @@ namespace Plugin
                 //Automatic gears are handled here
                 if (automatic == true)
                 {
-                    if (diesel.gearsblocked == true)
+                    if (Train.diesel.gearsblocked == true)
                     {
                         power_limit = 0;
                         //Stop, drop to N with no power applied and the gears will unblock
                         if (Train.trainspeed == 0 && Train.Handles.Reverser == 0 && Train.Handles.PowerNotch == 0)
                         {
-                            diesel.gearsblocked = false;
+                            Train.diesel.gearsblocked = false;
                         }
                     }
 
@@ -334,7 +334,7 @@ namespace Plugin
                     {
                         gearplayed = false;
                         //If we aren't in gear & gears aren't blocked
-                        if (gear == 0 && diesel.gearsblocked == false)
+                        if (gear == 0 && Train.diesel.gearsblocked == false)
                         {
                             gear = 1;
                             gearchange();

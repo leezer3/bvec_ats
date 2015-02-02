@@ -416,7 +416,7 @@ namespace Plugin
                 //If reverser is put into neutral when moving, block the gears
                 if (reversercontrol != 0 && Train.trainspeed > 0 && Train.Handles.Reverser == 0)
                 {
-                    diesel.gearsblocked = true;
+                    Train.diesel.gearsblocked = true;
                 }
 
                 if (!nogears)

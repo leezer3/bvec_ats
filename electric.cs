@@ -19,9 +19,9 @@ namespace Plugin
         internal double currentheat;
         internal double temperature;
         /// <summary>Stores whether we are currently in a power gap</summary>
-        internal static bool powergap;
+        internal bool powergap;
         /// <summary>Stores the current state of the ACB/VCB</summary>
-        internal static bool breakertripped;
+        internal bool breakertripped;
         /// <summary>Stores whether the power was cutoff by a legacy OS_ATS standard beacon</summary>
         internal bool legacypowercut;
         internal int nextmagnet;
@@ -33,7 +33,7 @@ namespace Plugin
         internal double pantographcooldowntimer_r;
         internal double pantographcooldowntimer_f;
         internal double powerlooptimer;
-        internal static bool powerloop;
+        internal bool powerloop;
         internal double breakerlooptimer;
 
         /// <summary>The current state of the front pantograph</summary>
@@ -88,7 +88,7 @@ namespace Plugin
         //Sound Indicies
 
         /// <summary>The sound index played when the ACB/VCB is closed</summary>
-        internal static int breakersound = -1;
+        internal int breakersound = -1;
         /// <summary>The sound index played when a pantograph is raised</summary>
         internal int pantographraisedsound = -1;
         /// <summary>The sound index played when a pantograph is lowered</summary>
@@ -392,7 +392,7 @@ namespace Plugin
                         if (legacypowercut == true)
                         {
                             //Reset legacy power cutoff state and retrip breaker
-                            electric.breakertrip();
+                            Train.electric.breakertrip();
                             legacypowercut = false;
                         }
                         if (breakertripped == false && ((FrontPantographState == PantographStates.Disabled && RearPantographState == PantographStates.OnService) || (RearPantographState == PantographStates.Disabled && FrontPantographState == PantographStates.OnService)))
@@ -762,13 +762,13 @@ namespace Plugin
         //This function handles legacy power magnets- Set the electric powergap to true & set the end magnet location
         internal void legacypowercutoff(int trainlocation,int magnetdistance)
         {
-            if (!electric.powergap)
+            if (!Train.electric.powergap)
             {
-                electric.powergap = true;
+                Train.electric.powergap = true;
                 firstmagnet = trainlocation;
                 nextmagnet = trainlocation + magnetdistance;
                 legacypowercut = true;
-                electric.breakertrip();
+                Train.electric.breakertrip();
             }
         }
 
@@ -776,38 +776,38 @@ namespace Plugin
         //Set the next magnet to false
         internal void newpowercutoff(int trainlocation)
         {
-            if (!electric.powergap)
+            if (!Train.electric.powergap)
             {
-                electric.powergap = true;
+                Train.electric.powergap = true;
                 firstmagnet = trainlocation;
                 nextmagnet = 0;
             }
             else
             {
-                electric.powergap = false;
+                Train.electric.powergap = false;
                 lastmagnet = trainlocation;
             }
         }
 
         //Toggle the ACB/VCB based upon it's state
-        internal static void breakertrip()
+        internal void breakertrip()
         {
-            if (!electric.breakertripped)
+            if (!breakertripped)
             {
                 
-                electric.breakertripped = true;
-                electric.powerloop = false;
-                electric.breakerplay();
+                breakertripped = true;
+                powerloop = false;
+                breakerplay();
                 tractionmanager.demandpowercutoff();
             }
             else
             {
                 
-                electric.breakertripped = false;
-                electric.breakerplay();
+                breakertripped = false;
+                breakerplay();
             }
         }
-        internal static void breakerplay()
+        internal void breakerplay()
         {
             if (breakersound != -1)
             {

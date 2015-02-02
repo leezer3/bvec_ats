@@ -24,7 +24,7 @@ namespace Plugin {
         internal int new_power;
         internal int pressureup;
         internal int pressureuse;
-	    internal static int steamheatlevel;
+	    internal int steamheatlevel;
         /// <summary>Stores the current boiler pressure</summary>
         internal int stm_boilerpressure;
         /// <summary>Stores the current boiler water level</summary>
@@ -142,7 +142,7 @@ namespace Plugin {
         /// <summary>The number of units added per second whilst coal is being shovelled</summary>
         internal double shovellingrate = 10;
         /// <summary>Stores whether the cylinder cocks are currently open</summary>
-	    internal static bool cylindercocks;
+	    internal bool cylindercocks;
 
         /// <summary>The base pressure use per second when the cylinder cocks are open</summary>
 	    internal double cylindercocks_basepressureuse = 0;

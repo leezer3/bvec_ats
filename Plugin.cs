@@ -74,7 +74,7 @@ namespace Plugin {
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     properties.FailureReason = "Empty configuration file detected.";
                     return false;
