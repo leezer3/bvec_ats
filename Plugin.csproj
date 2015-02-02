@@ -95,11 +95,22 @@
     <Compile Include="Animations.cs" />
     <Compile Include="Animations.DoorLightStates.cs" />
     <Compile Include="CAWS.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="PZB.cs" />
     <Compile Include="PZB.SafetyStates.cs" />
     <Compile Include="SCMT.cs" />
     <Compile Include="SCMT.Traction.Timers.cs" />
     <Compile Include="SCMT_Traction.cs" />
+    <Compile Include="SteamControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SteamControl.Designer.cs">
+      <DependentUpon>SteamControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="vigilance.DeadmanStates.cs" />
     <Compile Include="diesel.cs" />
     <Compile Include="electric.cs" />
@@ -145,6 +156,13 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AdvancedDrivingMask.resx">
       <DependentUpon>AdvancedDrivingMask.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SteamControl.resx">
+      <DependentUpon>SteamControl.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

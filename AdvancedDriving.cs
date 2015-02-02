@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
@@ -6,6 +7,7 @@ namespace Plugin
 {
     public partial class AdvancedDriving : Form
     {
+        private UserControl SteamPanel;
         //The Advanced Driving form provides an independant debug window
         //Intended to show things such as the current steam production rate versus usage (WIP)
         protected override void OnClosed(EventArgs e)
@@ -67,52 +69,59 @@ namespace Plugin
             this.MinimizeBox = false;
             this.MaximizeBox = false;
             this.ShowInTaskbar = false;
-
-            steambox.Visible = true;
-            
             mask = new AdvancedDrivingMask();
-            mask.Show();
-            
+            mask.Show();          
         }
 
         internal void Elapse(string[] debuginformation, int tractiontype)
         {
-            debuglabel.Text = debuginformation[0];
-            trainspeed.Text = debuginformation[13];
+            
             //Only attempt to display steam related debug information if this is a steam locomotive
             if (tractiontype == 0)
             {
-                pressure.Text = debuginformation[1];
-                genrate.Text = debuginformation[2];
-                userate.Text = debuginformation[3];
+                if (SteamPanel == null)
+                {
+                    SteamPanel = new SteamControl();
+                    Controls.Add(SteamPanel);
+                    SteamPanel.Location = new Point(5,5);
+                }
+                SteamControl.debuglabel.Text = debuginformation[0];
+                SteamControl.trainspeed.Text = debuginformation[13];
+                SteamControl.pressure.Text = debuginformation[1];
+                SteamControl.genrate.Text = debuginformation[2];
+                SteamControl.userate.Text = debuginformation[3];
                 //If we're using more pressure than we're generating, change the usage rate text color to red
                 if (Int32.Parse(debuginformation[3]) > Int32.Parse(debuginformation[2]))
                 {
-                    userate.ForeColor = System.Drawing.Color.Red;
+                    SteamControl.userate.ForeColor = System.Drawing.Color.Red;
                 }
                 else
                 {
-                    userate.ForeColor = System.Drawing.Color.Black;
+                    SteamControl.userate.ForeColor = System.Drawing.Color.Black;
                 }
-                currentcutoff.Text = debuginformation[4];
+                SteamControl.currentcutoff.Text = debuginformation[4];
                 //If the current cutoff is greater than the optimum cutoff, set the text color to red
                 if (double.Parse(debuginformation[4]) > double.Parse(debuginformation[5]))
                 {
-                    currentcutoff.ForeColor = System.Drawing.Color.Red;
+                    SteamControl.currentcutoff.ForeColor = System.Drawing.Color.Red;
                 }
                 else
                 {
-                    currentcutoff.ForeColor = System.Drawing.Color.Black;
+                    SteamControl.currentcutoff.ForeColor = System.Drawing.Color.Black;
                 }
-                optimalcutoff.Text = debuginformation[5];
-                firemass.Text = debuginformation[6];
-                firetemp.Text = debuginformation[7];
-                injectors.Text = debuginformation[8];
-                blowers.Text = debuginformation[9];
-                boilerlevel.Text = debuginformation[10];
-                fuellevel.Text = debuginformation[11];
-                automatic.Text = debuginformation[12];
-                cylindercocks.Text = debuginformation[14];
+                SteamControl.optimalcutoff.Text = debuginformation[5];
+                SteamControl.firemass.Text = debuginformation[6];
+                SteamControl.firetemp.Text = debuginformation[7];
+                SteamControl.injectors.Text = debuginformation[8];
+                SteamControl.blowers.Text = debuginformation[9];
+                SteamControl.boilerlevel.Text = debuginformation[10];
+                SteamControl.fuellevel.Text = debuginformation[11];
+                SteamControl.automatic.Text = debuginformation[12];
+                SteamControl.cylindercocks.Text = debuginformation[14];
+            }
+            else if (tractiontype == 2)
+            {
+                
             }
         }
 
