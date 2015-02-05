@@ -8,6 +8,7 @@ namespace Plugin
     public partial class AdvancedDriving : Form
     {
         private UserControl SteamPanel;
+        private UserControl ElectricPanel;
         //The Advanced Driving form provides an independant debug window
         //Intended to show things such as the current steam production rate versus usage (WIP)
         protected override void OnClosed(EventArgs e)
@@ -70,7 +71,8 @@ namespace Plugin
             this.MaximizeBox = false;
             this.ShowInTaskbar = false;
             mask = new AdvancedDrivingMask();
-            mask.Show();          
+            mask.Show();
+            
         }
 
         internal void Elapse(string[] debuginformation, int tractiontype)
@@ -84,6 +86,7 @@ namespace Plugin
                     SteamPanel = new SteamControl();
                     Controls.Add(SteamPanel);
                     SteamPanel.Location = new Point(5,5);
+                    mask.Size = this.Size;
                 }
                 SteamControl.debuglabel.Text = debuginformation[0];
                 SteamControl.trainspeed.Text = debuginformation[13];
@@ -121,7 +124,19 @@ namespace Plugin
             }
             else if (tractiontype == 2)
             {
-                
+                if (ElectricPanel == null)
+                {
+                    ElectricPanel = new ElectricControl();
+                    Controls.Add(ElectricPanel);
+                    ElectricPanel.Location = new Point(5,5);
+                    mask.Size = this.Size;
+                }
+                ElectricControl.debuglabel.Text = debuginformation[0];
+                ElectricControl.trainspeed.Text = debuginformation[13];
+                ElectricControl.frontpanto.Text = debuginformation[14];
+                ElectricControl.rearpanto.Text = debuginformation[15];
+                ElectricControl.vcb.Text = debuginformation[16];
+                ElectricControl.linecurrent.Text = debuginformation[17];
             }
         }
 

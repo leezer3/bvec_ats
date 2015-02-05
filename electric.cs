@@ -756,6 +756,14 @@ namespace Plugin
                     }
                 }
             }
+            //Pass information to the advanced driving window
+            if (AdvancedDriving.CheckInst != null)
+            {
+                tractionmanager.debuginformation[14] = Convert.ToString(FrontPantographState);
+                tractionmanager.debuginformation[15] = Convert.ToString(RearPantographState);
+                tractionmanager.debuginformation[16] = Convert.ToString(!breakertripped);
+                tractionmanager.debuginformation[17] = Convert.ToString(!powergap);
+            }
             
         }
 

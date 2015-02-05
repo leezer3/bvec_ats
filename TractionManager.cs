@@ -61,7 +61,11 @@ namespace Plugin
          * <para>11. Steam locomotive boiler water levels</para>
          * <para>12. Steam locomotive tanks water levels</para>
          * <para>13. Steam locomotive automatic cutoff state</para>
-         * <para>14. Train speed</para></summary> */
+         * <para>14. Train speed</para>
+         * <para>15. Front pantograph state</para>
+         * <para>16. Rear pantograph state</para>
+         * <para>17. ACB/VCB state</para>
+         * <para>18. Line Volts</para></summary> */
         //These will probably be renumbered at some stage....
 
         public static string[] debuginformation = new string[20];
@@ -317,7 +321,7 @@ namespace Plugin
                 {
                     data.DebugMessage = "Power cutoff demanded by DRA Appliance";
                 }
-                else if (Train.electric.powergap == true)
+                else if (Train.electric != null && Train.electric.powergap == true)
                 {
                     if (Train.electric.FrontPantographState != electric.PantographStates.OnService && Train.electric.RearPantographState != electric.PantographStates.OnService)
                     {
@@ -328,7 +332,7 @@ namespace Plugin
                         data.DebugMessage = "Power cutoff demanded by electric conductor power gap";
                     }
                 }
-                else if (Train.electric.breakertripped == true)
+                else if (Train.electric != null && Train.electric.breakertripped == true)
                 {
                     if (Train.electric.FrontPantographState != electric.PantographStates.OnService && Train.electric.RearPantographState != electric.PantographStates.OnService)
                     {

@@ -105,6 +105,12 @@
     <Compile Include="SCMT.cs" />
     <Compile Include="SCMT.Traction.Timers.cs" />
     <Compile Include="SCMT_Traction.cs" />
+    <Compile Include="ElectricControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ElectricControl.Designer.cs">
+      <DependentUpon>ElectricControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="SteamControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -160,6 +166,9 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ElectricControl.resx">
+      <DependentUpon>ElectricControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SteamControl.resx">
       <DependentUpon>SteamControl.cs</DependentUpon>
