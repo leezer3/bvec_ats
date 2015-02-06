@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Management.Instrumentation;
 using OpenBveApi.Runtime;
 
 namespace Plugin
@@ -23,15 +24,37 @@ namespace Plugin
         internal int HomeSignalWarningSound = -1;
         /// <summary>The light lit continuosly whilst waiting for the driver to acknowledge that a restrictive speed home signal has been passed.</summary>
         internal int HomeSignalWarningLight = -1;
+        /// <summary>The sound played continuously when waiting for the driver to acknowledge an overspeed warning.</summary>
+        internal int OverSpeedWarningSound = -1;
         /// <summary>The light lit when an EB application has been triggered.</summary>
         internal int EBLight = -1;
+        /// <summary>Stores whether a permenant speed restriction is currently active</summary>
+        internal bool SpeedRestrictionActive;
         /// <summary>The current restricted speed.</summary>
         internal int RestrictedSpeed;
         /// <summary>The location of the last inductor.</summary>
         internal double InductorLocation;
 
+        //These define the paramaters of the train
+        /// <summary>Holds the classification of the train- 0 for Higher, 1 for Medium & 2 for Lower.</summary>
+        internal int trainclass = 0;
+        //1000hz Inductors
+        /// <summary>The maximum permissable speed for this classification of train.</summary>
+        internal int MaximumSpeed_1000hz;
+        /// <summary>The length of the brake curve program.</summary>
+        internal int BrakeCurveTime_1000hz;
+        /// <summary>The target speed for the brake curve program.</summary>
+        internal int BrakeCurveTargetSpeed_1000hz;
+        //500hz Inductors
+        /// <summary>The maximum permissable speed for this classification of train.</summary>
+        internal int MaximumSpeed_500hz;
+        /// <summary>The target speed for this brake curve program.</summary>
+        internal int BrakeCurveTargetSpeed_500hz;
+
+
         //Timers
         internal double HomeAcknowledgementTimer;
+        internal double SpeedRestrictionTimer;
 
         private SafetyStates MySafetyState;
         /// <summary>Gets the current warning state of the PZB System.</summary>
@@ -50,6 +73,24 @@ namespace Plugin
             MySafetyState = SafetyStates.None;
             RestrictedSpeed = 0;
             InductorLocation = 0;
+            switch (trainclass)
+            {
+                case 0:
+                    MaximumSpeed_1000hz = 165;
+                    BrakeCurveTime_1000hz = 23;
+                    BrakeCurveTargetSpeed_1000hz = 85;
+                break;
+                case 1:
+                    MaximumSpeed_1000hz = 125;
+                    BrakeCurveTime_1000hz = 29;
+                    BrakeCurveTargetSpeed_1000hz = 70;
+                break;
+                case 2:
+                    MaximumSpeed_1000hz = 105;
+                    BrakeCurveTime_1000hz = 38;
+                    BrakeCurveTargetSpeed_1000hz = 55;
+                break;
+            }
         }
 
         /// <summary>Is called every frame.</summary>
@@ -59,6 +100,8 @@ namespace Plugin
         {
             if (this.enabled)
             {
+                
+
                 if (MySafetyState == SafetyStates.HomePassed)
                 {
                     HomeAcknowledgementTimer += data.ElapsedTime.Milliseconds;
@@ -78,10 +121,18 @@ namespace Plugin
                 }
                 else if (MySafetyState == SafetyStates.HomeBrakeCurveActive)
                 {
-                    if ((Train.trainlocation - InductorLocation) > 1250)
+                    //The distance from the last inductor
+                    double InductorDistance = Train.trainlocation - InductorLocation;
+
+                    //First let's figure out whether the brake curve has expired
+                    if (InductorDistance > 1250)
                     {
                         MySafetyState = SafetyStates.HomeBrakeCurveExpired;
                     }
+
+                    //We are in the brake curve, so work out the speed
+                    //double TargetBrakeCurveSpeed 
+
                 }
                 else if (MySafetyState == SafetyStates.HomeStopPassed)
                 {
@@ -118,7 +169,25 @@ namespace Plugin
                     //Demand EB application
                     Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                 }
+                else if (MySafetyState == SafetyStates.SpeedRestrictionAcknowledgement)
+                {
+                    SpeedRestrictionTimer += data.ElapsedTime.Milliseconds;
+                    if (SpeedRestrictionTimer > 4000)
+                    {
+                        MySafetyState = SafetyStates.SpeedRestrictionBrake;
+                        SpeedRestrictionTimer = 0.0;
+                    }
+                }
+                else if (MySafetyState == SafetyStates.SpeedRestrictionBrakeCurve)
+                {
 
+                    double InductorDistance = Train.trainlocation - InductorLocation;
+
+                }
+                else if (MySafetyState == SafetyStates.SpeedRestrictionBrake)
+                {
+                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches +1);
+                }
 
                 //Panel Lights
                 {
@@ -182,10 +251,19 @@ namespace Plugin
                     }
                     break;
                 case 2001:
-                    //Home signal showing a speed restrictive aspect
+                    //Home signal showing a potentially speed restrictive aspect
                     RestrictedSpeed = data;
-                    MySafetyState = SafetyStates.HomePassed;
-                    HomeAcknowledgementTimer = 0.0;
+                    if (BeaconAspect == 0)
+                    {
+                        //If this signal is RED, trigger an EB application immediately
+                        MySafetyState = SafetyStates.HomeStopEBApplication;
+                    }
+                    else
+                    {
+                        //Otherwise, start the acknowledgement phase
+                        MySafetyState = SafetyStates.HomePassed;
+                        HomeAcknowledgementTimer = 0.0;
+                    }
                     InductorLocation = Train.trainlocation;
                     break;
             }
@@ -197,6 +275,10 @@ namespace Plugin
             if (MySafetyState == SafetyStates.HomePassed)
             {
                 MySafetyState = SafetyStates.HomeBrakeCurveActive;
+            }
+            if (MySafetyState == SafetyStates.SpeedRestrictionAcknowledgement)
+            {
+                MySafetyState = SafetyStates.SpeedRestrictionBrakeCurve;
             }
         }
     }

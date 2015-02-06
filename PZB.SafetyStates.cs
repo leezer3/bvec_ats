@@ -32,6 +32,12 @@ namespace Plugin
             HomeStopPassedAuthorised = 11,
             /// <summary>A home signal has been passed and the EB has been applied.</summary>
             HomeStopEBApplication = 12,
+            /// <summary>The train is currently exceeding a permenant speed restriction.</summary>
+            SpeedRestrictionAcknowledgement = 13,
+            /// <summary>The speed restriction brake curve is active.</summary>
+            SpeedRestrictionBrakeCurve = 14,
+            /// <summary>The train brakes have been applied due to overspeed.</summary>
+            SpeedRestrictionBrake = 15,
         }
     }
 }

@@ -1741,13 +1741,29 @@ namespace Plugin {
                     }
                     if (this.PZB.enabled == true)
                     {
+                        
                         switch (beacon.Type)
                         {
+                            case 1000:
+                                if (beacon.Optional != 0)
+                                {
+                                    PZB.Trigger(beacon.Type, beacon.Optional);
+                                    PZB.SpeedRestrictionActive = true;
+                                }
+                                else
+                                {
+                                    PZB.SpeedRestrictionActive = false;
+                                }
+                                break;
                             case 2000:
                                 //Home signal standard inductors
+                                PZB.BeaconAspect = beacon.Signal.Aspect;
+                                PZB.Trigger(beacon.Type, beacon.Optional);
                                 break;
                             case 2001:
                                 //Home signal speed restrictive inductors
+                                PZB.BeaconAspect = beacon.Signal.Aspect;
+                                PZB.Trigger(beacon.Type, beacon.Optional);
                                 break;
                         }
                     }
