@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using System.IO;
 using OpenBveApi.Runtime;
+using Plugin.AI;
 
 namespace Plugin {
 	/// <summary>The interface to be implemented by the plugin.</summary>
@@ -11,9 +12,7 @@ namespace Plugin {
 
         /// <summary>The train that is simulated by this plugin.</summary>
         private Train Train = null;
-		/// <summary>Holds the array of panel variables.</summary>
-		
-		
+  
 		/// <summary>Is called when the plugin is loaded.</summary>
 		/// <param name="properties">The properties supplied to the plugin on loading.</param>
 		/// <returns>Whether the plugin was loaded successfully.</returns>
@@ -21,10 +20,10 @@ namespace Plugin {
         {
             properties.Panel = new int[272];
             SoundManager.Initialise(properties.PlaySound, 256);
-            properties.AISupport = AISupport.None;
+            properties.AISupport = AISupport.Basic;
             this.Train = new Train(properties.Panel);
             //No AI Support
-            properties.AISupport = AISupport.None;
+            //properties.AISupport = AISupport.None;
 
             this.Train = new Train(properties.Panel);
             string configFile = Path.Combine(properties.TrainFolder, "BVEC_Ats.cfg");
@@ -308,13 +307,12 @@ namespace Plugin {
 		public void SetBeacon(BeaconData beacon) {
             this.Train.SetBeacon(beacon);
 		}
-		
-		/// <summary>Is called when the plugin should perform the AI.</summary>
-		/// <param name="data">The AI data.</param>
-		public void PerformAI(AIData data) {
-			// TODO: Implement this function if you want your plugin to support the AI.
-			//       Be to set properties.AISupport to AISupport.Basic in the Load call if you do.
-		}
-		
+
+	    /// <summary>Is called when the plugin should perform the AI.</summary>
+	    /// <param name="data">The AI data.</param>
+	    public void PerformAI(AIData data)
+	    {
+	        this.Train.PerformAI(data);
+	    }
 	}
 }

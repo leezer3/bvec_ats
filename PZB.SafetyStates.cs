@@ -24,20 +24,22 @@ namespace Plugin
             HomeBrakeCurveExpired = 7,
             /// <summary>The speed has dropped below 10km/h during the home braking curve and is now limited to the low speed value.</summary>
             HomeBrakeCurveLowSpeed = 8,
+            /// <summary>Failure to keep within the brake curve has resulted in an EB application.</summary>
+            HomeBrakeCurveEB = 9,
             /// <summary>Failure to acknowledge the distant signal warning horn has resulted in an EB application.</summary>
-            DistantEBApplication = 9,
+            DistantEBApplication = 10,
             /// <summary>A home signal inductor has been .</summary>
-            HomeStopPassed = 10,
+            HomeStopPassed = 11,
             /// <summary>A home signal has been passed under authorised conditions.</summary>
-            HomeStopPassedAuthorised = 11,
+            HomeStopPassedAuthorised = 12,
             /// <summary>A home signal has been passed and the EB has been applied.</summary>
-            HomeStopEBApplication = 12,
+            HomeStopEBApplication = 13,
             /// <summary>The train is currently exceeding a permenant speed restriction.</summary>
-            SpeedRestrictionAcknowledgement = 13,
+            SpeedRestrictionAcknowledgement = 14,
             /// <summary>The speed restriction brake curve is active.</summary>
-            SpeedRestrictionBrakeCurve = 14,
+            SpeedRestrictionBrakeCurve = 15,
             /// <summary>The train brakes have been applied due to overspeed.</summary>
-            SpeedRestrictionBrake = 15,
+            SpeedRestrictionBrake = 16,
         }
     }
 }

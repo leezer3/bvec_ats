@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 
 using OpenBveApi.Runtime;
+using Plugin.AI;
 
 namespace Plugin {
 	/// <summary>Represents a train that is simulated by this plugin.</summary>
@@ -175,6 +176,8 @@ namespace Plugin {
         /// <summary>Advanced animation handlers</summary>
         internal Animations Animations;
 
+        /// <summary>The AI Driver</summary>
+        internal AI.AI_Driver Driver;
 
 		/// <summary>A list of all the devices installed on this train</summary>
 		internal Device[] Devices;
@@ -210,6 +213,7 @@ namespace Plugin {
             this.CAWS = new CAWS(this);
             this.TPWS = new TPWS(this);
             this.SCMT = new SCMT(this);
+            this.Driver = new AI_Driver(this);
             this.SCMT_Traction = new SCMT_Traction(this);
             this.Windscreen = new Windscreen(this);
             this.Animations = new Animations(this);
@@ -1372,8 +1376,8 @@ namespace Plugin {
 		
 		/// <summary>Is called every frame.</summary>
 		/// <param name="data">The data.</param>
-		internal void Elapse(ElapseData data) {
-            
+		internal void Elapse(ElapseData data)
+		{
 			this.PluginInitializing = false;
 			if (data.ElapsedTime.Seconds > 0.0 & data.ElapsedTime.Seconds < 1.0) {
 				
@@ -1769,9 +1773,18 @@ namespace Plugin {
                     }
                 }
             }
-        }    
-        
+        }
 
+        /// <summary>Is called when the plugin should perform the AI.</summary>
+        /// <param name="data">The AI data.</param>
+        public void PerformAI(AIData data)
+        {
+            if (Driver == null)
+            {
+                return;
+            }
+            Driver.TrainDriver(data);
+        }
 		
 		
 

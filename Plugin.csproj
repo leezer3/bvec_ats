@@ -85,6 +85,7 @@
     <Compile Include="AdvancedDrivingMask.Designer.cs">
       <DependentUpon>AdvancedDrivingMask.cs</DependentUpon>
     </Compile>
+    <Compile Include="AI\AI.Driver.cs" />
     <Compile Include="AWS.SafetyStates.cs">
       <SubType>Code</SubType>
     </Compile>

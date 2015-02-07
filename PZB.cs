@@ -34,6 +34,8 @@ namespace Plugin
         internal int RestrictedSpeed;
         /// <summary>The location of the last inductor.</summary>
         internal double InductorLocation;
+        /// <summary>Stores whether we've entered the switch mode of the home brake curve.</summary>
+        internal bool HomeBrakeCurveSwitch;
 
         //These define the paramaters of the train
         /// <summary>Holds the classification of the train- 0 for Higher, 1 for Medium & 2 for Lower.</summary>
@@ -130,9 +132,31 @@ namespace Plugin
                         MySafetyState = SafetyStates.HomeBrakeCurveExpired;
                     }
 
-                    //We are in the brake curve, so work out the speed
-                    //double TargetBrakeCurveSpeed 
+                    //We are in the brake curve, so work out maximum speed
+                    double MaxBrakeCurveSpeed = ((MaximumSpeed_1000hz - BrakeCurveTargetSpeed_1000hz)/ 1250.0)* InductorDistance;
+                    if (Train.trainspeed > MaxBrakeCurveSpeed || HomeBrakeCurveSwitch == true && Train.trainspeed > 45)
+                    {
+                        MySafetyState = SafetyStates.HomeBrakeCurveEB;
+                    }
 
+                    //If we've dropped below the switch speed, then switch to alternate speed restriction
+                    if (Train.trainspeed < 10)
+                    {
+                        HomeBrakeCurveSwitch = true;
+                    }
+                    
+                }
+                else if (MySafetyState == SafetyStates.HomeBrakeCurveEB)
+                {
+                    //Apply EB brakes
+                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                    HomeBrakeCurveSwitch = false;
+                    //TODO:
+                    //Requires sound and release conditions
+                }
+                else if (MySafetyState == SafetyStates.HomeBrakeCurveExpired)
+                {
+                    HomeBrakeCurveSwitch = false;
                 }
                 else if (MySafetyState == SafetyStates.HomeStopPassed)
                 {
@@ -193,7 +217,7 @@ namespace Plugin
                 {
                     if (EBLight != -1)
                     {
-                        if (MySafetyState == SafetyStates.DistantEBApplication || MySafetyState == SafetyStates.HomeStopEBApplication)
+                        if (MySafetyState == SafetyStates.DistantEBApplication || MySafetyState == SafetyStates.HomeStopEBApplication || MySafetyState == SafetyStates.HomeBrakeCurveEB)
                         {
                             this.Train.Panel[EBLight] = 1;
                         }
