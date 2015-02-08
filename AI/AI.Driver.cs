@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections;
+using System.Data;
 using System.Windows.Forms;
 using OpenBveApi.Runtime;
 
@@ -16,9 +17,60 @@ namespace Plugin.AI
         }
 
         internal bool PantographRising;
+        internal bool SelfTestPerformed;
+        internal int SelfTestSequence = 0;
+        internal bool AWSWarningRecieved;
 
         internal void TrainDriver(AIData data)
         {
+            //Check if we need to perform the startup self-test
+            if (SelfTestPerformed == false)
+            {
+
+                if (Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.Initialised)
+                {
+                    SelfTestPerformed = true;
+                }
+                else
+                {
+                    switch (SelfTestSequence)
+                    {
+                        case 0:
+                            data.Handles.Reverser = 1;
+                            data.Response = AIResponse.Long;
+                            SelfTestSequence++;
+                            break;
+                        case 1:
+                            data.Response = AIResponse.Long;
+                            SelfTestSequence++;
+                            break;
+                        case 2:
+                            data.Handles.Reverser = 0;
+                            data.Response = AIResponse.Long;
+                            SelfTestSequence++;
+                            break;
+                        case 3:
+                            data.Response = AIResponse.Long;;
+                            SelfTestSequence++;
+                            break;
+                        case 4:
+                            data.Response = AIResponse.Long; ;
+                            SelfTestSequence++;
+                            break;
+                        case 5:
+                            SelfTestSequence++;
+                            if (Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.AwaitingDriverInteraction)
+                            {
+                                Train.StartupSelfTestManager.driveracknowledge();
+                                data.Response = AIResponse.Long;
+                            }
+                            SelfTestPerformed = true;
+                            SelfTestSequence = 0;
+                            break;
+                    }
+                }
+                return;
+            }
             //Run the traction specific AI first
             switch (tractionmanager.tractiontype)
             {
@@ -38,8 +90,31 @@ namespace Plugin.AI
                 if (Train.vigilance.deadmanstimer > (Train.vigilance.vigilancetime * 0.7))
                 {
                     Train.vigilance.deadmanstimer = 0.0;
+                    data.Response = AIResponse.Medium;
                 }
             }
+            //AWS Handling
+            if (Train.AWS != null && Train.AWS.enabled == true)
+            {
+                if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerActive)
+                {
+                    if (AWSWarningRecieved == false)
+                    {
+                        AWSWarningRecieved = true;
+                        data.Response = AIResponse.Long;
+                    }
+                    else
+                    {
+                        Train.AWS.Acknowlege();
+                        data.Response = AIResponse.Medium;
+                    }
+                }
+            }
+        }
+
+        internal void AWSSystem(ref AIData data)
+        {
+            
         }
 
         /// <summary>Represents the driver class for a steam locomotive</summary>
