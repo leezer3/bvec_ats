@@ -157,6 +157,10 @@ namespace Plugin
         //CAWS Key
         internal string CAWSKey = "S";
 
+        //PZB Keys
+        internal string PZBKey = "A2";
+        internal string PZBReleaseKey = "A1";
+
 
         //Arrays
         int[] klaxonarray;
@@ -1253,6 +1257,17 @@ namespace Plugin
                 else if (keypressed == vigilanteresetkey)
                 {
                     Train.vigilance.VigilanteReset();
+                }
+            }
+            if (Train.PZB != null)
+            {
+                if (keypressed == PZBKey)
+                {
+                    Train.PZB.Acknowledge();
+                }
+                if (keypressed == PZBReleaseKey)
+                {
+                    Train.PZB.Release();
                 }
             }
         }

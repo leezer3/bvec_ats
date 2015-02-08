@@ -257,6 +257,10 @@ namespace Plugin {
                             case "caws":
                                 this.CAWS.enabled = true;
                                 break;
+                            case "pzb":
+			                    this.PZB = new PZB(this);
+			                    this.PZB.enabled = true;
+			                    break;
 			                case "interlocks":
 			                    //Twiddle
 			                    break;
@@ -1346,6 +1350,11 @@ namespace Plugin {
                 devices.Add(this.CAWS);
             }
 
+            if (this.PZB != null)
+            {
+                devices.Add(this.PZB);
+            }
+
             if (this.Windscreen != null)
             {
                 devices.Add(this.Windscreen);
@@ -1685,92 +1694,87 @@ namespace Plugin {
                             TPWS.ArmOss(beacon.Optional);
                             break;
                     }
-                    //SCMT Safety System Beacons
-                    if (this.SCMT.enabled == true)
+                    
+                }
+                
+            }
+            //SCMT Safety System Beacons
+            if (this.SCMT.enabled == true)
+            {
+                if (SCMT.testscmt == 0)
+                {
+                    return;
+                }
+                if (beacon.Type == 44002 || beacon.Type == 44003 || beacon.Type == 44004)
+                {
+                    //Trigger a SCMT alert
+                    SCMT.trigger();
+                    //Set the beacon type and signal data for the recieved beacon
+                    SCMT.beacon_type = beacon.Type;
+                    SCMT.beacon_signal = beacon.Signal;
+                    //Now parse the beacon type and react appropriately
+                    switch (beacon.Type)
                     {
-                        if (SCMT.testscmt == 0)
-                        {
-                            return;
-                        }
-                        if (beacon.Type == 44002 || beacon.Type == 44003 || beacon.Type == 44004)
-                        {
-                            //Trigger a SCMT alert
-                            SCMT.trigger();
-                            //Set the beacon type and signal data for the recieved beacon
-                            SCMT.beacon_type = beacon.Type;
-                            SCMT.beacon_signal = beacon.Signal;
-                            //Now parse the beacon type and react appropriately
-                            switch (beacon.Type)
+                        case 44002:
+                            //Trigger if the signal for the last beacon 44005 recieved was at a danger aspect
+                            if (SCMT.beacon_44005 == 4)
                             {
-                                case 44002:
-                                    //Trigger if the signal for the last beacon 44005 recieved was at a danger aspect
-                                    if (SCMT.beacon_44005 == 4)
-                                    {
-                                        //Set the SCMT last beacon type recieved to 44004
-                                        SCMT.beacon_type = 44004;
-                                        //Reset the blue light timer for SCMT
-                                        SCMT.SpiabluTimer.TimerActive = true;
-                                        SCMT.SpiabluTimer.TimeElapsed = 0;
-                                    }
-                                    break;
-                                case 44003:
-                                    SCMT.beacon_speed = SCMT.speed;
-                                    SCMT.beacon_type = 44004;
-                                    SCMT.SpiabluTimer.TimerActive = false;
-                                    SCMT.spiablue_act = false;
-                                    break;
-                                case 44004:
-                                    SCMT.speed = beacon.Optional;
-                                    SCMT.beacon_speed = beacon.Optional;
-                                    break;
+                                //Set the SCMT last beacon type recieved to 44004
+                                SCMT.beacon_type = 44004;
+                                //Reset the blue light timer for SCMT
+                                SCMT.SpiabluTimer.TimerActive = true;
+                                SCMT.SpiabluTimer.TimeElapsed = 0;
                             }
-                            //Set the maximum permissable and alert speeds
-                            SCMT.maxspeed = SCMT.beacon_speed;
-                            SCMT.alertspeed = SCMT.alertspeed + 2;
-                        }
-                        if (beacon.Type == 44005)
-                        {
-                            if (SCMT.beacon_44005 == 3 && SCMT.curveflag == false)
-                            {
-                                SCMT.curveflag = true;
-                            }
-                            else
-                            {
-                                SCMT.curveflag = false;
-                            }
-                            //Set the aspect data and distance to this signal
-                            SCMT.beacon_44005 = beacon.Signal.Aspect;
-                            SCMT.beacon_distance = beacon.Signal.Distance;
-                        }
+                            break;
+                        case 44003:
+                            SCMT.beacon_speed = SCMT.speed;
+                            SCMT.beacon_type = 44004;
+                            SCMT.SpiabluTimer.TimerActive = false;
+                            SCMT.spiablue_act = false;
+                            break;
+                        case 44004:
+                            SCMT.speed = beacon.Optional;
+                            SCMT.beacon_speed = beacon.Optional;
+                            break;
                     }
-                    if (this.PZB.enabled == true)
+                    //Set the maximum permissable and alert speeds
+                    SCMT.maxspeed = SCMT.beacon_speed;
+                    SCMT.alertspeed = SCMT.alertspeed + 2;
+                }
+                if (beacon.Type == 44005)
+                {
+                    if (SCMT.beacon_44005 == 3 && SCMT.curveflag == false)
                     {
-                        
-                        switch (beacon.Type)
-                        {
-                            case 1000:
-                                if (beacon.Optional != 0)
-                                {
-                                    PZB.Trigger(beacon.Type, beacon.Optional);
-                                    PZB.SpeedRestrictionActive = true;
-                                }
-                                else
-                                {
-                                    PZB.SpeedRestrictionActive = false;
-                                }
-                                break;
-                            case 2000:
-                                //Home signal standard inductors
-                                PZB.BeaconAspect = beacon.Signal.Aspect;
-                                PZB.Trigger(beacon.Type, beacon.Optional);
-                                break;
-                            case 2001:
-                                //Home signal speed restrictive inductors
-                                PZB.BeaconAspect = beacon.Signal.Aspect;
-                                PZB.Trigger(beacon.Type, beacon.Optional);
-                                break;
-                        }
+                        SCMT.curveflag = true;
                     }
+                    else
+                    {
+                        SCMT.curveflag = false;
+                    }
+                    //Set the aspect data and distance to this signal
+                    SCMT.beacon_44005 = beacon.Signal.Aspect;
+                    SCMT.beacon_distance = beacon.Signal.Distance;
+                }
+            }
+            if (this.PZB != null)
+            {
+
+                switch (beacon.Type)
+                {
+                    case 1000:
+                        PZB.BeaconAspect = beacon.Signal.Aspect;
+                        PZB.Trigger(beacon.Type, beacon.Optional);
+                        break;
+                    case 2000:
+                        //Home signal standard inductors
+                        PZB.BeaconAspect = beacon.Signal.Aspect;
+                        PZB.Trigger(beacon.Type, beacon.Optional);
+                        break;
+                    case 2001:
+                        //Home signal speed restrictive inductors
+                        PZB.BeaconAspect = beacon.Signal.Aspect;
+                        PZB.Trigger(beacon.Type, beacon.Optional);
+                        break;
                 }
             }
         }

@@ -100,6 +100,7 @@ namespace Plugin.AI
                 {
                     if (AWSWarningRecieved == false)
                     {
+                        //This gives a realistic delay between the AWS warning being recieved and the driver acknowledging it
                         AWSWarningRecieved = true;
                         data.Response = AIResponse.Long;
                     }
