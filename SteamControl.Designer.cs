@@ -453,23 +453,23 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
-        public static System.Windows.Forms.Label trainspeed;
+        public System.Windows.Forms.Label trainspeed;
         private System.Windows.Forms.Label label18;
-        public static System.Windows.Forms.Label debuglabel;
+        public System.Windows.Forms.Label debuglabel;
         private System.Windows.Forms.Label label1;
-        public static System.Windows.Forms.Label cylindercocks;
-        public static System.Windows.Forms.Label automatic;
-        public static System.Windows.Forms.Label boilerlevel;
-        public static System.Windows.Forms.Label fuellevel;
-        public static System.Windows.Forms.Label blowers;
-        public static System.Windows.Forms.Label injectors;
-        public static System.Windows.Forms.Label pressure;
-        public static System.Windows.Forms.Label firetemp;
-        public static System.Windows.Forms.Label firemass;
-        public static System.Windows.Forms.Label optimalcutoff;
-        public static System.Windows.Forms.Label currentcutoff;
-        public static System.Windows.Forms.Label userate;
-        public static System.Windows.Forms.Label genrate;
+        public System.Windows.Forms.Label cylindercocks;
+        public System.Windows.Forms.Label automatic;
+        public System.Windows.Forms.Label boilerlevel;
+        public System.Windows.Forms.Label fuellevel;
+        public System.Windows.Forms.Label blowers;
+        public System.Windows.Forms.Label injectors;
+        public System.Windows.Forms.Label pressure;
+        public System.Windows.Forms.Label firetemp;
+        public System.Windows.Forms.Label firemass;
+        public System.Windows.Forms.Label optimalcutoff;
+        public System.Windows.Forms.Label currentcutoff;
+        public System.Windows.Forms.Label userate;
+        public System.Windows.Forms.Label genrate;
 
     }
 }

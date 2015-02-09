@@ -7,8 +7,10 @@ namespace Plugin
 {
     public partial class AdvancedDriving : Form
     {
-        private UserControl SteamPanel;
-        private UserControl ElectricPanel;
+        internal SteamControl SteamPanel;
+        internal ElectricControl ElectricPanel;
+        internal PZBControl PZBPanel;
+        
         //The Advanced Driving form provides an independant debug window
         //Intended to show things such as the current steam production rate versus usage (WIP)
         protected override void OnClosed(EventArgs e)
@@ -88,39 +90,39 @@ namespace Plugin
                     SteamPanel.Location = new Point(5,5);
                     mask.Size = this.Size;
                 }
-                SteamControl.debuglabel.Text = debuginformation[0];
-                SteamControl.trainspeed.Text = debuginformation[13];
-                SteamControl.pressure.Text = debuginformation[1];
-                SteamControl.genrate.Text = debuginformation[2];
-                SteamControl.userate.Text = debuginformation[3];
+                SteamPanel.debuglabel.Text = debuginformation[0];
+                SteamPanel.trainspeed.Text = debuginformation[13];
+                SteamPanel.pressure.Text = debuginformation[1];
+                SteamPanel.genrate.Text = debuginformation[2];
+                SteamPanel.userate.Text = debuginformation[3];
                 //If we're using more pressure than we're generating, change the usage rate text color to red
                 if (Int32.Parse(debuginformation[3]) > Int32.Parse(debuginformation[2]))
                 {
-                    SteamControl.userate.ForeColor = System.Drawing.Color.Red;
+                    SteamPanel.userate.ForeColor = System.Drawing.Color.Red;
                 }
                 else
                 {
-                    SteamControl.userate.ForeColor = System.Drawing.Color.Black;
+                    SteamPanel.userate.ForeColor = System.Drawing.Color.Black;
                 }
-                SteamControl.currentcutoff.Text = debuginformation[4];
+                SteamPanel.currentcutoff.Text = debuginformation[4];
                 //If the current cutoff is greater than the optimum cutoff, set the text color to red
                 if (double.Parse(debuginformation[4]) > double.Parse(debuginformation[5]))
                 {
-                    SteamControl.currentcutoff.ForeColor = System.Drawing.Color.Red;
+                    SteamPanel.currentcutoff.ForeColor = System.Drawing.Color.Red;
                 }
                 else
                 {
-                    SteamControl.currentcutoff.ForeColor = System.Drawing.Color.Black;
+                    SteamPanel.currentcutoff.ForeColor = System.Drawing.Color.Black;
                 }
-                SteamControl.optimalcutoff.Text = debuginformation[5];
-                SteamControl.firemass.Text = debuginformation[6];
-                SteamControl.firetemp.Text = debuginformation[7];
-                SteamControl.injectors.Text = debuginformation[8];
-                SteamControl.blowers.Text = debuginformation[9];
-                SteamControl.boilerlevel.Text = debuginformation[10];
-                SteamControl.fuellevel.Text = debuginformation[11];
-                SteamControl.automatic.Text = debuginformation[12];
-                SteamControl.cylindercocks.Text = debuginformation[14];
+                SteamPanel.optimalcutoff.Text = debuginformation[5];
+                SteamPanel.firemass.Text = debuginformation[6];
+                SteamPanel.firetemp.Text = debuginformation[7];
+                SteamPanel.injectors.Text = debuginformation[8];
+                SteamPanel.blowers.Text = debuginformation[9];
+                SteamPanel.boilerlevel.Text = debuginformation[10];
+                SteamPanel.fuellevel.Text = debuginformation[11];
+                SteamPanel.automatic.Text = debuginformation[12];
+                SteamPanel.cylindercocks.Text = debuginformation[14];
             }
             else if (tractiontype == 2)
             {
@@ -131,12 +133,30 @@ namespace Plugin
                     ElectricPanel.Location = new Point(5,5);
                     mask.Size = this.Size;
                 }
-                ElectricControl.debuglabel.Text = debuginformation[0];
-                ElectricControl.trainspeed.Text = debuginformation[13];
-                ElectricControl.frontpanto.Text = debuginformation[14];
-                ElectricControl.rearpanto.Text = debuginformation[15];
-                ElectricControl.vcb.Text = debuginformation[16];
-                ElectricControl.linecurrent.Text = debuginformation[17];
+                ElectricPanel.debuglabel.Text = debuginformation[0];
+                ElectricPanel.trainspeed.Text = debuginformation[13];
+                ElectricPanel.frontpanto.Text = debuginformation[14];
+                ElectricPanel.rearpanto.Text = debuginformation[15];
+                ElectricPanel.vcb.Text = debuginformation[16];
+                ElectricPanel.linecurrent.Text = debuginformation[17];
+            }
+            else
+            {
+                if (PZBPanel == null)
+                {
+                    PZBPanel = new PZBControl();
+                    Controls.Add(PZBPanel);
+                    PZBPanel.Location = new Point(5, 5);
+                    mask.Size = this.Size;
+                    
+                }
+                PZBPanel.debuglabel.Text = debuginformation[0];
+                PZBPanel.trainspeed.Text = debuginformation[13];
+                PZBPanel.PZBPhase.Text = debuginformation[18];
+                PZBPanel.EnforcedSpeed.Text = debuginformation[19];
+                PZBPanel.InductorDistance.Text = debuginformation[20];
+                PZBPanel.SwitchMode.Text = debuginformation[21];
+
             }
         }
 

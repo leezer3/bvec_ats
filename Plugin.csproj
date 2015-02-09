@@ -96,6 +96,12 @@
     <Compile Include="Animations.cs" />
     <Compile Include="Animations.DoorLightStates.cs" />
     <Compile Include="CAWS.cs" />
+    <Compile Include="Dialogs\PZBControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Dialogs\PZBControl.Designer.cs">
+      <DependentUpon>PZBControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -163,6 +169,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AdvancedDrivingMask.resx">
       <DependentUpon>AdvancedDrivingMask.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\PZBControl.resx">
+      <DependentUpon>PZBControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

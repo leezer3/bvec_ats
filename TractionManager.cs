@@ -68,7 +68,7 @@ namespace Plugin
          * <para>18. Line Volts</para></summary> */
         //These will probably be renumbered at some stage....
 
-        public static string[] debuginformation = new string[20];
+        public static string[] debuginformation = new string[25];
         public static int tractiontype;
 
         /// <summary>The underlying train.</summary>

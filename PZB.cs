@@ -39,10 +39,9 @@ namespace Plugin
         internal int RestrictedSpeed;
         /// <summary>The location of the last inductor.</summary>
         internal double InductorLocation;
-        /// <summary>Stores whether we've entered the switch mode of the distant brake curve.</summary>
-        internal bool DistantBrakeCurveSwitch;
-        /// <summary>Stores whether we've entered the switch mode of the home brake curve.</summary>
-        internal bool HomeBrakeCurveSwitch;
+
+        /// <summary>Stores whether we've entered the switch mode of the brake curve.</summary>
+        internal bool BrakeCurveSwitchMode;
 
         //These define the paramaters of the train
         /// <summary>Holds the classification of the train- 0 for Higher, 1 for Medium & 2 for Lower.</summary>
@@ -66,6 +65,11 @@ namespace Plugin
         internal double HomeAcknowledgementTimer;
         internal double SpeedRestrictionTimer;
         internal double BrakeCurveTimer;
+        internal double SwitchTimer;
+        internal double BrakeReleaseTimer;
+
+        //Internal Variables
+        internal double MaxBrakeCurveSpeed;
 
         private SafetyStates MySafetyState;
         /// <summary>Gets the current warning state of the PZB System.</summary>
@@ -144,9 +148,19 @@ namespace Plugin
                     }
                     
                     //We are in the brake curve, so work out maximum speed
-                    double MaxBrakeCurveSpeed = Math.Max(BrakeCurveTargetSpeed_1000hz, MaximumSpeed_1000hz -(((MaximumSpeed_1000hz - BrakeCurveTargetSpeed_1000hz)/(double) BrakeCurveTime_1000hz)*BrakeCurveTimer));
-
-                    if (Train.trainspeed > MaxBrakeCurveSpeed || DistantBrakeCurveSwitch == true && Train.trainspeed > 45)
+                    if (BrakeCurveSwitchMode == true)
+                    {
+                        //If we're in the switch mode, maximum speed is always 45km/h
+                        MaxBrakeCurveSpeed = 45;
+                    }
+                    else
+                    {
+                        //Otherwise, work it out based upon the train paramaters
+                        MaxBrakeCurveSpeed = Math.Max(BrakeCurveTargetSpeed_1000hz, MaximumSpeed_1000hz - (((MaximumSpeed_1000hz - BrakeCurveTargetSpeed_1000hz) / (double)BrakeCurveTime_1000hz) * BrakeCurveTimer));    
+                    }
+                    
+                    //If we exceed the maximum brake curve speed, then apply EB brakes
+                    if (Train.trainspeed > MaxBrakeCurveSpeed)
                     {
                         MySafetyState = SafetyStates.DistantEBApplication;
                         BrakeCurveTimer = 0.0;
@@ -155,7 +169,15 @@ namespace Plugin
                     //If we've dropped below the switch speed, then switch to alternate speed restriction
                     if (Train.trainspeed < 10)
                     {
-                        DistantBrakeCurveSwitch = true;
+                        SwitchTimer += data.ElapsedTime.Milliseconds;
+                        if (SwitchTimer > 15000)
+                        {
+                            BrakeCurveSwitchMode = true;
+                        }
+                    }
+                    else
+                    {
+                        SwitchTimer = 0.0;
                     }
                     
                 }
@@ -164,16 +186,25 @@ namespace Plugin
                     SoundManager.Stop(DistantSignalWarningSound);
                     //Apply EB brakes
                     Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
-                    DistantBrakeCurveSwitch = false;
-                    //TODO:
-                    //Requires sound and release conditions
-                    //Merge EB applications???
+
+                    if (data.Vehicle.BpPressure < 3.0 && Train.trainspeed < 30)
+                    {
+                        BrakeReleaseTimer += data.ElapsedTime.Milliseconds;
+                        if (BrakeReleaseTimer > 3000)
+                        {
+                            BrakeReleaseTimer = 0.0;
+                            MySafetyState = SafetyStates.DistantPenaltyReleasable;
+                        }
+                    }
                 }
                 else if (MySafetyState == SafetyStates.DistantBrakeCurveExpired)
                 {
-                    DistantBrakeCurveSwitch = false;
+                    //Twiddle just at the moment
                 }
-
+                else if (MySafetyState == SafetyStates.DistantPenaltyReleasable)
+                {
+                    //Twiddle just at the moment
+                }
                 else if (MySafetyState == SafetyStates.HomePassed)
                 {
                     HomeAcknowledgementTimer += data.ElapsedTime.Milliseconds;
@@ -198,21 +229,50 @@ namespace Plugin
                     if (InductorDistance > 250)
                     {
                         MySafetyState = SafetyStates.HomeBrakeCurveExpired;
-                        BrakeCurveTimer = 0.0;
                     }
 
                     //We are in the brake curve, so work out maximum speed
-                    double MaxBrakeCurveSpeed = Math.Max(BrakeCurveTargetSpeed_500hz, MaximumSpeed_500hz - (((MaximumSpeed_500hz - BrakeCurveTargetSpeed_500hz) / (double)153) * InductorDistance));
+                    MaxBrakeCurveSpeed = Math.Max(BrakeCurveTargetSpeed_500hz, MaximumSpeed_500hz - (((MaximumSpeed_500hz - BrakeCurveTargetSpeed_500hz) / (double)153) * InductorDistance));
 
-                    if (Train.trainspeed > MaxBrakeCurveSpeed || HomeBrakeCurveSwitch == true && Train.trainspeed > 45)
+                    if (Train.trainspeed > MaxBrakeCurveSpeed)
                     {
                         MySafetyState = SafetyStates.HomeBrakeCurveEB;
                     }
-
-                    //If we've dropped below the switch speed, then switch to alternate speed restriction
-                    if (Train.trainspeed < 10)
+                    else if (BrakeCurveSwitchMode == true)
                     {
-                        DistantBrakeCurveSwitch = true;
+                        //Fast trains have a dropping speed restriction in the brake curve mode
+                        if (trainclass == 0 && Train.trainspeed > (45 - ((20.0/153)*InductorDistance)))
+                        {
+                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches +1);
+                        }
+                        else if (trainclass != 0 && Train.trainspeed > 25)
+                        {
+                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                        }
+                    }
+                    //If we've dropped below the switch speed, then switch to alternate speed restriction
+                    //Fast trains require a different switch speed calculation
+                    double SwitchSpeed;
+                    if (trainclass == 0)
+                    {
+                        SwitchSpeed = 30 - ((20.0 / 153) * InductorDistance);
+                    }
+                    else
+                    {
+                        SwitchSpeed = 10;
+                    }
+
+                    if (Train.trainspeed < SwitchSpeed)
+                    {
+                        SwitchTimer += data.ElapsedTime.Milliseconds;
+                        if (SwitchTimer > 15000)
+                        {
+                            BrakeCurveSwitchMode = true;
+                        }
+                    }
+                    else
+                    {
+                        SwitchTimer = 0.0;
                     }
 
                 }
@@ -221,7 +281,6 @@ namespace Plugin
                     SoundManager.Stop(HomeSignalWarningSound);
                     //Apply EB brakes
                     Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
-                    HomeBrakeCurveSwitch = false;
                     //TODO:
                     //Requires sound and release conditions
                 }
@@ -305,7 +364,13 @@ namespace Plugin
                         }
                     }
                 }
-                data.DebugMessage = Convert.ToString(MySafetyState + " " + InductorDistance);
+                if (AdvancedDriving.CheckInst != null)
+                {
+                    tractionmanager.debuginformation[18] = Convert.ToString(MySafetyState);
+                    tractionmanager.debuginformation[19] = Convert.ToString(MaxBrakeCurveSpeed);
+                    tractionmanager.debuginformation[20] = Convert.ToString(InductorDistance);
+                    tractionmanager.debuginformation[21] = Convert.ToString(BrakeCurveSwitchMode);
+                }
             }
            
         }
@@ -316,21 +381,22 @@ namespace Plugin
             switch (frequency)
             {
                 case 1000:
-                    if (BeaconAspect == 0)
-                    {
-                        MySafetyState = SafetyStates.DistantEBApplication;
-                    }
-                    else if (BeaconAspect != 6)
+                    if (BeaconAspect != 6)
                     {
                         MySafetyState = SafetyStates.DistantPassed;
                         DistantAcknowledgementTimer = 0.0;
+                        BrakeCurveTimer = 0.0;
                         InductorLocation = Train.trainlocation;
                     }
                     break;
                 case 500:
-                    MySafetyState = SafetyStates.HomePassed;
-                    HomeAcknowledgementTimer = 0.0;
-                    InductorLocation = Train.trainlocation;
+                    if (BeaconAspect != 6)
+                    {
+                        MySafetyState = SafetyStates.HomePassed;
+                        HomeAcknowledgementTimer = 0.0;
+                        BrakeCurveTimer = 0.0;
+                        InductorLocation = Train.trainlocation;
+                    }
                     break;
                 case 2000:
                     //First check if the signal is red
@@ -351,15 +417,6 @@ namespace Plugin
                     {
                         MySafetyState = SafetyStates.None;
                     }
-                    break;
-                case 2001:
-                    //Home signal showing a potentially speed restrictive aspect
-                    RestrictedSpeed = data;
-                    if (BeaconAspect == 0)
-                    {
-                        //If this signal is RED, trigger an EB application immediately
-                        MySafetyState = SafetyStates.HomeStopEBApplication;
-                    }
                     else
                     {
                         //Otherwise, start the acknowledgement phase
@@ -367,6 +424,8 @@ namespace Plugin
                         //HomeAcknowledgementTimer = 0.0;
                     }
                     InductorLocation = Train.trainlocation;
+                    break;
+                case 2001:
                     break;
             }
         }
@@ -399,9 +458,17 @@ namespace Plugin
         /// <summary>Call this function to attempt to attempt to release the current PZB restrictions.</summary>
         internal void Release()
         {
+            //The current brake curve has expired
             if (MySafetyState == SafetyStates.DistantBrakeCurveExpired)
             {
                 MySafetyState = SafetyStates.None;
+            }
+            //Reset the PZB system after an EB application
+            if (MySafetyState == SafetyStates.DistantPenaltyReleasable)
+            {
+                //We can release a distant EB application, so drop back into the main program
+                MySafetyState = SafetyStates.DistantBrakeCurveActive;
+                Train.tractionmanager.resetbrakeapplication();
             }
         }
     }

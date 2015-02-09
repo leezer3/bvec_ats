@@ -6,8 +6,15 @@ namespace Plugin
     {
         internal enum SafetyStates
         {
+
             /// <summary>Set this state when no processing or action is to be taken.</summary>
             None = 0,
+
+            /* Distant Signals
+             * 
+             * Numbering to be redone at a later stage 
+             *
+             */
             /// <summary>A distant signal has been passed and the warning horn is playing.</summary>
             DistantPassed = 1,
             /// <summary>The distant signal braking curve is active.</summary>
@@ -16,6 +23,16 @@ namespace Plugin
             DistantBrakeCurveExpired = 3,
             /// <summary>The speed has dropped below 10km/h during the distant braking curve and is now limited to the low speed value.</summary>
             DistantBrakeCurveLowSpeed = 4,
+            /// <summary>Failure to acknowledge the distant signal warning horn has resulted in an EB application.</summary>
+            DistantEBApplication = 10,
+            /// <summary>The distant penalty brakes are now releaseable.</summary>
+            DistantPenaltyReleasable = 10,
+
+            /* Home Signals
+             * 
+             * Numbering to be redone at a later stage 
+             *
+             */
             /// <summary>A home signal has been passed and the warning horn is playing.</summary>
             HomePassed = 5,
             /// <summary>The home signal braking curve is active.</summary>
@@ -26,14 +43,14 @@ namespace Plugin
             HomeBrakeCurveLowSpeed = 8,
             /// <summary>Failure to keep within the brake curve has resulted in an EB application.</summary>
             HomeBrakeCurveEB = 9,
-            /// <summary>Failure to acknowledge the distant signal warning horn has resulted in an EB application.</summary>
-            DistantEBApplication = 10,
             /// <summary>A home signal inductor has been .</summary>
             HomeStopPassed = 11,
             /// <summary>A home signal has been passed under authorised conditions.</summary>
             HomeStopPassedAuthorised = 12,
             /// <summary>A home signal has been passed and the EB has been applied.</summary>
             HomeStopEBApplication = 13,
+
+
             /// <summary>The train is currently exceeding a permenant speed restriction.</summary>
             SpeedRestrictionAcknowledgement = 14,
             /// <summary>The speed restriction brake curve is active.</summary>
