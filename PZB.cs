@@ -21,12 +21,12 @@ namespace Plugin
         internal int RedSignalWarningSound = -1;
         /// <summary>The light lit continuosly when a red signal has been passed under authorisation.</summary>
         internal int RedSignalWarningLight = -1;
-        /// <summary>The warning tone played continuosly whilst waiting for the driver to acknowledge that a restrictive speed home signal has been passed.</summary>
-        internal int HomeSignalWarningSound = -1;
+        /// <summary>The warning tone played continuosly whilst waiting for the driver to acknowledge a PZB DistantProgram Warning.</summary>
+        internal int PZBDistantProgramWarningSound = -1;
         /// <summary>The light lit continuosly whilst waiting for the driver to acknowledge that a home signal has been passed.</summary>
         internal int HomeSignalWarningLight = -1;
-        /// <summary>The sound played continuously when waiting for the driver to acknowledge a distant signal showing a restrictive aspect has been passed.</summary>
-        internal int DistantSignalWarningSound = -1;
+        /// <summary>The sound played continuously when waiting for the driver to acknowledge a PZB HomeProgram Warning.</summary>
+        internal int PZBHomeProgramWarningSound = -1;
         /// <summary>The light lit continuosly whilst waiting for the driver to acknowledge that a distant signal has been passed.</summary>
         internal int DistantSignalWarningLight = -1;
         /// <summary>The sound played continuously when waiting for the driver to acknowledge an overspeed warning.</summary>
@@ -35,11 +35,12 @@ namespace Plugin
         internal int EBLight = -1;
         /// <summary>Stores whether a permenant speed restriction is currently active</summary>
         internal bool SpeedRestrictionActive;
-        /// <summary>The current restricted speed.</summary>
-        internal int RestrictedSpeed;
         /// <summary>The location of the last inductor.</summary>
         internal double InductorLocation;
 
+        internal double PZBDistantProgramMaxSpeed;
+        internal double PZBHomeProgramMaxSpeed;
+        internal double PZBBefehelMaxSpeed;
         /// <summary>Stores whether we've entered the switch mode of the brake curve.</summary>
         internal bool BrakeCurveSwitchMode;
 
@@ -57,7 +58,7 @@ namespace Plugin
         /// <summary>The maximum permissable speed for this classification of train.</summary>
         internal int MaximumSpeed_500hz;
         /// <summary>The target speed for this brake curve program.</summary>
-        internal int BrakeCurveTargetSpeed_500hz;
+        internal double BrakeCurveTargetSpeed_500hz;
 
 
         //Timers
@@ -71,11 +72,25 @@ namespace Plugin
         //Internal Variables
         internal double MaxBrakeCurveSpeed;
 
-        private SafetyStates MySafetyState;
+        private PZBProgramStates PZBHomeProgramState;
         /// <summary>Gets the current warning state of the PZB System.</summary>
-        internal SafetyStates SafetyState
+        internal PZBProgramStates HomeProgramState
         {
-            get { return this.MySafetyState; }
+            get { return this.PZBHomeProgramState; }
+        }
+
+        private PZBProgramStates PZBDistantProgramState;
+        /// <summary>Gets the current warning state of the PZB System.</summary>
+        internal PZBProgramStates DistantProgramState
+        {
+            get { return this.PZBDistantProgramState; }
+        }
+
+        private PZBBefehelStates PZBBefehelState;
+        /// <summary>Gets the current warning state of the PZB System.</summary>
+        internal PZBBefehelStates BefehelState
+        {
+            get { return this.PZBBefehelState; }
         }
 
         internal PZB(Train train)
@@ -85,8 +100,9 @@ namespace Plugin
 
         internal override void Initialize(InitializationModes mode)
         {
-            MySafetyState = SafetyStates.None;
-            RestrictedSpeed = 0;
+            PZBDistantProgramState = PZBProgramStates.None;
+            PZBHomeProgramState = PZBProgramStates.None;
+            PZBBefehelState = PZBBefehelStates.None;
             InductorLocation = 0;
             switch (trainclass)
             {
@@ -117,233 +133,257 @@ namespace Plugin
             {
                 //The distance from the last inductor
                 double InductorDistance = Train.trainlocation - InductorLocation;
-
-                if (MySafetyState == SafetyStates.DistantPassed)
+                //PZB DistantProgram- Distant Signal Program
                 {
-                    DistantAcknowledgementTimer += data.ElapsedTime.Milliseconds;
-                    if (DistantAcknowledgementTimer > 4000)
+                    switch (PZBDistantProgramState)
                     {
-                        //If the driver fails to acknowledge the warning within 4 secs, apply EB
-                        MySafetyState = SafetyStates.DistantEBApplication;
-                    }
-                    if (HomeSignalWarningSound != -1)
-                    {
-                        SoundManager.Play(DistantSignalWarningSound, 1.0, 1.0, true);
-                    }
-                    if (DistantSignalWarningLight != -1)
-                    {
-                        this.Train.Panel[DistantSignalWarningLight] = 1;
-                    }
-                }
-                else if (MySafetyState == SafetyStates.DistantBrakeCurveActive)
-                {
-                    //Elapse the timer first
-                    BrakeCurveTimer += data.ElapsedTime.Milliseconds;
+                        case PZBProgramStates.SignalPassed:
+                            DistantAcknowledgementTimer += data.ElapsedTime.Milliseconds;
+                            if (DistantAcknowledgementTimer > 4000)
+                            {
+                                //If the driver fails to acknowledge the warning within 4 secs, apply EB
+                                PZBDistantProgramState = PZBProgramStates.EBApplication;
+                            }
+                            if (PZBDistantProgramWarningSound != -1)
+                            {
+                                SoundManager.Play(PZBDistantProgramWarningSound, 1.0, 1.0, true);
+                            }
+                            if (DistantSignalWarningLight != -1)
+                            {
+                                this.Train.Panel[DistantSignalWarningLight] = 1;
+                            }
+                            break;
+                        case PZBProgramStates.BrakeCurveActive:
+                            //Elapse the timer first
+                            BrakeCurveTimer += data.ElapsedTime.Milliseconds;
 
-                    //First let's figure out whether the brake curve has expired
-                    if (InductorDistance > 1250)
-                    {
-                        MySafetyState = SafetyStates.DistantBrakeCurveExpired;
-                        BrakeCurveTimer = 0.0;
-                    }
-                    
-                    //We are in the brake curve, so work out maximum speed
-                    if (BrakeCurveSwitchMode == true)
-                    {
-                        //If we're in the switch mode, maximum speed is always 45km/h
-                        MaxBrakeCurveSpeed = 45;
-                    }
-                    else
-                    {
-                        //Otherwise, work it out based upon the train paramaters
-                        MaxBrakeCurveSpeed = Math.Max(BrakeCurveTargetSpeed_1000hz, MaximumSpeed_1000hz - (((MaximumSpeed_1000hz - BrakeCurveTargetSpeed_1000hz) / (double)BrakeCurveTime_1000hz) * BrakeCurveTimer));    
-                    }
-                    
-                    //If we exceed the maximum brake curve speed, then apply EB brakes
-                    if (Train.trainspeed > MaxBrakeCurveSpeed)
-                    {
-                        MySafetyState = SafetyStates.DistantEBApplication;
-                        BrakeCurveTimer = 0.0;
-                    }
+                            //First let's figure out whether the brake curve has expired
+                            if (InductorDistance > 1250)
+                            {
+                                PZBDistantProgramState = PZBProgramStates.BrakeCurveExpired;
+                                BrakeCurveTimer = 0.0;
+                            }
 
-                    //If we've dropped below the switch speed, then switch to alternate speed restriction
-                    if (Train.trainspeed < 10)
-                    {
-                        SwitchTimer += data.ElapsedTime.Milliseconds;
-                        if (SwitchTimer > 15000)
-                        {
-                            BrakeCurveSwitchMode = true;
-                        }
-                    }
-                    else
-                    {
-                        SwitchTimer = 0.0;
-                    }
-                    
-                }
-                else if (MySafetyState == SafetyStates.DistantEBApplication)
-                {
-                    SoundManager.Stop(DistantSignalWarningSound);
-                    //Apply EB brakes
-                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                            //We are in the brake curve, so work out maximum speed
+                            if (BrakeCurveSwitchMode == true)
+                            {
+                                //If we're in the switch mode, maximum speed is always 45km/h
+                                PZBDistantProgramMaxSpeed = 45;
+                            }
+                            else
+                            {
+                                //Otherwise, work it out based upon the train paramaters
+                                PZBDistantProgramMaxSpeed = Math.Max(BrakeCurveTargetSpeed_1000hz,
+                                    MaximumSpeed_1000hz -
+                                    (((MaximumSpeed_1000hz - BrakeCurveTargetSpeed_1000hz)/
+                                      (double) BrakeCurveTime_1000hz)*
+                                     BrakeCurveTimer));
+                            }
 
-                    if (data.Vehicle.BpPressure < 3.0 && Train.trainspeed < 30)
-                    {
-                        BrakeReleaseTimer += data.ElapsedTime.Milliseconds;
-                        if (BrakeReleaseTimer > 3000)
-                        {
-                            BrakeReleaseTimer = 0.0;
-                            MySafetyState = SafetyStates.DistantPenaltyReleasable;
-                        }
-                    }
-                }
-                else if (MySafetyState == SafetyStates.DistantBrakeCurveExpired)
-                {
-                    //Twiddle just at the moment
-                }
-                else if (MySafetyState == SafetyStates.DistantPenaltyReleasable)
-                {
-                    //Twiddle just at the moment
-                }
-                else if (MySafetyState == SafetyStates.HomePassed)
-                {
-                    HomeAcknowledgementTimer += data.ElapsedTime.Milliseconds;
-                    if (HomeAcknowledgementTimer > 4000)
-                    {
-                        //If the driver fails to acknowledge the warning within 4 secs, apply EB
-                        MySafetyState = SafetyStates.HomeBrakeCurveEB;
-                    }
-                    if (HomeSignalWarningSound != -1)
-                    {
-                        SoundManager.Play(HomeSignalWarningSound, 1.0, 1.0, true);
-                    }
-                    if (HomeSignalWarningLight != -1)
-                    {
-                        this.Train.Panel[HomeSignalWarningLight] = 1;
-                    }
-                }
-                else if (MySafetyState == SafetyStates.HomeBrakeCurveActive)
-                {
+                            //If we exceed the maximum brake curve speed, then apply EB brakes
+                            if (Train.trainspeed > PZBDistantProgramMaxSpeed)
+                            {
+                                PZBDistantProgramState = PZBProgramStates.EBApplication;
+                                BrakeCurveTimer = 0.0;
+                            }
 
-                    //First let's figure out whether the brake curve has expired
-                    if (InductorDistance > 250)
-                    {
-                        MySafetyState = SafetyStates.HomeBrakeCurveExpired;
-                    }
-
-                    //We are in the brake curve, so work out maximum speed
-                    MaxBrakeCurveSpeed = Math.Max(BrakeCurveTargetSpeed_500hz, MaximumSpeed_500hz - (((MaximumSpeed_500hz - BrakeCurveTargetSpeed_500hz) / (double)153) * InductorDistance));
-
-                    if (Train.trainspeed > MaxBrakeCurveSpeed)
-                    {
-                        MySafetyState = SafetyStates.HomeBrakeCurveEB;
-                    }
-                    else if (BrakeCurveSwitchMode == true)
-                    {
-                        //Fast trains have a dropping speed restriction in the brake curve mode
-                        if (trainclass == 0 && Train.trainspeed > (45 - ((20.0/153)*InductorDistance)))
-                        {
-                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches +1);
-                        }
-                        else if (trainclass != 0 && Train.trainspeed > 25)
-                        {
+                            //If we've dropped below the switch speed, then switch to alternate speed restriction
+                            if (Train.trainspeed < 10)
+                            {
+                                SwitchTimer += data.ElapsedTime.Milliseconds;
+                                if (SwitchTimer > 15000)
+                                {
+                                    BrakeCurveSwitchMode = true;
+                                }
+                            }
+                            else
+                            {
+                                SwitchTimer = 0.0;
+                            }
+                            break;
+                        case PZBProgramStates.EBApplication:
+                            if (PZBDistantProgramWarningSound != -1)
+                            {
+                                SoundManager.Stop(PZBDistantProgramWarningSound);
+                            }
+                            if (PZBHomeProgramWarningSound != -1)
+                            {
+                                SoundManager.Stop(PZBHomeProgramWarningSound);
+                            }
+                            //Apply EB brakes
                             Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
-                        }
-                    }
-                    //If we've dropped below the switch speed, then switch to alternate speed restriction
-                    //Fast trains require a different switch speed calculation
-                    double SwitchSpeed;
-                    if (trainclass == 0)
-                    {
-                        SwitchSpeed = 30 - ((20.0 / 153) * InductorDistance);
-                    }
-                    else
-                    {
-                        SwitchSpeed = 10;
-                    }
 
-                    if (Train.trainspeed < SwitchSpeed)
-                    {
-                        SwitchTimer += data.ElapsedTime.Milliseconds;
-                        if (SwitchTimer > 15000)
-                        {
+                            if (Train.trainspeed < 30)
+                            {
+                                BrakeReleaseTimer += data.ElapsedTime.Milliseconds;
+                                if (BrakeReleaseTimer > 3000)
+                                {
+                                    BrakeReleaseTimer = 0.0;
+                                    PZBDistantProgramState = PZBProgramStates.PenaltyReleasable;
+                                }
+                            }
+                            break;
+                       case PZBProgramStates.PenaltyReleasable:
                             BrakeCurveSwitchMode = true;
-                        }
+                            break;
                     }
-                    else
-                    {
-                        SwitchTimer = 0.0;
-                    }
-
-                }
-                else if (MySafetyState == SafetyStates.HomeBrakeCurveEB)
-                {
-                    SoundManager.Stop(HomeSignalWarningSound);
-                    //Apply EB brakes
-                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
-                    //TODO:
-                    //Requires sound and release conditions
-                }
-                else if (MySafetyState == SafetyStates.HomeStopPassed)
-                {
-                    //We've passed a home stop signal which it is possible to override-
-                    //Check if the override key is currently pressed
-                    if (StopOverrideKeyPressed == true)
-                    {
-                        MySafetyState = SafetyStates.HomeStopPassedAuthorised;
-                    }
-                    else
-                    {
-                        MySafetyState = SafetyStates.HomeStopEBApplication;
-                    }
-                }
-                else if (MySafetyState == SafetyStates.HomeStopPassedAuthorised)
-                {
-                    if (RedSignalWarningSound != -1)
-                    {
-                        SoundManager.Play(RedSignalWarningSound, 1.0, 1.0, true);
-                    }
-                    //If the speed is not zero and less than 40km/h, check that the stop override key
-                    //remains pressed
-                    if ((Train.trainspeed != 0 && !StopOverrideKeyPressed) || Train.trainspeed > 40)
-                    {
-                        MySafetyState = SafetyStates.HomeStopEBApplication;
-                    }
-                }
-                else if (MySafetyState == SafetyStates.HomeStopEBApplication)
-                {
-                    if (RedSignalWarningSound != -1)
-                    {
-                        SoundManager.Stop(RedSignalWarningSound);
-                    }
-                    //Demand EB application
-                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
-                }
-                else if (MySafetyState == SafetyStates.SpeedRestrictionAcknowledgement)
-                {
-                    SpeedRestrictionTimer += data.ElapsedTime.Milliseconds;
-                    if (SpeedRestrictionTimer > 4000)
-                    {
-                        MySafetyState = SafetyStates.SpeedRestrictionBrake;
-                        SpeedRestrictionTimer = 0.0;
-                    }
-                }
-                else if (MySafetyState == SafetyStates.SpeedRestrictionBrakeCurve)
-                {
-
                     
-
                 }
-                else if (MySafetyState == SafetyStates.SpeedRestrictionBrake)
+                //PZB HomeProgram- Home Signal Program
                 {
-                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches +1);
+                    switch (PZBHomeProgramState)
+                    {
+                        case PZBProgramStates.SignalPassed:
+                            HomeAcknowledgementTimer += data.ElapsedTime.Milliseconds;
+                            if (HomeAcknowledgementTimer > 4000)
+                            {
+                                //If the driver fails to acknowledge the warning within 4 secs, apply EB
+                                PZBHomeProgramState = PZBProgramStates.EBApplication;
+                            }
+                            if (PZBHomeProgramWarningSound != -1)
+                            {
+                                SoundManager.Play(PZBHomeProgramWarningSound, 1.0, 1.0, true);
+                            }
+                            if (HomeSignalWarningLight != -1)
+                            {
+                                this.Train.Panel[HomeSignalWarningLight] = 1;
+                            }
+                            break;
+                        case PZBProgramStates.BrakeCurveActive:
+                            //First let's figure out whether the brake curve has expired
+                            if (InductorDistance > 250)
+                            {
+                                PZBHomeProgramState = PZBProgramStates.BrakeCurveExpired;
+                            }
+
+                            //We need to work out the maximum target speed first, as this isn't fixed unlike DistantProgram
+                            if (trainclass == 0)
+                            {
+                                BrakeCurveTargetSpeed_500hz = Math.Max(25, 45 -((20.0/153)*InductorDistance));
+                            }
+                            else
+                            {
+                                BrakeCurveTargetSpeed_500hz = 25;
+                            }
+
+                            //We are in the brake curve, so work out maximum speed
+                            if (BrakeCurveSwitchMode == true)
+                            {
+                                if (trainclass == 0)
+                                {
+                                    //Fast trains have a dropping maximum speed in the switch mode
+                                    PZBHomeProgramMaxSpeed =Math.Max(45 - ((20.0/153)*InductorDistance),25);
+                                }
+                                else
+                                {
+                                    PZBHomeProgramMaxSpeed = 25;
+                                }
+                            }
+                            else
+                            {
+                                PZBHomeProgramMaxSpeed = Math.Max(BrakeCurveTargetSpeed_500hz,
+                                MaximumSpeed_500hz -
+                                (((MaximumSpeed_500hz - BrakeCurveTargetSpeed_500hz) / (double)153) * InductorDistance));
+                            }
+                            
+
+                            if (Train.trainspeed > PZBHomeProgramMaxSpeed)
+                            {
+                                PZBHomeProgramState = PZBProgramStates.EBApplication;
+                            }
+                            
+                            //If we've dropped below the switch speed, then switch to alternate speed restriction
+                            //Fast trains require a different switch speed calculation
+                            double SwitchSpeed;
+                            if (trainclass == 0)
+                            {
+                                SwitchSpeed = 30 - ((20.0 / 153) * InductorDistance);
+                            }
+                            else
+                            {
+                                SwitchSpeed = 10;
+                            }
+
+                            if (Train.trainspeed < SwitchSpeed)
+                            {
+                                SwitchTimer += data.ElapsedTime.Milliseconds;
+                                if (SwitchTimer > 15000)
+                                {
+                                    BrakeCurveSwitchMode = true;
+                                }
+                            }
+                            else
+                            {
+                                SwitchTimer = 0.0;
+                            }
+                            break;
+                        case PZBProgramStates.EBApplication:
+                            if (PZBDistantProgramWarningSound != -1)
+                            {
+                                SoundManager.Stop(PZBDistantProgramWarningSound);
+                            }
+                            if (PZBHomeProgramWarningSound != -1)
+                            {
+                                SoundManager.Stop(PZBHomeProgramWarningSound);
+                            }
+                            //Apply EB brakes
+                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                            if (Train.trainspeed < 30)
+                            {
+                                BrakeReleaseTimer += data.ElapsedTime.Milliseconds;
+                                if (BrakeReleaseTimer > 3000)
+                                {
+                                    BrakeReleaseTimer = 0.0;
+                                    PZBHomeProgramState = PZBProgramStates.PenaltyReleasable;
+                                }
+                            }
+                            break;
+                    }
+                }
+                //PZB Befehel- Allows passing of red signals under authorisation
+                {
+                    switch (PZBBefehelState)
+                    {
+                        case PZBBefehelStates.HomeStopPassed:
+                            //We've passed a home stop signal which it is possible to override-
+                            //Check if the override key is currently pressed
+                            if (StopOverrideKeyPressed == true)
+                            {
+                                PZBBefehelState = PZBBefehelStates.HomeStopPassedAuthorised;
+                            }
+                            else
+                            {
+                                PZBBefehelState = PZBBefehelStates.EBApplication;
+                            }
+                            break;
+                        case PZBBefehelStates.HomeStopPassedAuthorised:
+                            if (RedSignalWarningSound != -1)
+                            {
+                                SoundManager.Play(RedSignalWarningSound, 1.0, 1.0, true);
+                            }
+                            //If the speed is not zero and less than 40km/h, check that the stop override key
+                            //remains pressed
+                            if ((Train.trainspeed != 0 && !StopOverrideKeyPressed) || Train.trainspeed > 40)
+                            {
+                                PZBBefehelState = PZBBefehelStates.EBApplication;
+                            }
+                            break;
+                        case PZBBefehelStates.EBApplication:
+                            if (RedSignalWarningSound != -1)
+                            {
+                                SoundManager.Stop(RedSignalWarningSound);
+                            }
+                            //Demand EB application
+                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                            break;
+                    }
                 }
 
                 //Panel Lights
                 {
                     if (EBLight != -1)
                     {
-                        if (MySafetyState == SafetyStates.DistantEBApplication || MySafetyState == SafetyStates.HomeStopEBApplication || MySafetyState == SafetyStates.HomeBrakeCurveEB)
+                        if (PZBDistantProgramState == PZBProgramStates.EBApplication || PZBBefehelState == PZBBefehelStates.EBApplication || PZBHomeProgramState == PZBProgramStates.EBApplication)
                         {
                             this.Train.Panel[EBLight] = 1;
                         }
@@ -354,7 +394,7 @@ namespace Plugin
                     }
                     if (RedSignalWarningLight != -1)
                     {
-                        if (MySafetyState == SafetyStates.HomeStopPassedAuthorised)
+                        if (PZBBefehelState == PZBBefehelStates.HomeStopPassedAuthorised)
                         {
                             this.Train.Panel[RedSignalWarningLight] = 1;
                         }
@@ -366,10 +406,25 @@ namespace Plugin
                 }
                 if (AdvancedDriving.CheckInst != null)
                 {
-                    tractionmanager.debuginformation[18] = Convert.ToString(MySafetyState);
-                    tractionmanager.debuginformation[19] = Convert.ToString(MaxBrakeCurveSpeed);
-                    tractionmanager.debuginformation[20] = Convert.ToString(InductorDistance);
-                    tractionmanager.debuginformation[21] = Convert.ToString(BrakeCurveSwitchMode);
+                    tractionmanager.debuginformation[18] = Convert.ToString(PZBDistantProgramState);
+                    tractionmanager.debuginformation[19] = Convert.ToString(PZBHomeProgramState);
+                    tractionmanager.debuginformation[20] = Convert.ToString(PZBBefehelState);
+                    //Work out the maximum permitted speed for all programs to pass to the debug window
+                    if (PZBDistantProgramState != PZBProgramStates.None)
+                    {
+                        MaxBrakeCurveSpeed = PZBDistantProgramMaxSpeed;
+                    }
+                    if (PZBHomeProgramState != PZBProgramStates.None)
+                    {
+                        MaxBrakeCurveSpeed = Math.Min(MaxBrakeCurveSpeed, PZBHomeProgramMaxSpeed);
+                    }
+                    if (PZBBefehelState != PZBBefehelStates.None)
+                    {
+                        MaxBrakeCurveSpeed = Math.Min(MaxBrakeCurveSpeed, 45);
+                    }
+                    tractionmanager.debuginformation[21] = Convert.ToString((int)MaxBrakeCurveSpeed + " km/h");
+                    tractionmanager.debuginformation[22] = Convert.ToString((int)InductorDistance + " m");
+                    tractionmanager.debuginformation[23] = Convert.ToString(BrakeCurveSwitchMode);
                 }
             }
            
@@ -383,7 +438,7 @@ namespace Plugin
                 case 1000:
                     if (BeaconAspect != 6)
                     {
-                        MySafetyState = SafetyStates.DistantPassed;
+                        PZBDistantProgramState = PZBProgramStates.SignalPassed;
                         DistantAcknowledgementTimer = 0.0;
                         BrakeCurveTimer = 0.0;
                         InductorLocation = Train.trainlocation;
@@ -392,7 +447,7 @@ namespace Plugin
                 case 500:
                     if (BeaconAspect != 6)
                     {
-                        MySafetyState = SafetyStates.HomePassed;
+                        PZBHomeProgramState = PZBProgramStates.SignalPassed;
                         HomeAcknowledgementTimer = 0.0;
                         BrakeCurveTimer = 0.0;
                         InductorLocation = Train.trainlocation;
@@ -405,22 +460,22 @@ namespace Plugin
                         //If we're red, check if we can pass this beacon under authorisation
                         if (data == 1)
                         {
-                            MySafetyState = SafetyStates.HomeStopPassed;
+                            PZBBefehelState = PZBBefehelStates.HomeStopPassedAuthorised;
                         }
                         else
                         {
-                            MySafetyState = SafetyStates.HomeStopEBApplication;
+                            PZBBefehelState = PZBBefehelStates.EBApplication;
                         }
                     }
                         //The signal is clear and showing no speed restrictive aspects, so drop back to standby
                     else if (BeaconAspect == 6)
                     {
-                        MySafetyState = SafetyStates.None;
+                        PZBHomeProgramState = PZBProgramStates.None;
                     }
                     else
                     {
                         //Otherwise, start the acknowledgement phase
-                        MySafetyState = SafetyStates.HomePassed;
+                        PZBHomeProgramState = PZBProgramStates.SignalPassed;
                         //HomeAcknowledgementTimer = 0.0;
                     }
                     InductorLocation = Train.trainlocation;
@@ -433,43 +488,67 @@ namespace Plugin
         /// <summary>Call this function to attempt to acknowledge a PZB alert.</summary>
         internal void Acknowledge()
         {
-            if (MySafetyState == SafetyStates.DistantPassed)
+            if (PZBDistantProgramState == PZBProgramStates.SignalPassed)
             {
-                if (DistantSignalWarningSound != -1)
+                if (PZBDistantProgramWarningSound != -1)
                 {
-                    SoundManager.Stop(DistantSignalWarningSound);
+                    SoundManager.Stop(PZBDistantProgramWarningSound);
                 }
-                MySafetyState = SafetyStates.DistantBrakeCurveActive;
-            }
-            if (MySafetyState == SafetyStates.HomePassed)
-            {
-                if (HomeSignalWarningSound != -1)
+                if (PZBHomeProgramWarningSound != -1)
                 {
-                    SoundManager.Stop(HomeSignalWarningSound);
+                    SoundManager.Stop(PZBHomeProgramWarningSound);
                 }
-                MySafetyState = SafetyStates.HomeBrakeCurveActive;
+                PZBDistantProgramState = PZBProgramStates.BrakeCurveActive;
             }
-            if (MySafetyState == SafetyStates.SpeedRestrictionAcknowledgement)
+            if (PZBHomeProgramState == PZBProgramStates.SignalPassed)
             {
-                MySafetyState = SafetyStates.SpeedRestrictionBrakeCurve;
+                if (PZBHomeProgramWarningSound != -1)
+                {
+                    SoundManager.Stop(PZBHomeProgramWarningSound);
+                }
+                PZBHomeProgramState = PZBProgramStates.BrakeCurveActive;
             }
         }
 
         /// <summary>Call this function to attempt to attempt to release the current PZB restrictions.</summary>
         internal void Release()
         {
+            //PZB DistantProgram
             //The current brake curve has expired
-            if (MySafetyState == SafetyStates.DistantBrakeCurveExpired)
+            if (PZBDistantProgramState == PZBProgramStates.BrakeCurveExpired)
             {
-                MySafetyState = SafetyStates.None;
+                BrakeCurveSwitchMode = false;
+                PZBDistantProgramState = PZBProgramStates.None;
             }
             //Reset the PZB system after an EB application
-            if (MySafetyState == SafetyStates.DistantPenaltyReleasable)
+            if (PZBDistantProgramState == PZBProgramStates.PenaltyReleasable)
             {
                 //We can release a distant EB application, so drop back into the main program
-                MySafetyState = SafetyStates.DistantBrakeCurveActive;
-                Train.tractionmanager.resetbrakeapplication();
+                PZBDistantProgramState = PZBProgramStates.BrakeCurveActive;
+                //Check whether any other program is holding the brakes before we call the tractionmanager to release them
+                if (PZBHomeProgramState != PZBProgramStates.EBApplication && PZBBefehelState != PZBBefehelStates.EBApplication)
+                {
+                    Train.tractionmanager.resetbrakeapplication();
+                }
             }
+            //PZB HomeProgram
+            //The current brake curve has expired
+            if (PZBHomeProgramState == PZBProgramStates.BrakeCurveExpired)
+            {
+                BrakeCurveSwitchMode = false;
+                PZBHomeProgramState = PZBProgramStates.None;
+            }
+            if (PZBHomeProgramState == PZBProgramStates.PenaltyReleasable)
+            {
+                //We can release a distant EB application, so drop back into the main program
+                PZBHomeProgramState = PZBProgramStates.BrakeCurveActive;
+                //Check whether any other program is holding the brakes before we call the tractionmanager to release them
+                if (PZBDistantProgramState != PZBProgramStates.EBApplication && PZBBefehelState != PZBBefehelStates.EBApplication)
+                {
+                    Train.tractionmanager.resetbrakeapplication();
+                }
+            }
+            
         }
     }
 

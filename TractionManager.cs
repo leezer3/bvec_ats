@@ -158,8 +158,9 @@ namespace Plugin
         internal string CAWSKey = "S";
 
         //PZB Keys
-        internal string PZBKey = "A2";
-        internal string PZBReleaseKey = "A1";
+        internal string PZBKey;
+        internal string PZBReleaseKey;
+        internal string PZBStopOverrideKey;
 
 
         //Arrays
@@ -1269,6 +1270,10 @@ namespace Plugin
                 {
                     Train.PZB.Release();
                 }
+                if (keypressed == PZBStopOverrideKey)
+                {
+                    Train.PZB.StopOverrideKeyPressed = true;
+                }
             }
         }
 
@@ -1365,6 +1370,13 @@ namespace Plugin
                 if (keypressed == SpegnimentoKey)
                 {
                     SCMT_Traction.SpegnimentoReleased();
+                }
+            }
+            if (Train.PZB != null)
+            {
+                if (keypressed == PZBStopOverrideKey)
+                {
+                    Train.PZB.StopOverrideKeyPressed = false;
                 }
             }
         }

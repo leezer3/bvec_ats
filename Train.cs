@@ -1283,7 +1283,15 @@ namespace Plugin {
                                              * 
                                              * Functions should already be implemented, requires adding these to traction manager
                                              */
-                                             
+                                        case "pzbkey":
+                                            this.tractionmanager.PZBKey = value;
+			                                break;
+                                        case "pzbreleasekey":
+			                                this.tractionmanager.PZBReleaseKey = value;
+			                                break;
+                                        case "pzbstopoverridekey":
+			                                this.tractionmanager.PZBStopOverrideKey = value;
+			                                break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
@@ -1761,6 +1769,10 @@ namespace Plugin {
 
                 switch (beacon.Type)
                 {
+                    case 500:
+                        PZB.BeaconAspect = beacon.Signal.Aspect;
+                        PZB.Trigger(beacon.Type, beacon.Optional);
+                        break;
                     case 1000:
                         PZB.BeaconAspect = beacon.Signal.Aspect;
                         PZB.Trigger(beacon.Type, beacon.Optional);
