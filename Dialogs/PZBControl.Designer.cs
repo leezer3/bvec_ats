@@ -33,7 +33,7 @@
             this.label11 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.InductorDistance = new System.Windows.Forms.Label();
+            this.HomeInductorDistance = new System.Windows.Forms.Label();
             this.EnforcedSpeed = new System.Windows.Forms.Label();
             this.trainspeed = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
@@ -45,6 +45,8 @@
             this.PZBFrei = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.PZBBefehel = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.DistantInductorDistance = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label12
@@ -80,7 +82,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(6, 142);
+            this.label4.Location = new System.Drawing.Point(17, 116);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(112, 13);
             this.label4.TabIndex = 38;
@@ -90,25 +92,25 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(6, 129);
+            this.label3.Location = new System.Drawing.Point(6, 155);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(102, 13);
             this.label3.TabIndex = 37;
             this.label3.Text = "Enforced Speed:";
             // 
-            // InductorDistance
+            // HomeInductorDistance
             // 
-            this.InductorDistance.AutoSize = true;
-            this.InductorDistance.Location = new System.Drawing.Point(145, 142);
-            this.InductorDistance.Name = "InductorDistance";
-            this.InductorDistance.Size = new System.Drawing.Size(35, 13);
-            this.InductorDistance.TabIndex = 36;
-            this.InductorDistance.Text = "label4";
+            this.HomeInductorDistance.AutoSize = true;
+            this.HomeInductorDistance.Location = new System.Drawing.Point(145, 116);
+            this.HomeInductorDistance.Name = "HomeInductorDistance";
+            this.HomeInductorDistance.Size = new System.Drawing.Size(35, 13);
+            this.HomeInductorDistance.TabIndex = 36;
+            this.HomeInductorDistance.Text = "label4";
             // 
             // EnforcedSpeed
             // 
             this.EnforcedSpeed.AutoSize = true;
-            this.EnforcedSpeed.Location = new System.Drawing.Point(145, 129);
+            this.EnforcedSpeed.Location = new System.Drawing.Point(145, 155);
             this.EnforcedSpeed.Name = "EnforcedSpeed";
             this.EnforcedSpeed.Size = new System.Drawing.Size(35, 13);
             this.EnforcedSpeed.TabIndex = 35;
@@ -156,7 +158,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(6, 116);
+            this.label2.Location = new System.Drawing.Point(6, 142);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(84, 13);
             this.label2.TabIndex = 70;
@@ -165,7 +167,7 @@
             // SwitchMode
             // 
             this.SwitchMode.AutoSize = true;
-            this.SwitchMode.Location = new System.Drawing.Point(145, 116);
+            this.SwitchMode.Location = new System.Drawing.Point(145, 142);
             this.SwitchMode.Name = "SwitchMode";
             this.SwitchMode.Size = new System.Drawing.Size(35, 13);
             this.SwitchMode.TabIndex = 69;
@@ -175,7 +177,7 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(6, 90);
+            this.label5.Location = new System.Drawing.Point(6, 103);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(123, 13);
             this.label5.TabIndex = 72;
@@ -184,7 +186,7 @@
             // PZBFrei
             // 
             this.PZBFrei.AutoSize = true;
-            this.PZBFrei.Location = new System.Drawing.Point(145, 90);
+            this.PZBFrei.Location = new System.Drawing.Point(145, 103);
             this.PZBFrei.Name = "PZBFrei";
             this.PZBFrei.Size = new System.Drawing.Size(35, 13);
             this.PZBFrei.TabIndex = 71;
@@ -194,7 +196,7 @@
             // 
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(6, 103);
+            this.label7.Location = new System.Drawing.Point(6, 129);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(116, 13);
             this.label7.TabIndex = 74;
@@ -203,16 +205,37 @@
             // PZBBefehel
             // 
             this.PZBBefehel.AutoSize = true;
-            this.PZBBefehel.Location = new System.Drawing.Point(145, 103);
+            this.PZBBefehel.Location = new System.Drawing.Point(145, 129);
             this.PZBBefehel.Name = "PZBBefehel";
             this.PZBBefehel.Size = new System.Drawing.Size(35, 13);
             this.PZBBefehel.TabIndex = 73;
             this.PZBBefehel.Text = "label3";
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.Location = new System.Drawing.Point(17, 90);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(112, 13);
+            this.label6.TabIndex = 76;
+            this.label6.Text = "Inductor Distance:";
+            // 
+            // DistantInductorDistance
+            // 
+            this.DistantInductorDistance.AutoSize = true;
+            this.DistantInductorDistance.Location = new System.Drawing.Point(145, 90);
+            this.DistantInductorDistance.Name = "DistantInductorDistance";
+            this.DistantInductorDistance.Size = new System.Drawing.Size(35, 13);
+            this.DistantInductorDistance.TabIndex = 75;
+            this.DistantInductorDistance.Text = "label4";
+            // 
             // PZBControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.DistantInductorDistance);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.PZBBefehel);
             this.Controls.Add(this.label5);
@@ -228,7 +251,7 @@
             this.Controls.Add(this.label11);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.InductorDistance);
+            this.Controls.Add(this.HomeInductorDistance);
             this.Controls.Add(this.EnforcedSpeed);
             this.Name = "PZBControl";
             this.Size = new System.Drawing.Size(263, 191);
@@ -248,7 +271,7 @@
         public System.Windows.Forms.Label trainspeed;
         public System.Windows.Forms.Label debuglabel;
         public System.Windows.Forms.Label PZBWacham;
-        public System.Windows.Forms.Label InductorDistance;
+        public System.Windows.Forms.Label HomeInductorDistance;
         public System.Windows.Forms.Label EnforcedSpeed;
         private System.Windows.Forms.Label label2;
         public System.Windows.Forms.Label SwitchMode;
@@ -256,6 +279,8 @@
         public System.Windows.Forms.Label PZBFrei;
         private System.Windows.Forms.Label label7;
         public System.Windows.Forms.Label PZBBefehel;
+        private System.Windows.Forms.Label label6;
+        public System.Windows.Forms.Label DistantInductorDistance;
 
     }
 }

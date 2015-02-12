@@ -36,7 +36,11 @@ namespace Plugin
         /// <summary>Stores whether a permenant speed restriction is currently active</summary>
         internal bool SpeedRestrictionActive;
         /// <summary>The location of the last inductor.</summary>
-        internal double InductorLocation;
+        internal double HomeInductorLocation;
+        /// <summary>The location of the last inductor.</summary>
+        internal double DistantInductorLocation;
+        /// <summary>The location of the distant program.</summary>
+        internal double DistantProgramLength = 1250;
 
         internal double PZBDistantProgramMaxSpeed;
         internal double PZBHomeProgramMaxSpeed;
@@ -103,7 +107,8 @@ namespace Plugin
             PZBDistantProgramState = PZBProgramStates.None;
             PZBHomeProgramState = PZBProgramStates.None;
             PZBBefehelState = PZBBefehelStates.None;
-            InductorLocation = 0;
+            HomeInductorLocation = 0;
+            DistantInductorLocation = 0;
             switch (trainclass)
             {
                 case 0:
@@ -132,7 +137,8 @@ namespace Plugin
             if (this.enabled)
             {
                 //The distance from the last inductor
-                double InductorDistance = Train.trainlocation - InductorLocation;
+                double HomeInductorDistance = Train.trainlocation - HomeInductorLocation;
+                double DistantInductorDistance = Train.trainlocation - DistantInductorLocation;
                 //PZB DistantProgram- Distant Signal Program
                 {
                     switch (PZBDistantProgramState)
@@ -158,7 +164,7 @@ namespace Plugin
                             BrakeCurveTimer += data.ElapsedTime.Milliseconds;
 
                             //First let's figure out whether the brake curve has expired
-                            if (InductorDistance > 1250)
+                            if (DistantInductorDistance > DistantProgramLength)
                             {
                                 PZBDistantProgramState = PZBProgramStates.BrakeCurveExpired;
                                 BrakeCurveTimer = 0.0;
@@ -251,7 +257,7 @@ namespace Plugin
                             break;
                         case PZBProgramStates.BrakeCurveActive:
                             //First let's figure out whether the brake curve has expired
-                            if (InductorDistance > 250)
+                            if (HomeInductorDistance > 250)
                             {
                                 PZBHomeProgramState = PZBProgramStates.BrakeCurveExpired;
                             }
@@ -259,7 +265,7 @@ namespace Plugin
                             //We need to work out the maximum target speed first, as this isn't fixed unlike DistantProgram
                             if (trainclass == 0)
                             {
-                                BrakeCurveTargetSpeed_500hz = Math.Max(25, 45 -((20.0/153)*InductorDistance));
+                                BrakeCurveTargetSpeed_500hz = Math.Max(25, 45 -((20.0/153)*HomeInductorDistance));
                             }
                             else
                             {
@@ -272,7 +278,7 @@ namespace Plugin
                                 if (trainclass == 0)
                                 {
                                     //Fast trains have a dropping maximum speed in the switch mode
-                                    PZBHomeProgramMaxSpeed =Math.Max(45 - ((20.0/153)*InductorDistance),25);
+                                    PZBHomeProgramMaxSpeed =Math.Max(45 - ((20.0/153)*HomeInductorDistance),25);
                                 }
                                 else
                                 {
@@ -283,7 +289,7 @@ namespace Plugin
                             {
                                 PZBHomeProgramMaxSpeed = Math.Max(BrakeCurveTargetSpeed_500hz,
                                 MaximumSpeed_500hz -
-                                (((MaximumSpeed_500hz - BrakeCurveTargetSpeed_500hz) / (double)153) * InductorDistance));
+                                (((MaximumSpeed_500hz - BrakeCurveTargetSpeed_500hz) / (double)153) * HomeInductorDistance));
                             }
                             
 
@@ -297,7 +303,7 @@ namespace Plugin
                             double SwitchSpeed;
                             if (trainclass == 0)
                             {
-                                SwitchSpeed = 30 - ((20.0 / 153) * InductorDistance);
+                                SwitchSpeed = 30 - ((20.0 / 153) * HomeInductorDistance);
                             }
                             else
                             {
@@ -423,8 +429,25 @@ namespace Plugin
                         MaxBrakeCurveSpeed = Math.Min(MaxBrakeCurveSpeed, 45);
                     }
                     tractionmanager.debuginformation[21] = Convert.ToString((int)MaxBrakeCurveSpeed + " km/h");
-                    tractionmanager.debuginformation[22] = Convert.ToString((int)InductorDistance + " m");
+                    if (PZBHomeProgramState != PZBProgramStates.None &&
+                        PZBHomeProgramState != PZBProgramStates.BrakeCurveExpired)
+                    {
+                        tractionmanager.debuginformation[22] = Convert.ToString((int) HomeInductorDistance + " m");
+                    }
+                    else
+                    {
+                        tractionmanager.debuginformation[22] = "N/A";
+                    }
                     tractionmanager.debuginformation[23] = Convert.ToString(BrakeCurveSwitchMode);
+                    if (PZBDistantProgramState != PZBProgramStates.None &&
+                        PZBDistantProgramState != PZBProgramStates.BrakeCurveExpired)
+                    {
+                        tractionmanager.debuginformation[24] = Convert.ToString((int) DistantInductorDistance + " m");
+                    }
+                    else
+                    {
+                        tractionmanager.debuginformation[24] = "N/A";
+                    }
                 }
             }
            
@@ -441,7 +464,7 @@ namespace Plugin
                         PZBDistantProgramState = PZBProgramStates.SignalPassed;
                         DistantAcknowledgementTimer = 0.0;
                         BrakeCurveTimer = 0.0;
-                        InductorLocation = Train.trainlocation;
+                        DistantInductorLocation = Train.trainlocation;
                     }
                     break;
                 case 500:
@@ -450,7 +473,7 @@ namespace Plugin
                         PZBHomeProgramState = PZBProgramStates.SignalPassed;
                         HomeAcknowledgementTimer = 0.0;
                         BrakeCurveTimer = 0.0;
-                        InductorLocation = Train.trainlocation;
+                        HomeInductorLocation = Train.trainlocation;
                     }
                     break;
                 case 2000:
@@ -478,7 +501,7 @@ namespace Plugin
                         PZBHomeProgramState = PZBProgramStates.SignalPassed;
                         //HomeAcknowledgementTimer = 0.0;
                     }
-                    InductorLocation = Train.trainlocation;
+                    HomeInductorLocation = Train.trainlocation;
                     break;
                 case 2001:
                     break;

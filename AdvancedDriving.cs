@@ -156,8 +156,9 @@ namespace Plugin
                 PZBPanel.PZBFrei.Text = debuginformation[19];
                 PZBPanel.PZBBefehel.Text = debuginformation[20];
                 PZBPanel.EnforcedSpeed.Text = debuginformation[21];
-                PZBPanel.InductorDistance.Text = debuginformation[22];
+                PZBPanel.HomeInductorDistance.Text = debuginformation[22];
                 PZBPanel.SwitchMode.Text = debuginformation[23];
+                PZBPanel.DistantInductorDistance.Text = debuginformation[24];
 
             }
         }

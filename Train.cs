@@ -906,6 +906,18 @@ namespace Plugin {
                                             break;
                                     }
                                     break;
+                                    //Handles PZB
+                                case "pzb":
+			                        switch (key)
+			                        {
+                                        case "trainclass":
+                                            InternalFunctions.ValidateSetting(value, ref PZB.trainclass, key);
+			                                break;
+			                            case "distantprogramlength":
+                                            InternalFunctions.ParseNumber(value, ref PZB.DistantProgramLength, key);
+			                                break;
+			                        }
+			                        break;
 			                    case "aws":
 			                        switch (key)
 			                        {
