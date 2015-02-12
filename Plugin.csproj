@@ -96,6 +96,7 @@
     <Compile Include="Animations.cs" />
     <Compile Include="Animations.DoorLightStates.cs" />
     <Compile Include="CAWS.cs" />
+    <Compile Include="PZB.Program.cs" />
     <Compile Include="Dialogs\PZBControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

@@ -152,14 +152,24 @@ namespace Plugin
                 }
                 PZBPanel.debuglabel.Text = debuginformation[0];
                 PZBPanel.trainspeed.Text = debuginformation[13];
-                PZBPanel.PZBWacham.Text = debuginformation[18];
-                PZBPanel.PZBFrei.Text = debuginformation[19];
-                PZBPanel.PZBBefehel.Text = debuginformation[20];
-                PZBPanel.EnforcedSpeed.Text = debuginformation[21];
-                PZBPanel.HomeInductorDistance.Text = debuginformation[22];
-                PZBPanel.SwitchMode.Text = debuginformation[23];
-                PZBPanel.DistantInductorDistance.Text = debuginformation[24];
 
+                //Base System Information
+                PZBPanel.AwaitingAcknowledgement.Text = debuginformation[26];
+                PZBPanel.SwitchMode.Text = debuginformation[23];
+                PZBPanel.EnforcedSpeed.Text = debuginformation[21];
+
+                //Distant Program Information
+                PZBPanel.ActiveDistantBrakeCurves.Text = debuginformation[25];
+                PZBPanel.NewestDistantSpeed.Text = debuginformation[27];
+                PZBPanel.DistantInductorDistance.Text = debuginformation[28];
+
+                //Home Program Information
+                PZBPanel.ActiveHomeBrakeCurves.Text = debuginformation[29];
+                PZBPanel.NewestHomeSpeed.Text = debuginformation[24];
+                PZBPanel.HomeInductorDistance.Text = debuginformation[22];
+                
+                //Befehel
+                PZBPanel.PZBBefehel.Text = debuginformation[20];
             }
         }
 
