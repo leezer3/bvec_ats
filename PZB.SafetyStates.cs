@@ -12,14 +12,14 @@ namespace Plugin
             SignalPassed = 1,
             /// <summary>The home signal braking curve is active.</summary>
             BrakeCurveActive = 2,
-            /// <summary>The home signal braking curve has expired, and the brake curve may now be released.</summary>
-            BrakeCurveExpired = 3,
             /// <summary>The speed has dropped below 10km/h during the home braking curve and is now limited to the low speed value.</summary>
-            HomeBrakeCurveLowSpeed = 4,
+            HomeBrakeCurveLowSpeed = 3,
             /// <summary>Failure to keep within the brake curve has resulted in an EB application.</summary>
-            EBApplication = 5,
-            /// <summary>The home penalty brakes are now releaseable.</summary>
-            PenaltyReleasable = 6,
+            EBApplication = 4,
+            /// <summary>The penalty brakes are now releaseable.</summary>
+            PenaltyReleasable = 5,
+            /// <summary>The distant program is in suppression mode, and will be pushed back to active by any home inductor.</summary>
+            Suppressed = 6,
         }
 
         internal enum PZBBefehelStates
