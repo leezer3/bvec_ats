@@ -15,7 +15,10 @@ namespace Plugin
         private readonly Train Train;
 
         internal bool enabled;
-
+        internal int WachamIndicator = -1;
+        internal int FreiIndicator = -1;
+        internal int BefehelIndicator = -1;
+        internal int RunningLightsStartIndicator = -1;
         /// <summary>The aspect of the signal passed over at the last beacon.</summary>
         internal int BeaconAspect;
         /// <summary>Stores whether the Stop Override key is currently pressed (To pass red signal under authorisation).</summary>
@@ -80,9 +83,13 @@ namespace Plugin
         internal double BrakeCurveTimer;
         internal double SwitchTimer;
         internal double BrakeReleaseTimer;
+        internal double BlinkerTimer;
+        internal bool BlinkState;
 
         //Internal Variables
         internal double MaxBrakeCurveSpeed;
+        internal bool WachamPressed;
+        internal bool FreiPressed;
 
         internal List<Program> RunningPrograms = new List<Program>();
 
@@ -411,7 +418,7 @@ namespace Plugin
 
                 //Panel Lights
                 {
-                    if (EBLight != -1)
+                    /*if (EBLight != -1)
                     {
                         if (PZBDistantProgramState == PZBProgramStates.EBApplication || PZBBefehelState == PZBBefehelStates.EBApplication || PZBHomeProgramState == PZBProgramStates.EBApplication)
                         {
@@ -421,7 +428,7 @@ namespace Plugin
                         {
                             this.Train.Panel[EBLight] = 0;
                         }
-                    }
+                    } */
                     if (RedSignalWarningLight != -1)
                     {
                         if (PZBBefehelState == PZBBefehelStates.HomeStopPassedAuthorised)
@@ -431,6 +438,179 @@ namespace Plugin
                         else
                         {
                             this.Train.Panel[RedSignalWarningLight] = 0;
+                        }
+                    }
+                    //Main PZB IL Cluster
+                    if (RunningPrograms.Count == 0)
+                    {
+                        //No PZB programs are running
+                        if (RunningLightsStartIndicator != -1)
+                        {
+                            //Blue 85km/h light lit
+                            this.Train.Panel[RunningLightsStartIndicator + 2] = 1;
+                            //All other lights off
+                            this.Train.Panel[RunningLightsStartIndicator] = 0;
+                            this.Train.Panel[RunningLightsStartIndicator + 1] = 0;
+                            this.Train.Panel[RunningLightsStartIndicator + 3] = 0;
+                            this.Train.Panel[RunningLightsStartIndicator + 4] = 0;
+                            this.Train.Panel[RunningLightsStartIndicator + 5] = 0;
+                        }
+                    }
+                    else
+                    {
+                        //We have running programs
+                        //Presume for the moment that the overriding program should determine the lights status
+                        Program OverridingProgram = new Program();
+                        OverridingProgram.MaxSpeed = 999;
+                        foreach (Program CurrentProgram in RunningPrograms)
+                        {
+                            if (CurrentProgram.MaxSpeed < OverridingProgram.MaxSpeed)
+                            {
+                                OverridingProgram = CurrentProgram;
+                            }
+                        }
+
+                        BlinkerTimer += data.ElapsedTime.Milliseconds;
+                        if (BlinkerTimer > 1000)
+                        {
+                            //Switch blink state and reset timer
+                            BlinkState = !BlinkState;
+                            BlinkerTimer = 0.0;
+                        }
+                        //There are different light indicators for different train classes
+                        if (trainclass == 0)
+                        {
+                            //First determine the overriding program type
+                            if (OverridingProgram.Type == 0)
+                            {
+                                //This is a 1000hz program
+                                if (BrakeCurveSwitchMode == true)
+                                {
+                                    //Blue 70km/h and blue 80km/h lights blink alternately
+                                    if (BlinkState == true)
+                                    {
+                                        this.Train.Panel[RunningLightsStartIndicator + 1] = 0;
+                                        this.Train.Panel[RunningLightsStartIndicator + 2] = 1;
+                                    }
+                                    else
+                                    {
+                                        this.Train.Panel[RunningLightsStartIndicator + 1] = 1;
+                                        this.Train.Panel[RunningLightsStartIndicator + 2] = 0;
+                                    }
+                                    this.Train.Panel[RunningLightsStartIndicator + 1] = 0;
+                                    this.Train.Panel[RunningLightsStartIndicator + 3] = 0;
+                                    this.Train.Panel[RunningLightsStartIndicator + 4] = 0;
+                                    if (OverridingProgram.InductorDistance < 700)
+                                    {
+
+                                        //Yellow 1000hz light solid
+                                        this.Train.Panel[RunningLightsStartIndicator + 5] = 1;
+                                        //All other lights off    
+                                    }
+                                    else
+                                    {
+                                        this.Train.Panel[RunningLightsStartIndicator + 5] = 0;
+                                    }
+
+                                }
+                                else
+                                {
+                                    //Blue 85km/h light to be blinking
+                                    if (BlinkState == true)
+                                    {
+                                        this.Train.Panel[RunningLightsStartIndicator + 2] = 1;
+                                    }
+                                    else
+                                    {
+                                        this.Train.Panel[RunningLightsStartIndicator + 2] = 0;
+                                    }
+                                    this.Train.Panel[RunningLightsStartIndicator + 1] = 0;
+                                    this.Train.Panel[RunningLightsStartIndicator + 3] = 0;
+                                    this.Train.Panel[RunningLightsStartIndicator + 4] = 0;
+                                    if (OverridingProgram.InductorDistance < 700)
+                                    {
+
+                                        //Yellow 1000hz light solid
+                                        this.Train.Panel[RunningLightsStartIndicator + 5] = 1;
+                                        //All other lights off    
+                                    }
+                                    else
+                                    {
+                                        this.Train.Panel[RunningLightsStartIndicator + 5] = 0;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                //This is a 500hz program
+                                if (BrakeCurveSwitchMode == true)
+                                {
+                                    //Blue 85km/h light & red 500hz light lit
+                                    this.Train.Panel[RunningLightsStartIndicator + 2] = 1;
+                                    this.Train.Panel[RunningLightsStartIndicator + 4] = 1;
+                                    //All other lights off
+                                    this.Train.Panel[RunningLightsStartIndicator] = 0;
+                                    this.Train.Panel[RunningLightsStartIndicator + 1] = 0;
+                                    this.Train.Panel[RunningLightsStartIndicator + 3] = 0;
+                                    this.Train.Panel[RunningLightsStartIndicator + 5] = 0;
+                                }
+                                else
+                                {
+                                    //Blue 70km/h and blue 80km/h lights blink alternately
+                                    //Red 500hz light lit
+                                    if (BlinkState == true)
+                                    {
+                                        this.Train.Panel[RunningLightsStartIndicator + 1] = 0;
+                                        this.Train.Panel[RunningLightsStartIndicator + 2] = 1;
+                                    }
+                                    else
+                                    {
+                                        this.Train.Panel[RunningLightsStartIndicator + 1] = 1;
+                                        this.Train.Panel[RunningLightsStartIndicator + 2] = 0;
+                                    }
+                                    this.Train.Panel[RunningLightsStartIndicator + 4] = 1;
+                                    //All other lights off
+                                    this.Train.Panel[RunningLightsStartIndicator] = 0;
+                                    this.Train.Panel[RunningLightsStartIndicator + 3] = 0;
+                                    this.Train.Panel[RunningLightsStartIndicator + 5] = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+                //PZB Handles
+                {
+                    if (WachamIndicator != -1)
+                    {
+                        if (WachamPressed == true)
+                        {
+                            this.Train.Panel[WachamIndicator] = 1;
+                        }
+                        else
+                        {
+                            this.Train.Panel[WachamIndicator] = 0;
+                        }
+                    }
+                    if (FreiIndicator != -1)
+                    {
+                        if (FreiPressed == true)
+                        {
+                            this.Train.Panel[FreiIndicator] = 1;
+                        }
+                        else
+                        {
+                            this.Train.Panel[FreiIndicator] = 0;
+                        }
+                    }
+                    if (BefehelIndicator != -1)
+                    {
+                        if (StopOverrideKeyPressed == true)
+                        {
+                            this.Train.Panel[BefehelIndicator] = 1;
+                        }
+                        else
+                        {
+                            this.Train.Panel[BefehelIndicator] = 0;
                         }
                     }
                 }

@@ -916,6 +916,18 @@ namespace Plugin {
 			                            case "distantprogramlength":
                                             InternalFunctions.ParseNumber(value, ref PZB.DistantProgramLength, key);
 			                                break;
+                                        case "wachamswitch":
+                                            InternalFunctions.ValidateIndex(value, ref PZB.WachamIndicator, key);
+			                                break;
+                                        case "freiswitch":
+                                            InternalFunctions.ValidateIndex(value, ref PZB.FreiIndicator, key);
+                                            break;
+                                        case "befehelswitch":
+                                            InternalFunctions.ValidateIndex(value, ref PZB.BefehelIndicator, key);
+                                            break;
+                                        case "runninglights":
+                                            InternalFunctions.ValidateIndex(value, ref PZB.RunningLightsStartIndicator, key);
+                                            break;
 			                        }
 			                        break;
 			                    case "aws":

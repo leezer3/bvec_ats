@@ -1265,10 +1265,12 @@ namespace Plugin
                 if (keypressed == PZBKey)
                 {
                     Train.PZB.Acknowledge();
+                    Train.PZB.WachamPressed = true;
                 }
                 if (keypressed == PZBReleaseKey)
                 {
                     Train.PZB.Release();
+                    Train.PZB.FreiPressed = true;
                 }
                 if (keypressed == PZBStopOverrideKey)
                 {
@@ -1374,6 +1376,16 @@ namespace Plugin
             }
             if (Train.PZB != null)
             {
+                if (keypressed == PZBKey)
+                {
+                    Train.PZB.WachamPressed = false;
+                }
+                if (keypressed == PZBReleaseKey)
+                {
+                    Train.PZB.Release();
+                    Train.PZB.FreiPressed = false;
+                }
+
                 if (keypressed == PZBStopOverrideKey)
                 {
                     Train.PZB.StopOverrideKeyPressed = false;
