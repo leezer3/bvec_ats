@@ -12,7 +12,7 @@ namespace Plugin
         /// <summary>Power cutoff has been demaned</summary>
         internal static bool powercutoffdemanded;
         /// <summary>A safety system has triggered a brake intervention</summary>
-        private bool brakedemanded;
+        internal bool brakedemanded;
         /// <summary>The current safety system brake notch demanded</summary>
         internal static int currentbrakenotch;
         private static bool neutralrvrtripped;
@@ -1231,7 +1231,7 @@ namespace Plugin
                 }
                 if (keypressed == TestSCMTKey)
                 {
-                    SCMT_Traction.TestSCMT();
+                    Train.SCMT_Traction.TestSCMT();
                 }
             }
             if (Train.CAWS.enabled == true)
@@ -1389,6 +1389,10 @@ namespace Plugin
                 if (keypressed == PZBStopOverrideKey)
                 {
                     Train.PZB.StopOverrideKeyPressed = false;
+                    if (Train.PZB.PZBBefehelState != PZB.PZBBefehelStates.EBApplication)
+                    {
+                        Train.PZB.PZBBefehelState = PZB.PZBBefehelStates.None;
+                    }
                 }
             }
         }

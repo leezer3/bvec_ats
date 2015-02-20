@@ -98,7 +98,7 @@ namespace Plugin {
 		// --- acceleration ---
 
         /// <summary>The speed.</summary>
-        internal static int trainspeed;
+        internal int trainspeed;
 
         /// <summary>The current location of the train.</summary>
         internal double trainlocation;
@@ -927,6 +927,9 @@ namespace Plugin {
                                             break;
                                         case "runninglights":
                                             InternalFunctions.ValidateIndex(value, ref PZB.RunningLightsStartIndicator, key);
+                                            break;
+                                        case "eblight":
+                                            InternalFunctions.ValidateIndex(value, ref PZB.EBLight, key);
                                             break;
 			                        }
 			                        break;

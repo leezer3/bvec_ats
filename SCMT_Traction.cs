@@ -1750,7 +1750,7 @@ namespace Plugin
         }
 
         /// <summary>Call from the traction manager when the SCMT Test key is pressed</summary>
-        internal static void TestSCMT()
+        internal void TestSCMT()
         {
             if (SCMT.testscmt == 0 && ChiaveBanco == true && Train.trainspeed == 0)
             {
