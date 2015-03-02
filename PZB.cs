@@ -14,7 +14,7 @@ namespace Plugin
         internal bool enabled;
         internal int WachamIndicator = -1;
         internal int FreiIndicator = -1;
-        internal int BefehelIndicator = -1;
+        internal int BefehlIndicator = -1;
         internal int RunningLightsStartIndicator = -1;
         /// <summary>The aspect of the signal passed over at the last beacon.</summary>
         internal int BeaconAspect;
@@ -52,7 +52,7 @@ namespace Plugin
 
         internal double PZBDistantProgramMaxSpeed;
         internal double PZBHomeProgramMaxSpeed;
-        internal double PZBBefehelMaxSpeed;
+        internal double PZBBefehlMaxSpeed;
         /// <summary>Stores whether we've entered the switch mode of the brake curve.</summary>
         internal bool BrakeCurveSwitchMode;
 
@@ -91,11 +91,11 @@ namespace Plugin
         internal List<Program> RunningPrograms = new List<Program>();
 
 
-        internal PZBBefehelStates PZBBefehelState;
+        internal PZBBefehlStates PZBBefehlState;
         /// <summary>Gets the current warning state of the PZB System.</summary>
-        internal PZBBefehelStates BefehelState
+        internal PZBBefehlStates BefehlState
         {
-            get { return this.PZBBefehelState; }
+            get { return this.PZBBefehlState; }
         }
 
         internal PZB(Train train)
@@ -106,7 +106,7 @@ namespace Plugin
         internal override void Initialize(InitializationModes mode)
         {
             RunningPrograms.Clear();
-            PZBBefehelState = PZBBefehelStates.None;
+            PZBBefehlState = PZBBefehlStates.None;
             HomeInductorLocation = 0;
             DistantInductorLocation = 0;
             switch (trainclass)
@@ -374,23 +374,23 @@ namespace Plugin
                         }
                     }
                 }
-                //PZB Befehel- Allows passing of red signals under authorisation
+                //PZB Befehl- Allows passing of red signals under authorisation
                 {
-                    switch (PZBBefehelState)
+                    switch (PZBBefehlState)
                     {
-                        case PZBBefehelStates.HomeStopPassed:
+                        case PZBBefehlStates.HomeStopPassed:
                             //We've passed a home stop signal which it is possible to override-
                             //Check if the override key is currently pressed
                             if (StopOverrideKeyPressed == true)
                             {
-                                PZBBefehelState = PZBBefehelStates.HomeStopPassedAuthorised;
+                                PZBBefehlState = PZBBefehlStates.HomeStopPassedAuthorised;
                             }
                             else
                             {
-                                PZBBefehelState = PZBBefehelStates.EBApplication;
+                                PZBBefehlState = PZBBefehlStates.EBApplication;
                             }
                             break;
-                        case PZBBefehelStates.HomeStopPassedAuthorised:
+                        case PZBBefehlStates.HomeStopPassedAuthorised:
                             if (RedSignalWarningSound != -1)
                             {
                                 SoundManager.Play(RedSignalWarningSound, 1.0, 1.0, true);
@@ -399,10 +399,10 @@ namespace Plugin
                             //remains pressed
                             if ((Train.trainspeed != 0 && !StopOverrideKeyPressed) || Train.trainspeed > 40)
                             {
-                                PZBBefehelState = PZBBefehelStates.EBApplication;
+                                PZBBefehlState = PZBBefehlStates.EBApplication;
                             }
                             break;
-                        case PZBBefehelStates.EBApplication:
+                        case PZBBefehlStates.EBApplication:
                             if (RedSignalWarningSound != -1)
                             {
                                 SoundManager.Stop(RedSignalWarningSound);
@@ -417,7 +417,7 @@ namespace Plugin
                 {
                     if (RedSignalWarningLight != -1)
                     {
-                        if (PZBBefehelState == PZBBefehelStates.HomeStopPassedAuthorised)
+                        if (PZBBefehlState == PZBBefehlStates.HomeStopPassedAuthorised)
                         {
                             this.Train.Panel[RedSignalWarningLight] = 1;
                         }
@@ -449,8 +449,8 @@ namespace Plugin
                             BlinkerTimer = 0.0;
                         }
 
-                        //First we need to find out if we've had a 2000hz induction, and Befehel's state from that
-                        if (PZBBefehelState == PZBBefehelStates.HomeStopPassedAuthorised)
+                        //First we need to find out if we've had a 2000hz induction, and Befehl's state from that
+                        if (PZBBefehlState == PZBBefehlStates.HomeStopPassedAuthorised || PZBBefehlState == PZBBefehlStates.Applied)
                         {
                             this.Train.Panel[RunningLightsStartIndicator + 3] = 1;
                             //All other PZB lights off
@@ -460,7 +460,7 @@ namespace Plugin
                             this.Train.Panel[RunningLightsStartIndicator + 4] = 0;
                             this.Train.Panel[RunningLightsStartIndicator + 5] = 0;
                         }
-                        else if (PZBBefehelState == PZBBefehelStates.EBApplication)
+                        else if (PZBBefehlState == PZBBefehlStates.EBApplication)
                         {
                             this.Train.Panel[RunningLightsStartIndicator + 3] = 0;
                             if (BlinkState == true)
@@ -678,21 +678,21 @@ namespace Plugin
                             this.Train.Panel[FreiIndicator] = 0;
                         }
                     }
-                    if (BefehelIndicator != -1)
+                    if (BefehlIndicator != -1)
                     {
                         if (StopOverrideKeyPressed == true)
                         {
-                            this.Train.Panel[BefehelIndicator] = 1;
+                            this.Train.Panel[BefehlIndicator] = 1;
                         }
                         else
                         {
-                            this.Train.Panel[BefehelIndicator] = 0;
+                            this.Train.Panel[BefehlIndicator] = 0;
                         }
                     }
                 }
                 if (AdvancedDriving.CheckInst != null)
                 {
-                    tractionmanager.debuginformation[20] = Convert.ToString(PZBBefehelState);
+                    tractionmanager.debuginformation[20] = Convert.ToString(PZBBefehlState);
                     
                     
                     double MaxSpeed = 999;
@@ -720,7 +720,7 @@ namespace Plugin
                         }
                     }
                     //Basic Information
-                    if (PZBBefehelState != PZBBefehelStates.None && MaxSpeed > 45)
+                    if (PZBBefehlState != PZBBefehlStates.None && MaxSpeed > 45)
                     {
                         MaxSpeed = 45;
                     }
@@ -800,20 +800,85 @@ namespace Plugin
                     }
                     break;
                 case 2000:
-                    //First check if the signal is red
-                    if (BeaconAspect == 0)
+                    if (data == 0)
                     {
-                        //If we're red, check if we can pass this beacon under authorisation
-                        if (data == 1)
+                        //If the data paramater is 0, this should always be processed as a trip
+                        if (PZBBefehlState == PZBBefehlStates.Applied)
                         {
-                            PZBBefehelState = PZBBefehelStates.HomeStopPassedAuthorised;
+                            PZBBefehlState = PZBBefehlStates.HomeStopPassed;
                         }
                         else
                         {
-                            PZBBefehelState = PZBBefehelStates.EBApplication;
+                            PZBBefehlState = PZBBefehlStates.EBApplication;
+                        }
+                        return;
+                    }
+                    if (data == 1)
+                    {
+                        //This beacon only triggers if the section ahead is occupied
+                        if (PZBBefehlState == PZBBefehlStates.Applied)
+                        {
+                            PZBBefehlState = PZBBefehlStates.HomeStopPassed;
+                        }
+                        else
+                        {
+                            PZBBefehlState = PZBBefehlStates.EBApplication;
+                        }
+                        return;
+                    }
+                    //This is a complex beacon type
+                    //We first need to convert the data to a string and split it
+                    string DataString = data.ToString();
+                    if (DataString.Length != 6)
+                    {
+                        //If the length is not exactly 5 characters trigger Befehl
+                        if (PZBBefehlState == PZBBefehlStates.Applied)
+                        {
+                            PZBBefehlState = PZBBefehlStates.HomeStopPassed;
+                        }
+                        else
+                        {
+                            PZBBefehlState = PZBBefehlStates.EBApplication;
+                        }
+                        return;
+                    }
+                    //We now need to decide what type of beacon this is
+                    //Split the string into two ints
+                    int MaxBeaconAspect = Convert.ToInt32(DataString.Substring(1, 2));
+                    int MaxBeaconSpeed = Convert.ToInt32(DataString.Substring(3, 3));
+                    if (MaxBeaconAspect == 0)
+                    {
+                        //Our maximum beacon aspect is zero
+                        //This is a speed dependant beacon, so trigger Befehl if we are above the checking speed
+                        if (this.Train.trainspeed > MaxBeaconSpeed)
+                        {
+                            if (PZBBefehlState == PZBBefehlStates.Applied)
+                            {
+                                PZBBefehlState = PZBBefehlStates.HomeStopPassed;
+                            }
+                            else
+                            {
+                                PZBBefehlState = PZBBefehlStates.EBApplication;
+                            }
+                        }
+                        return;
+                    }
+                    if (BeaconAspect <= MaxBeaconAspect)
+                    {
+                        //This is an aspect dependant beacon, which we have triggered
+                        //Check whether our trainspeed is greater than the maximum beacon speed
+                        if (this.Train.trainspeed > MaxBeaconSpeed)
+                        {
+                            if (PZBBefehlState == PZBBefehlStates.Applied)
+                            {
+                                PZBBefehlState = PZBBefehlStates.HomeStopPassed;
+                            }
+                            else
+                            {
+                                PZBBefehlState = PZBBefehlStates.EBApplication;
+                            }
                         }
                     }
-                    HomeInductorLocation = Train.trainlocation;
                     break;
                 case 2001:
                     break;
@@ -865,7 +930,7 @@ namespace Plugin
                             break;
                         }
                     }
-                    if (CanRelease == true && PZBBefehelState != PZBBefehelStates.EBApplication)
+                    if (CanRelease == true && PZBBefehlState != PZBBefehlStates.EBApplication)
                     {
                         Train.tractionmanager.resetbrakeapplication();
                     }

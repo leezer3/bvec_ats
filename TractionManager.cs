@@ -68,6 +68,9 @@ namespace Plugin
          * <para>18. Line Volts</para></summary> */
         //These will probably be renumbered at some stage....
 
+        internal AdvancedDrivingData DebugWindowData = new AdvancedDrivingData();
+        
+
         public static string[] debuginformation = new string[30];
         public static int tractiontype;
 
@@ -612,7 +615,7 @@ namespace Plugin
                 {
                     debuginformation[0] = data.DebugMessage;
                     debuginformation[13] = Convert.ToString(Train.trainspeed) + " km/h";
-                    AdvancedDriving.CreateInst.Elapse(debuginformation, tractiontype);
+                    AdvancedDriving.CreateInst.Elapse(debuginformation, tractiontype, DebugWindowData);
                 }
             }
             else
@@ -1274,6 +1277,10 @@ namespace Plugin
                 }
                 if (keypressed == PZBStopOverrideKey)
                 {
+                    if (Train.PZB.BefehlState == PZB.PZBBefehlStates.None)
+                    {
+                        Train.PZB.PZBBefehlState = PZB.PZBBefehlStates.Applied;
+                    }
                     Train.PZB.StopOverrideKeyPressed = true;
                 }
             }
@@ -1389,9 +1396,9 @@ namespace Plugin
                 if (keypressed == PZBStopOverrideKey)
                 {
                     Train.PZB.StopOverrideKeyPressed = false;
-                    if (Train.PZB.PZBBefehelState != PZB.PZBBefehelStates.EBApplication)
+                    if (Train.PZB.PZBBefehlState != PZB.PZBBefehlStates.EBApplication)
                     {
-                        Train.PZB.PZBBefehelState = PZB.PZBBefehelStates.None;
+                        Train.PZB.PZBBefehlState = PZB.PZBBefehlStates.None;
                     }
                 }
             }

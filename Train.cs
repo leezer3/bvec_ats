@@ -922,8 +922,8 @@ namespace Plugin {
                                         case "freiswitch":
                                             InternalFunctions.ValidateIndex(value, ref PZB.FreiIndicator, key);
                                             break;
-                                        case "befehelswitch":
-                                            InternalFunctions.ValidateIndex(value, ref PZB.BefehelIndicator, key);
+                                        case "Befehlswitch":
+                                            InternalFunctions.ValidateIndex(value, ref PZB.BefehlIndicator, key);
                                             break;
                                         case "runninglights":
                                             InternalFunctions.ValidateIndex(value, ref PZB.RunningLightsStartIndicator, key);

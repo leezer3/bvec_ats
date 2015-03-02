@@ -675,25 +675,25 @@ namespace Plugin {
                 {
                     debugpressureuse += (int)(cylindercocks_basepressureuse + (cylindercocks_notchpressureuse * data.Handles.PowerNotch));
                 }
-                tractionmanager.debuginformation[1] = Convert.ToString(stm_boilerpressure);
-                tractionmanager.debuginformation[2] = Convert.ToString(pressureup);
-                tractionmanager.debuginformation[3] = Convert.ToString(debugpressureuse);
-                tractionmanager.debuginformation[4] = Convert.ToString(cutoff);
-                tractionmanager.debuginformation[5] = Convert.ToString(optimalcutoff);
-                tractionmanager.debuginformation[6] = Convert.ToString(firemass);
-                tractionmanager.debuginformation[7] = Convert.ToString(firetemp);
-                tractionmanager.debuginformation[8] = Convert.ToString(stm_injector);
-                tractionmanager.debuginformation[9] = Convert.ToString(blowers);
-                tractionmanager.debuginformation[10] = Convert.ToString(stm_boilerwater) + " of " + Convert.ToString(boilermaxwaterlevel);
-                tractionmanager.debuginformation[11] = Convert.ToString(fuel) + " of " + Convert.ToString(fuelcapacity);
-                tractionmanager.debuginformation[12] = Convert.ToString(automatic);
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.BoilerPressure = stm_boilerpressure;
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.PressureGenerationRate = pressureup;
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.PressureUsageRate = debugpressureuse;
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.CurrentCutoff = (int)cutoff;
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.OptimalCutoff = (int)optimalcutoff;
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.FireMass = firemass;
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.FireTemperature = firetemp;
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.Injectors = stm_injector;
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.Blowers = blowers;
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.BoilerWaterLevel = Convert.ToString(stm_boilerwater) + " of " + Convert.ToString(boilermaxwaterlevel);
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.TanksWaterLevel = Convert.ToString(fuel) + " of " + Convert.ToString(fuelcapacity);
+                this.Train.tractionmanager.DebugWindowData.SteamEngine.AutoCutoff = automatic;
                 if (cylindercocks == true)
                 {
-                    tractionmanager.debuginformation[14] = "Open";    
+                    this.Train.tractionmanager.DebugWindowData.SteamEngine.CylinderCocks = "Open";    
                 }
                 else
                 {
-                    tractionmanager.debuginformation[14] = "Closed";    
+                    this.Train.tractionmanager.DebugWindowData.SteamEngine.CylinderCocks = "Closed";    
                 }
 
             }

@@ -44,7 +44,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.ActiveHomeBrakeCurves = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
-            this.PZBBefehel = new System.Windows.Forms.Label();
+            this.PZBBefehl = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.DistantInductorDistance = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
@@ -208,16 +208,16 @@
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(116, 13);
             this.label7.TabIndex = 74;
-            this.label7.Text = "PZB Befehel State:";
+            this.label7.Text = "PZB Befehl State:";
             // 
-            // PZBBefehel
+            // PZBBefehl
             // 
-            this.PZBBefehel.AutoSize = true;
-            this.PZBBefehel.Location = new System.Drawing.Point(172, 262);
-            this.PZBBefehel.Name = "PZBBefehel";
-            this.PZBBefehel.Size = new System.Drawing.Size(35, 13);
-            this.PZBBefehel.TabIndex = 73;
-            this.PZBBefehel.Text = "label3";
+            this.PZBBefehl.AutoSize = true;
+            this.PZBBefehl.Location = new System.Drawing.Point(172, 262);
+            this.PZBBefehl.Name = "PZBBefehl";
+            this.PZBBefehl.Size = new System.Drawing.Size(35, 13);
+            this.PZBBefehl.TabIndex = 73;
+            this.PZBBefehl.Text = "label3";
             // 
             // label6
             // 
@@ -330,7 +330,7 @@
             this.Controls.Add(this.label6);
             this.Controls.Add(this.DistantInductorDistance);
             this.Controls.Add(this.label7);
-            this.Controls.Add(this.PZBBefehel);
+            this.Controls.Add(this.PZBBefehl);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.ActiveHomeBrakeCurves);
             this.Controls.Add(this.label2);
@@ -371,7 +371,7 @@
         private System.Windows.Forms.Label label5;
         public System.Windows.Forms.Label ActiveHomeBrakeCurves;
         private System.Windows.Forms.Label label7;
-        public System.Windows.Forms.Label PZBBefehel;
+        public System.Windows.Forms.Label PZBBefehl;
         private System.Windows.Forms.Label label6;
         public System.Windows.Forms.Label DistantInductorDistance;
         private System.Windows.Forms.Label label8;

@@ -22,18 +22,20 @@ namespace Plugin
             Suppressed = 6,
         }
 
-        internal enum PZBBefehelStates
+        internal enum PZBBefehlStates
         {
             /// <summary>Set this state when no processing or action is to be taken.</summary>
             None = 0,
-            /// <summary>A home signal inductor has been triggered.</summary>
-            HomeStopPassed = 1,
+            /// <summary>Befehl has been applied.</summary>
+            Applied = 1,
+            /// <summary>A home stop inductor has been passed.</summary>
+            HomeStopPassed = 2,
             /// <summary>A home signal has been passed under authorised conditions.</summary>
-            HomeStopPassedAuthorised = 2,
+            HomeStopPassedAuthorised = 3,
             /// <summary>A home signal has been passed and the EB has been applied.</summary>
-            EBApplication = 3,
+            EBApplication = 4,
             /// <summary>The home stop penalty brakes are now releaseable.</summary>
-            PenaltyReleasable = 4,
+            PenaltyReleasable = 5,
         }
     }
 }

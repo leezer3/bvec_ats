@@ -77,7 +77,7 @@ namespace Plugin
             
         }
 
-        internal void Elapse(string[] debuginformation, int tractiontype)
+        internal void Elapse(string[] debuginformation, int tractiontype, AdvancedDrivingData DebugData)
         {
             
             //Only attempt to display steam related debug information if this is a steam locomotive
@@ -92,11 +92,12 @@ namespace Plugin
                 }
                 SteamPanel.debuglabel.Text = debuginformation[0];
                 SteamPanel.trainspeed.Text = debuginformation[13];
-                SteamPanel.pressure.Text = debuginformation[1];
-                SteamPanel.genrate.Text = debuginformation[2];
-                SteamPanel.userate.Text = debuginformation[3];
+
+                SteamPanel.pressure.Text = Convert.ToString(DebugData.SteamEngine.BoilerPressure);
+                SteamPanel.genrate.Text = Convert.ToString(DebugData.SteamEngine.PressureGenerationRate);
+                SteamPanel.userate.Text = Convert.ToString(DebugData.SteamEngine.PressureUsageRate);
                 //If we're using more pressure than we're generating, change the usage rate text color to red
-                if (Int32.Parse(debuginformation[3]) > Int32.Parse(debuginformation[2]))
+                if (DebugData.SteamEngine.PressureUsageRate > DebugData.SteamEngine.PressureGenerationRate)
                 {
                     SteamPanel.userate.ForeColor = System.Drawing.Color.Red;
                 }
@@ -104,9 +105,9 @@ namespace Plugin
                 {
                     SteamPanel.userate.ForeColor = System.Drawing.Color.Black;
                 }
-                SteamPanel.currentcutoff.Text = debuginformation[4];
+                SteamPanel.currentcutoff.Text = Convert.ToString(DebugData.SteamEngine.CurrentCutoff);
                 //If the current cutoff is greater than the optimum cutoff, set the text color to red
-                if (double.Parse(debuginformation[4]) > double.Parse(debuginformation[5]))
+                if (DebugData.SteamEngine.CurrentCutoff > DebugData.SteamEngine.OptimalCutoff)
                 {
                     SteamPanel.currentcutoff.ForeColor = System.Drawing.Color.Red;
                 }
@@ -114,15 +115,15 @@ namespace Plugin
                 {
                     SteamPanel.currentcutoff.ForeColor = System.Drawing.Color.Black;
                 }
-                SteamPanel.optimalcutoff.Text = debuginformation[5];
-                SteamPanel.firemass.Text = debuginformation[6];
-                SteamPanel.firetemp.Text = debuginformation[7];
-                SteamPanel.injectors.Text = debuginformation[8];
-                SteamPanel.blowers.Text = debuginformation[9];
-                SteamPanel.boilerlevel.Text = debuginformation[10];
-                SteamPanel.fuellevel.Text = debuginformation[11];
-                SteamPanel.automatic.Text = debuginformation[12];
-                SteamPanel.cylindercocks.Text = debuginformation[14];
+                SteamPanel.optimalcutoff.Text = Convert.ToString(DebugData.SteamEngine.OptimalCutoff);
+                SteamPanel.firemass.Text = Convert.ToString(DebugData.SteamEngine.FireMass);
+                SteamPanel.firetemp.Text = Convert.ToString(DebugData.SteamEngine.FireTemperature);
+                SteamPanel.injectors.Text = Convert.ToString(DebugData.SteamEngine.Injectors);
+                SteamPanel.blowers.Text = Convert.ToString(DebugData.SteamEngine.Blowers);
+                SteamPanel.boilerlevel.Text = DebugData.SteamEngine.BoilerWaterLevel;
+                SteamPanel.fuellevel.Text = DebugData.SteamEngine.TanksWaterLevel;
+                SteamPanel.automatic.Text = Convert.ToString(DebugData.SteamEngine.AutoCutoff);
+                SteamPanel.cylindercocks.Text = DebugData.SteamEngine.CylinderCocks;
             }
             else if (tractiontype == 2)
             {
@@ -168,8 +169,8 @@ namespace Plugin
                 PZBPanel.NewestHomeSpeed.Text = debuginformation[24];
                 PZBPanel.HomeInductorDistance.Text = debuginformation[22];
                 
-                //Befehel
-                PZBPanel.PZBBefehel.Text = debuginformation[20];
+                //Befehl
+                PZBPanel.PZBBefehl.Text = debuginformation[20];
             }
         }
 

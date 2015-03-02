@@ -125,6 +125,7 @@
     <Compile Include="SteamControl.Designer.cs">
       <DependentUpon>SteamControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Structures\DebugData.cs" />
     <Compile Include="vigilance.DeadmanStates.cs" />
     <Compile Include="diesel.cs" />
     <Compile Include="electric.cs" />
