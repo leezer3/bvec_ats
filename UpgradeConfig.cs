@@ -1022,5 +1022,15 @@ namespace Plugin
                     sw.WriteLine("The paramater " + failingvalue + " contains invalid data. This should be a comma separated list of integers.");
                 }
         }
+
+        //Call this function to log an occured error in parsing a string to an array of values
+        internal static void LogMessage(string ErrorMessage)
+        {
+            using (StreamWriter sw = File.AppendText(Path.Combine(trainfolder, "error.log")))
+            {
+                //Write out upgrade errors to log file
+                sw.WriteLine(ErrorMessage);
+            }
+        }
     }
 }

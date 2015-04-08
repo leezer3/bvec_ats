@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.IO;
 using OpenBveApi.Runtime;
-using Plugin.AI;
 
 namespace Plugin {
 	/// <summary>The interface to be implemented by the plugin.</summary>

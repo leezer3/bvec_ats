@@ -96,6 +96,7 @@
     <Compile Include="Animations.cs" />
     <Compile Include="Animations.DoorLightStates.cs" />
     <Compile Include="CAWS.cs" />
+    <Compile Include="Functions\DebugLogger.cs" />
     <Compile Include="PZB.Program.cs" />
     <Compile Include="Dialogs\PZBControl.cs">
       <SubType>UserControl</SubType>
@@ -126,6 +127,9 @@
       <DependentUpon>SteamControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Structures\DebugData.cs" />
+    <Compile Include="Traction\Diesel\DieselEngine.cs" />
+    <Compile Include="Traction\Diesel\Gearbox.cs" />
+    <Compile Include="Traction\Diesel\StarterMotor.cs" />
     <Compile Include="vigilance.DeadmanStates.cs" />
     <Compile Include="diesel.cs" />
     <Compile Include="electric.cs" />
@@ -185,5 +189,8 @@
     <EmbeddedResource Include="SteamControl.resx">
       <DependentUpon>SteamControl.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Traction\Diesel\StarterMotor.States.cs" />
   </ItemGroup>
 </Project>

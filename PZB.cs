@@ -87,6 +87,8 @@ namespace Plugin
         internal double MaxBrakeCurveSpeed;
         internal bool WachamPressed;
         internal bool FreiPressed;
+        //Required for logging the switch mode state
+        internal bool SwitchModeLog;
 
         internal List<Program> RunningPrograms = new List<Program>();
 
@@ -153,6 +155,11 @@ namespace Plugin
                 if (RunningPrograms.Count == 0)
                 {
                     BrakeCurveSwitchMode = false;
+                    if (SwitchModeLog == true)
+                    {
+                        Train.DebugLogger.LogMessage("Brake curve Switch Mode was released due to no running programs");
+                        SwitchModeLog = false;
+                    }
                 }
                 {
 
@@ -168,6 +175,7 @@ namespace Plugin
                             //First let's figure out whether the brake has expired- This doesn't matter what state it's in
                             if (CurrentProgram.InductorDistance > 1250)
                             {
+                                Train.DebugLogger.LogMessage("A 1000hz program has expired, and was removed");
                                 RunningPrograms.Remove(CurrentProgram);
                             }
                             //If we've dropped below the switch speed, then switch to alternate speed restriction
@@ -178,6 +186,11 @@ namespace Plugin
                                 if (CurrentProgram.SwitchTimer > 15000)
                                 {
                                     BrakeCurveSwitchMode = true;
+                                    if (SwitchModeLog == false)
+                                    {
+                                        Train.DebugLogger.LogMessage("A 1000hz program triggered brake curve Switch Mode");
+                                        SwitchModeLog = true;
+                                    }
                                 }
                                 
                             }
@@ -192,6 +205,8 @@ namespace Plugin
                                     if (CurrentProgram.AcknowledgementTimer > 4000)
                                     {
                                         //If the driver fails to acknowledge the warning within 4 secs, apply EB
+                                        Train.DebugLogger.LogMessage("A 1000hz inductor was not acknowledged within 4 seconds");
+                                        Train.DebugLogger.LogMessage("The PZB safety system has triggered an EB application");
                                         CurrentProgram.ProgramState = PZBProgramStates.EBApplication;
                                     }
                                     if (PZBDistantProgramWarningSound != -1)
@@ -225,6 +240,8 @@ namespace Plugin
                                     //If we exceed the maximum brake curve speed, then apply EB brakes
                                     if (Train.trainspeed > CurrentProgram.MaxSpeed)
                                     {
+                                        Train.DebugLogger.LogMessage("The 1000hz program maximum brake curve speed has been exceeded");
+                                        Train.DebugLogger.LogMessage("The PZB safety system has triggered an EB application");
                                         CurrentProgram.ProgramState = PZBProgramStates.EBApplication;
                                     }
                                     break;
@@ -251,6 +268,11 @@ namespace Plugin
                                     break;
                                 case PZBProgramStates.PenaltyReleasable:
                                     BrakeCurveSwitchMode = true;
+                                    if (SwitchModeLog == false)
+                                    {
+                                        Train.DebugLogger.LogMessage("A 1000hz program triggered brake curve Switch Mode");
+                                        SwitchModeLog = true;
+                                    }
                                     break;
                             }
                             if (CurrentProgram.InductorLocation > PreviousDistantProgramInductorLocation)
@@ -281,6 +303,11 @@ namespace Plugin
                                 if (CurrentProgram.SwitchTimer > 15000)
                                 {
                                     BrakeCurveSwitchMode = true;
+                                    if (SwitchModeLog == false)
+                                    {
+                                        Train.DebugLogger.LogMessage("A 500hz program triggered brake curve Switch Mode");
+                                        SwitchModeLog = true;
+                                    }
                                 }
 
                             }
@@ -295,6 +322,7 @@ namespace Plugin
                                     if (CurrentProgram.InductorDistance > 250)
                                     {
                                         //Auto-remove 500hz programs when they have expired
+                                        Train.DebugLogger.LogMessage("A 500hz program has expired, and was removed");
                                         RunningPrograms.Remove(CurrentProgram);
                                     }
                                     double BrakeCurveSwitchSpeed;
@@ -341,6 +369,8 @@ namespace Plugin
 
                                     if (Train.trainspeed > CurrentProgram.MaxSpeed)
                                     {
+                                        Train.DebugLogger.LogMessage("The 500hz program maximum brake curve speed has been exceeded");
+                                        Train.DebugLogger.LogMessage("The PZB safety system has triggered an EB application");
                                         CurrentProgram.ProgramState = PZBProgramStates.EBApplication;
                                     }
                                     break;
@@ -399,6 +429,8 @@ namespace Plugin
                             //remains pressed
                             if ((Train.trainspeed != 0 && !StopOverrideKeyPressed) || Train.trainspeed > 40)
                             {
+                                Train.DebugLogger.LogMessage("The Befehel key was released prematurely");
+                                Train.DebugLogger.LogMessage("The PZB safety system has triggered an EB application");
                                 PZBBefehlState = PZBBefehlStates.EBApplication;
                             }
                             break;
@@ -768,84 +800,274 @@ namespace Plugin
         /// <summary>Call this function to trigger a PZB alert.</summary>
         internal void Trigger(int frequency, int data)
         {
+            string DataString;
+            int MaxBeaconAspect;
+            int MaxBeaconSpeed;
             switch (frequency)
             {
                 case 1000:
-                    if (BeaconAspect != 6)
+                    //First, handle simple non speed/ aspect dependant cases
+                    if (data == 0)
                     {
+                        //If the data paramater is 0, then this beacon always triggers
                         Program newProgram = new Program();
                         newProgram.Type = 0;
                         newProgram.ProgramState = PZBProgramStates.SignalPassed;
                         newProgram.InductorLocation = Train.trainlocation;
                         RunningPrograms.Add(newProgram);
                         DistantInductorLocation = Train.trainlocation;
+                        Train.DebugLogger.LogMessage("A new 1000hz program has been added to the list of running programs");
+                        return;
+                    }
+                    if (data == 1)
+                    {
+                        //If the data parameter is 1, this beacon only triggers if the section ahead is occupied
+                        if (BeaconAspect != 0)
+                        {
+                            return;
+                        }
+                        Program newProgram = new Program();
+                        newProgram.Type = 0;
+                        newProgram.ProgramState = PZBProgramStates.SignalPassed;
+                        newProgram.InductorLocation = Train.trainlocation;
+                        RunningPrograms.Add(newProgram);
+                        DistantInductorLocation = Train.trainlocation;
+                        Train.DebugLogger.LogMessage("A new 1000hz program has been added to the list of running programs");
+                        return;
+                    }
+                    //This is a complex beacon type
+                    //We first need to convert the data to a string and split it
+                    DataString = data.ToString();
+                    if (DataString.Length != 6)
+                    {
+                        //If the length is not exactly 5 characters trigger
+                        Program newProgram = new Program();
+                        newProgram.Type = 0;
+                        newProgram.ProgramState = PZBProgramStates.SignalPassed;
+                        newProgram.InductorLocation = Train.trainlocation;
+                        RunningPrograms.Add(newProgram);
+                        DistantInductorLocation = Train.trainlocation;
+                        Train.DebugLogger.LogMessage("A new 1000hz program has been added to the list of running programs");
+                        return;
+                    }
+                    //We now need to decide what type of beacon this is
+                    //Split the string into two ints
+                    MaxBeaconAspect = Convert.ToInt32(DataString.Substring(1, 2));
+                    MaxBeaconSpeed = Convert.ToInt32(DataString.Substring(3, 3));
+                    if (MaxBeaconAspect == 0)
+                    {
+                        //Our maximum beacon aspect is zero
+                        //This is a speed dependant beacon, so trigger Befehl if we are above the checking speed
+                        if (this.Train.trainspeed > MaxBeaconSpeed)
+                        {
+                            Program newProgram = new Program();
+                            newProgram.Type = 0;
+                            newProgram.ProgramState = PZBProgramStates.SignalPassed;
+                            newProgram.InductorLocation = Train.trainlocation;
+                            RunningPrograms.Add(newProgram);
+                            DistantInductorLocation = Train.trainlocation;
+                            Train.DebugLogger.LogMessage("A new 1000hz program has been added to the list of running programs");
+                        }
+                        return;
+                    }
+                    if (BeaconAspect <= MaxBeaconAspect)
+                    {
+                        //This is an aspect dependant beacon, which we have triggered
+                        //Check whether our trainspeed is greater than the maximum beacon speed
+                        if (this.Train.trainspeed > MaxBeaconSpeed)
+                        {
+                            Program newProgram = new Program();
+                            newProgram.Type = 0;
+                            newProgram.ProgramState = PZBProgramStates.SignalPassed;
+                            newProgram.InductorLocation = Train.trainlocation;
+                            RunningPrograms.Add(newProgram);
+                            DistantInductorLocation = Train.trainlocation;
+                            Train.DebugLogger.LogMessage("A new 1000hz program has been added to the list of running programs");
+                        }
                     }
                     break;
                 case 500:
-                    if (BeaconAspect != 6)
+                    //First, handle simple non speed/ aspect dependant cases
+                    if (data == 0)
                     {
+                        //If the data paramater is 0, then this beacon always triggers
                         Program newProgram = new Program();
                         newProgram.Type = 1;
                         newProgram.ProgramState = PZBProgramStates.BrakeCurveActive;
                         newProgram.InductorLocation = Train.trainlocation;
                         RunningPrograms.Add(newProgram);
                         HomeInductorLocation = Train.trainlocation;
-                        foreach (Program CurrentProgram in  RunningPrograms)
+                        foreach (Program CurrentProgram in RunningPrograms)
                         {
                             if (CurrentProgram.Type == 0 && CurrentProgram.ProgramState == PZBProgramStates.Suppressed)
                             {
                                 CurrentProgram.ProgramState = PZBProgramStates.BrakeCurveActive;
                             }
                         }
+                        Train.DebugLogger.LogMessage("A new 500hz program has been added to the list of running programs");
+                        Train.DebugLogger.LogMessage("All suppressed programs have been returned to active mode");
+                        return;
+                    }
+                    if (data == 1)
+                    {
+                        if (BeaconAspect != 0)
+                        {
+                            return;
+                        }
+                        //If the data parameter is 1, this beacon only triggers if the section ahead is occupied
+                        Program newProgram = new Program();
+                        newProgram.Type = 1;
+                        newProgram.ProgramState = PZBProgramStates.BrakeCurveActive;
+                        newProgram.InductorLocation = Train.trainlocation;
+                        RunningPrograms.Add(newProgram);
+                        HomeInductorLocation = Train.trainlocation;
+                        foreach (Program CurrentProgram in RunningPrograms)
+                        {
+                            if (CurrentProgram.Type == 0 && CurrentProgram.ProgramState == PZBProgramStates.Suppressed)
+                            {
+                                CurrentProgram.ProgramState = PZBProgramStates.BrakeCurveActive;
+                            }
+                        }
+                        Train.DebugLogger.LogMessage("A new 500hz program has been added to the list of running programs");
+                        Train.DebugLogger.LogMessage("All suppressed programs have been returned to active mode");
+                        return;
+                    }
+                    //This is a complex beacon type
+                    //We first need to convert the data to a string and split it
+                    DataString = data.ToString();
+                    if (DataString.Length != 6)
+                    {
+                        //If the length is not exactly 5 characters trigger
+                        Program newProgram = new Program();
+                        newProgram.Type = 1;
+                        newProgram.ProgramState = PZBProgramStates.BrakeCurveActive;
+                        newProgram.InductorLocation = Train.trainlocation;
+                        RunningPrograms.Add(newProgram);
+                        HomeInductorLocation = Train.trainlocation;
+                        foreach (Program CurrentProgram in RunningPrograms)
+                        {
+                            if (CurrentProgram.Type == 0 && CurrentProgram.ProgramState == PZBProgramStates.Suppressed)
+                            {
+                                CurrentProgram.ProgramState = PZBProgramStates.BrakeCurveActive;
+                            }
+                        }
+                        Train.DebugLogger.LogMessage("A new 500hz program has been added to the list of running programs");
+                        Train.DebugLogger.LogMessage("All suppressed programs have been returned to active mode");
+                        return;
+                    }
+                    //We now need to decide what type of beacon this is
+                    //Split the string into two ints
+                    MaxBeaconAspect = Convert.ToInt32(DataString.Substring(1, 2));
+                    MaxBeaconSpeed = Convert.ToInt32(DataString.Substring(3, 3));
+                    if (MaxBeaconAspect == 0)
+                    {
+                        //Our maximum beacon aspect is zero
+                        //This is a speed dependant beacon, so trigger Befehl if we are above the checking speed
+                        if (this.Train.trainspeed > MaxBeaconSpeed)
+                        {
+                            Program newProgram = new Program();
+                            newProgram.Type = 1;
+                            newProgram.ProgramState = PZBProgramStates.BrakeCurveActive;
+                            newProgram.InductorLocation = Train.trainlocation;
+                            RunningPrograms.Add(newProgram);
+                            HomeInductorLocation = Train.trainlocation;
+                            foreach (Program CurrentProgram in RunningPrograms)
+                            {
+                                if (CurrentProgram.Type == 0 && CurrentProgram.ProgramState == PZBProgramStates.Suppressed)
+                                {
+                                    CurrentProgram.ProgramState = PZBProgramStates.BrakeCurveActive;
+                                }
+                            }
+                            Train.DebugLogger.LogMessage("A new 500hz program has been added to the list of running programs");
+                            Train.DebugLogger.LogMessage("All suppressed programs have been returned to active mode");
+                        }
+                        return;
+                    }
+                    if (BeaconAspect <= MaxBeaconAspect)
+                    {
+                        //This is an aspect dependant beacon, which we have triggered
+                        //Check whether our trainspeed is greater than the maximum beacon speed
+                        if (this.Train.trainspeed > MaxBeaconSpeed)
+                        {
+                            Program newProgram = new Program();
+                            newProgram.Type = 1;
+                            newProgram.ProgramState = PZBProgramStates.BrakeCurveActive;
+                            newProgram.InductorLocation = Train.trainlocation;
+                            RunningPrograms.Add(newProgram);
+                            HomeInductorLocation = Train.trainlocation;
+                            foreach (Program CurrentProgram in RunningPrograms)
+                            {
+                                if (CurrentProgram.Type == 0 && CurrentProgram.ProgramState == PZBProgramStates.Suppressed)
+                                {
+                                    CurrentProgram.ProgramState = PZBProgramStates.BrakeCurveActive;
+                                }
+                            }
+                            Train.DebugLogger.LogMessage("A new 500hz program has been added to the list of running programs");
+                            Train.DebugLogger.LogMessage("All suppressed programs have been returned to active mode");
+                        }
                     }
                     break;
                 case 2000:
+                    //First, handle simple non speed/ aspect dependant cases
                     if (data == 0)
                     {
                         //If the data paramater is 0, this should always be processed as a trip
                         if (PZBBefehlState == PZBBefehlStates.Applied)
                         {
                             PZBBefehlState = PZBBefehlStates.HomeStopPassed;
+                            Train.DebugLogger.LogMessage("A permenant 2000hz inductor was passed with Befehel applied");
                         }
                         else
                         {
                             PZBBefehlState = PZBBefehlStates.EBApplication;
+                            Train.DebugLogger.LogMessage("A permenant 2000hz inductor was passed without Befehel applied");
+                            Train.DebugLogger.LogMessage("The PZB safety system has trigged an EB application");
                         }
                         return;
                     }
                     if (data == 1)
                     {
-                        //This beacon only triggers if the section ahead is occupied
+                        if (BeaconAspect != 0)
+                        {
+                            return;
+                        }
+                        //If the data parameter is 1, this beacon only triggers if the section ahead is occupied
                         if (PZBBefehlState == PZBBefehlStates.Applied)
                         {
                             PZBBefehlState = PZBBefehlStates.HomeStopPassed;
+                            Train.DebugLogger.LogMessage("A stop signal was passed with Befehel applied");
                         }
                         else
                         {
                             PZBBefehlState = PZBBefehlStates.EBApplication;
+                            Train.DebugLogger.LogMessage("A stop signal was passed without Befehel applied");
+                            Train.DebugLogger.LogMessage("The PZB safety system has triggered an EB application");
                         }
                         return;
                     }
                     //This is a complex beacon type
                     //We first need to convert the data to a string and split it
-                    string DataString = data.ToString();
+                    DataString = data.ToString();
                     if (DataString.Length != 6)
                     {
-                        //If the length is not exactly 5 characters trigger Befehl
+                        //If the length is not exactly 5 characters trigger Befehl as per a permenant 2000hz inductor
                         if (PZBBefehlState == PZBBefehlStates.Applied)
                         {
                             PZBBefehlState = PZBBefehlStates.HomeStopPassed;
+                            Train.DebugLogger.LogMessage("A permenant 2000hz inductor was passed with Befehel applied");
                         }
                         else
                         {
                             PZBBefehlState = PZBBefehlStates.EBApplication;
+                            Train.DebugLogger.LogMessage("A permenant 2000hz inductor was passed without Befehel applied");
+                            Train.DebugLogger.LogMessage("The PZB safety system has trigged an EB application");
                         }
                         return;
                     }
                     //We now need to decide what type of beacon this is
                     //Split the string into two ints
-                    int MaxBeaconAspect = Convert.ToInt32(DataString.Substring(1, 2));
-                    int MaxBeaconSpeed = Convert.ToInt32(DataString.Substring(3, 3));
+                    MaxBeaconAspect = Convert.ToInt32(DataString.Substring(1, 2));
+                    MaxBeaconSpeed = Convert.ToInt32(DataString.Substring(3, 3));
                     if (MaxBeaconAspect == 0)
                     {
                         //Our maximum beacon aspect is zero
@@ -855,10 +1077,13 @@ namespace Plugin
                             if (PZBBefehlState == PZBBefehlStates.Applied)
                             {
                                 PZBBefehlState = PZBBefehlStates.HomeStopPassed;
+                                Train.DebugLogger.LogMessage("A speed dependant 2000hz inductor was passed with Befehel applied");
                             }
                             else
                             {
                                 PZBBefehlState = PZBBefehlStates.EBApplication;
+                                Train.DebugLogger.LogMessage("A speed dependant 2000hz inductor was passed without Befehel applied");
+                                Train.DebugLogger.LogMessage("The PZB safety system has trigged an EB application");
                             }
                         }
                         return;
@@ -872,10 +1097,13 @@ namespace Plugin
                             if (PZBBefehlState == PZBBefehlStates.Applied)
                             {
                                 PZBBefehlState = PZBBefehlStates.HomeStopPassed;
+                                Train.DebugLogger.LogMessage("An aspect dependant 2000hz inductor was passed with Befehel applied");
                             }
                             else
                             {
                                 PZBBefehlState = PZBBefehlStates.EBApplication;
+                                Train.DebugLogger.LogMessage("An aspect dependant 2000hz inductor was passed without Befehel applied");
+                                Train.DebugLogger.LogMessage("The PZB safety system has trigged an EB application");
                             }
                         }
                     }

@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Text;
-
+using System.Windows.Forms;
 using OpenBveApi.Runtime;
 using Plugin.AI;
 
@@ -179,6 +180,8 @@ namespace Plugin {
         /// <summary>The AI Driver</summary>
         internal AI.AI_Driver Driver;
 
+	    internal DebugLogger DebugLogger;
+
 		/// <summary>A list of all the devices installed on this train</summary>
 		internal Device[] Devices;
 
@@ -203,6 +206,8 @@ namespace Plugin {
 		/// <summary>Sets up the devices from the specified configuration file.</summary>
 		/// <param name="file">The configuration file.</param>
 		internal void LoadConfigurationFile(string file) {
+            
+
             //Initialise all safety devices first
             //Set Enabled state if they are installed
             
@@ -214,11 +219,29 @@ namespace Plugin {
             this.TPWS = new TPWS(this);
             this.SCMT = new SCMT(this);
             this.Driver = new AI_Driver(this);
+            this.DebugLogger = new DebugLogger();
             this.SCMT_Traction = new SCMT_Traction(this);
             this.Windscreen = new Windscreen(this);
             this.Animations = new Animations(this);
 			string[] lines = File.ReadAllLines(file, Encoding.UTF8);
 			string section = string.Empty;
+		    foreach (string line in lines)
+		    {
+                //First, check to see if we're running in debug mode
+                //This needs to be done first, followed by a reparse of the configuration file
+                //to actually load traction types etc.
+		        if (line.Length != 0 && line[0] == '[' & line[line.Length - 1] == ']')
+		        {
+		            section = line.Substring(1, line.Length - 2).ToLowerInvariant();
+		            if (section == "debug")
+		            {
+                        DebugLogger.DebugDate = DateTime.Now.ToString("dd-MM-yyyy");
+                        DebugLogger.DebugLogEnabled = true;
+                        string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                        DebugLogger.LogMessage("BVEC_ATS " + version + " loaded");
+		            }
+		        }
+		    }
 			foreach (string t in lines)
 			{
 			    string line = t;
@@ -234,32 +257,41 @@ namespace Plugin {
 			            switch (section) {
 			                case "steam":
 			                    this.steam = new steam(this);
+                                DebugLogger.LogMessage("Steam traction enabled");
 			                    break;
 			                case "diesel":
 			                    this.diesel = new diesel(this);
+                                DebugLogger.LogMessage("Diesel traction enabled");
 			                    break;
 			                case "electric":
 			                    this.electric = new electric(this);
+                                DebugLogger.LogMessage("Electric traction enabled");
 			                    break;
 			                case "vigilance":
 			                    this.vigilance = new vigilance(this);
+                                DebugLogger.LogMessage("Vigilance system(s) enabled");
 			                    break;
 			                case "aws":
 			                    this.AWS.enabled = true;
+                                DebugLogger.LogMessage("AWS enabled");
 			                    break;
 			                case "tpws":
 			                    this.TPWS.enabled = true;
+                                DebugLogger.LogMessage("TPWS enabled");
 			                    break;
                             case "scmt":
                                 this.SCMT.enabled = true;
 			                    this.SCMT_Traction.enabled = true;
+                                DebugLogger.LogMessage("SCMT enabled");
                                 break;
                             case "caws":
                                 this.CAWS.enabled = true;
+                                DebugLogger.LogMessage("CAWS enabled");
                                 break;
                             case "pzb":
 			                    this.PZB = new PZB(this);
 			                    this.PZB.enabled = true;
+                                DebugLogger.LogMessage("PZB enabled");
 			                    break;
 			                case "interlocks":
 			                    //Twiddle
@@ -273,8 +305,15 @@ namespace Plugin {
                             case "settings":
                                 //Twiddle
                                 break;
+                            case "debug":
+                                //Twiddle
+                                //Although we've already parsed this, it needs to be marked as a supported section
+                                // TODO: Can this check be removed? Seems to be a hangup from the original plugin template??
+                                // Can't see a reason off the top of my head to throw an exception either.....
+			                    break;
 			                case "windscreen":
 			                    this.Windscreen.enabled = true;
+                                DebugLogger.LogMessage("Windscreen enabled");
 			                    break;
 			                default:
 			                    throw new InvalidDataException("The section " + line[0] + " is not supported.");
@@ -1665,11 +1704,13 @@ namespace Plugin {
                         {
                             /* This is the south pole of an AWS permanent magnet, so prime the AWS - new prototypical behaviour */
                             AWS.Prime();
+                            DebugLogger.LogMessage("Beacon recived: UKTrainsys AWS Prime");
                         }
                         else if (beacon.Optional == 270)
                         {
                             /* This is an AWS suppression electromagnet - new prototypical behaviour */
                             AWS.Suppress(trainlocation);
+                            DebugLogger.LogMessage("Beacon received: UKTrainsys AWS Suppression");
                         }
                         else if (beacon.Optional == 360)
                         {
@@ -1678,17 +1719,20 @@ namespace Plugin {
                             {
                                 /* This is the north pole of the AWS electromagnet - it is energised, so issue a clear indication */
                                 AWS.IssueClear();
+                                DebugLogger.LogMessage("Beacon received: UKTrainsys AWS Clear");
                             }
                         }
                         else if (beacon.Signal.Aspect <= 3)
                         {
                             /* Aspect is restrictive, so issue a warning - this is the legacy fallback behaviour */
                             AWS.Prime();
+                            DebugLogger.LogMessage("Beacon received: Legacy AWS Signal Aspect");
                         }
                         else if (beacon.Signal.Aspect > 3)
                         {
                             /* Aspect is clear, so issue a clear inducation - this is the legacy fallback behaviour */
                             AWS.IssueLegacyClear();
+                            DebugLogger.LogMessage("Beacon received: Legacy AWS Clear");
                         }
                         break;
                     case 44001:
@@ -1696,6 +1740,7 @@ namespace Plugin {
                          * 
                          * Issue a warning regardless - this is the legacy fallback behaviour ONLY */
                         AWS.Prime();
+                        DebugLogger.LogMessage("Beacon received: Legacy AWS Permenant");
                         break;
                 }
                 if (this.TPWS.enabled == true)
@@ -1708,6 +1753,7 @@ namespace Plugin {
                             if (beacon.Signal.Aspect == 0)
                             {
                                 TPWS.ArmOss(beacon.Optional);
+                                DebugLogger.LogMessage("Beacon received: TPWS Signal Overspeed Loop");
                             }
                             break;
                         case 44003:
@@ -1715,6 +1761,7 @@ namespace Plugin {
                             if (beacon.Signal.Aspect == 0)
                             {
                                 TPWS.ArmTss(beacon.Optional, trainlocation);
+                                DebugLogger.LogMessage("Beacon received: TPWS Trainstop Loop");
                             }
                             else
                             {
@@ -1727,6 +1774,7 @@ namespace Plugin {
                         case 44004:
                             /* Train Protection and Warning System Overspeed Sensor induction loop - permanent speed restriction */
                             TPWS.ArmOss(beacon.Optional);
+                            DebugLogger.LogMessage("Beacon received: TPWS Permenant Overspeed Loop");
                             break;
                     }
                     
@@ -1797,20 +1845,24 @@ namespace Plugin {
                 switch (beacon.Type)
                 {
                     case 500:
+                        DebugLogger.LogMessage("Beacon received: PZB 500hz");
                         PZB.BeaconAspect = beacon.Signal.Aspect;
-                        PZB.Trigger(beacon.Type, beacon.Optional);
+                        PZB.Trigger(beacon.Type, beacon.Optional);                        
                         break;
                     case 1000:
+                        DebugLogger.LogMessage("Beacon received: PZB 1000hz");
                         PZB.BeaconAspect = beacon.Signal.Aspect;
                         PZB.Trigger(beacon.Type, beacon.Optional);
                         break;
                     case 2000:
                         //Home signal standard inductors
+                        DebugLogger.LogMessage("Beacon received: PZB 2000hz");
                         PZB.BeaconAspect = beacon.Signal.Aspect;
                         PZB.Trigger(beacon.Type, beacon.Optional);
                         break;
                     case 2001:
                         //Home signal speed restrictive inductors
+                        DebugLogger.LogMessage("Beacon received: PZB 2000hz");
                         PZB.BeaconAspect = beacon.Signal.Aspect;
                         PZB.Trigger(beacon.Type, beacon.Optional);
                         break;
