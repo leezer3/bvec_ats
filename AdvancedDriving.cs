@@ -62,7 +62,7 @@ namespace Plugin
             }
         }
 
-        private AdvancedDriving()
+        public AdvancedDriving()
         {
             //Window to show advanced driving debug information
             InitializeComponent();

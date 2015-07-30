@@ -185,6 +185,9 @@ namespace Plugin {
 	    internal bool blowofftriggered;
 	    internal double blowofftimer;
 
+        //Used to run the auto blowers & injector timer
+	    internal double blowerstimer;
+
 	    internal double maintimer;
         //Arrays
         int[] heatingarray;
@@ -561,6 +564,7 @@ namespace Plugin {
                             SoundManager.Play(blowoffsound, 2.0, 1.0, false);
                         }
                         blowofftriggered = true;
+                        Train.DebugLogger.LogMessage("The boiler over-pressure blowoff triggered");
 
                     }
                     else if (stm_boilerpressure > boilermaxpressure)
@@ -574,24 +578,45 @@ namespace Plugin {
 
             if (automatic == true)
             {
+                blowerstimer += data.ElapsedTime.Milliseconds;
                 //This section of code operates the automatic injectors
                 if (stm_boilerwater > boilermaxwaterlevel / 2 && stm_boilerpressure > boilermaxpressure / 4)
                 {
-                    stm_injector = false;
-                    if (pressureuse > pressureup * 1.5)
+                    if (stm_injector == true && blowerstimer > 10000)
+                    {
+                        stm_injector = false;
+                        Train.DebugLogger.LogMessage("The automatic fireman de-activated the injectors");
+                        blowerstimer = 0.0;
+                    }
+                    if (pressureuse > ((boilerwatertosteamrate / 60) * maintimer) * 1.5)
                     {
                         //Turn on the blowers if we're using 50% more pressure than we're generating
-                        blowers = true;
+                        if (blowers == false && blowerstimer > 10000)
+                        {
+                            Train.DebugLogger.LogMessage("The automatic fireman activated the blowers");
+                            blowers = true;
+                            blowerstimer = 0.0;
+                        }
                     }
                     else
                     {
-                        blowers = false;
+                        if (blowers == true && blowerstimer > 10000)
+                        {
+                            Train.DebugLogger.LogMessage("The automatic fireman de-activated the blowers");
+                            blowers = false;
+                            blowerstimer = 0.0;
+                        }
                     }
                 }
                 else
                 {
                     //Blowers shouldn't be on at the same time as the injectors
-                    stm_injector = true;
+                    if (stm_injector == false && blowerstimer > 10000)
+                    {
+                        Train.DebugLogger.LogMessage("The automatic fireman activated the injectors");
+                        stm_injector = true;
+                        blowerstimer = 0.0;
+                    }
                     blowers = false;
                 }
             }
