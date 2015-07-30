@@ -474,15 +474,16 @@ namespace Plugin
                     if (temperature > overheat)
                     {
                         temperature = overheat;
-                        if (overheatresult == 1)
+                        if (overheatresult == 1 && tractionmanager.overheated == false)
                         {
+                            Train.DebugLogger.LogMessage("Power cutoff was demanded due to the diesel engine overheating");
                             tractionmanager.demandpowercutoff();
                             tractionmanager.overheated = true;
                         }
                     }
                     else if (temperature < overheat && temperature > 0)
                     {
-                        tractionmanager.resetpowercutoff();
+                        Train.tractionmanager.resetpowercutoff();
                         tractionmanager.overheated = false;
                     }
                     else if (temperature < 0)

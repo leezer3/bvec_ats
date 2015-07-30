@@ -631,7 +631,7 @@ namespace Plugin
                         }
                         else if (temperature < overheat && temperature > 0)
                         {
-                            tractionmanager.resetpowercutoff();
+                            Train.tractionmanager.resetpowercutoff();
                             tractionmanager.overheated = false;
                         }
                         else if (temperature < 0)
@@ -748,7 +748,7 @@ namespace Plugin
                     if ((Train.trainspeed < setpointspeed - 2 && flag == 1 && lca == true) ||
                         (lca == true && flag == 2 && Train.Handles.PowerNotch == 0) || (lcm == true && flag == 1))
                     {
-                        tractionmanager.resetpowercutoff();
+                        Train.tractionmanager.resetpowercutoff();
                         flag = 0;
                     }
                 }

@@ -278,8 +278,9 @@ namespace Plugin
                 if (temperature > overheat)
                 {
                     temperature = overheat;
-                    if (overheatresult == 1)
+                    if (overheatresult == 1 && tractionmanager.overheated == false)
                     {
+                        Train.DebugLogger.LogMessage("Power cutoff was demanded due to the electric engine overheating");
                         tractionmanager.demandpowercutoff();
                         tractionmanager.overheated = true;
                     }
@@ -288,7 +289,8 @@ namespace Plugin
                 {
                     if (breakertripped == false && ((FrontPantographState == PantographStates.Disabled && RearPantographState == PantographStates.OnService) || (RearPantographState == PantographStates.Disabled && FrontPantographState == PantographStates.OnService)))
                     {
-                        tractionmanager.resetpowercutoff();
+                        Train.DebugLogger.LogMessage("Power cutoff was released due to the electric engine temperature returning to safe levels");
+                        Train.tractionmanager.resetpowercutoff();
                     }
                     tractionmanager.overheated = false;
                 }
@@ -330,16 +332,18 @@ namespace Plugin
                         else if (powergapbehaviour == 2)
                         {
                             //Kill traction power if any pickup is on the gap
-                            if (j != 0)
+                            if (j != 0 && tractionmanager.powercutoffdemanded == false)
                             {
+                                Train.DebugLogger.LogMessage("Power cutoff was demanded due to a neutral gap in the overhead line");
                                 tractionmanager.demandpowercutoff();
                             }
                         }
                         else
                         {
                             //Kill traction power when all pickups are on the gap
-                            if (j == pickuparray.Length)
+                            if (j == pickuparray.Length && tractionmanager.powercutoffdemanded == false)
                             {
+                                Train.DebugLogger.LogMessage("Power cutoff was demanded due to a neutral gap in the overhead line");
                                 tractionmanager.demandpowercutoff();
                             }
                         }
@@ -370,16 +374,18 @@ namespace Plugin
                         else if (powergapbehaviour == 2)
                         {
                             //Kill traction power if any pickup is on the gap
-                            if (j != 0)
+                            if (j != 0 && tractionmanager.powercutoffdemanded == false)
                             {
+                                Train.DebugLogger.LogMessage("Power cutoff was demanded due to a neutral gap in the overhead line");
                                 tractionmanager.demandpowercutoff();
                             }
                         }
                         else
                         {
                             //Kill traction power when all pickups are on the gap
-                            if (j == pickuparray.Length)
+                            if (j == pickuparray.Length && tractionmanager.powercutoffdemanded == false)
                             {
+                                Train.DebugLogger.LogMessage("Power cutoff was demanded due to a neutral gap in the overhead line");
                                 tractionmanager.demandpowercutoff();
                             }
                         }
@@ -397,7 +403,8 @@ namespace Plugin
                         }
                         if (breakertripped == false && ((FrontPantographState == PantographStates.Disabled && RearPantographState == PantographStates.OnService) || (RearPantographState == PantographStates.Disabled && FrontPantographState == PantographStates.OnService)))
                         {
-                            tractionmanager.resetpowercutoff();
+                            Train.DebugLogger.LogMessage("Power cutoff was released due to leaving the neutral gap");
+                            Train.tractionmanager.resetpowercutoff();
                         }
                     }
                     //If the final pickup has passed the UKTrainSys standard power gap location
@@ -409,19 +416,22 @@ namespace Plugin
                 //This section of code handles a UKTrainSys compatible ACB/VCB
                 //
                 //If the ACB/VCB has tripped, always demand power cutoff
-                if (breakertripped == true)
+                if (breakertripped == true && tractionmanager.powercutoffdemanded == false)
                 {
+                    Train.DebugLogger.LogMessage("Power cutoff was demanded due to the ACB/VCB state");
                     tractionmanager.demandpowercutoff();
                 }
                 //If we're in a power gap, also always demand power cutoff
-                else if (breakertripped == false && powergap == true)
+                else if (breakertripped == false && powergap == true && tractionmanager.powercutoffdemanded == false)
                 {
+                    Train.DebugLogger.LogMessage("Power cutoff was demanded due to a neutral gap in the overhead line");
                     tractionmanager.demandpowercutoff();
                 }
                 //If the ACB/VCB has now been reset with a pantograph available & we're not in a powergap reset traction power
                 if (breakertripped == false && powergap == false && ((FrontPantographState == PantographStates.OnService || RearPantographState == PantographStates.OnService)))
                 {
-                    tractionmanager.resetpowercutoff();
+                    Train.DebugLogger.LogMessage("Power cutoff was released due to the availability of overhead power");
+                    Train.tractionmanager.resetpowercutoff();
                 }
             }
             {
@@ -429,8 +439,9 @@ namespace Plugin
                 //
                 //If both pantographs are lowered or disabled, then there are no line volts
                 if ((FrontPantographState == PantographStates.Lowered || FrontPantographState == PantographStates.Disabled) && 
-                (RearPantographState == PantographStates.Lowered || RearPantographState == PantographStates.Disabled))
+                (RearPantographState == PantographStates.Lowered || RearPantographState == PantographStates.Disabled) && tractionmanager.powercutoffdemanded == false)
                 {
+                    Train.DebugLogger.LogMessage("Power cutoff was demanded due to no available pantographs");
                     powergap = true;
                     tractionmanager.demandpowercutoff();
                 }
@@ -438,8 +449,9 @@ namespace Plugin
                 //
                 //Line volts is lit, but power is still cut off
                 else if (FrontPantographState != PantographStates.Disabled && RearPantographState != PantographStates.Disabled
-                && (FrontPantographState != PantographStates.OnService || RearPantographState != PantographStates.OnService) && powergapbehaviour == 2)
+                && (FrontPantographState != PantographStates.OnService || RearPantographState != PantographStates.OnService) && powergapbehaviour == 2 && tractionmanager.powercutoffdemanded == false)
                 {
+                    Train.DebugLogger.LogMessage("Power cutoff was demanded due to no available pantographs");
                     tractionmanager.demandpowercutoff();
                 }
                 
@@ -807,12 +819,15 @@ namespace Plugin
                 powerloop = false;
                 breakerplay();
                 tractionmanager.demandpowercutoff();
+                Train.DebugLogger.LogMessage("The ACB/VCB was opened");
+                Train.DebugLogger.LogMessage("Power cutoff was demanded due to an open ACB/VCB");
             }
             else
             {
                 
                 breakertripped = false;
                 breakerplay();
+                Train.DebugLogger.LogMessage("The ACB/VCB was closed");
             }
         }
         internal void breakerplay()
@@ -836,11 +851,13 @@ namespace Plugin
                     }
                     //We can raise the pantograph, so start the line volts timer
                     this.FrontPantographState = PantographStates.RaisedTimer;
+                    Train.DebugLogger.LogMessage("The front pantograph was raised sucessfully");
                 }
                 else if (pantographraised_f == false && breakertripped == false)
                 {
                     //We can't raise the pantograph as the ACB/ VCB is closed, so start the cooldown timer
                     this.FrontPantographState = PantographStates.RaisedVCBClosed;
+                    Train.DebugLogger.LogMessage("An attempt was made to raise the front pantograph with the ACB/VCB closed");
                 }
                 else if (pantographraised_f == true)
                 {
@@ -853,10 +870,12 @@ namespace Plugin
                     {
                         this.FrontPantographState = PantographStates.Lowered;
                         pantographraised_f = false;
+                        Train.DebugLogger.LogMessage("The front pantograph was lowered sucessfully");
                     }
                     else
                     {
                         this.FrontPantographState = PantographStates.LoweredAtSpeed;
+                        Train.DebugLogger.LogMessage("The front pantograph was lowered whilst the train was in motion");
                     }
                 }
             }
@@ -871,11 +890,13 @@ namespace Plugin
                     }
                     //We can raise the pantograph, so start the line volts timer
                     this.RearPantographState = PantographStates.RaisedTimer;
+                    Train.DebugLogger.LogMessage("The rear pantograph was raised sucessfully");
                 }
                 else if (pantographraised_r == false && breakertripped == false)
                 {
                     //We can't raise the pantograph as the ACB/ VCB is closed, so start the cooldown timer
                     this.RearPantographState = PantographStates.RaisedVCBClosed;
+                    Train.DebugLogger.LogMessage("An attempt was made to raise the rear pantograph with the ACB/VCB closed");
                 }
                 else if (pantographraised_r == true)
                 {
@@ -888,10 +909,12 @@ namespace Plugin
                     {
                         this.RearPantographState = PantographStates.Lowered;
                         pantographraised_r = false;
+                        Train.DebugLogger.LogMessage("The rear pantograph was lowered sucessfully");
                     }
                     else
                     {
                         this.RearPantographState = PantographStates.LoweredAtSpeed;
+                        Train.DebugLogger.LogMessage("The rear pantograph was lowered whilst the train was in motion");
                     }
                 }
             }

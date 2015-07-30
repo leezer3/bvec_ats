@@ -301,7 +301,7 @@ namespace Plugin {
                 }
                 else if (temperature < overheat && temperature > 0)
                 {
-                    tractionmanager.resetpowercutoff();
+                    Train.tractionmanager.resetpowercutoff();
                     tractionmanager.overheated = false;
                 }
                 else if (temperature < 0)

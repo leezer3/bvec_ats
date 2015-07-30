@@ -162,11 +162,10 @@ namespace Plugin
                         }
                         else
                         {
-
+                            Train.DebugLogger.LogMessage("Power cutoff was demanded by the AWS");
                             tractionmanager.demandpowercutoff();
+                            Train.DebugLogger.LogMessage("Emergency brakes were demanded by the AWS");
                             Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
-                            /*                    if (Plugin.Diesel.Enabled) {
-                                                    InterlockManager.DemandTractionPowerCutoff();*/
                         }
                     }
                     else if (this.MySafetyState == SafetyStates.SelfTest)

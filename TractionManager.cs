@@ -268,7 +268,7 @@ namespace Plugin
             {
                 if ((tractionmanager.powercutoffdemanded == true || brakedemanded == true) && doorlock == true)
                 {
-                    tractionmanager.resetpowercutoff();
+                    Train.tractionmanager.resetpowercutoff();
                     Train.tractionmanager.resetbrakeapplication();
                     doorlock = false;
                 }
@@ -629,16 +629,43 @@ namespace Plugin
         }
 
         //Call this function from a safety system to demand power cutoff
-        
+        /// <summary>Deamnds traction power cutoff.</summary>
+        /// <remarks>This call will always succeed.</remarks>
         internal static void demandpowercutoff()
         {
             tractionmanager.powercutoffdemanded = true;
         }
 
-        //Call this function to reset the power cutoff
-        internal static void resetpowercutoff()
+        //Call this function to attempt to reset the power cutoff
+        /// <summary>Attempts to reset the power cutoff state.</summary>
+        /// <remarks>The default OS_ATS behaviour is to reset all cutoffs at once.</remarks>
+        internal void resetpowercutoff()
         {
+            //Do not reset power cutoff if still overheated
+            if (overheated == true)
+            {
+                return;
+            }
+            //Do not reset power cutoff if AWS brake demands are active
+            if (Train.AWS != null &&
+                (Train.AWS.SafetyState == AWS.SafetyStates.TPWSAWSBrakeDemandIssued ||
+                 Train.AWS.SafetyState == AWS.SafetyStates.TPWSTssBrakeDemandIssued))
+            {
+                return;
+            }
+            //Do not reset power cutoff if DRA is active
+            if (Train.drastate == true)
+            {
+                return;
+            }
+            //Do not reset power cutoff if doors are still open
+            if (doorlock == true)
+            {
+                return;
+            }
             tractionmanager.powercutoffdemanded = false;
+            Train.DebugLogger.LogMessage("Traction power restored");
+
         }
 
         //Call this function from a safety system to demand a brake application

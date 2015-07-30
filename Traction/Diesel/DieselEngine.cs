@@ -62,7 +62,7 @@ namespace Plugin.Traction.Diesel
             {
                 //Play the engine loop sound & reset power cutoff
                 SoundManager.Play(EngineLoopSound, 1.0, 1.0, false);
-                tractionmanager.resetpowercutoff();
+                Train.tractionmanager.resetpowercutoff();
             }
 
             if (HasGears)
