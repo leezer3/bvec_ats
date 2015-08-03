@@ -10,7 +10,7 @@ namespace Plugin
         internal SteamControl SteamPanel;
         internal ElectricControl ElectricPanel;
         internal PZBControl PZBPanel;
-        
+
         //The Advanced Driving form provides an independant debug window
         //Intended to show things such as the current steam production rate versus usage (WIP)
         protected override void OnClosed(EventArgs e)
@@ -74,12 +74,12 @@ namespace Plugin
             this.ShowInTaskbar = false;
             mask = new AdvancedDrivingMask();
             mask.Show();
-            
+
         }
 
         internal void Elapse(string[] debuginformation, int tractiontype, AdvancedDrivingData DebugData)
         {
-            
+
             //Only attempt to display steam related debug information if this is a steam locomotive
             if (tractiontype == 0)
             {
@@ -149,7 +149,7 @@ namespace Plugin
                     Controls.Add(PZBPanel);
                     PZBPanel.Location = new Point(5, 5);
                     mask.Size = this.Size;
-                    
+
                 }
                 PZBPanel.debuglabel.Text = debuginformation[0];
                 PZBPanel.trainspeed.Text = debuginformation[13];
@@ -168,7 +168,7 @@ namespace Plugin
                 PZBPanel.ActiveHomeBrakeCurves.Text = debuginformation[29];
                 PZBPanel.NewestHomeSpeed.Text = debuginformation[24];
                 PZBPanel.HomeInductorDistance.Text = debuginformation[22];
-                
+
                 //Befehl
                 PZBPanel.PZBBefehl.Text = debuginformation[20];
             }
@@ -206,7 +206,7 @@ namespace Plugin
         {
             mask.Location = this.Location;
         }
-        
+
     }
-    
+
 }

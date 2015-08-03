@@ -351,7 +351,7 @@ namespace Plugin {
 			                                InternalFunctions.ValidateIndex(value, ref steam.overheatindicator, key);
 			                                break;
 			                            case "overheatalarm":
-			                                InternalFunctions.ValidateIndex(value, ref steam.overheatalarm, key);
+			                                InternalFunctions.ValidateIndex(value, ref steam.OverheatAlarm.LoopSound, key);
 			                                break;
 			                            case "cutoffmax":
 			                                InternalFunctions.ParseNumber(value, ref steam.cutoffmax, key);
@@ -414,7 +414,7 @@ namespace Plugin {
 			                                InternalFunctions.ParseNumber(value, ref steam.injectorrate, key);
 			                                break;
 			                            case "injectorindicator":
-			                                InternalFunctions.ValidateIndex(value, ref steam.injectorindicator, key);
+			                                InternalFunctions.ValidateIndex(value, ref steam.Injector.PanelIndex, key);
 			                                break;
 			                            case "automaticindicator":
 			                                InternalFunctions.ValidateIndex(value, ref steam.automaticindicator, key);
@@ -425,19 +425,43 @@ namespace Plugin {
 			                                    {
 			                                        if (k == 0)
 			                                        {
-			                                            InternalFunctions.ValidateIndex(injectorsplit[0], ref steam.injectorloopsound, key);
+			                                            InternalFunctions.ValidateIndex(injectorsplit[0], ref steam.Injector.LoopSound, key);
+			                                        }
+			                                        else if(k == 1)
+			                                        {
+                                                        InternalFunctions.ValidateIndex(injectorsplit[1], ref steam.Injector.PlayOnceSound, key);
 			                                        }
 			                                        else
 			                                        {
-                                                        InternalFunctions.ValidateIndex(injectorsplit[1], ref steam.injectorclanksound, key);
+			                                            DebugLogger.LogMessage("Unexpected extra paramaters were found in injectorsound. These have been ignored.");
+			                                            break;
 			                                        }
 			                                    }
 			                                break;
+                                        case "cylindercocksound":
+                                            string[] cylindersplit = value.Split(',');
+                                            for (int k = 0; k < cylindersplit.Length; k++)
+                                            {
+                                                if (k == 0)
+                                                {
+                                                    InternalFunctions.ValidateIndex(cylindersplit[0], ref steam.CylinderCocks.LoopSound, key);
+                                                }
+                                                else if(k == 1)
+                                                {
+                                                    InternalFunctions.ValidateIndex(cylindersplit[1], ref steam.Injector.PlayOnceSound, key);
+                                                }
+                                                else
+                                                {
+                                                    DebugLogger.LogMessage("Unexpected extra paramaters were found in cylindercocksound. These have been ignored.");
+                                                    break;
+                                                }
+                                            }
+                                            break;
 			                            case "blowoffsound":
-			                                InternalFunctions.ValidateIndex(value, ref steam.blowoffsound, key);
+			                                InternalFunctions.ValidateIndex(value, ref steam.Blowoff.PlayOnceSound, key);
 			                                break;
                                         case "blowoffindicator":
-                                            InternalFunctions.ValidateIndex(value, ref steam.blowoffindicator, key);
+                                            InternalFunctions.ValidateIndex(value, ref steam.Blowoff.PanelIndex, key);
                                             break;
 			                            case "klaxonpressureuse":
 			                                InternalFunctions.ParseNumber(value, ref steam.klaxonpressureuse, key);
@@ -449,7 +473,10 @@ namespace Plugin {
                                             InternalFunctions.ParseNumber(value, ref steam.blowers_firefactor, key);
                                             break;
                                         case "blowersound":
-                                            InternalFunctions.ValidateIndex(value, ref steam.blowersound, key);
+                                            InternalFunctions.ValidateIndex(value, ref steam.Blowers.LoopSound, key);
+                                            break;
+                                        case "blowersindicator":
+                                            InternalFunctions.ValidateIndex(value, ref steam.Blowers.PanelIndex, key);
                                             break;
                                         case "steamheatindicator":
                                             InternalFunctions.ValidateIndex(value, ref steam.steamheatindicator, key);

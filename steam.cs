@@ -77,10 +77,7 @@ namespace Plugin {
 
         /// <summary>Panel indicator for overheat indicator</summary>
         internal int overheatindicator = -1;
-
-        /// <summary>Sound index for overheat alarm</summary>
-        internal int overheatalarm = -1;
-
+        
         /// <summary>Default paramaters</summary>
         /// 
         /// Used if no value is loaded from the config file
@@ -129,8 +126,6 @@ namespace Plugin {
         internal double blowers_pressurefactor = 1;
         /// <summary>The blowers factor for the fire</summary>
         internal double blowers_firefactor = 1;
-        /// <summary>The sound index to be played whilst the blowers are active</summary>
-	    internal int blowersound = -1;
         /// <summary>The number of pressure units used by each steam heating 'notch'</summary>
 	    internal double steamheatpressureuse = -1;
         /// <summary>The starting mass of the fire</summary>
@@ -162,27 +157,27 @@ namespace Plugin {
         internal int cutoffindicator = -1;
         /// <summary>The panel index of the tanks water level indicator</summary>
         internal int fuelindicator = -1;
-        /// <summary>The panel index of the injectors indicator</summary>
-        internal int injectorindicator = -1;
         /// <summary>The panel index of the automatic cutoff & reverser indicator</summary>
         internal int automaticindicator = -1;
         /// <summary>The panel index of the steam heat level indicator</summary>
         internal int steamheatindicator = -1;
 
-        //Sound Indicies
-        /// <summary>The sound index played looped whilst the injectors are active</summary>
-        internal int injectorloopsound = -1;
-        /// <summary>The sound index played when the injectors are activated/ deactivated</summary>
-        internal int injectorclanksound = -1;
-        /// <summary>The sound index played when the boiler blows off excess pressure</summary>
-        internal int blowoffsound = -1;
-        /// <summary>The panel index shown whilst the boiler blows off excess pressure</summary>
-        internal int blowoffindicator = -1;
-        /// <summary>The sound index played when an injector is toggled on or off</summary>
-	    internal bool injectorclank;
+        //Internal Components
 
-        //Used to run the blowoff timer
-	    internal bool blowofftriggered;
+
+        //Sound Indicies
+        /// <summary>Steam injectors- Adds water to the boiler</summary>
+        internal Component Injector = new Component();
+        /// <summary>Cylinder cocks- Removes water from the cylinders</summary>
+        internal Component CylinderCocks = new Component();
+	    /// <summary>Overheat Alarm</summary>
+	    internal Component OverheatAlarm = new Component();
+        /// <summary>Boiler excess pressure blowoff</summary>
+        internal Component Blowoff = new Component();
+        /// <summary>Blowers- Currrently only increase steam production rates</summary>
+        /// TODO: Fire not currently complete
+        internal Component Blowers = new Component();
+
 	    internal double blowofftimer;
 
         //Used to run the auto blowers & injector timer
@@ -559,11 +554,11 @@ namespace Plugin {
                     if (stm_boilerpressure > blowoffpressure)
                     {
                         stm_boilerpressure = (int)boilermaxpressure;
-                        if (blowoffsound != -1)
+                        if (Blowoff.PlayOnceSound != -1)
                         {
-                            SoundManager.Play(blowoffsound, 2.0, 1.0, false);
+                            SoundManager.Play(Blowoff.PlayOnceSound, 2.0, 1.0, false);
                         }
-                        blowofftriggered = true;
+                        Blowoff.TogglePlayed = true;
                         Train.DebugLogger.LogMessage("The boiler over-pressure blowoff triggered");
 
                     }
@@ -740,16 +735,29 @@ namespace Plugin {
                 {
                     this.Train.Panel[(fuelindicator)] = fuel;
                 }
-                if (injectorindicator != -1)
+                if (Injector.PanelIndex != -1)
                 {
                     if (stm_injector == true)
                     {
-                        this.Train.Panel[(injectorindicator)] = 1;
+                        this.Train.Panel[(Injector.PanelIndex)] = 1;
 
                     }
                     else
                     {
-                        this.Train.Panel[(injectorindicator)] = 0;
+                        this.Train.Panel[(Injector.PanelIndex)] = 0;
+
+                    }
+                }
+                if (Blowers.PanelIndex != -1)
+                {
+                    if (blowers == true)
+                    {
+                        this.Train.Panel[(Blowers.PanelIndex)] = 1;
+
+                    }
+                    else
+                    {
+                        this.Train.Panel[(Blowers.PanelIndex)] = 0;
 
                     }
                 }
@@ -786,22 +794,22 @@ namespace Plugin {
                         this.Train.Panel[(fuelfillindicator)] = 1;
                     }
                 }
-                if (blowoffindicator != -1)
+                if (Blowoff.PanelIndex != -1)
                 {
-                    if (blowofftriggered == true)
+                    if (Blowoff.TogglePlayed == true)
                     {
-                        this.Train.Panel[(blowoffindicator)] = 1;
+                        this.Train.Panel[(Blowoff.PanelIndex)] = 1;
                         //Run a 10 second timer for the blowoff index to display
                         this.blowofftimer += data.ElapsedTime.Seconds;
                         if (this.blowofftimer > 10)
                         {
-                            this.blowofftriggered = false;
+                            Blowoff.TogglePlayed = false;
                             this.blowofftimer = 0;
                         }
                     }
                     else
                     {
-                        this.Train.Panel[(blowoffindicator)] = 0;
+                        this.Train.Panel[(Blowoff.PanelIndex)] = 0;
 
                     }
                     if (steamheatindicator != -1)
@@ -812,60 +820,95 @@ namespace Plugin {
             }
         {
             //Sounds
-            if (this.injectorloopsound != -1)
+            if (Injector.LoopSound != -1)
             {
                 if (stm_injector == true)
                 {
-                    if (injectorclank == false)
+                    if (Injector.TogglePlayed == false)
                     {
-                        if (injectorclanksound != -1)
+                        if (Injector.PlayOnceSound != -1)
                         {
-                            SoundManager.Play(injectorclanksound, 2.0, 1.0, false);
+                            SoundManager.Play(Injector.PlayOnceSound, 2.0, 1.0, false);
                         }
-                        injectorclank = true;
+                        Injector.TogglePlayed = true;
                     }
                     else
                     {
-                        if (!SoundManager.IsPlaying(injectorclanksound) || injectorclanksound == -1)
+                        if (!SoundManager.IsPlaying(Injector.PlayOnceSound) || Injector.PlayOnceSound == -1)
                         {
-                            SoundManager.Play(injectorloopsound, 2.0, 1.0, true);
+                            SoundManager.Play(Injector.LoopSound, 2.0, 1.0, true);
                         }
                     }
                     
                 }
                 else
                 {
-                    injectorclank = false;
-                    if (SoundManager.IsPlaying(injectorloopsound))
+                    Injector.TogglePlayed = false;
+                    if (SoundManager.IsPlaying(Injector.LoopSound))
                     {
-                        SoundManager.Stop(injectorloopsound);
-                        if (injectorclanksound != -1)
+                        SoundManager.Stop(Injector.LoopSound);
+                        if (Injector.PlayOnceSound != -1)
                         {
-                            SoundManager.Play(injectorclanksound, 2.0, 1.0, false);
+                            SoundManager.Play(Injector.PlayOnceSound, 2.0, 1.0, false);
                         }
                     }
                 }
             }
-            if (blowersound != -1)
+            if (CylinderCocks.LoopSound != -1)
             {
-                if (blowers == true && !SoundManager.IsPlaying(blowersound))
+                if (cylindercocks == true)
                 {
-                    SoundManager.Play(blowersound, 2.0, 1.0, true);
-                }
-                else if (blowers == false)
-                {
-                    SoundManager.Stop(blowersound);
-                }
-            }
-            if (overheatalarm != -1)
-            {
-                if (temperature > overheatalarm)
-                {
-                    SoundManager.Play(overheatalarm, 1.0, 1.0, true);
+                    if (CylinderCocks.TogglePlayed == false)
+                    {
+                        if (CylinderCocks.PlayOnceSound != -1)
+                        {
+                            SoundManager.Play(CylinderCocks.PlayOnceSound, 2.0, 1.0, false);
+                        }
+                        CylinderCocks.TogglePlayed = true;
+                    }
+                    else
+                    {
+                        if ((!SoundManager.IsPlaying(CylinderCocks.PlayOnceSound) || CylinderCocks.PlayOnceSound == -1) && Train.Handles.PowerNotch > 0)
+                        {
+                            SoundManager.Play(CylinderCocks.LoopSound, 2.0, 1.0, true);
+                        }
+                    }
+
                 }
                 else
                 {
-                    SoundManager.Stop(overheatalarm);
+                    CylinderCocks.TogglePlayed = false;
+                    if (SoundManager.IsPlaying(CylinderCocks.LoopSound))
+                    {
+                        SoundManager.Stop(CylinderCocks.LoopSound);
+                        if (CylinderCocks.PlayOnceSound != -1)
+                        {
+                            SoundManager.Play(CylinderCocks.PlayOnceSound, 2.0, 1.0, false);
+                        }
+                    }
+                }
+            }
+
+            if (Blowers.LoopSound != -1)
+            {
+                if (Blowers.TogglePlayed == true && !SoundManager.IsPlaying(Blowers.LoopSound))
+                {
+                    SoundManager.Play(Blowers.LoopSound, 2.0, 1.0, true);
+                }
+                else if (blowers == false)
+                {
+                    SoundManager.Stop(Blowers.LoopSound);
+                }
+            }
+            if (OverheatAlarm.LoopSound != -1)
+            {
+                if (temperature > overheat)
+                {
+                    SoundManager.Play(OverheatAlarm.LoopSound, 1.0, 1.0, true);
+                }
+                else
+                {
+                    SoundManager.Stop(OverheatAlarm.LoopSound);
                 }
             }
         }
