@@ -485,6 +485,12 @@ namespace Plugin {
                                         case "steamheatpressureuse":
                                             InternalFunctions.ParseNumber(value, ref steam.steamheatpressureuse, key);
                                             break;
+                                        case "boilerblowoffpressure":
+                                            InternalFunctions.ParseNumber(value, ref steam.blowoffpressure, key);
+                                            break;
+                                        case "regulatorpressureuse":
+                                            InternalFunctions.ParseNumber(value, ref steam.regulatorpressureuse, key);
+                                            break;
                                         case "cylindercocks_pressureuse":
                                             string[] cylindercocksplit = value.Split(',');
                                             for (int k = 0; k < cylindercocksplit.Length; k++)

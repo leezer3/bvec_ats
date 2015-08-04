@@ -329,7 +329,7 @@ namespace Plugin {
                     if (cutoff < cutoffmax)
                     {
                         this.cutofftimer += data.ElapsedTime.Milliseconds;
-                        if (this.cutofftimer > 40)
+                        if (this.cutofftimer > cutoffchangespeed)
                         {
                             setcutoff = setcutoff + 1;
                             cutofftimer = 0.0;
@@ -348,7 +348,7 @@ namespace Plugin {
                     if (cutoff > cutoffmin)
                     {
                         this.cutofftimer += data.ElapsedTime.Milliseconds;
-                        if (this.cutofftimer > 40)
+                        if (this.cutofftimer > cutoffchangespeed)
                         {
                             setcutoff = setcutoff - 1;
                             cutofftimer = 0.0;
