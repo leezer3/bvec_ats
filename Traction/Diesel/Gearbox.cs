@@ -48,7 +48,7 @@ namespace Plugin.Traction.Diesel
                 }
                 catch
                 {
-                    InternalFunctions.LogError("gearratios");
+                    InternalFunctions.LogError("gearratios",0);
                 }
                 try
                 {
@@ -63,7 +63,7 @@ namespace Plugin.Traction.Diesel
                 }
                 catch
                 {
-                    InternalFunctions.LogError("gearfadeinrange");
+                    InternalFunctions.LogError("gearfadeinrange",0);
                 }
                 try
                 {
@@ -78,7 +78,7 @@ namespace Plugin.Traction.Diesel
                 }
                 catch
                 {
-                    InternalFunctions.LogError("gearfadeoutrange");
+                    InternalFunctions.LogError("gearfadeoutrange",0);
                 }
 
                 if (geararray.Length != gearfadeinarray.Length && geararray.Length != gearfadeoutarray.Length)
@@ -95,7 +95,7 @@ namespace Plugin.Traction.Diesel
                 }
                 else
                 {
-                    InternalFunctions.LogMessage("gearratios, gearfadeinrange and gearfadeoutrange should be of identical lengths.");
+                    InternalFunctions.LogError("gearratios, gearfadeinrange and gearfadeoutrange should be of identical lengths.",6);
                 }
             }
             //Return the total number of gears plus one [Neutral]

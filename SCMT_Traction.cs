@@ -252,148 +252,92 @@ namespace Plugin
         //<param name="mode">The initialization mode.</param>
         internal override void Initialize(InitializationModes mode)
         {
-            try
+            if (enabled == true)
             {
-                //Split gear ratios into an array
-                string[] splitgearratios = gearratios.Split(',');
-                geararray = new int[splitgearratios.Length];
-                for (int i = 0; i < geararray.Length; i++)
+                InternalFunctions.ParseStringToIntArray(gearratios, ref geararray, "gearratios");
+                InternalFunctions.ParseStringToIntArray(gearfadeinrange, ref gearfadeinarray, "gearfadeinrange");
+                InternalFunctions.ParseStringToIntArray(gearfadeoutrange, ref gearfadeoutarray, "gearfadeoutrange");
+                //Setpoint speed
+                try
                 {
-                    geararray[i] = (int)(double.Parse(splitgearratios[i], CultureInfo.InvariantCulture));
+                    string[] setpointarray = indimpvelpressed.Split(',');
+                    switch (setpointarray.Length)
+                    {
+                        case 0:
+                            setpointspeed_indicator = -1;
+                            maxsetpointspeed = 1000;
+                            break;
+                        case 1:
+                            setpointspeed_indicator = Int32.Parse(setpointarray[0], NumberStyles.Integer,
+                                CultureInfo.InvariantCulture);
+                            maxsetpointspeed = 1000;
+                            break;
+                        default:
+                            setpointspeed_indicator = Int32.Parse(setpointarray[0], NumberStyles.Integer,
+                                CultureInfo.InvariantCulture);
+                            maxsetpointspeed = Int32.Parse(setpointarray[1], NumberStyles.Integer,
+                                CultureInfo.InvariantCulture);
+                            break;
+                    }
                 }
-            }
-            catch
-            {
-                InternalFunctions.LogError("gearratios");
-            }
-            try
-            {
-                //Split gear fade in range into an array
-                string[] splitgearfade = gearfadeinrange.Split(',');
-                gearfadeinarray = new int[splitgearfade.Length];
-                for (int i = 0; i < gearfadeinarray.Length; i++)
+                catch
                 {
-                    gearfadeinarray[i] = (int)double.Parse(splitgearfade[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    InternalFunctions.LogError("indimpvelpressed", 0);
                 }
-            }
-            catch
-            {
-                InternalFunctions.LogError("gearfadeinrange");
-            }
-            try
-            {
-                //Split gear fade out range into an array
-                string[] splitgearfade1 = gearfadeoutrange.Split(',');
-                gearfadeoutarray = new int[splitgearfade1.Length];
-                for (int i = 0; i < gearfadeoutarray.Length; i++)
-                {
-                    gearfadeoutarray[i] = (int)double.Parse(splitgearfade1[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
-                }
-            }
-            catch
-            {
-                InternalFunctions.LogError("gearfadeoutrange");
-            }
-            //Setpoint speed
-            try
-            {
-                string[] setpointarray = indimpvelpressed.Split(',');
-                switch (setpointarray.Length)
-                {
-                    case 0:
-                        setpointspeed_indicator = -1;
-                        maxsetpointspeed = 1000;
-                        break;
-                    case 1:
-                        setpointspeed_indicator = Int32.Parse(setpointarray[0], NumberStyles.Integer, CultureInfo.InvariantCulture);
-                        maxsetpointspeed = 1000;
-                        break;
-                    default:
-                        setpointspeed_indicator = Int32.Parse(setpointarray[0], NumberStyles.Integer, CultureInfo.InvariantCulture);
-                        maxsetpointspeed = Int32.Parse(setpointarray[1], NumberStyles.Integer, CultureInfo.InvariantCulture);
-                        break;
-                }
-            }
-            catch
-            {
-                InternalFunctions.LogError("indimpvelpressed");
-            }
 
-            //Test if we have any gears
-            if (geararray.Length == 1 && geararray[0] == 0)
-            {
-                nogears = true;
-                totalgears = 0;
-            }
-            //If we have gears ensure that we're set in gear 0
-            //Also set value for total number of gears for easy access
-            else
-            {
-                gear = 0;
-                totalgears = geararray.Length + 1;
-            }
-            //Set previous revs to zero
-            previousrevs = 0;
-            try
-            {
-                string[] splitheatingrate = heatingrate.Split(',');
-                heatingarray = new int[splitheatingrate.Length];
-                for (int i = 0; i < heatingarray.Length; i++)
+                //Test if we have any gears
+                if (geararray.Length == 1 && geararray[0] == 0)
                 {
-                    heatingarray[i] = (int)double.Parse(splitheatingrate[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    nogears = true;
+                    totalgears = 0;
                 }
-            }
-            catch
-            {
-                InternalFunctions.LogError("heatingrate");
-            }
-            //Set temperature to zero
-            this.temperature = 0;
-            //Split fuel consumption into an array
-            try
-            {
-                string[] splitfuelconsumption = fuelconsumption.Split(',');
-                fuelarray = new int[splitfuelconsumption.Length];
-                for (int i = 0; i < fuelarray.Length; i++)
+                //If we have gears ensure that we're set in gear 0
+                //Also set value for total number of gears for easy access
+                else
                 {
-                    fuelarray[i] = (int)double.Parse(splitfuelconsumption[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    gear = 0;
+                    totalgears = geararray.Length + 1;
                 }
-            }
-            catch
-            {
-                InternalFunctions.LogError("fuelconsumption");
-            }
+                //Set previous revs to zero
+                previousrevs = 0;
+                //Parse heating rates into an array
+                InternalFunctions.ParseStringToIntArray(heatingrate, ref heatingarray, "heatingrate");
+                //Set temperature to zero
+                this.temperature = 0;
+                //Split fuel consumption into an array
+                InternalFunctions.ParseStringToIntArray(fuelconsumption, ref fuelarray, "fuelconsumption");
 
-            fuel = (int)fuelstartamount;
-            reverserposition = Train.Handles.Reverser;
-            //Initialise Indicators
-            Abbanco.IndicatorState = IndicatorStates.Off;
-            Abbanco.Lit = false;
-            Abbanco.FlashInterval = 1000;
-            ConsAvviam.IndicatorState = IndicatorStates.Off;
-            ConsAvviam.Lit = false;
-            ConsAvviam.FlashInterval = 1000;
-            AvariaGen.IndicatorState = IndicatorStates.Solid;
-            AvariaGen.Lit = false;
-            AvariaGen.FlashInterval = 1000;
-            Avviam.IndicatorState = IndicatorStates.Off;
-            Avviam.Lit = false;
-            Avviam.FlashInterval = 1000;
-            Arresto.IndicatorState = IndicatorStates.Off;
-            Arresto.Lit = false;
-            Arresto.FlashInterval = 1000;
-            ImpvelSu.IndicatorState = IndicatorStates.Off;
-            ImpvelSu.Lit = false;
-            ImpvelSu.FlashInterval = 1000;
-            ImpvelGiu.IndicatorState = IndicatorStates.Off;
-            ImpvelGiu.Lit = false;
-            ImpvelGiu.FlashInterval = 1000;
-            //Functions
-            seqScarico = 0;
-            setpointspeed = 0;
-            v1 = 0;
-            v2 = 0;
-            dynometer = 0;
+                fuel = (int) fuelstartamount;
+                reverserposition = Train.Handles.Reverser;
+                //Initialise Indicators
+                Abbanco.IndicatorState = IndicatorStates.Off;
+                Abbanco.Lit = false;
+                Abbanco.FlashInterval = 1000;
+                ConsAvviam.IndicatorState = IndicatorStates.Off;
+                ConsAvviam.Lit = false;
+                ConsAvviam.FlashInterval = 1000;
+                AvariaGen.IndicatorState = IndicatorStates.Solid;
+                AvariaGen.Lit = false;
+                AvariaGen.FlashInterval = 1000;
+                Avviam.IndicatorState = IndicatorStates.Off;
+                Avviam.Lit = false;
+                Avviam.FlashInterval = 1000;
+                Arresto.IndicatorState = IndicatorStates.Off;
+                Arresto.Lit = false;
+                Arresto.FlashInterval = 1000;
+                ImpvelSu.IndicatorState = IndicatorStates.Off;
+                ImpvelSu.Lit = false;
+                ImpvelSu.FlashInterval = 1000;
+                ImpvelGiu.IndicatorState = IndicatorStates.Off;
+                ImpvelGiu.Lit = false;
+                ImpvelGiu.FlashInterval = 1000;
+                //Functions
+                seqScarico = 0;
+                setpointspeed = 0;
+                v1 = 0;
+                v2 = 0;
+                dynometer = 0;
+            }
         }
 
 

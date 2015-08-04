@@ -12,6 +12,8 @@ namespace Plugin {
 
         /// <summary>The train that is simulated by this plugin.</summary>
         private Train Train = null;
+
+	    public static string TrainFolder;
   
 		/// <summary>Is called when the plugin is loaded.</summary>
 		/// <param name="properties">The properties supplied to the plugin on loading.</param>
@@ -33,7 +35,7 @@ namespace Plugin {
             string OS_ATSconfigFile = Path.Combine(properties.TrainFolder, "OS_ATS1.cfg");
             string SZ_ATSconfigFile = Path.Combine(properties.TrainFolder, "OS_SZ_ATS1.cfg");
             string SZ_ATS_2configFile = Path.Combine(properties.TrainFolder, "OS_SZ_Ats2_0.cfg");
-            InternalFunctions.trainfolder = properties.TrainFolder;
+            TrainFolder = properties.TrainFolder;
             //Delete error.log from previous run
             if (File.Exists(Path.Combine(properties.TrainFolder, "error.log")))
             {

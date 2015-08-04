@@ -121,7 +121,7 @@ namespace Plugin
             }
             catch
             {
-                InternalFunctions.LogError("vigilancetimes");
+                InternalFunctions.LogError("vigilancetimes",0);
             }
             //Set warning to max speed if not selected
             if (warningspeed == -1)

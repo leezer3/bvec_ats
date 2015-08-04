@@ -103,7 +103,10 @@
     <Compile Include="Animations.cs" />
     <Compile Include="Animations.DoorLightStates.cs" />
     <Compile Include="CAWS.cs" />
+    <Compile Include="Functions\ConfigurationParser.cs" />
     <Compile Include="Functions\DebugLogger.cs" />
+    <Compile Include="Functions\ErrorLogger.cs" />
+    <Compile Include="Functions\StringArrayParser.cs" />
     <Compile Include="PZB.Program.cs" />
     <Compile Include="Dialogs\PZBControl.cs">
       <SubType>UserControl</SubType>
@@ -144,7 +147,7 @@
     <Compile Include="Electric.PantographStates.cs" />
     <Compile Include="StartupSelfTestManager.cs" />
     <Compile Include="StartupSelfTestManager.SequenceStates.cs" />
-    <Compile Include="UpgradeConfig.cs" />
+    <Compile Include="Functions\UpgradeConfig.cs" />
     <Compile Include="Device.cs" />
     <Compile Include="OperativeStates.cs" />
     <Compile Include="Sounds.cs" />

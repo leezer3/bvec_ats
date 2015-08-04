@@ -199,7 +199,7 @@ namespace Plugin
             }
             catch
             {
-                InternalFunctions.LogError("klaxonindicator");
+                InternalFunctions.LogError("klaxonindicator",0);
             }
             try
             {
@@ -223,7 +223,7 @@ namespace Plugin
             }
             catch
             {
-                InternalFunctions.LogError("customindicators");
+                InternalFunctions.LogError("customindicators",0);
             }
             //Set traction type to pass to debug window
             if (Train.steam != null)

@@ -217,9 +217,10 @@ namespace Plugin {
             this.AWS = new AWS(this);
             this.CAWS = new CAWS(this);
             this.TPWS = new TPWS(this);
-            this.SCMT = new SCMT(this);
+            
             this.Driver = new AI_Driver(this);
             this.DebugLogger = new DebugLogger();
+            this.SCMT = new SCMT(this);
             this.SCMT_Traction = new SCMT_Traction(this);
             this.Windscreen = new Windscreen(this);
             this.Animations = new Animations(this);
@@ -433,7 +434,7 @@ namespace Plugin {
 			                                        }
 			                                        else
 			                                        {
-			                                            DebugLogger.LogMessage("Unexpected extra paramaters were found in injectorsound. These have been ignored.");
+			                                            InternalFunctions.LogError("Unexpected extra paramaters were found in injectorsound. These have been ignored.",6);
 			                                            break;
 			                                        }
 			                                    }
@@ -448,11 +449,11 @@ namespace Plugin {
                                                 }
                                                 else if(k == 1)
                                                 {
-                                                    InternalFunctions.ValidateIndex(cylindersplit[1], ref steam.Injector.PlayOnceSound, key);
+                                                    InternalFunctions.ValidateIndex(cylindersplit[1], ref steam.CylinderCocks.PlayOnceSound, key);
                                                 }
                                                 else
                                                 {
-                                                    DebugLogger.LogMessage("Unexpected extra paramaters were found in cylindercocksound. These have been ignored.");
+                                                    InternalFunctions.LogError("Unexpected extra paramaters were found in cylindercocksound. These have been ignored.",6);
                                                     break;
                                                 }
                                             }
@@ -590,7 +591,7 @@ namespace Plugin {
 			                                }
 			                                catch
 			                                {
-			                                    InternalFunctions.LogError("powerloopsound");
+			                                    InternalFunctions.LogError("powerloopsound",0);
 			                                }
 			                                break;
 			                            case "breakerloopsound":
@@ -611,7 +612,7 @@ namespace Plugin {
 			                                }
 			                                catch
 			                                {
-			                                    InternalFunctions.LogError("breakerloopsound");
+			                                    InternalFunctions.LogError("breakerloopsound",0);
 			                                }
 			                                break;
 			                            default:
@@ -718,7 +719,7 @@ namespace Plugin {
 			                                }
 			                                catch
 			                                {
-			                                    InternalFunctions.LogError("gearloopsound");
+			                                    InternalFunctions.LogError("gearloopsound",0);
 			                                }
 			                                break;
                                         case "reversercontrol":
@@ -1048,7 +1049,7 @@ namespace Plugin {
 			                                }
 			                                catch
 			                                {
-			                                    InternalFunctions.LogError("tpwsindicator");
+			                                    InternalFunctions.LogError("tpwsindicator",0);
 			                                }
 			                                break;
 			                            case "tpwsindicator2":
@@ -1069,7 +1070,7 @@ namespace Plugin {
 			                                }
 			                                catch
 			                                {
-			                                    InternalFunctions.LogError("tpwsindicator2");
+			                                    InternalFunctions.LogError("tpwsindicator2",0);
 			                                }
 			                                break;
 			                            case "tpwsindicator4":
@@ -1124,7 +1125,7 @@ namespace Plugin {
 			                                }
 			                                catch
 			                                {
-			                                    InternalFunctions.LogError("dropsound");
+			                                    InternalFunctions.LogError("dropsound",0);
 			                                }
 			                                break;
 			                            case "drywipesound":
@@ -1207,7 +1208,7 @@ namespace Plugin {
                                             }
                                             catch
                                             {
-                                                InternalFunctions.LogError("headcodeindicator");
+                                                InternalFunctions.LogError("headcodeindicator",0);
                                             }
                                             break;
 			                            default:

@@ -6,7 +6,6 @@ namespace Plugin
     class DebugLogger
     {
         internal bool DebugLogEnabled;
-        internal string TrainPath = InternalFunctions.trainfolder;
         internal string DebugDate;
         internal void LogMessage(string DebugMessage)
         {
@@ -14,10 +13,17 @@ namespace Plugin
             {
                 return;
             }
-            string FileName = DebugDate + " - debug.log";
-            using (StreamWriter sw = File.AppendText(Path.Combine(TrainPath, FileName)))
+            try
             {
-                sw.WriteLine(DateTime.Now + " : " + DebugMessage);
+                string FileName = DebugDate + " - debug.log";
+                using (StreamWriter sw = File.AppendText(Path.Combine(Plugin.TrainFolder, FileName)))
+                {
+                    sw.WriteLine(DateTime.Now + " : " + DebugMessage);
+                }
+            }
+            catch
+            {
+                
             }
         }
     }

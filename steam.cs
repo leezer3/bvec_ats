@@ -218,12 +218,8 @@ namespace Plugin {
             this.cutofftimer = 0.0;
             this.maintimer = 0.0;
 
-            string[] splitheatingrate = heatingrate.Split(',');
-            heatingarray = new int[splitheatingrate.Length];
-            for (int i = 0; i < heatingarray.Length; i++)
-            {
-                heatingarray[i] = Int32.Parse(splitheatingrate[i]);
-            }
+            InternalFunctions.ParseStringToIntArray(heatingrate, ref heatingarray, "heatingrate");
+
             //Calculate the water to steam rate and store it here, don't call every frame
             calculatedsteamrate = (int)boilerwatertosteamrate / 60;
             //Set the starting fire mass

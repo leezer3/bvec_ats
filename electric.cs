@@ -129,49 +129,10 @@ namespace Plugin
         //<param name="mode">The initialization mode.</param>
         internal override void Initialize(InitializationModes mode)
         {
-            //Use try/ catch to handle exceptions in our array parsing
-            try
-            {
-                //Split ammeter values into an array
-                string[] splitammetervalues = ammetervalues.Split(',');
-                ammeterarray = new int[splitammetervalues.Length];
-                for (int i = 0; i < ammeterarray.Length; i++)
-                {
-                    ammeterarray[i] = Int32.Parse(splitammetervalues[i]);
-                }
-            }
-            catch
-            {
-                InternalFunctions.LogError("ammetervalues");
-            }
-            try
-            {
-                //Split pickup location values into an array
-                string[] splitpickups = pickuppoints.Split(',');
-                pickuparray = new int[splitpickups.Length];
-                for (int i = 0; i < pickuparray.Length; i++)
-                {
-                    pickuparray[i] = Int32.Parse(splitpickups[i]);
-                }
-            }
-            catch
-            {
-                InternalFunctions.LogError("pickupoints");
-            }
-            try
-            {
-                //Split Heating Values into an array
-                string[] splitheatingrate = heatingrate.Split(',');
-                heatingarray = new int[splitheatingrate.Length];
-                for (int i = 0; i < heatingarray.Length; i++)
-                {
-                    heatingarray[i] = Int32.Parse(splitheatingrate[i]);
-                }
-            }
-            catch
-            {
-                InternalFunctions.LogError("heatingrate");
-            }
+            InternalFunctions.ParseStringToIntArray(ammetervalues, ref ammeterarray, "ammetervalues");
+            InternalFunctions.ParseStringToIntArray(pickuppoints, ref pickuparray, "pickuppoints");
+            InternalFunctions.ParseStringToIntArray(heatingrate, ref heatingarray, "heatingrate");
+
             //Set starting pantograph states
             //If neither pantograph has a key assigned, set both to enabled
             if (String.IsNullOrEmpty(Train.tractionmanager.frontpantographkey) && String.IsNullOrEmpty(Train.tractionmanager.rearpantographkey))

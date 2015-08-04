@@ -106,7 +106,7 @@ namespace Plugin
         /// <returns>Returns true if the sound is currently playing.</returns>
         internal static bool IsPlaying(int soundIndex)
         {
-            if (SoundHandles[soundIndex] != null && SoundHandles[soundIndex].Playing)
+            if (soundIndex != -1 && SoundHandles[soundIndex] != null && SoundHandles[soundIndex].Playing)
             {
                 return true;
             }

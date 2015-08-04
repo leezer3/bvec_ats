@@ -135,48 +135,10 @@ namespace Plugin
         //<param name="mode">The initialization mode.</param>
         internal override void Initialize(InitializationModes mode)
         {
-            try
-            {
-                //Split gear ratios into an array
-                string[] splitgearratios = gearratios.Split(',');
-                geararray = new int[splitgearratios.Length];
-                for (int i = 0; i < geararray.Length; i++)
-                {
-                    geararray[i] = (int)(double.Parse(splitgearratios[i], CultureInfo.InvariantCulture));
-                }
-            }
-            catch
-            {
-                InternalFunctions.LogError("gearratios");
-            }
-            try
-            {
-                //Split gear fade in range into an array
-                string[] splitgearfade = gearfadeinrange.Split(',');
-                gearfadeinarray = new int[splitgearfade.Length];
-                for (int i = 0; i < gearfadeinarray.Length; i++)
-                {
-                    gearfadeinarray[i] = (int)double.Parse(splitgearfade[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
-                }
-            }
-            catch
-            {
-                InternalFunctions.LogError("gearfadeinrange");
-            }
-            try
-            {
-                //Split gear fade out range into an array
-                string[] splitgearfade1 = gearfadeoutrange.Split(',');
-                gearfadeoutarray = new int[splitgearfade1.Length];
-                for (int i = 0; i < gearfadeoutarray.Length; i++)
-                {
-                    gearfadeoutarray[i] = (int)double.Parse(splitgearfade1[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
-                }
-            }
-            catch
-            {
-                InternalFunctions.LogError("gearfadeoutrange");
-            }
+            //Split gear ratios & fade in/ out ranges into an array
+            InternalFunctions.ParseStringToIntArray(gearratios, ref geararray, "gearratios");
+            InternalFunctions.ParseStringToIntArray(gearfadeinrange, ref gearfadeinarray, "gearfadeinrange");
+            InternalFunctions.ParseStringToIntArray(gearfadeoutrange, ref gearfadeoutarray, "gearfadeoutrange");
 
             //Test if we have any gears
             if (geararray.Length == 1 && geararray[0] == 0)
@@ -193,36 +155,12 @@ namespace Plugin
             }
             //Set previous revs to zero
             previousrevs = 0;
-            try
-            {
-                string[] splitheatingrate = heatingrate.Split(',');
-                heatingarray = new int[splitheatingrate.Length];
-                for (int i = 0; i < heatingarray.Length; i++)
-                {
-                    heatingarray[i] = (int)double.Parse(splitheatingrate[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
-                }
-            }
-            catch
-            {
-                InternalFunctions.LogError("heatingrate");
-            }
+            //Parse heating rates into an array
+            InternalFunctions.ParseStringToIntArray(heatingrate, ref heatingarray, "heatingrate");
             //Set temperature to zero
             this.temperature = 0;
-            //Split fuel consumption into an array
-            try
-            {
-                string[] splitfuelconsumption = fuelconsumption.Split(',');
-                fuelarray = new int[splitfuelconsumption.Length];
-                for (int i = 0; i < fuelarray.Length; i++)
-                {
-                    fuelarray[i] = (int)double.Parse(splitfuelconsumption[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
-                }
-            }
-            catch
-            {
-                InternalFunctions.LogError("fuelconsumption");
-            }
-
+            //Parse fuel consumption into an array
+            InternalFunctions.ParseStringToIntArray(fuelconsumption, ref fuelarray, "fuelconsumption");
             fuel = (int)fuelstartamount;
         }
 
