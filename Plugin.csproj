@@ -80,16 +80,16 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdvancedDriving.cs">
+    <Compile Include="Dialogs\AdvancedDriving.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AdvancedDriving.Designer.cs">
+    <Compile Include="Dialogs\AdvancedDriving.Designer.cs">
       <DependentUpon>AdvancedDriving.cs</DependentUpon>
     </Compile>
-    <Compile Include="AdvancedDrivingMask.cs">
+    <Compile Include="Dialogs\AdvancedDrivingMask.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AdvancedDrivingMask.Designer.cs">
+    <Compile Include="Dialogs\AdvancedDrivingMask.Designer.cs">
       <DependentUpon>AdvancedDrivingMask.cs</DependentUpon>
     </Compile>
     <Compile Include="AI\AI.Driver.cs" />
@@ -124,16 +124,16 @@
     <Compile Include="SCMT.cs" />
     <Compile Include="SCMT.Traction.Timers.cs" />
     <Compile Include="SCMT_Traction.cs" />
-    <Compile Include="ElectricControl.cs">
+    <Compile Include="Dialogs\ElectricControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ElectricControl.Designer.cs">
+    <Compile Include="Dialogs\ElectricControl.Designer.cs">
       <DependentUpon>ElectricControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="SteamControl.cs">
+    <Compile Include="Dialogs\SteamControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="SteamControl.Designer.cs">
+    <Compile Include="Dialogs\SteamControl.Designer.cs">
       <DependentUpon>SteamControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Structures\Component.cs" />
@@ -181,10 +181,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AdvancedDriving.resx">
+    <EmbeddedResource Include="Dialogs\AdvancedDriving.resx">
       <DependentUpon>AdvancedDriving.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AdvancedDrivingMask.resx">
+    <EmbeddedResource Include="Dialogs\AdvancedDrivingMask.resx">
       <DependentUpon>AdvancedDrivingMask.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\PZBControl.resx">
@@ -194,10 +194,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="ElectricControl.resx">
+    <EmbeddedResource Include="Dialogs\ElectricControl.resx">
       <DependentUpon>ElectricControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SteamControl.resx">
+    <EmbeddedResource Include="Dialogs\SteamControl.resx">
       <DependentUpon>SteamControl.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
