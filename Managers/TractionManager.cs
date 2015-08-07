@@ -1,6 +1,7 @@
 ﻿using System;
 using OpenBveApi.Runtime;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using Microsoft.Win32;
 
 namespace Plugin
@@ -10,14 +11,14 @@ namespace Plugin
     {
         // --- members ---
         /// <summary>Power cutoff has been demaned</summary>
-        internal static bool powercutoffdemanded;
+        internal bool powercutoffdemanded;
         /// <summary>A safety system has triggered a brake intervention</summary>
         internal bool brakedemanded;
         /// <summary>The current safety system brake notch demanded</summary>
-        internal static int currentbrakenotch;
-        private static bool neutralrvrtripped;
+        internal int currentbrakenotch;
+        internal bool neutralrvrtripped;
         /// <summary>The engine has overheated</summary>
-        internal static bool overheated;
+        internal bool overheated;
         internal bool canisolate;
         internal bool safetyisolated;
         /// <summary>The total distance travelled</summary>
@@ -165,6 +166,8 @@ namespace Plugin
         internal string PZBReleaseKey;
         internal string PZBStopOverrideKey;
 
+        internal int MaximumPowerNotch;
+        internal bool SafetySystemMaxPowerCut;
 
         //Arrays
         int[] klaxonarray;
@@ -238,7 +241,7 @@ namespace Plugin
             {
                 tractiontype = 2;
             }
-
+		    MaximumPowerNotch = this.Train.Specs.PowerNotches;
 		}
 
         /// <summary>Is called every frame.</summary>
@@ -249,9 +252,9 @@ namespace Plugin
             //Door interlocks; Fitted to all trains
             if (this.Train.Doors > 0)
             {
-                if (doorpowerlock == 1 && tractionmanager.powercutoffdemanded == false)
+                if (doorpowerlock == 1 && Train.tractionmanager.powercutoffdemanded == false)
                 {
-                    tractionmanager.demandpowercutoff();
+                    Train.tractionmanager.demandpowercutoff();
                     data.DebugMessage = "Power cutoff demanded by open doors";
                     doorlock = true;
                 }
@@ -266,7 +269,7 @@ namespace Plugin
             }
             else
             {
-                if ((tractionmanager.powercutoffdemanded == true || brakedemanded == true) && doorlock == true)
+                if ((Train.tractionmanager.powercutoffdemanded == true || brakedemanded == true) && doorlock == true)
                 {
                     Train.tractionmanager.resetpowercutoff();
                     Train.tractionmanager.resetbrakeapplication();
@@ -282,7 +285,7 @@ namespace Plugin
                     if (Train.Handles.Reverser == 0)
                     {
                         Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
-                        tractionmanager.neutralrvrtripped = true;
+                        Train.tractionmanager.neutralrvrtripped = true;
                     }
                 }
                 else if (neutralrvrbrake == 2)
@@ -290,7 +293,7 @@ namespace Plugin
                     if (Train.Handles.Reverser == 0)
                     {
                         Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
-                        tractionmanager.neutralrvrtripped = true;
+                        Train.tractionmanager.neutralrvrtripped = true;
                     }
                 }
 
@@ -300,19 +303,19 @@ namespace Plugin
                     if (neutralrvrbrakereset == 0 && Train.Handles.Reverser != 0)
                     {
                         Train.tractionmanager.resetbrakeapplication();
-                        tractionmanager.neutralrvrtripped = false;
+                        Train.tractionmanager.neutralrvrtripped = false;
                     }
                     //Behaviour 1- Train must come to a full stand before brakes are reset
                     if (neutralrvrbrakereset == 1 && Train.trainspeed == 0)
                     {
                         Train.tractionmanager.resetbrakeapplication();
-                        tractionmanager.neutralrvrtripped = false;
+                        Train.tractionmanager.neutralrvrtripped = false;
                     }
                     //Behaviour 2- Train must come to a full stand and driver applies full service brakes before reset
                     if (neutralrvrbrakereset == 2 && Train.Handles.BrakeNotch == this.Train.Specs.BrakeNotches && Train.trainspeed == 0)
                     {
                         Train.tractionmanager.resetbrakeapplication();
-                        tractionmanager.neutralrvrtripped = false;
+                        Train.tractionmanager.neutralrvrtripped = false;
                     }
                 }
             }
@@ -323,7 +326,7 @@ namespace Plugin
                 data.DebugMessage = "Power cutoff due to boiler pressure below minimum";
             }
 
-            if (tractionmanager.powercutoffdemanded == true)
+            if (Train.tractionmanager.powercutoffdemanded == true)
             {
                 if (Train.drastate == true)
                 {
@@ -396,7 +399,7 @@ namespace Plugin
                 {
                     data.DebugMessage = "Service Brakes demanded by open doors";
                 }
-                else if (tractionmanager.neutralrvrtripped)
+                else if (Train.tractionmanager.neutralrvrtripped)
                 {
                     if (neutralrvrbrake == 1)
                     {
@@ -628,12 +631,40 @@ namespace Plugin
             
         }
 
+        //Call this function to set the maximum permissable power notch
+        /// <summary>Sets the maximum permissiable power notch.</summary>
+        /// <param name="NotchRequested">The notch requested.</param>
+        /// <param name="blocking">Whether this is being requested by a safety system, or the traction model.</param>
+        /// Lower notches will always succeed.
+        /// A notch increase must always be first requested by a safety system if applicable
+        internal void SetMaxPowerNotch(int NotchRequested, bool SafetySystem)
+        {
+            if (NotchRequested < MaximumPowerNotch)
+            {
+                MaximumPowerNotch = NotchRequested;
+                if (SafetySystem == true)
+                {
+                    //Set the bool to show that the power *was* cut by a safety system
+                    SafetySystemMaxPowerCut = true;
+                }
+            }
+            else
+            {
+                if (SafetySystemMaxPowerCut ==  true && SafetySystem == false)
+                {
+                    //A safety system has cut the power, but this call has not been made from a safety system
+                    return;
+                }
+                MaximumPowerNotch = NotchRequested;
+            }
+        }
+
         //Call this function from a safety system to demand power cutoff
         /// <summary>Deamnds traction power cutoff.</summary>
         /// <remarks>This call will always succeed.</remarks>
-        internal static void demandpowercutoff()
+        internal void demandpowercutoff()
         {
-            tractionmanager.powercutoffdemanded = true;
+            Train.tractionmanager.powercutoffdemanded = true;
         }
 
         //Call this function to attempt to reset the power cutoff
@@ -663,7 +694,22 @@ namespace Plugin
             {
                 return;
             }
-            tractionmanager.powercutoffdemanded = false;
+            //Do not reset power cutoff if ATC is still demanding power cutoff via open doors
+            if (Train.Atc != null && (Train.Atc.State != Atc.States.Disabled && this.Train.Doors != DoorStates.None))
+            {
+                return;
+            }
+            //Do not reset power cutoff if ATS-P is still demanding power cutoff via open doors
+            if (Train.AtsP != null && (Train.AtsP.State != AtsP.States.Disabled && this.Train.Doors != DoorStates.None))
+            {
+                return;
+            }
+            //Do not reset power cutoff if ATS-SX is still demanding power cutoff via open doors
+            if (Train.AtsSx != null && (Train.AtsSx.State != AtsSx.States.Disabled && this.Train.Doors != DoorStates.None))
+            {
+                return;
+            }
+            Train.tractionmanager.powercutoffdemanded = false;
             Train.DebugLogger.LogMessage("Traction power restored");
 
         }
@@ -710,7 +756,7 @@ namespace Plugin
                 {
                     return;
                 }
-                if (tractionmanager.neutralrvrtripped && neutralrvrbrake == 2)
+                if (Train.tractionmanager.neutralrvrtripped && neutralrvrbrake == 2)
                 {
                     return;
                 }
@@ -729,7 +775,7 @@ namespace Plugin
                 //These conditions set a different brake notch to EB
                 //
                 //Set service brakes as reverser is in neutral
-                if (tractionmanager.neutralrvrtripped && neutralrvrbrake == 1)
+                if (Train.tractionmanager.neutralrvrtripped && neutralrvrbrake == 1)
                 {
                     currentbrakenotch = Train.Specs.BrakeNotches;
                     return;
@@ -738,6 +784,26 @@ namespace Plugin
                 if (Train.SCMT.enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
                 {
                     currentbrakenotch = 1;
+                    return;
+                }
+                //Do not reset brake application if ATC is currently demanding one
+                if (Train.Atc != null && (Train.Atc.State == Atc.States.Service || Train.Atc.State == Atc.States.Emergency))
+                {
+                    return;
+                }
+                //Do not reset brake application if ATS-P is currently demanding one
+                if (Train.AtsP != null && (Train.AtsP.State == AtsP.States.Brake || Train.AtsP.State == AtsP.States.Service || Train.AtsP.State == AtsP.States.Emergency))
+                {
+                    return;
+                }
+                //Do not reset brake application if ATS-PS is currently demanding one
+                if (Train.AtsPs != null && (Train.AtsPs.State == AtsPs.States.Emergency))
+                {
+                    return;
+                }
+                //Do not reset brake application if ATS-SX is currently demanding one
+                if (Train.AtsSx != null && (Train.AtsSx.State == AtsSx.States.Emergency))
+                {
                     return;
                 }
             }

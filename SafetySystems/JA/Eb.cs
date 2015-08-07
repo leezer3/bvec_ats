@@ -66,7 +66,7 @@ namespace Plugin {
 							}
 						} else {
 							this.Train.Sounds.AtsBell.Play();
-							data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+							Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches +1);
 						}
 					} else if (this.Counter >= TimeUntilBell) {
 						this.Train.Sounds.Eb.Play();

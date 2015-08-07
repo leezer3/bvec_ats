@@ -56,7 +56,7 @@ namespace Plugin.Traction.Diesel
                 }
                 //Stop the engine loop sound from playing & demand power cutoff
                 SoundManager.Stop(EngineLoopSound);
-                tractionmanager.demandpowercutoff();
+                Train.tractionmanager.demandpowercutoff();
             }
             else
             {

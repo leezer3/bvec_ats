@@ -80,12 +80,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Atc.cs" />
-    <Compile Include="Ato.cs" />
-    <Compile Include="AtsP.cs" />
-    <Compile Include="AtsPs.cs" />
-    <Compile Include="AtsSx.cs" />
-    <Compile Include="Calling.cs" />
+    <Compile Include="SafetySystems\JA\Atc.cs" />
+    <Compile Include="SafetySystems\JA\Ato.cs" />
+    <Compile Include="SafetySystems\JA\AtsP.cs" />
+    <Compile Include="SafetySystems\JA\AtsPs.cs" />
+    <Compile Include="SafetySystems\JA\AtsSx.cs" />
+    <Compile Include="SafetySystems\JA\Calling.cs" />
     <Compile Include="Dialogs\AdvancedDriving.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -99,22 +99,22 @@
       <DependentUpon>AdvancedDrivingMask.cs</DependentUpon>
     </Compile>
     <Compile Include="AI\AI.Driver.cs" />
-    <Compile Include="AWS.SafetyStates.cs">
+    <Compile Include="SafetySystems\EN\AWS.SafetyStates.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AWS.SunflowerStates.cs">
+    <Compile Include="SafetySystems\EN\AWS.SunflowerStates.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AWS.cs" />
-    <Compile Include="Animations.cs" />
-    <Compile Include="Animations.DoorLightStates.cs" />
-    <Compile Include="CAWS.cs" />
-    <Compile Include="Eb.cs" />
+    <Compile Include="SafetySystems\EN\AWS.cs" />
+    <Compile Include="Animation\Animations.cs" />
+    <Compile Include="Animation\Animations.DoorLightStates.cs" />
+    <Compile Include="SafetySystems\IE\CAWS.cs" />
+    <Compile Include="SafetySystems\JA\Eb.cs" />
     <Compile Include="Functions\ConfigurationParser.cs" />
     <Compile Include="Functions\DebugLogger.cs" />
     <Compile Include="Functions\ErrorLogger.cs" />
     <Compile Include="Functions\StringArrayParser.cs" />
-    <Compile Include="PZB.Program.cs" />
+    <Compile Include="SafetySystems\DE\PZB.Program.cs" />
     <Compile Include="Dialogs\PZBControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -126,11 +126,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="PZB.cs" />
-    <Compile Include="PZB.SafetyStates.cs" />
-    <Compile Include="SCMT.cs" />
-    <Compile Include="SCMT.Traction.Timers.cs" />
-    <Compile Include="SCMT_Traction.cs" />
+    <Compile Include="SafetySystems\DE\PZB.cs" />
+    <Compile Include="SafetySystems\DE\PZB.SafetyStates.cs" />
+    <Compile Include="SafetySystems\IT\SCMT.cs" />
+    <Compile Include="SafetySystems\IT\SCMT.Traction.Timers.cs" />
+    <Compile Include="SafetySystems\IT\SCMT_Traction.cs" />
     <Compile Include="Dialogs\ElectricControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -145,31 +145,31 @@
     </Compile>
     <Compile Include="Structures\Component.cs" />
     <Compile Include="Structures\DebugData.cs" />
-    <Compile Include="Tasc.cs" />
+    <Compile Include="SafetySystems\JA\Tasc.cs" />
     <Compile Include="Traction\Diesel\DieselEngine.cs" />
     <Compile Include="Traction\Diesel\Gearbox.cs" />
     <Compile Include="Traction\Diesel\StarterMotor.cs" />
-    <Compile Include="vigilance.DeadmanStates.cs" />
-    <Compile Include="diesel.cs" />
-    <Compile Include="electric.cs" />
-    <Compile Include="Electric.PantographStates.cs" />
-    <Compile Include="StartupSelfTestManager.cs" />
-    <Compile Include="StartupSelfTestManager.SequenceStates.cs" />
+    <Compile Include="SafetySystems\vigilance.DeadmanStates.cs" />
+    <Compile Include="Traction\diesel.cs" />
+    <Compile Include="Traction\Electric\electric.cs" />
+    <Compile Include="Traction\Electric\Electric.PantographStates.cs" />
+    <Compile Include="Managers\StartupSelfTestManager.cs" />
+    <Compile Include="Managers\StartupSelfTestManager.SequenceStates.cs" />
     <Compile Include="Functions\UpgradeConfig.cs" />
-    <Compile Include="Device.cs" />
-    <Compile Include="OperativeStates.cs" />
-    <Compile Include="Sounds.cs" />
+    <Compile Include="Structures\Device.cs" />
+    <Compile Include="Structures\OperativeStates.cs" />
+    <Compile Include="Functions\Sounds.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="steam.cs">
+    <Compile Include="Traction\steam.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="TPWS.cs" />
-    <Compile Include="TractionManager.cs" />
+    <Compile Include="SafetySystems\EN\TPWS.cs" />
+    <Compile Include="Managers\TractionManager.cs" />
     <Compile Include="Train.cs" />
-    <Compile Include="TPWS.SafetyStates.cs" />
-    <Compile Include="vigilance.cs" />
-    <Compile Include="Windscreen.cs" />
+    <Compile Include="SafetySystems\EN\TPWS.SafetyStates.cs" />
+    <Compile Include="SafetySystems\vigilance.cs" />
+    <Compile Include="Animation\Windscreen.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

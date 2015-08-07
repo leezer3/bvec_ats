@@ -136,7 +136,7 @@ namespace Plugin
             else
             {
                 Train.drastate = true;
-                tractionmanager.demandpowercutoff();
+                Train.tractionmanager.demandpowercutoff();
             }
             Train.overspeedtripped = false;
             DeadmansHandleState = DeadmanStates.None;

@@ -764,7 +764,11 @@ namespace Plugin {
 					}
 					if (this.State == States.Emergency) {
 						this.Train.Sounds.AtsBell.Play();
-						data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+						Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+					}
+					else
+					{
+					    Train.tractionmanager.resetbrakeapplication();
 					}
 				}
 			}

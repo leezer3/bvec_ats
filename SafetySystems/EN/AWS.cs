@@ -163,7 +163,7 @@ namespace Plugin
                         else
                         {
                             Train.DebugLogger.LogMessage("Power cutoff was demanded by the AWS");
-                            tractionmanager.demandpowercutoff();
+                            Train.tractionmanager.demandpowercutoff();
                             Train.DebugLogger.LogMessage("Emergency brakes were demanded by the AWS");
                             Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                         }

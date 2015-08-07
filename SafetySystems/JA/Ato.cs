@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+ * Largely public domain code by Odakyufan
+ * Modified to work with BVEC_ATS traction manager
+ * 
+ */
+
+using System;
 using OpenBveApi.Runtime;
 
 namespace Plugin {
@@ -98,18 +104,19 @@ namespace Plugin {
 							} else {
 								this.Notch = notch;
 							}
-							data.Handles.PowerNotch = this.Notch;
+                            Train.tractionmanager.SetMaxPowerNotch(this.Notch, true);
 						} else {
 							this.Notch = 0;
-							data.Handles.PowerNotch = 0;
+                            Train.tractionmanager.SetMaxPowerNotch(this.Notch, true);
 						}
 					} else {
 						this.Notch = 0;
-						data.Handles.PowerNotch = 0;
+                        Train.tractionmanager.SetMaxPowerNotch(this.Notch, true);
 					}
+                    Train.tractionmanager.resetbrakeapplication();
 				} else {
 					this.Notch = 0;
-					data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+					Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
 				}
 			} else {
 				this.Notch = 0;

@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+ * Largely public domain code by Odakyufan
+ * Modified to work with BVEC_ATS traction manager
+ * 
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -575,7 +581,7 @@ namespace Plugin {
 					}
 					if (this.State == States.Brake) {
 						if (data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches) {
-							data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
+							Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
 						}
 					}
 					if (this.Position > this.SwitchToAtsSxPosition) {
@@ -583,16 +589,16 @@ namespace Plugin {
 					}
 				} else if (this.State == States.Service) {
 					if (data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches) {
-						data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
+                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
 					}
 				} else if (this.State == States.Emergency) {
-					data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
 				}
 				if (!this.AtsSxPMode & (this.State == States.Normal | this.State == States.Pattern | this.State == States.Brake | this.State == States.Service | this.State == States.Emergency)) {
 					blocking = true;
 				}
 				if (this.State != States.Disabled & this.Train.Doors != DoorStates.None) {
-					data.Handles.PowerNotch = 0;
+					Train.tractionmanager.demandpowercutoff();
 				}
 			}
 			// --- panel ---

@@ -1,4 +1,9 @@
-﻿#pragma warning disable 0660, 0661
+﻿/*
+ * Largely public domain code by Odakyufan
+ * Modified to work with BVEC_ATS traction manager
+ * 
+ */
+#pragma warning disable 0660, 0661
 
 using System;
 using System.Collections.Generic;
@@ -497,15 +502,23 @@ namespace Plugin {
 					}
 					if (this.State == States.Service) {
 						if (data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches) {
-							data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
+							Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
 						}
 					} else if (this.State == States.Emergency) {
-						data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
 					}
-					blocking = true;
+					else
+					{
+					    Train.tractionmanager.resetbrakeapplication();
+					}
 				}
 				if (this.State != States.Disabled & this.Train.Doors != DoorStates.None) {
-					data.Handles.PowerNotch = 0;
+                    //Demand power cutoff
+                    Train.tractionmanager.demandpowercutoff();
+				}
+				else
+				{
+				    Train.tractionmanager.resetpowercutoff();
 				}
 			}
 			// --- panel ---

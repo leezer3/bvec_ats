@@ -286,14 +286,14 @@ namespace Plugin {
                     temperature = overheat;
                     if (overheatresult == 1)
                     {
-                        tractionmanager.demandpowercutoff();
-                        tractionmanager.overheated = true;
+                        Train.tractionmanager.demandpowercutoff();
+                        Train.tractionmanager.overheated = true;
                     }
                 }
                 else if (temperature < overheat && temperature > 0)
                 {
                     Train.tractionmanager.resetpowercutoff();
-                    tractionmanager.overheated = false;
+                    Train.tractionmanager.overheated = false;
                 }
                 else if (temperature < 0)
                 {

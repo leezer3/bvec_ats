@@ -127,7 +127,7 @@ namespace Plugin {
 					}
 				} else if (this.State == States.Emergency) {
 					this.Train.Sounds.AtsBell.Play();
-					data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+					Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches+1);
 				}
 				if (this.SpeedCheckCountdown > 0.0 & data.ElapsedTime.Seconds > 0.0) {
 					this.SpeedCheckCountdown -= data.ElapsedTime.Seconds;
@@ -139,7 +139,11 @@ namespace Plugin {
 					}
 				}
 				if (this.State != States.Disabled & this.Train.Doors != DoorStates.None) {
-					data.Handles.PowerNotch = 0;
+					Train.tractionmanager.demandpowercutoff();
+				}
+				else
+				{
+				    Train.tractionmanager.resetpowercutoff();
 				}
 			}
 			this.CompatibilityAccidentalDepartureCounter += data.ElapsedTime.Seconds;

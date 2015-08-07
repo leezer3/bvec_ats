@@ -569,14 +569,14 @@ namespace Plugin
                             temperature = overheat;
                             if (overheatresult == 1)
                             {
-                                tractionmanager.demandpowercutoff();
-                                tractionmanager.overheated = true;
+                                Train.tractionmanager.demandpowercutoff();
+                                Train.tractionmanager.overheated = true;
                             }
                         }
                         else if (temperature < overheat && temperature > 0)
                         {
                             Train.tractionmanager.resetpowercutoff();
-                            tractionmanager.overheated = false;
+                            Train.tractionmanager.overheated = false;
                         }
                         else if (temperature < 0)
                         {
@@ -673,7 +673,7 @@ namespace Plugin
                     {
                         //If we've exceeded the set point speed cut power
                         flag = 1;
-                        tractionmanager.demandpowercutoff();
+                        Train.tractionmanager.demandpowercutoff();
                     }
                     if (Train.trainspeed > setpointspeed + 1 && flag == 1 && lca == true && Train.Handles.PowerNotch > 0)
                     {
