@@ -182,6 +182,36 @@ namespace Plugin {
 
 	    internal DebugLogger DebugLogger;
 
+        /*
+         * DEVICES ADDED FROM ODAKYUFANATS
+         * 
+         */
+        /// <summary>The AI component that calls out signal aspects and speed restrictions.</summary>
+        internal Calling Calling;
+
+        // --- devices ---
+
+        /// <summary>The ATS-Sx device, or a null reference if not installed.</summary>
+        internal AtsSx AtsSx;
+
+        /// <summary>The ATS-Ps device, or a null reference if not installed.</summary>
+        internal AtsPs AtsPs;
+
+        /// <summary>The ATS-P device, or a null reference if not installed.</summary>
+        internal AtsP AtsP;
+
+        /// <summary>The ATC device, or a null reference if not installed.</summary>
+        internal Atc Atc;
+
+        /// <summary>The EB device, or a null reference if not installed.</summary>
+        internal Eb Eb;
+
+        /// <summary>The TASC device, or a null reference if not installed.</summary>
+        internal Tasc Tasc;
+
+        /// <summary>The ATO device, or a null reference if not installed.</summary>
+        internal Ato Ato;
+
 		/// <summary>A list of all the devices installed on this train</summary>
 		internal Device[] Devices;
 
