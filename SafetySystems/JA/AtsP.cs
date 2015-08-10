@@ -4,931 +4,1102 @@
  * 
  */
 
+using OpenBveApi.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-using OpenBveApi.Runtime;
+namespace Plugin
+{
+    internal class AtsP : Device
+    {
+        private Train Train;
 
-namespace Plugin {
-	/// <summary>Represents ATS-P.</summary>
-	internal class AtsP : Device {
-		
-		// --- enumerations ---
-		
-		/// <summary>Represents different states of ATS-P.</summary>
-		internal enum States {
-			/// <summary>The system is disabled.</summary>
-			Disabled = 0,
-			/// <summary>The system is enabled, but currently suppressed. This will change to States.Initializing once the emergency brakes are released.</summary>
-			Suppressed = 1,
-			/// <summary>The system is initializing. This will change to States.Standby once the initialization is complete.</summary>
-			Initializing = 2,
-			/// <summary>The system is available but no ATS-P signal has yet been picked up.</summary>
-			Standby = 3,
-			/// <summary>The system is operating normally.</summary>
-			Normal = 4,
-			/// <summary>The system is approaching a brake pattern.</summary>
-			Pattern = 5,
-			/// <summary>The system is braking due to speed excess.</summary>
-			Brake = 6,
-			/// <summary>The system applies the service brakes due to an immediate stop command.</summary>
-			Service = 7,
-			/// <summary>The system applies the emergency brakes due to an immediate stop command.</summary>
-			Emergency = 8
-		}
+        internal AtsP.States State;
 
-		
-		// --- pattern ---
-		
-		/// <summary>Represents a pattern.</summary>
-		internal class Pattern {
-			// --- members ---
-			/// <summary>The underlying ATS-P device.</summary>
-			internal AtsP Device;
-			/// <summary>The position of the point of danger, or System.Double.MinValue, or System.Double.MaxValue.</summary>
-			internal double Position;
-			/// <summary>The warning pattern, or System.Double.MaxValue.</summary>
-			internal double WarningPattern;
-			/// <summary>The brake pattern, or System.Double.MaxValue.</summary>
-			internal double BrakePattern;
-			/// <summary>The speed limit at the point of danger, or System.Double.MaxValue.</summary>
-			internal double TargetSpeed;
-			/// <summary>The current gradient.</summary>
-			internal double Gradient;
-			/// <summary>Whether the pattern is persistent, i.e. cannot be cleared.</summary>
-			internal bool Persistent;
-			// --- constructors ---
-			/// <summary>Creates a new pattern.</summary>
-			/// <param name="device">A reference to the underlying ATS-P device.</param>
-			internal Pattern(AtsP device) {
-				this.Device = device;
-				this.Position = double.MaxValue;
-				this.WarningPattern = double.MaxValue;
-				this.BrakePattern = double.MaxValue;
-				this.TargetSpeed = double.MaxValue;
-				this.Gradient = 0.0;
-				this.Persistent = false;
-			}
-			// --- functions ---
-			/// <summary>Updates the pattern.</summary>
-			/// <param name="system">The current ATS-P system.</param>
-			/// <param name="data">The elapse data.</param>
-			internal void Perform(AtsP system, ElapseData data) {
-				if (this.Position == double.MaxValue | this.TargetSpeed == double.MaxValue) {
-					this.WarningPattern = double.MaxValue;
-					this.BrakePattern = double.MaxValue;
-				} else if (this.Position == double.MinValue) {
-					if (this.TargetSpeed > 1.0 / 3.6) {
-						this.WarningPattern = this.TargetSpeed + this.Device.WarningPatternTolerance;
-						this.BrakePattern = this.TargetSpeed + this.Device.BrakePatternTolerance;
-					} else {
-						this.WarningPattern = this.TargetSpeed;
-						this.BrakePattern = this.TargetSpeed;
-					}
-					if (this.BrakePattern < this.Device.ReleaseSpeed) {
-						this.BrakePattern = this.Device.ReleaseSpeed;
-					}
-				} else {
-					const double earthGravity = 9.81;
-					double deceleration = this.Device.DesignDeceleration + earthGravity * this.Gradient;
-					double distance = this.Position - system.Position;
-					// --- calculate the warning pattern ---
-					{
-						double sqrtTerm = 2.0 * deceleration * (distance - this.Device.WarningPatternOffset) + deceleration * deceleration * this.Device.WarningPatternDelay * this.Device.WarningPatternDelay + this.TargetSpeed * this.TargetSpeed;
-						if (sqrtTerm <= 0.0) {
-							this.WarningPattern = -deceleration * this.Device.WarningPatternDelay;
-						} else {
-							this.WarningPattern = Math.Sqrt(sqrtTerm) - deceleration * this.Device.WarningPatternDelay;
-						}
-						if (this.TargetSpeed > 1.0 / 3.6) {
-							if (this.WarningPattern < this.TargetSpeed + this.Device.WarningPatternTolerance) {
-								this.WarningPattern = this.TargetSpeed + this.Device.WarningPatternTolerance;
-							}
-						} else {
-							if (this.WarningPattern < this.TargetSpeed) {
-								this.WarningPattern = this.TargetSpeed;
-							}
-						}
-					}
-					// --- calculate the brake pattern ---
-					{
-						double sqrtTerm = 2.0 * deceleration * (distance - this.Device.BrakePatternOffset) + deceleration * deceleration * this.Device.BrakePatternDelay * this.Device.BrakePatternDelay + this.TargetSpeed * this.TargetSpeed;
-						if (sqrtTerm <= 0.0) {
-							this.BrakePattern = -deceleration * this.Device.BrakePatternDelay;
-						} else {
-							this.BrakePattern = Math.Sqrt(sqrtTerm) - deceleration * this.Device.BrakePatternDelay;
-						}
-						if (this.TargetSpeed > 1.0 / 3.6) {
-							if (this.BrakePattern < this.TargetSpeed + this.Device.BrakePatternTolerance) {
-								this.BrakePattern = this.TargetSpeed + this.Device.BrakePatternTolerance;
-							}
-						} else {
-							if (this.BrakePattern < this.TargetSpeed) {
-								this.BrakePattern = this.TargetSpeed;
-							}
-						}
-						if (this.BrakePattern < this.Device.ReleaseSpeed) {
-							this.BrakePattern = this.Device.ReleaseSpeed;
-						}
-					}
-					
-				}
-			}
-			/// <summary>Sets the position of the red signal.</summary>
-			/// <param name="distance">The position.</param>
-			internal void SetRedSignal(double position) {
-				this.Position = position;
-				this.TargetSpeed = 0.0;
-			}
-			/// <summary>Sets the position of the green signal.</summary>
-			/// <param name="distance">The position.</param>
-			internal void SetGreenSignal(double position) {
-				this.Position = position;
-				this.TargetSpeed = double.MaxValue;
-			}
-			/// <summary>Sets a speed limit and the position of the speed limit.</summary>
-			/// <param name="speed">The speed.</param>
-			/// <param name="distance">The position.</param>
-			internal void SetLimit(double speed, double position) {
-				this.Position = position;
-				this.TargetSpeed = speed;
-			}
-			/// <summary>Sets the train-specific permanent speed limit.</summary>
-			/// <param name="speed">The speed limit.</param>
-			internal void SetPersistentLimit(double speed) {
-				this.Position = double.MinValue;
-				this.TargetSpeed = speed;
-				this.Persistent = true;
-			}
-			/// <summary>Sets the gradient.</summary>
-			/// <param name="gradient">The gradient.</param>
-			internal void SetGradient(double gradient) {
-				this.Gradient = gradient;
-			}
-			/// <summary>Clears the pattern.</summary>
-			internal void Clear() {
-				if (!this.Persistent) {
-					this.Position = double.MaxValue;
-					this.WarningPattern = double.MaxValue;
-					this.BrakePattern = double.MaxValue;
-					this.TargetSpeed = double.MaxValue;
-					this.Gradient = 0.0;
-				}
-			}
-			/// <summary>Adds a textual representation to the specified string builder if this pattern is not clear.</summary>
-			/// <param name="prefix">The textual prefix.</param>
-			/// <param name="builder">The string builder.</param>
-			internal void AddToStringBuilder(string prefix, StringBuilder builder) {
-				if (this.Position >= double.MaxValue | this.TargetSpeed >= double.MaxValue) {
-					// do nothing
-				} else if (this.Position <= double.MinValue) {
-					string text = prefix + (3.6 * this.BrakePattern).ToString("0");
-					if (builder.Length != 0) {
-						builder.Append(", ");
-					}
-					builder.Append(text);
-				} else {
-					string text;
-					double distance = this.Position - this.Device.Position;
-					if (distance <= 0.0) {
-						text = prefix + (3.6 * this.BrakePattern).ToString("0");
-					} else {
-						text = prefix + (3.6 * this.TargetSpeed).ToString("0") + "(" + (3.6 * this.BrakePattern).ToString("0") + ")@" + distance.ToString("0");
-					}
-					if (builder.Length != 0) {
-						builder.Append(", ");
-					}
-					builder.Append(text);
-				}
-			}
-		}
-		
-		// --- compatibility limit ---
-		/// <summary>Represents a speed limit at a specific track position.</summary>
-		private struct CompatibilityLimit {
-			// --- members ---
-			/// <summary>The speed limit.</summary>
-			internal double Limit;
-			/// <summary>The track position.</summary>
-			internal double Location;
-			// --- constructors ---
-			/// <summary>Creates a new compatibility limit.</summary>
-			/// <param name="limit">The speed limit.</param>
-			/// <param name="position">The track position.</param>
-			internal CompatibilityLimit(double limit, double location) {
-				this.Limit = limit;
-				this.Location = location;
-			}
-		}
-		
-		
-		// --- members ---
-		
-		/// <summary>The underlying train.</summary>
-		private Train Train;
-		
-		/// <summary>The current state of the system.</summary>
-		internal States State;
-		
-		/// <summary>Whether simultaneous ATS-Sx/P mode is currently active.</summary>
-		private bool AtsSxPMode;
-		
-		/// <summary>Whether the brake release is currently active.</summary>
-		private bool BrakeRelease;
-		
-		/// <summary>The remaining time before the brake release is over.</summary>
-		private double BrakeReleaseCountdown;
-		
-		/// <summary>The current initialization countdown.</summary>
-		private double InitializationCountdown;
-		
-		/// <summary>The position of the train as obtained from odometry.</summary>
-		private double Position;
-		
-		/// <summary>The position at which to switch to ATS-Sx, or System.Double.MaxValue.</summary>
-		private double SwitchToAtsSxPosition;
-		
-		/// <summary>A list of all compatibility temporary speed limits in the route.</summary>
-		private List<CompatibilityLimit> CompatibilityLimits;
-		
-		/// <summary>The element in the CompatibilityLimits list that holds the last speed limit.</summary>
-		private int CompatibilityLimitPointer;
-		
-		
-		// --- odakyu digital ats-p (experimental) ---
-		
-		/// <summary>Whether D-ATS-P is supported by the train.</summary>
-		internal bool DAtsPSupported;
-		
-		/// <summary>Whether D-ATS-P has been activated through a beacon.</summary>
-		private bool DAtsPActive;
+        private bool Blocked;
 
-		/// <summary>Whether D-ATS-P is transmitting continuously.</summary>
-		private bool DAtsPContinuous;
+        private bool AtsSxPMode;
 
-		/// <summary>The current signal aspect.</summary>
-		private int DAtsPAspect;
-		
-		/// <summary>The D-ATS-P pattern for the last encountered signal.</summary>
-		private Pattern DAtsPZerothSignalPattern;
+        private bool BrakeRelease;
 
-		/// <summary>The D-ATS-P pattern for the next signal.</summary>
-		private Pattern DAtsPFirstSignalPattern;
+        private double BrakeReleaseCountdown;
 
-		/// <summary>The D-ATS-P pattern for the signal after the next signal.</summary>
-		private Pattern DAtsPSecondSignalPattern;
-		
-		
-		// --- patterns ---
-		
-		/// <summary>The signal patterns.</summary>
-		private Pattern[] SignalPatterns;
-		
-		/// <summary>The divergence pattern.</summary>
-		private Pattern DivergencePattern;
-		
-		/// <summary>The downslope pattern.</summary>
-		private Pattern DownslopePattern;
+        private double InitializationCountdown;
 
-		/// <summary>The curve pattern.</summary>
-		private Pattern CurvePattern;
+        private double Position;
 
-		/// <summary>The temporary pattern.</summary>
-		private Pattern TemporaryPattern;
+        private double SwitchToAtsSxPosition;
 
-		/// <summary>The route-specific permanent pattern.</summary>
-		private Pattern RoutePermanentPattern;
-		
-		/// <summary>The train-specific permanent pattern.</summary>
-		internal Pattern TrainPermanentPattern;
+        private List<AtsP.CompatibilityLimit> CompatibilityLimits;
 
-		/// <summary>The compatibility temporary pattern.</summary>
-		private Pattern CompatibilityTemporaryPattern;
+        private int CompatibilityLimitPointer;
 
-		/// <summary>The compatibility permanent pattern.</summary>
-		private Pattern CompatibilityPermanentPattern;
+        internal bool DAtsPSupported;
 
-		/// <summary>A list of all patterns.</summary>
-		private Pattern[] Patterns;
-		
-		
-		// --- parameters ---
+        private bool DAtsPActive;
 
-		/// <summary>The duration of the initialization process.</summary>
-		internal double DurationOfInitialization = 3.0;
+        private bool DAtsPContinuous;
 
-		/// <summary>The duration of the brake release. If zero, brake release is not available.</summary>
-		internal double DurationOfBrakeRelease = 60.0;
-		
-		/// <summary>The design deceleration.</summary>
-		internal double DesignDeceleration = 2.445 / 3.6;
+        private int DAtsPAspect;
 
-		/// <summary>The reaction delay for the brake pattern.</summary>
-		internal double BrakePatternDelay = 0.5;
+        private AtsP.Pattern DAtsPZerothSignalPattern;
 
-		/// <summary>The signal offset for the brake pattern.</summary>
-		internal double BrakePatternOffset = 0.0;
-		
-		/// <summary>The speed tolerance for the brake pattern.</summary>
-		internal double BrakePatternTolerance = 0.0 / 3.6;
+        private AtsP.Pattern DAtsPFirstSignalPattern;
 
-		/// <summary>The reaction delay for the warning pattern.</summary>
-		internal double WarningPatternDelay = 5.5;
+        private AtsP.Pattern DAtsPSecondSignalPattern;
 
-		/// <summary>The signal offset for the warning pattern.</summary>
-		internal double WarningPatternOffset = 50.0;
+        private AtsP.Pattern[] SignalPatterns;
 
-		/// <summary>The speed tolerance for the warning pattern.</summary>
-		internal double WarningPatternTolerance = -5.0 / 3.6;
+        private AtsP.Pattern DivergencePattern;
 
-		/// <summary>The release speed.</summary>
-		internal double ReleaseSpeed = 15.0 / 3.6;
+        private AtsP.Pattern DownslopePattern;
 
-	    internal int ATSPBell =  -1;
-		
-		
-		// --- constructors ---
-		
-		/// <summary>Creates a new instance of this system.</summary>
-		/// <param name="train">The train.</param>
-		internal AtsP(Train train) {
-			this.Train = train;
-			this.State = States.Disabled;
-			this.AtsSxPMode = false;
-			this.InitializationCountdown = 0.0;
-			this.SwitchToAtsSxPosition = double.MaxValue;
-			this.CompatibilityLimits = new List<CompatibilityLimit>();
-			this.CompatibilityLimitPointer = 0;
-			this.DAtsPSupported = false;
-			this.DAtsPActive = false;
-			this.DAtsPContinuous = false;
-			this.SignalPatterns = new Pattern[10];
-			for (int i = 0; i < this.SignalPatterns.Length; i++) {
-				this.SignalPatterns[i] = new Pattern(this);
-			}
-			this.DivergencePattern = new Pattern(this);
-			this.DownslopePattern = new Pattern(this);
-			this.CurvePattern = new Pattern(this);
-			this.TemporaryPattern = new Pattern(this);
-			this.RoutePermanentPattern = new Pattern(this);
-			this.TrainPermanentPattern = new Pattern(this);
-			this.CompatibilityTemporaryPattern = new Pattern(this);
-			this.CompatibilityPermanentPattern = new Pattern(this);
-			this.DAtsPZerothSignalPattern = new Pattern(this);
-			this.DAtsPFirstSignalPattern = new Pattern(this);
-			this.DAtsPSecondSignalPattern = new Pattern(this);
-			List<Pattern> patterns = new List<Pattern>();
-			patterns.AddRange(this.SignalPatterns);
-			patterns.Add(this.DivergencePattern);
-			patterns.Add(this.DownslopePattern);
-			patterns.Add(this.CurvePattern);
-			patterns.Add(this.TemporaryPattern);
-			patterns.Add(this.RoutePermanentPattern);
-			patterns.Add(this.TrainPermanentPattern);
-			patterns.Add(this.CompatibilityTemporaryPattern);
-			patterns.Add(this.CompatibilityPermanentPattern);
-			patterns.Add(this.DAtsPZerothSignalPattern);
-			patterns.Add(this.DAtsPFirstSignalPattern);
-			patterns.Add(this.DAtsPSecondSignalPattern);
-			this.Patterns = patterns.ToArray();
-		}
-		
-		
-		// --- functions ---
-		
-		/// <summary>Changes to standby mode and continues in ATS-Sx mode.</summary>
-		private void SwitchToSx() {
-			if (this.Train.AtsSx != null) {
-				foreach (Pattern pattern in this.Patterns) {
-					pattern.Clear();
-				}
-				this.State = States.Standby;
-                SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-				this.Train.AtsSx.State = AtsSx.States.Chime;
-			} else if (this.State != States.Emergency) {
-				this.State = States.Emergency;
-				if (this.State != States.Brake & this.State != States.Service) {
-                    SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-				}
-			}
-			this.SwitchToAtsSxPosition = double.MaxValue;
-			this.DAtsPActive = false;
-		}
-		
-		/// <summary>Switches to ATS-P.</summary>
-		/// <param name="state">The desired state.</param>
-		private void SwitchToP(States state) {
-			if (this.State == States.Standby) {
-				if (this.Train.AtsSx == null || this.Train.AtsSx.State != AtsSx.States.Emergency) {
-					this.State = state;
-                    SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-				}
-			} else if (state == States.Service | state == States.Emergency) {
-				if (this.State != States.Brake & this.State != States.Service & this.State != States.Emergency) {
-                    SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-				}
-				this.State = state;
-			}
-		}
-		
-		/// <summary>Updates the compatibility temporary speed pattern from the list of known speed limits.</summary>
-		private void UpdateCompatibilityTemporarySpeedPattern() {
-			if (this.CompatibilityLimits.Count != 0) {
-				if (this.CompatibilityTemporaryPattern.Position != double.MaxValue) {
-					if (this.CompatibilityTemporaryPattern.BrakePattern < this.Train.State.Speed.MetersPerSecond) {
-						return;
-					}
-					double delta = this.CompatibilityTemporaryPattern.Position - this.Train.State.Location;
-					if (delta >= -50.0 & delta <= 0.0) {
-						return;
-					}
-				}
-				while (CompatibilityLimitPointer > 0 && this.CompatibilityLimits[CompatibilityLimitPointer].Location > this.Train.State.Location) {
-					CompatibilityLimitPointer--;
-				}
-				while (CompatibilityLimitPointer < this.CompatibilityLimits.Count - 1 && this.CompatibilityLimits[CompatibilityLimitPointer + 1].Location <= this.Train.State.Location) {
-					CompatibilityLimitPointer++;
-				}
-				if (this.CompatibilityLimitPointer == 0 && this.CompatibilityLimits[0].Location > this.Train.State.Location) {
-					this.CompatibilityTemporaryPattern.SetLimit(this.CompatibilityLimits[0].Limit, this.CompatibilityLimits[0].Location);
-				} else if (this.CompatibilityLimitPointer < this.CompatibilityLimits.Count - 1) {
-					this.CompatibilityTemporaryPattern.SetLimit(this.CompatibilityLimits[this.CompatibilityLimitPointer + 1].Limit, this.CompatibilityLimits[this.CompatibilityLimitPointer + 1].Location);
-				} else {
-					this.CompatibilityTemporaryPattern.Clear();
-				}
-			}
-		}
-		
-		
-		// --- inherited functions ---
-		
-		/// <summary>Is called when the system should initialize.</summary>
-		/// <param name="mode">The initialization mode.</param>
-		internal override void Initialize(InitializationModes mode) {
-			if (mode == InitializationModes.OffEmergency) {
-				this.State = States.Suppressed;
-			} else {
-				this.State = States.Standby;
-			}
-			foreach (Pattern pattern in this.Patterns) {
-				if (Math.Abs(this.Train.State.Speed.MetersPerSecond) >= pattern.WarningPattern) {
-					pattern.Clear();
-				}
-			}
-		}
+        private AtsP.Pattern CurvePattern;
 
-		/// <summary>Is called every frame.</summary>
-		/// <param name="data">The data.</param>
-		/// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
-		internal override void Elapse(ElapseData data, ref bool blocking) {
-			// --- behavior ---
-			if (this.State == States.Suppressed) {
-				if (data.Handles.BrakeNotch <= this.Train.Specs.BrakeNotches) {
-					this.InitializationCountdown = DurationOfInitialization;
-					this.State = States.Initializing;
-				}
-			}
-			if (this.State == States.Initializing) {
-				this.InitializationCountdown -= data.ElapsedTime.Seconds;
-				if (this.InitializationCountdown <= 0.0) {
-					this.State = States.Standby;
-					this.BrakeRelease = false;
-					this.SwitchToAtsSxPosition = double.MaxValue;
-					foreach (Pattern pattern in this.Patterns) {
-						if (Math.Abs(data.Vehicle.Speed.MetersPerSecond) >= pattern.WarningPattern) {
-							pattern.Clear();
-						}
-					}
-                    SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-				}
-			}
-			if (BrakeRelease) {
-				BrakeReleaseCountdown -= data.ElapsedTime.Seconds;
-				if (BrakeReleaseCountdown <= 0.0) {
-					BrakeRelease = false;
-                    SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-				}
-			}
-			if (this.State != States.Disabled & this.State != States.Initializing) {
-				this.Position += data.Vehicle.Speed.MetersPerSecond * data.ElapsedTime.Seconds;
-			}
-			if (blocking) {
-				if (this.State != States.Disabled & this.State != States.Suppressed) {
-					this.State = States.Standby;
-				}
-			} else {
-				if (this.DAtsPSupported) {
-					double distance = this.DAtsPFirstSignalPattern.Position - this.Train.State.Location;
-					if (distance < 0.0) {
-						this.DAtsPZerothSignalPattern.Position = this.DAtsPFirstSignalPattern.Position;
-						this.DAtsPZerothSignalPattern.TargetSpeed = this.DAtsPFirstSignalPattern.TargetSpeed;
-						this.DAtsPFirstSignalPattern.Position = this.DAtsPSecondSignalPattern.Position;
-						this.DAtsPFirstSignalPattern.TargetSpeed = this.DAtsPSecondSignalPattern.TargetSpeed;
-						this.DAtsPSecondSignalPattern.Position = double.MaxValue;
-						this.DAtsPSecondSignalPattern.TargetSpeed = double.MaxValue;
-					}
-				}
-				if (this.DAtsPActive & this.DAtsPContinuous) {
-					switch (this.DAtsPAspect) {
-							case 1: this.DAtsPFirstSignalPattern.TargetSpeed = 25.0 / 3.6; break;
-							case 2: this.DAtsPFirstSignalPattern.TargetSpeed = 45.0 / 3.6; break;
-							case 3: this.DAtsPFirstSignalPattern.TargetSpeed = 75.0 / 3.6; break;
-							case 4: case 5: case 6: this.DAtsPFirstSignalPattern.TargetSpeed = double.MaxValue; break;
-							default: this.DAtsPFirstSignalPattern.TargetSpeed = 0.0; break;
-					}
-					if (this.DAtsPZerothSignalPattern.TargetSpeed < this.DAtsPFirstSignalPattern.TargetSpeed) {
-						this.DAtsPZerothSignalPattern.TargetSpeed = this.DAtsPFirstSignalPattern.TargetSpeed;
-					}
-				}
-				if (this.State == States.Normal | this.State == States.Pattern | this.State == States.Brake) {
-					bool brake = false;
-					bool warning = false;
-					bool normal = true;
-					if (this.DivergencePattern.Position > double.MinValue & this.DivergencePattern.Position < double.MaxValue) {
-						if (Math.Abs(data.Vehicle.Speed.MetersPerSecond) < this.DivergencePattern.BrakePattern) {
-							double distance = this.DivergencePattern.Position - this.Position;
-							if (distance < -50.0) {
-								this.DivergencePattern.Clear();
-							}
-						}
-					}
-					UpdateCompatibilityTemporarySpeedPattern();
-					foreach (Pattern pattern in this.Patterns) {
-						pattern.Perform(this, data);
-						if (Math.Abs(data.Vehicle.Speed.MetersPerSecond) >= pattern.WarningPattern - 1.0 / 3.6) {
-							normal = false;
-						}
-						if (Math.Abs(data.Vehicle.Speed.MetersPerSecond) >= pattern.WarningPattern) {
-							warning = true;
-						}
-						if (Math.Abs(data.Vehicle.Speed.MetersPerSecond) >= pattern.BrakePattern) {
-							brake = true;
-						}
-					}
-					if (BrakeRelease) {
-						brake = false;
-					}
-					if (brake & this.State != States.Brake) {
-						this.State = States.Brake;
-                        SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-					} else if (warning & this.State == States.Normal) {
-						this.State = States.Pattern;
-                        SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-					} else if (!brake & !warning & normal & (this.State == States.Pattern | this.State == States.Brake)) {
-						this.State = States.Normal;
-                        SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-					}
-					if (this.State == States.Brake) {
-						if (data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches) {
-							Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
-						}
-					}
-					if (this.Position > this.SwitchToAtsSxPosition) {
-						SwitchToSx();
-					}
-				} else if (this.State == States.Service) {
-					if (data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches) {
-                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
-					}
-				} else if (this.State == States.Emergency) {
-                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
-				}
-				if (!this.AtsSxPMode & (this.State == States.Normal | this.State == States.Pattern | this.State == States.Brake | this.State == States.Service | this.State == States.Emergency)) {
-					blocking = true;
-				}
-				if (this.State != States.Disabled & this.Train.Doors != DoorStates.None) {
-					Train.tractionmanager.demandpowercutoff();
-				}
-			}
-			// --- panel ---
-			if (this.State != States.Disabled & this.State != States.Suppressed) {
-				this.Train.Panel[2] = 1;
-				this.Train.Panel[259] = 1;
-			}
-			if (this.State == States.Pattern | this.State == States.Brake | this.State == States.Service | this.State == States.Emergency) {
-				this.Train.Panel[3] = 1;
-				this.Train.Panel[260] = 1;
-			}
-			if (this.State == States.Brake | this.State == States.Service | this.State == States.Emergency) {
-				this.Train.Panel[5] = 1;
-				this.Train.Panel[262] = 1;
-			}
-			if (this.State != States.Disabled & this.State != States.Suppressed & this.State != States.Standby) {
-				this.Train.Panel[6] = 1;
-				this.Train.Panel[263] = 1;
-			}
-			if (this.State == States.Initializing) {
-				this.Train.Panel[7] = 1;
-				this.Train.Panel[264] = 1;
-			}
-			if (this.State == States.Disabled) {
-				this.Train.Panel[50] = 1;
-			}
-			if (this.State != States.Disabled & this.State != States.Suppressed & this.State != States.Standby & this.BrakeRelease) {
-				this.Train.Panel[4] = 1;
-				this.Train.Panel[261] = 1;
-			}
-			// --- debug ---
-			if (this.State == States.Normal | this.State == States.Pattern | this.State == States.Brake | this.State == States.Service | this.State == States.Emergency) {
-				StringBuilder builder = new StringBuilder();
-				for (int i = 0; i < this.SignalPatterns.Length; i++) {
-					this.SignalPatterns[i].AddToStringBuilder(i.ToString() + ":", builder);
-				}
-				this.DivergencePattern.AddToStringBuilder("分岐/D:", builder);
-				this.TemporaryPattern.AddToStringBuilder("臨時/T:", builder);
-				this.CurvePattern.AddToStringBuilder("曲線/C:", builder);
-				this.DownslopePattern.AddToStringBuilder("勾配/S:", builder);
-				this.RoutePermanentPattern.AddToStringBuilder("P:", builder);
-				this.TrainPermanentPattern.AddToStringBuilder("M:", builder);
-				if (builder.Length == 0) {
-					data.DebugMessage = this.State.ToString();
-				} else {
-					data.DebugMessage = this.State.ToString() + " - " + builder.ToString();
-				}
-			}
-		}
-		
-		/// <summary>Is called when a key is pressed.</summary>
-		/// <param name="key">The key.</param>
-		internal override void KeyDown(VirtualKeys key) {
-			switch (key) {
-				case VirtualKeys.B1:
-					// --- reset the system ---
-					if ((this.State == States.Brake | this.State == States.Service | this.State == States.Emergency) & this.Train.Handles.Reverser == 0 & this.Train.Handles.PowerNotch == 0 & this.Train.Handles.BrakeNotch >= this.Train.Specs.BrakeNotches) {
-						foreach (Pattern pattern in this.Patterns) {
-							if (Math.Abs(this.Train.State.Speed.MetersPerSecond) >= pattern.WarningPattern) {
-								pattern.Clear();
-							}
-						}
-						this.State = States.Normal;
-						this.SwitchToAtsSxPosition = double.MaxValue;
-                        SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-					}
-					break;
-				case VirtualKeys.B2:
-					// --- brake release ---
-					if ((this.State == States.Normal | this.State == States.Pattern) & !BrakeRelease & DurationOfBrakeRelease > 0.0) {
-						BrakeRelease = true;
-						BrakeReleaseCountdown = DurationOfBrakeRelease;
-                        SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-					}
-					break;
-				case VirtualKeys.E:
-					// --- activate or deactivate the system ---
-					if (this.State == States.Disabled) {
-						this.State = States.Suppressed;
-					} else {
-						this.State = States.Disabled;
-					}
-					break;
-			}
-		}
-		
-		/// <summary>Is called to inform about signals.</summary>
-		/// <param name="signal">The signal data.</param>
-		internal override void SetSignal(SignalData[] signal) {
-			if (signal.Length >= 2) {
-				this.DAtsPAspect = signal[1].Aspect;
-			} else {
-				this.DAtsPAspect = 5;
-			}
-		}
-		
-		/// <summary>Is called when a beacon is passed.</summary>
-		/// <param name="beacon">The beacon data.</param>
-		internal override void SetBeacon(BeaconData beacon) {
-			if (this.State != States.Disabled & this.State != States.Suppressed & this.State != States.Initializing) {
-				switch (beacon.Type) {
-					case 3:
-					case 4:
-					case 5:
-						// --- P signal pattern / P immediate stop ---
-						this.Position = this.Train.State.Location;
-						if (this.State != States.Service & this.State != States.Emergency) {
-							if (this.State == States.Standby & beacon.Optional != -1) {
-								SwitchToP(States.Normal);
-							}
-							if (this.State != States.Standby) {
-								if (beacon.Type == 3 & beacon.Optional >= 10 & beacon.Optional <= 19) {
-									int pattern = beacon.Optional - 10;
-									this.SignalPatterns[pattern].Clear();
-								} else {
-									int pattern;
-									if (beacon.Type == 3 & beacon.Optional >= 1 & beacon.Optional <= 9) {
-										pattern = beacon.Optional;
-									} else {
-										pattern = 0;
-									}
-									double position = this.Position + beacon.Signal.Distance;
-									bool update = false;
-									if (pattern != 0) {
-										update = true;
-									} else if (this.SignalPatterns[pattern].Position == double.MaxValue) {
-										update = true;
-									} else if (position > this.SignalPatterns[pattern].Position - 30.0) {
-										update = true;
-									}
-									if (update) {
-										if (beacon.Signal.Aspect == 0 | beacon.Signal.Aspect > 100) {
-											this.SignalPatterns[pattern].SetRedSignal(position);
-											if (beacon.Type != 3 & beacon.Signal.Distance < 50.0 & !BrakeRelease) {
-												if (beacon.Type == 4) {
-													SwitchToP(States.Emergency);
-												} else {
-													SwitchToP(States.Service);
-												}
-											}
-										} else {
-											this.SignalPatterns[pattern].SetGreenSignal(position);
-										}
-									}
-								}
-							}
-						}
-						break;
-					case 6:
-						// --- P divergence speed limit ---
-						{
-							int distance = beacon.Optional / 1000;
-							if (distance > 0) {
-								if (this.State == States.Standby) {
-									SwitchToP(States.Normal);
-								}
-								this.Position = this.Train.State.Location;
-								int speed = beacon.Optional % 1000;
-								this.DivergencePattern.SetLimit((double)speed / 3.6, this.Position + distance);
-							}
-						}
-						break;
-					case 7:
-						// --- P permanent speed limit ---
-						this.Position = this.Train.State.Location;
-						if (beacon.Optional > 0) {
-							if (this.State == States.Standby) {
-								SwitchToP(States.Normal);
-							}
-							this.RoutePermanentPattern.SetLimit((double)beacon.Optional / 3.6, double.MinValue);
-						} else {
-							SwitchToP(States.Emergency);
-						}
-						break;
-					case 8:
-						// --- P downslope speed limit ---
-						{
-							int distance = beacon.Optional / 1000;
-							if (distance > 0) {
-								if (this.State == States.Standby) {
-									SwitchToP(States.Normal);
-								}
-								this.Position = this.Train.State.Location;
-								int speed = beacon.Optional % 1000;
-								this.DownslopePattern.SetLimit((double)speed / 3.6, this.Position + distance);
-							}
-						}
-						break;
-					case 9:
-						// --- P curve speed limit ---
-						{
-							int distance = beacon.Optional / 1000;
-							if (distance > 0) {
-								if (this.State == States.Standby) {
-									SwitchToP(States.Normal);
-								}
-								this.Position = this.Train.State.Location;
-								int speed = beacon.Optional % 1000;
-								this.CurvePattern.SetLimit((double)speed / 3.6, this.Position + distance);
-							}
-						}
-						break;
-					case 10:
-						// --- P temporary speed limit / P->S (IIYAMA style) ---
-						{
-							int left = beacon.Optional / 1000;
-							int right = beacon.Optional % 1000;
-							if (left != 0) {
-								if (this.State == States.Standby) {
-									SwitchToP(States.Normal);
-								}
-								this.Position = this.Train.State.Location;
-								this.TemporaryPattern.SetLimit((double)right / 3.6, this.Position + left);
-							} else if (left == 0 & right != 0) {
-								this.Position = this.Train.State.Location;
-								this.SwitchToAtsSxPosition = this.Position + right;
-							}
-						}
-						break;
-					case 16:
-						// --- P divergence limit released ---
-						if (beacon.Optional == 0) {
-							this.Position = this.Train.State.Location;
-							this.DivergencePattern.Clear();
-						}
-						break;
-					case 18:
-						// --- P downslope limit released ---
-						if (beacon.Optional == 0) {
-							this.Position = this.Train.State.Location;
-							this.DownslopePattern.Clear();
-						}
-						break;
-					case 19:
-						// --- P curve limit released ---
-						if (beacon.Optional == 0) {
-							this.Position = this.Train.State.Location;
-							this.CurvePattern.Clear();
-						}
-						break;
-					case 20:
-						// --- P temporary limit released ---
-						if (beacon.Optional == 0) {
-							this.Position = this.Train.State.Location;
-							this.TemporaryPattern.Clear();
-						}
-						break;
-					case 22:
-						// --- D-ATS-P signal pattern ---
-						if (beacon.Optional == 0) {
-							if (this.DAtsPSupported) {
-								this.Position = this.Train.State.Location;
-								if (this.DAtsPFirstSignalPattern.Position == double.MaxValue) {
-									this.DAtsPFirstSignalPattern.Position = this.Position;
-									this.DAtsPFirstSignalPattern.TargetSpeed = double.MaxValue;
-								}
-								this.DAtsPSecondSignalPattern.Position = this.Position + beacon.Signal.Distance;
-								if (this.State == States.Standby) {
-									SwitchToP(States.Normal);
-								}
-								if (!this.DAtsPActive) {
-									this.DAtsPActive = true;
-                                    SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-								}
-							}
-						}
-						break;
-					case 25:
-						// --- P/S system switch ---
-						if (beacon.Optional == 0) {
-							// --- Sx only ---
-							this.Position = this.Train.State.Location;
-							if (this.State == States.Normal | this.State == States.Pattern | this.State == States.Brake) {
-								SwitchToSx();
-							}
-						} else if (beacon.Optional == 1) {
-							// --- P only ---
-							this.Position = this.Train.State.Location;
-							if (this.State == States.Standby) {
-								SwitchToP(States.Normal);
-							}
-							if (this.AtsSxPMode) {
-								this.AtsSxPMode = false;
-                                SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-							}
-						} else if (beacon.Optional == 2) {
-							// --- simultaneous Sx/P ---
-							this.Position = this.Train.State.Location;
-							if (this.State == States.Standby) {
-								SwitchToP(States.Normal);
-							}
-							if (!this.AtsSxPMode) {
-								this.AtsSxPMode = true;
-                                SoundManager.Play(ATSPBell, 1.0, 1.0, false);
-							}
-						}
-						break;
-					case 42:
-						// --- D-ATS-P continuous transmission ---
-						if (beacon.Optional == 0) {
-							this.DAtsPContinuous = false;
-						} else if (beacon.Optional == 1) {
-							this.DAtsPContinuous = this.DAtsPSupported;
-						}
-						break;
-				}
-			}
-			switch (beacon.Type) {
-				case -16777213:
-					// --- compatibility temporary pattern ---
-					{
-						double limit = (double)(beacon.Optional & 4095) / 3.6;
-						double position = (beacon.Optional >> 12);
-						CompatibilityLimit item = new CompatibilityLimit(limit, position);
-						if (!this.CompatibilityLimits.Contains(item)) {
-							this.CompatibilityLimits.Add(item);
-						}
-					}
-					break;
-				case -16777212:
-					// --- compatibility permanent pattern ---
-					if (beacon.Optional == 0) {
-						this.CompatibilityPermanentPattern.Clear();
-					} else {
-						double limit = (double)beacon.Optional / 3.6;
-						this.CompatibilityPermanentPattern.SetLimit(limit, double.MinValue);
-					}
-					break;
-			}
-		}
+        private AtsP.Pattern TemporaryPattern;
 
-	}
+        private AtsP.Pattern RoutePermanentPattern;
+
+        internal AtsP.Pattern TrainPermanentPattern;
+
+        private AtsP.Pattern CompatibilityTemporaryPattern;
+
+        private AtsP.Pattern CompatibilityPermanentPattern;
+
+        private AtsP.Pattern[] Patterns;
+
+        internal double DurationOfInitialization = 3;
+
+        internal double DurationOfBrakeRelease = 60;
+
+        internal double DesignDeceleration = 0.679166666666667;
+
+        internal double BrakePatternDelay = 0.5;
+
+        internal double BrakePatternOffset;
+
+        internal double BrakePatternTolerance;
+
+        internal double WarningPatternDelay = 5.5;
+
+        internal double WarningPatternOffset = 50;
+
+        internal double WarningPatternTolerance = -1.38888888888889;
+
+        internal double ReleaseSpeed = 4.16666666666667;
+
+        internal AtsP(Train train)
+        {
+            this.Train = train;
+            this.State = AtsP.States.Disabled;
+            this.AtsSxPMode = false;
+            this.InitializationCountdown = 0;
+            this.SwitchToAtsSxPosition = double.MaxValue;
+            this.CompatibilityLimits = new List<AtsP.CompatibilityLimit>();
+            this.CompatibilityLimitPointer = 0;
+            this.DAtsPSupported = false;
+            this.DAtsPActive = false;
+            this.DAtsPContinuous = false;
+            this.SignalPatterns = new AtsP.Pattern[10];
+            for (int i = 0; i < (int)this.SignalPatterns.Length; i++)
+            {
+                this.SignalPatterns[i] = new AtsP.Pattern(this);
+            }
+            this.DivergencePattern = new AtsP.Pattern(this);
+            this.DownslopePattern = new AtsP.Pattern(this);
+            this.CurvePattern = new AtsP.Pattern(this);
+            this.TemporaryPattern = new AtsP.Pattern(this);
+            this.RoutePermanentPattern = new AtsP.Pattern(this);
+            this.TrainPermanentPattern = new AtsP.Pattern(this);
+            this.CompatibilityTemporaryPattern = new AtsP.Pattern(this);
+            this.CompatibilityPermanentPattern = new AtsP.Pattern(this);
+            this.DAtsPZerothSignalPattern = new AtsP.Pattern(this);
+            this.DAtsPFirstSignalPattern = new AtsP.Pattern(this);
+            this.DAtsPSecondSignalPattern = new AtsP.Pattern(this);
+            List<AtsP.Pattern> patterns = new List<AtsP.Pattern>();
+            patterns.AddRange(this.SignalPatterns);
+            patterns.Add(this.DivergencePattern);
+            patterns.Add(this.DownslopePattern);
+            patterns.Add(this.CurvePattern);
+            patterns.Add(this.TemporaryPattern);
+            patterns.Add(this.RoutePermanentPattern);
+            patterns.Add(this.TrainPermanentPattern);
+            patterns.Add(this.CompatibilityTemporaryPattern);
+            patterns.Add(this.CompatibilityPermanentPattern);
+            patterns.Add(this.DAtsPZerothSignalPattern);
+            patterns.Add(this.DAtsPFirstSignalPattern);
+            patterns.Add(this.DAtsPSecondSignalPattern);
+            this.Patterns = patterns.ToArray();
+        }
+
+        internal override void Elapse(ElapseData data, ref bool blocking)
+        {
+            this.Blocked = blocking;
+            if (this.State == AtsP.States.Suppressed && data.Handles.BrakeNotch <= this.Train.Specs.BrakeNotches)
+            {
+                this.InitializationCountdown = this.DurationOfInitialization;
+                this.State = AtsP.States.Initializing;
+            }
+            if (this.State == AtsP.States.Initializing)
+            {
+                AtsP initializationCountdown = this;
+                initializationCountdown.InitializationCountdown = initializationCountdown.InitializationCountdown - data.ElapsedTime.Seconds;
+                if (this.InitializationCountdown <= 0)
+                {
+                    this.State = AtsP.States.Standby;
+                    this.BrakeRelease = false;
+                    this.SwitchToAtsSxPosition = double.MaxValue;
+                    AtsP.Pattern[] patterns = this.Patterns;
+                    for (int i = 0; i < (int)patterns.Length; i++)
+                    {
+                        AtsP.Pattern pattern = patterns[i];
+                        if (Math.Abs(data.Vehicle.Speed.MetersPerSecond) >= pattern.WarningPattern)
+                        {
+                            pattern.Clear();
+                        }
+                    }
+                    if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                    {
+                        SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                    }
+                }
+            }
+            if (this.BrakeRelease)
+            {
+                AtsP brakeReleaseCountdown = this;
+                brakeReleaseCountdown.BrakeReleaseCountdown = brakeReleaseCountdown.BrakeReleaseCountdown - data.ElapsedTime.Seconds;
+                if (this.BrakeReleaseCountdown <= 0)
+                {
+                    this.BrakeRelease = false;
+                    if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                    {
+                        SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                    }
+                }
+            }
+            if (this.State != AtsP.States.Disabled & this.State != AtsP.States.Initializing)
+            {
+                AtsP position = this;
+                position.Position = position.Position + data.Vehicle.Speed.MetersPerSecond * data.ElapsedTime.Seconds;
+            }
+            if (!blocking)
+            {
+                if (this.DAtsPSupported && this.DAtsPFirstSignalPattern.Position - this.Train.State.Location < 0)
+                {
+                    this.DAtsPZerothSignalPattern.Position = this.DAtsPFirstSignalPattern.Position;
+                    this.DAtsPZerothSignalPattern.TargetSpeed = this.DAtsPFirstSignalPattern.TargetSpeed;
+                    this.DAtsPFirstSignalPattern.Position = this.DAtsPSecondSignalPattern.Position;
+                    this.DAtsPFirstSignalPattern.TargetSpeed = this.DAtsPSecondSignalPattern.TargetSpeed;
+                    this.DAtsPSecondSignalPattern.Position = double.MaxValue;
+                    this.DAtsPSecondSignalPattern.TargetSpeed = double.MaxValue;
+                }
+                if (this.DAtsPActive & this.DAtsPContinuous)
+                {
+                    switch (this.DAtsPAspect)
+                    {
+                        case 1:
+                            {
+                                this.DAtsPFirstSignalPattern.TargetSpeed = 6.94444444444444;
+                                break;
+                            }
+                        case 2:
+                            {
+                                this.DAtsPFirstSignalPattern.TargetSpeed = 12.5;
+                                break;
+                            }
+                        case 3:
+                            {
+                                this.DAtsPFirstSignalPattern.TargetSpeed = 20.8333333333333;
+                                break;
+                            }
+                        case 4:
+                        case 5:
+                        case 6:
+                            {
+                                this.DAtsPFirstSignalPattern.TargetSpeed = double.MaxValue;
+                                break;
+                            }
+                        default:
+                            {
+                                this.DAtsPFirstSignalPattern.TargetSpeed = 0;
+                                break;
+                            }
+                    }
+                    if (this.DAtsPZerothSignalPattern.TargetSpeed < this.DAtsPFirstSignalPattern.TargetSpeed)
+                    {
+                        this.DAtsPZerothSignalPattern.TargetSpeed = this.DAtsPFirstSignalPattern.TargetSpeed;
+                    }
+                }
+                if (this.State == AtsP.States.Normal | this.State == AtsP.States.Pattern | this.State == AtsP.States.Brake)
+                {
+                    bool flag = false;
+                    bool flag1 = false;
+                    bool flag2 = true;
+                    if (this.DivergencePattern.Position > double.MinValue & this.DivergencePattern.Position < double.MaxValue && Math.Abs(data.Vehicle.Speed.MetersPerSecond) < this.DivergencePattern.BrakePattern && this.DivergencePattern.Position - this.Position < -50)
+                    {
+                        this.DivergencePattern.Clear();
+                    }
+                    this.UpdateCompatibilityTemporarySpeedPattern();
+                    AtsP.Pattern[] patternArray = this.Patterns;
+                    for (int j = 0; j < (int)patternArray.Length; j++)
+                    {
+                        AtsP.Pattern pattern1 = patternArray[j];
+                        pattern1.Perform(this, data);
+                        if (Math.Abs(data.Vehicle.Speed.MetersPerSecond) >= pattern1.WarningPattern - 0.277777777777778)
+                        {
+                            flag2 = false;
+                        }
+                        if (Math.Abs(data.Vehicle.Speed.MetersPerSecond) >= pattern1.WarningPattern)
+                        {
+                            flag1 = true;
+                        }
+                        if (Math.Abs(data.Vehicle.Speed.MetersPerSecond) >= pattern1.BrakePattern)
+                        {
+                            flag = true;
+                        }
+                    }
+                    if (this.BrakeRelease)
+                    {
+                        flag = false;
+                    }
+                    if (flag & this.State != AtsP.States.Brake)
+                    {
+                        this.State = AtsP.States.Brake;
+                        if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                        {
+                            SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                        }
+                    }
+                    else if (flag1 & this.State == AtsP.States.Normal)
+                    {
+                        this.State = AtsP.States.Pattern;
+                        if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                        {
+                            SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                        }
+                    }
+                    else if (!flag & !flag1 & flag2 & (this.State == AtsP.States.Pattern | this.State == AtsP.States.Brake))
+                    {
+                        this.State = AtsP.States.Normal;
+                        if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                        {
+                            SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                        }
+                    }
+                    if (this.State == AtsP.States.Brake && data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches)
+                    {
+                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
+                    }
+                    if (this.Position > this.SwitchToAtsSxPosition & this.State != AtsP.States.Brake & this.State != AtsP.States.Service & this.State != AtsP.States.Emergency)
+                    {
+                        this.SwitchToSx();
+                    }
+                }
+                else if (this.State == AtsP.States.Service)
+                {
+                    if (data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches)
+                    {
+                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
+                    }
+                }
+                else if (this.State == AtsP.States.Emergency)
+                {
+                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+                }
+                if (!this.AtsSxPMode & (this.State == AtsP.States.Normal | this.State == AtsP.States.Pattern | this.State == AtsP.States.Brake | this.State == AtsP.States.Service | this.State == AtsP.States.Emergency))
+                {
+                    blocking = true;
+                }
+                if (this.State != AtsP.States.Disabled & this.Train.Doors != DoorStates.None)
+                {
+                    data.Handles.PowerNotch = 0;
+                }
+            }
+            else if (this.State != AtsP.States.Disabled & this.State != AtsP.States.Suppressed)
+            {
+                this.State = AtsP.States.Standby;
+            }
+            if (this.State != AtsP.States.Disabled & this.State != AtsP.States.Suppressed)
+            {
+                this.Train.Panel[2] = 1;
+                this.Train.Panel[259] = 1;
+            }
+            if (this.State == AtsP.States.Pattern | this.State == AtsP.States.Brake | this.State == AtsP.States.Service | this.State == AtsP.States.Emergency)
+            {
+                this.Train.Panel[3] = 1;
+                this.Train.Panel[260] = 1;
+            }
+            if (this.State == AtsP.States.Brake | this.State == AtsP.States.Service | this.State == AtsP.States.Emergency)
+            {
+                this.Train.Panel[5] = 1;
+                this.Train.Panel[262] = 1;
+            }
+            if (this.State != AtsP.States.Disabled & this.State != AtsP.States.Suppressed & this.State != AtsP.States.Standby)
+            {
+                this.Train.Panel[6] = 1;
+                this.Train.Panel[263] = 1;
+            }
+            if (this.State == AtsP.States.Initializing)
+            {
+                this.Train.Panel[7] = 1;
+                this.Train.Panel[264] = 1;
+            }
+            if (this.State == AtsP.States.Disabled)
+            {
+                this.Train.Panel[50] = 1;
+            }
+            if (this.State != AtsP.States.Disabled & this.State != AtsP.States.Suppressed & this.State != AtsP.States.Standby & this.BrakeRelease)
+            {
+                this.Train.Panel[4] = 1;
+                this.Train.Panel[261] = 1;
+            }
+            if (this.State == AtsP.States.Normal | this.State == AtsP.States.Pattern | this.State == AtsP.States.Brake | this.State == AtsP.States.Service | this.State == AtsP.States.Emergency)
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int k = 0; k < (int)this.SignalPatterns.Length; k++)
+                {
+                    this.SignalPatterns[k].AddToStringBuilder(string.Concat(k.ToString(), ":"), stringBuilder);
+                }
+                this.DivergencePattern.AddToStringBuilder("分岐/D:", stringBuilder);
+                this.TemporaryPattern.AddToStringBuilder("臨時/T:", stringBuilder);
+                this.CurvePattern.AddToStringBuilder("曲線/C:", stringBuilder);
+                this.DownslopePattern.AddToStringBuilder("勾配/S:", stringBuilder);
+                this.RoutePermanentPattern.AddToStringBuilder("P:", stringBuilder);
+                this.TrainPermanentPattern.AddToStringBuilder("M:", stringBuilder);
+                if (this.SwitchToAtsSxPosition != double.MaxValue)
+                {
+                    if (stringBuilder.Length != 0)
+                    {
+                        stringBuilder.Append(", ");
+                    }
+                    double switchToAtsSxPosition = this.SwitchToAtsSxPosition - this.Position;
+                    stringBuilder.Append(string.Concat("Sx@", switchToAtsSxPosition.ToString("0")));
+                }
+                if (stringBuilder.Length == 0)
+                {
+                    data.DebugMessage = this.State.ToString();
+                    return;
+                }
+                data.DebugMessage = string.Concat(this.State.ToString(), " - ", stringBuilder.ToString());
+            }
+        }
+
+        internal override void Initialize(InitializationModes mode)
+        {
+            if (mode != InitializationModes.OffEmergency)
+            {
+                this.State = AtsP.States.Standby;
+            }
+            else
+            {
+                this.State = AtsP.States.Suppressed;
+            }
+            AtsP.Pattern[] patterns = this.Patterns;
+            for (int i = 0; i < (int)patterns.Length; i++)
+            {
+                AtsP.Pattern pattern = patterns[i];
+                if (Math.Abs(this.Train.State.Speed.MetersPerSecond) >= pattern.WarningPattern)
+                {
+                    pattern.Clear();
+                }
+            }
+        }
+
+        internal override void KeyDown(VirtualKeys key)
+        {
+            VirtualKeys virtualKey = key;
+            switch (virtualKey)
+            {
+                case VirtualKeys.B1:
+                    {
+                        if (!((this.State == AtsP.States.Brake | this.State == AtsP.States.Service | this.State == AtsP.States.Emergency) & this.Train.Handles.Reverser == 0 & this.Train.Handles.PowerNotch == 0 & this.Train.Handles.BrakeNotch >= this.Train.Specs.BrakeNotches))
+                        {
+                            break;
+                        }
+                        AtsP.Pattern[] patterns = this.Patterns;
+                        for (int i = 0; i < (int)patterns.Length; i++)
+                        {
+                            AtsP.Pattern pattern = patterns[i];
+                            if (Math.Abs(this.Train.State.Speed.MetersPerSecond) >= pattern.WarningPattern)
+                            {
+                                pattern.Clear();
+                            }
+                        }
+                        this.State = AtsP.States.Normal;
+                        if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                        {
+                            SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                        }
+                        return;
+                    }
+                case VirtualKeys.B2:
+                    {
+                        if (!((this.State == AtsP.States.Normal | this.State == AtsP.States.Pattern) & !this.BrakeRelease & this.DurationOfBrakeRelease > 0))
+                        {
+                            break;
+                        }
+                        this.BrakeRelease = true;
+                        this.BrakeReleaseCountdown = this.DurationOfBrakeRelease;
+                        if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                        {
+                            SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                        }
+                        return;
+                    }
+                default:
+                    {
+                        if (virtualKey != VirtualKeys.E)
+                        {
+                            return;
+                        }
+                        if (this.State == AtsP.States.Disabled)
+                        {
+                            this.State = AtsP.States.Suppressed;
+                            return;
+                        }
+                        this.State = AtsP.States.Disabled;
+                        break;
+                    }
+            }
+        }
+
+        internal override void SetBeacon(BeaconData beacon)
+        {
+            int num;
+            if (this.State != AtsP.States.Disabled & this.State != AtsP.States.Suppressed & this.State != AtsP.States.Initializing)
+            {
+                switch (beacon.Type)
+                {
+                    case 3:
+                    case 4:
+                    case 5:
+                        {
+                            this.Position = this.Train.State.Location;
+                            if (!(this.State != AtsP.States.Service & this.State != AtsP.States.Emergency))
+                            {
+                                break;
+                            }
+                            if (this.State == AtsP.States.Standby & beacon.Optional != -1)
+                            {
+                                this.SwitchToP(AtsP.States.Normal);
+                            }
+                            if (this.State == AtsP.States.Standby)
+                            {
+                                break;
+                            }
+                            if (!(beacon.Type == 3 & beacon.Optional >= 10 & beacon.Optional <= 19))
+                            {
+                                num = (!(beacon.Type == 3 & beacon.Optional >= 1 & beacon.Optional <= 9) ? 0 : beacon.Optional);
+                                double position = this.Position + beacon.Signal.Distance;
+                                bool flag = false;
+                                if (num != 0)
+                                {
+                                    flag = true;
+                                }
+                                else if (this.SignalPatterns[num].Position == double.MaxValue)
+                                {
+                                    flag = true;
+                                }
+                                else if (position > this.SignalPatterns[num].Position - 30)
+                                {
+                                    flag = true;
+                                }
+                                if (!flag)
+                                {
+                                    break;
+                                }
+                                if (!(beacon.Signal.Aspect == 0 | beacon.Signal.Aspect >= 10))
+                                {
+                                    this.SignalPatterns[num].SetGreenSignal(position);
+                                    break;
+                                }
+                                else
+                                {
+                                    this.SignalPatterns[num].SetRedSignal(position);
+                                    if (!(beacon.Type != 3 & beacon.Signal.Distance < 50 & !this.BrakeRelease))
+                                    {
+                                        break;
+                                    }
+                                    if (beacon.Type != 4)
+                                    {
+                                        this.SwitchToP(AtsP.States.Service);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        this.SwitchToP(AtsP.States.Emergency);
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                this.SignalPatterns[beacon.Optional - 10].Clear();
+                                break;
+                            }
+                        }
+                    case 6:
+                        {
+                            int optional = beacon.Optional / 1000;
+                            if (optional <= 0)
+                            {
+                                break;
+                            }
+                            if (this.State == AtsP.States.Standby)
+                            {
+                                this.SwitchToP(AtsP.States.Normal);
+                            }
+                            this.Position = this.Train.State.Location;
+                            int optional1 = beacon.Optional % 1000;
+                            this.DivergencePattern.SetLimit((double)optional1 / 3.6, this.Position + (double)optional);
+                            break;
+                        }
+                    case 7:
+                        {
+                            this.Position = this.Train.State.Location;
+                            if (beacon.Optional <= 0)
+                            {
+                                this.SwitchToP(AtsP.States.Emergency);
+                                break;
+                            }
+                            else
+                            {
+                                if (this.State == AtsP.States.Standby)
+                                {
+                                    this.SwitchToP(AtsP.States.Normal);
+                                }
+                                this.RoutePermanentPattern.SetLimit((double)beacon.Optional / 3.6, double.MinValue);
+                                break;
+                            }
+                        }
+                    case 8:
+                        {
+                            int num1 = beacon.Optional / 1000;
+                            if (num1 <= 0)
+                            {
+                                break;
+                            }
+                            if (this.State == AtsP.States.Standby)
+                            {
+                                this.SwitchToP(AtsP.States.Normal);
+                            }
+                            this.Position = this.Train.State.Location;
+                            int optional2 = beacon.Optional % 1000;
+                            this.DownslopePattern.SetLimit((double)optional2 / 3.6, this.Position + (double)num1);
+                            break;
+                        }
+                    case 9:
+                        {
+                            int num2 = beacon.Optional / 1000;
+                            if (num2 <= 0)
+                            {
+                                break;
+                            }
+                            if (this.State == AtsP.States.Standby)
+                            {
+                                this.SwitchToP(AtsP.States.Normal);
+                            }
+                            this.Position = this.Train.State.Location;
+                            int optional3 = beacon.Optional % 1000;
+                            this.CurvePattern.SetLimit((double)optional3 / 3.6, this.Position + (double)num2);
+                            break;
+                        }
+                    case 10:
+                        {
+                            int num3 = beacon.Optional / 1000;
+                            int optional4 = beacon.Optional % 1000;
+                            if (num3 == 0)
+                            {
+                                if (!(num3 == 0 & optional4 != 0))
+                                {
+                                    break;
+                                }
+                                this.Position = this.Train.State.Location;
+                                this.SwitchToAtsSxPosition = this.Position + (double)optional4;
+                                break;
+                            }
+                            else
+                            {
+                                if (this.State == AtsP.States.Standby)
+                                {
+                                    this.SwitchToP(AtsP.States.Normal);
+                                }
+                                this.Position = this.Train.State.Location;
+                                this.TemporaryPattern.SetLimit((double)optional4 / 3.6, this.Position + (double)num3);
+                                break;
+                            }
+                        }
+                    case 16:
+                        {
+                            if (beacon.Optional != 0)
+                            {
+                                break;
+                            }
+                            this.Position = this.Train.State.Location;
+                            this.DivergencePattern.Clear();
+                            break;
+                        }
+                    case 18:
+                        {
+                            if (beacon.Optional != 0)
+                            {
+                                break;
+                            }
+                            this.Position = this.Train.State.Location;
+                            this.DownslopePattern.Clear();
+                            break;
+                        }
+                    case 19:
+                        {
+                            if (beacon.Optional != 0)
+                            {
+                                break;
+                            }
+                            this.Position = this.Train.State.Location;
+                            this.CurvePattern.Clear();
+                            break;
+                        }
+                    case 20:
+                        {
+                            if (beacon.Optional != 0)
+                            {
+                                break;
+                            }
+                            this.Position = this.Train.State.Location;
+                            this.TemporaryPattern.Clear();
+                            break;
+                        }
+                    case 25:
+                        {
+                            if (beacon.Optional == 0)
+                            {
+                                this.Position = this.Train.State.Location;
+                                if (!(this.State == AtsP.States.Normal | this.State == AtsP.States.Pattern | this.State == AtsP.States.Brake | this.State == AtsP.States.Service | this.State == AtsP.States.Emergency))
+                                {
+                                    break;
+                                }
+                                this.SwitchToAtsSxPosition = this.Position;
+                                break;
+                            }
+                            else if (beacon.Optional != 1)
+                            {
+                                if (beacon.Optional != 2)
+                                {
+                                    break;
+                                }
+                                this.Position = this.Train.State.Location;
+                                if (this.State == AtsP.States.Standby)
+                                {
+                                    this.SwitchToP(AtsP.States.Normal);
+                                }
+                                if (this.AtsSxPMode)
+                                {
+                                    break;
+                                }
+                                this.AtsSxPMode = true;
+                                if (!(this.Train.AtsSx != null & !this.Blocked))
+                                {
+                                    break;
+                                }
+                                if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                                {
+                                    SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                                }
+                                break;
+                            }
+                            else
+                            {
+                                this.Position = this.Train.State.Location;
+                                if (this.State == AtsP.States.Standby)
+                                {
+                                    this.SwitchToP(AtsP.States.Normal);
+                                }
+                                if (!this.AtsSxPMode)
+                                {
+                                    break;
+                                }
+                                this.AtsSxPMode = false;
+                                if (!(this.Train.AtsSx != null & !this.Blocked))
+                                {
+                                    break;
+                                }
+                                if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                                {
+                                    SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                                }
+                                break;
+                            }
+                        }
+                }
+            }
+            switch (beacon.Type)
+            {
+                case -16777213:
+                    {
+                        double num4 = (double)(beacon.Optional & 4095) / 3.6;
+                        double optional5 = (double)(beacon.Optional >> 12);
+                        AtsP.CompatibilityLimit compatibilityLimit = new AtsP.CompatibilityLimit(num4, optional5);
+                        if (this.CompatibilityLimits.Contains(compatibilityLimit))
+                        {
+                            break;
+                        }
+                        this.CompatibilityLimits.Add(compatibilityLimit);
+                        return;
+                    }
+                case -16777212:
+                    {
+                        if (beacon.Optional == 0)
+                        {
+                            this.CompatibilityPermanentPattern.Clear();
+                            return;
+                        }
+                        double num5 = (double)beacon.Optional / 3.6;
+                        this.CompatibilityPermanentPattern.SetLimit(num5, double.MinValue);
+                        break;
+                    }
+                default:
+                    {
+                        return;
+                    }
+            }
+        }
+
+        internal override void SetSignal(SignalData[] signal)
+        {
+            if ((int)signal.Length < 2)
+            {
+                this.DAtsPAspect = 5;
+                return;
+            }
+            this.DAtsPAspect = signal[1].Aspect;
+        }
+
+        private void SwitchToP(AtsP.States state)
+        {
+            if (this.State == AtsP.States.Standby)
+            {
+                if (this.Train.AtsSx == null || this.Train.AtsSx.State != AtsSx.States.Emergency)
+                {
+                    this.State = state;
+                    if (!this.Blocked)
+                    {
+                        if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                        {
+                            SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                        }
+                        return;
+                    }
+                }
+            }
+            else if (state == AtsP.States.Service | state == AtsP.States.Emergency)
+            {
+                if (this.State != AtsP.States.Brake & this.State != AtsP.States.Service & this.State != AtsP.States.Emergency && !this.Blocked)
+                {
+                    if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                    {
+                        SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                    }
+                }
+                this.State = state;
+            }
+        }
+
+        private void SwitchToSx()
+        {
+            if (this.Train.AtsSx != null)
+            {
+                AtsP.Pattern[] patterns = this.Patterns;
+                for (int i = 0; i < (int)patterns.Length; i++)
+                {
+                    patterns[i].Clear();
+                }
+                this.State = AtsP.States.Standby;
+                if (!this.Blocked)
+                {
+                    if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                    {
+                        SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                    }
+                }
+                this.Train.AtsSx.State = AtsSx.States.Chime;
+            }
+            else if (this.State != AtsP.States.Emergency)
+            {
+                this.State = AtsP.States.Emergency;
+                if (this.State != AtsP.States.Brake & this.State != AtsP.States.Service && !this.Blocked)
+                {
+                    if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
+                    {
+                        SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
+                    }
+                }
+            }
+            this.SwitchToAtsSxPosition = double.MaxValue;
+            this.DAtsPActive = false;
+        }
+
+        private void UpdateCompatibilityTemporarySpeedPattern()
+        {
+            if (this.CompatibilityLimits.Count != 0)
+            {
+                if (this.CompatibilityTemporaryPattern.Position != double.MaxValue)
+                {
+                    if (this.CompatibilityTemporaryPattern.BrakePattern < this.Train.State.Speed.MetersPerSecond)
+                    {
+                        return;
+                    }
+                    double position = this.CompatibilityTemporaryPattern.Position - this.Train.State.Location;
+                    if (position >= -50 & position <= 0)
+                    {
+                        return;
+                    }
+                }
+                while (this.CompatibilityLimitPointer > 0)
+                {
+                    if (this.CompatibilityLimits[this.CompatibilityLimitPointer].Location > this.Train.State.Location)
+                    {
+                        AtsP compatibilityLimitPointer = this;
+                        compatibilityLimitPointer.CompatibilityLimitPointer = compatibilityLimitPointer.CompatibilityLimitPointer - 1;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                while (this.CompatibilityLimitPointer < this.CompatibilityLimits.Count - 1 && this.CompatibilityLimits[this.CompatibilityLimitPointer + 1].Location <= this.Train.State.Location)
+                {
+                    AtsP atsP = this;
+                    atsP.CompatibilityLimitPointer = atsP.CompatibilityLimitPointer + 1;
+                }
+                if (this.CompatibilityLimitPointer == 0 && this.CompatibilityLimits[0].Location > this.Train.State.Location)
+                {
+                    this.CompatibilityTemporaryPattern.SetLimit(this.CompatibilityLimits[0].Limit, this.CompatibilityLimits[0].Location);
+                    return;
+                }
+                if (this.CompatibilityLimitPointer < this.CompatibilityLimits.Count - 1)
+                {
+                    this.CompatibilityTemporaryPattern.SetLimit(this.CompatibilityLimits[this.CompatibilityLimitPointer + 1].Limit, this.CompatibilityLimits[this.CompatibilityLimitPointer + 1].Location);
+                    return;
+                }
+                this.CompatibilityTemporaryPattern.Clear();
+            }
+        }
+
+        private struct CompatibilityLimit
+        {
+            internal double Limit;
+
+            internal double Location;
+
+            internal CompatibilityLimit(double limit, double location)
+            {
+                this.Limit = limit;
+                this.Location = location;
+            }
+        }
+
+        internal class Pattern
+        {
+            internal AtsP Device;
+
+            internal double Position;
+
+            internal double WarningPattern;
+
+            internal double BrakePattern;
+
+            internal double TargetSpeed;
+
+            internal double Gradient;
+
+            internal bool Persistent;
+
+            internal Pattern(AtsP device)
+            {
+                this.Device = device;
+                this.Position = double.MaxValue;
+                this.WarningPattern = double.MaxValue;
+                this.BrakePattern = double.MaxValue;
+                this.TargetSpeed = double.MaxValue;
+                this.Gradient = 0;
+                this.Persistent = false;
+            }
+
+            internal void AddToStringBuilder(string prefix, StringBuilder builder)
+            {
+                string str;
+                if (this.Position >= double.MaxValue | this.TargetSpeed >= double.MaxValue)
+                {
+                    return;
+                }
+                if (this.Position <= double.MinValue)
+                {
+                    double brakePattern = 3.6 * this.BrakePattern;
+                    string str1 = string.Concat(prefix, brakePattern.ToString("0"));
+                    if (builder.Length != 0)
+                    {
+                        builder.Append(", ");
+                    }
+                    builder.Append(str1);
+                    return;
+                }
+                double position = this.Position - this.Device.Position;
+                if (position > 0)
+                {
+                    string[] strArrays = new string[] { prefix, null, null, null, null, null };
+                    double targetSpeed = 3.6 * this.TargetSpeed;
+                    strArrays[1] = targetSpeed.ToString("0");
+                    strArrays[2] = "(";
+                    double num = 3.6 * this.BrakePattern;
+                    strArrays[3] = num.ToString("0");
+                    strArrays[4] = ")@";
+                    strArrays[5] = position.ToString("0");
+                    str = string.Concat(strArrays);
+                }
+                else
+                {
+                    double brakePattern1 = 3.6 * this.BrakePattern;
+                    str = string.Concat(prefix, brakePattern1.ToString("0"));
+                }
+                if (builder.Length != 0)
+                {
+                    builder.Append(", ");
+                }
+                builder.Append(str);
+            }
+
+            internal void Clear()
+            {
+                if (!this.Persistent)
+                {
+                    this.Position = double.MaxValue;
+                    this.WarningPattern = double.MaxValue;
+                    this.BrakePattern = double.MaxValue;
+                    this.TargetSpeed = double.MaxValue;
+                    this.Gradient = 0;
+                }
+            }
+
+            internal void Perform(AtsP system, ElapseData data)
+            {
+                if (this.Position == double.MaxValue | this.TargetSpeed == double.MaxValue)
+                {
+                    this.WarningPattern = double.MaxValue;
+                    this.BrakePattern = double.MaxValue;
+                    return;
+                }
+                if (this.Position != double.MinValue)
+                {
+                    double designDeceleration = this.Device.DesignDeceleration + 9.81 * this.Gradient;
+                    double position = this.Position - system.Position;
+                    double warningPatternOffset = 2 * designDeceleration * (position - this.Device.WarningPatternOffset) + designDeceleration * designDeceleration * this.Device.WarningPatternDelay * this.Device.WarningPatternDelay + this.TargetSpeed * this.TargetSpeed;
+                    if (warningPatternOffset > 0)
+                    {
+                        this.WarningPattern = Math.Sqrt(warningPatternOffset) - designDeceleration * this.Device.WarningPatternDelay;
+                    }
+                    else
+                    {
+                        this.WarningPattern = -designDeceleration * this.Device.WarningPatternDelay;
+                    }
+                    if (this.TargetSpeed > 0.277777777777778)
+                    {
+                        if (this.WarningPattern < this.TargetSpeed + this.Device.WarningPatternTolerance)
+                        {
+                            this.WarningPattern = this.TargetSpeed + this.Device.WarningPatternTolerance;
+                        }
+                    }
+                    else if (this.WarningPattern < this.TargetSpeed)
+                    {
+                        this.WarningPattern = this.TargetSpeed;
+                    }
+                    double brakePatternOffset = 2 * designDeceleration * (position - this.Device.BrakePatternOffset) + designDeceleration * designDeceleration * this.Device.BrakePatternDelay * this.Device.BrakePatternDelay + this.TargetSpeed * this.TargetSpeed;
+                    if (brakePatternOffset > 0)
+                    {
+                        this.BrakePattern = Math.Sqrt(brakePatternOffset) - designDeceleration * this.Device.BrakePatternDelay;
+                    }
+                    else
+                    {
+                        this.BrakePattern = -designDeceleration * this.Device.BrakePatternDelay;
+                    }
+                    if (this.TargetSpeed > 0.277777777777778)
+                    {
+                        if (this.BrakePattern < this.TargetSpeed + this.Device.BrakePatternTolerance)
+                        {
+                            this.BrakePattern = this.TargetSpeed + this.Device.BrakePatternTolerance;
+                        }
+                    }
+                    else if (this.BrakePattern < this.TargetSpeed)
+                    {
+                        this.BrakePattern = this.TargetSpeed;
+                    }
+                    if (this.BrakePattern < this.Device.ReleaseSpeed)
+                    {
+                        this.BrakePattern = this.Device.ReleaseSpeed;
+                    }
+                }
+                else
+                {
+                    if (this.TargetSpeed <= 0.277777777777778)
+                    {
+                        this.WarningPattern = this.TargetSpeed;
+                        this.BrakePattern = this.TargetSpeed;
+                    }
+                    else
+                    {
+                        this.WarningPattern = this.TargetSpeed + this.Device.WarningPatternTolerance;
+                        this.BrakePattern = this.TargetSpeed + this.Device.BrakePatternTolerance;
+                    }
+                    if (this.BrakePattern < this.Device.ReleaseSpeed)
+                    {
+                        this.BrakePattern = this.Device.ReleaseSpeed;
+                        return;
+                    }
+                }
+            }
+
+            internal void SetGradient(double gradient)
+            {
+                this.Gradient = gradient;
+            }
+
+            internal void SetGreenSignal(double position)
+            {
+                this.Position = position;
+                this.TargetSpeed = double.MaxValue;
+            }
+
+            internal void SetLimit(double speed, double position)
+            {
+                this.Position = position;
+                this.TargetSpeed = speed;
+            }
+
+            internal void SetPersistentLimit(double speed)
+            {
+                this.Position = double.MinValue;
+                this.TargetSpeed = speed;
+                this.Persistent = true;
+            }
+
+            internal void SetRedSignal(double position)
+            {
+                this.Position = position;
+                this.TargetSpeed = 0;
+            }
+        }
+
+        internal enum States
+        {
+            Disabled,
+            Suppressed,
+            Initializing,
+            Standby,
+            Normal,
+            Pattern,
+            Brake,
+            Service,
+            Emergency
+        }
+    }
 }

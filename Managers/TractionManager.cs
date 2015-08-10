@@ -787,7 +787,7 @@ namespace Plugin
                     return;
                 }
                 //Do not reset brake application if ATC is currently demanding one
-                if (Train.Atc != null && (Train.Atc.State == Atc.States.Service || Train.Atc.State == Atc.States.Emergency))
+                if (Train.Atc != null && (Train.Atc.State == Atc.States.ServiceHalf || Train.Atc.State == Atc.States.ServiceFull || Train.Atc.State == Atc.States.Emergency))
                 {
                     return;
                 }

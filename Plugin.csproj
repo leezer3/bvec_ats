@@ -109,6 +109,7 @@
     <Compile Include="Animation\Animations.cs" />
     <Compile Include="Animation\Animations.DoorLightStates.cs" />
     <Compile Include="SafetySystems\IE\CAWS.cs" />
+    <Compile Include="SafetySystems\JA\CommonSounds.cs" />
     <Compile Include="SafetySystems\JA\Eb.cs" />
     <Compile Include="Functions\ConfigurationParser.cs" />
     <Compile Include="Functions\DebugLogger.cs" />

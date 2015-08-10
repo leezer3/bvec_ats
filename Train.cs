@@ -247,7 +247,7 @@ namespace Plugin {
             this.AWS = new AWS(this);
             this.CAWS = new CAWS(this);
             this.TPWS = new TPWS(this);
-            
+            //this.Calling = new Calling(this, playSound);
             this.Driver = new AI_Driver(this);
             this.DebugLogger = new DebugLogger();
             this.SCMT = new SCMT(this);
@@ -346,6 +346,27 @@ namespace Plugin {
 			                    this.Windscreen.enabled = true;
                                 DebugLogger.LogMessage("Windscreen enabled");
 			                    break;
+                            case "ats-sx":
+                                this.AtsSx = new AtsSx(this);
+                                break;
+                            case "ats-ps":
+                                this.AtsPs = new AtsPs(this);
+                                break;
+                            case "ats-p":
+                                this.AtsP = new AtsP(this);
+                                break;
+                            case "atc":
+                                this.Atc = new Atc(this);
+                                break;
+                            case "eb":
+                                this.Eb = new Eb(this);
+                                break;
+                            case "tasc":
+                                this.Tasc = new Tasc(this);
+                                break;
+                            case "ato":
+                                this.Ato = new Ato(this);
+                                break;
 			                default:
 			                    throw new InvalidDataException("The section " + line[0] + " is not supported.");
 			            }
@@ -1251,6 +1272,152 @@ namespace Plugin {
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
 			                        break;
+
+                                case "ats-sx":
+                                    switch (key)
+                                    {
+                                        case "durationofalarm":
+                                            this.AtsSx.DurationOfAlarm = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "durationofinitialization":
+                                            this.AtsSx.DurationOfInitialization = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "durationofspeedcheck":
+                                            this.AtsSx.DurationOfSpeedCheck = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        default:
+                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
+                                    }
+                                    break;
+                                case "ats-ps":
+                                    switch (key)
+                                    {
+                                        case "maximumspeed":
+                                            this.AtsPs.TrainPermanentPattern.SetPersistentLimit((1.0 / 3.6) * double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture));
+                                            break;
+                                        default:
+                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
+                                    }
+                                    break;
+                                case "ats-p":
+                                    switch (key)
+                                    {
+                                        case "durationofinitialization":
+                                            this.AtsP.DurationOfInitialization = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "durationofbrakerelease":
+                                            this.AtsP.DurationOfBrakeRelease = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "designdeceleration":
+                                            this.AtsP.DesignDeceleration = (1.0 / 3.6) * double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "brakepatterndelay":
+                                            this.AtsP.BrakePatternDelay = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "brakepatternoffset":
+                                        case "signaloffset":
+                                            this.AtsP.BrakePatternOffset = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "brakepatterntolerance":
+                                            this.AtsP.BrakePatternTolerance = (1.0 / 3.6) * double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "warningpatterndelay":
+                                        case "reactiondelay":
+                                            this.AtsP.WarningPatternDelay = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "warningpatternoffset":
+                                            this.AtsP.WarningPatternOffset = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "warningpatterntolerance":
+                                            this.AtsP.WarningPatternTolerance = (1.0 / 3.6) * double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "patternspeeddifference":
+                                            this.AtsP.WarningPatternTolerance = (-1.0 / 3.6) * double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "releasespeed":
+                                            this.AtsP.ReleaseSpeed = (1.0 / 3.6) * double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "maximumspeed":
+                                            this.AtsP.TrainPermanentPattern.SetPersistentLimit((1.0 / 3.6) * double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture));
+                                            break;
+                                        case "d-ats-p":
+                                            this.AtsP.DAtsPSupported = value.Equals("true", StringComparison.OrdinalIgnoreCase);
+                                            break;
+                                        default:
+                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
+                                    }
+                                    break;
+                                case "atc":
+                                    switch (key)
+                                    {
+                                        case "automaticswitch":
+                                            this.Atc.AutomaticSwitch = value.Equals("true", StringComparison.OrdinalIgnoreCase);
+                                            break;
+                                        case "emergencyoperation":
+                                            if (value.Equals("false", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                this.Atc.EmergencyOperationSignal = null;
+                                            }
+                                            else
+                                            {
+                                                double limit = (1.0 / 3.6) * double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                                if (limit <= 0.0)
+                                                {
+                                                    this.Atc.EmergencyOperationSignal = null;
+                                                }
+                                                else
+                                                {
+                                                    this.Atc.EmergencyOperationSignal = Atc.Signal.CreateEmergencyOperationSignal(limit);
+                                                }
+                                            }
+                                            break;
+                                        default:
+                                            int aspect;
+                                            if (int.TryParse(key, NumberStyles.Integer, CultureInfo.InvariantCulture, out aspect))
+                                            {
+                                                if (aspect >= 10)
+                                                {
+                                                    Atc.Signal signal = ParseAtcCode(aspect, value);
+                                                    if (signal != null)
+                                                    {
+                                                        this.Atc.Signals.Add(signal);
+                                                        break;
+                                                    }
+                                                    else
+                                                    {
+                                                        throw new InvalidDataException("The ATC code " + value + " is not supported.");
+                                                    }
+                                                }
+                                            }
+                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
+                                    }
+                                    break;
+                                case "eb":
+                                    switch (key)
+                                    {
+                                        case "timeuntilbell":
+                                            this.Eb.TimeUntilBell = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "timeuntilbrake":
+                                            this.Eb.TimeUntilBrake = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        case "speedthreshold":
+                                            this.Eb.SpeedThreshold = double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        default:
+                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
+                                    }
+                                    break;
+                                case "tasc":
+                                    switch (key)
+                                    {
+                                        case "designdeceleration":
+                                            this.Tasc.DesignDeceleration = (1.0 / 3.6) * double.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture);
+                                            break;
+                                        default:
+                                            throw new InvalidDataException("The parameter " + key + " is not supported.");
+                                    }
+                                    break;
                                     //Handles some global settings
                                case "settings":
 			                        switch (key)
@@ -1502,10 +1669,299 @@ namespace Plugin {
             {
                 devices.Add(this.Animations);
             }
+            if (this.Ato != null)
+            {
+                devices.Add(this.Ato);
+            }
+            if (this.Tasc != null)
+            {
+                devices.Add(this.Tasc);
+            }
+            if (this.Eb != null)
+            {
+                devices.Add(this.Eb);
+            }
+            if (this.Atc != null)
+            {
+                devices.Add(this.Atc);
+            }
+            if (this.AtsP != null)
+            {
+                devices.Add(this.AtsP);
+            }
+            if (this.AtsPs != null)
+            {
+                devices.Add(this.AtsPs);
+                if (this.AtsSx == null)
+                {
+                    this.AtsSx = new AtsSx(this);
+                }
+            }
+            if (this.AtsSx != null)
+            {
+                devices.Add(this.AtsSx);
+            }
 			this.Devices = devices.ToArray();
 		}
-		
-		
+
+        /// <summary>Parses an ATC code and returns the corresponding signal.</summary>
+        /// <param name="aspect">The aspect.</param>
+        /// <param name="code">The code.</param>
+        /// <returns>The signal corresponding to the code, or a null reference if the code is invalid.</returns>
+        private Atc.Signal ParseAtcCode(int aspect, string code)
+        {
+            Atc.SignalIndicators signalIndicator;
+            double num;
+            double num1;
+            double num2;
+            double num3;
+            double num4;
+            double num5;
+            double num6;
+            int num7;
+            if (code == "S01")
+            {
+                return new Atc.Signal(aspect, Atc.SignalIndicators.Red, 0);
+            }
+            if (code == "01")
+            {
+                return new Atc.Signal(aspect, Atc.SignalIndicators.Red, 0);
+            }
+            if (code == "S02E")
+            {
+                return new Atc.Signal(aspect, Atc.SignalIndicators.Red, -1);
+            }
+            if (code == "02E")
+            {
+                return new Atc.Signal(aspect, Atc.SignalIndicators.Red, -1);
+            }
+            if (code == "02")
+            {
+                return Atc.Signal.CreateNoSignal(aspect);
+            }
+            if (code == "03")
+            {
+                return new Atc.Signal(aspect, Atc.SignalIndicators.Red, -1);
+            }
+            if (code == "ATS")
+            {
+                return new Atc.Signal(aspect, Atc.SignalIndicators.Red, double.MaxValue, 0, double.MaxValue, Atc.KirikaeStates.ToAts, false, false);
+            }
+            bool flag = false;
+            bool flag1 = false;
+            bool flag2 = false;
+            if (code.StartsWith("ATS"))
+            {
+                signalIndicator = Atc.SignalIndicators.Red;
+                flag = true;
+                code = code.Substring(3);
+            }
+            else if (code.StartsWith("K"))
+            {
+                signalIndicator = Atc.SignalIndicators.Red;
+                flag = true;
+                code = code.Substring(1);
+            }
+            else if (code.StartsWith("P"))
+            {
+                signalIndicator = Atc.SignalIndicators.P;
+                code = code.Substring(1);
+            }
+            else if (code.StartsWith("R"))
+            {
+                signalIndicator = Atc.SignalIndicators.Red;
+                code = code.Substring(1);
+            }
+            else if (code.StartsWith("SY"))
+            {
+                signalIndicator = Atc.SignalIndicators.Red;
+                flag1 = true;
+                code = code.Substring(2);
+            }
+            else if (code.StartsWith("Y"))
+            {
+                signalIndicator = Atc.SignalIndicators.Green;
+                flag1 = true;
+                code = code.Substring(1);
+            }
+            else if (code.StartsWith("S"))
+            {
+                signalIndicator = Atc.SignalIndicators.Red;
+                code = code.Substring(1);
+            }
+            else if (!code.StartsWith("G"))
+            {
+                signalIndicator = Atc.SignalIndicators.Green;
+            }
+            else
+            {
+                signalIndicator = Atc.SignalIndicators.Green;
+                code = code.Substring(1);
+            }
+            if (code.EndsWith("ORP"))
+            {
+                code = code.Substring(0, code.Length - 3);
+                flag2 = true;
+            }
+            Atc.Signal signal = null;
+            if (code.Contains("/"))
+            {
+                int num8 = code.IndexOf('/');
+                string str = code.Substring(0, num8);
+                string str1 = code.Substring(num8 + 1);
+                if (str1.Contains("@"))
+                {
+                    num8 = str1.IndexOf('@');
+                    string str2 = str1.Substring(num8 + 1);
+                    str1 = str1.Substring(0, num8);
+                    if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out num) && double.TryParse(str1, NumberStyles.Float, CultureInfo.InvariantCulture, out num1) && double.TryParse(str2, NumberStyles.Float, CultureInfo.InvariantCulture, out num2))
+                    {
+                        if (num < 0)
+                        {
+                            return null;
+                        }
+                        if (num1 < 0)
+                        {
+                            return null;
+                        }
+                        if (num2 < 0)
+                        {
+                            return null;
+                        }
+                        if (num < num1)
+                        {
+                            return null;
+                        }
+                        signal = new Atc.Signal(aspect, signalIndicator, (double)num / 3.6, (double)num1 / 3.6, num2);
+                    }
+                }
+                else if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out num3) && double.TryParse(str1, NumberStyles.Float, CultureInfo.InvariantCulture, out num4))
+                {
+                    if (num3 < 0)
+                    {
+                        return null;
+                    }
+                    if (num4 < 0)
+                    {
+                        return null;
+                    }
+                    if (num3 < num4)
+                    {
+                        return null;
+                    }
+                    signal = new Atc.Signal(aspect, signalIndicator, (double)num3 / 3.6, (double)num4 / 3.6, double.MaxValue);
+                }
+            }
+            else if (code.Contains("@"))
+            {
+                int num9 = code.IndexOf('@');
+                string str3 = code.Substring(0, num9);
+                string str4 = code.Substring(num9 + 1);
+                if (double.TryParse(str3, NumberStyles.Float, CultureInfo.InvariantCulture, out num5) && double.TryParse(str4, NumberStyles.Float, CultureInfo.InvariantCulture, out num6))
+                {
+                    if (num5 < 0)
+                    {
+                        return null;
+                    }
+                    if (num6 < 0)
+                    {
+                        return null;
+                    }
+                    signal = new Atc.Signal(aspect, signalIndicator, double.MaxValue, (double)num5 / 3.6, num6);
+                }
+            }
+            else if (int.TryParse(code, NumberStyles.Float, CultureInfo.InvariantCulture, out num7))
+            {
+                if ((double)num7 < 0)
+                {
+                    return null;
+                }
+                signal = new Atc.Signal(aspect, signalIndicator, (double)num7 / 3.6);
+            }
+            signal.Kirikae = (flag ? Atc.KirikaeStates.ToAts : Atc.KirikaeStates.ToAtc);
+            signal.ZenpouYokoku = flag1;
+            signal.OverrunProtector = flag2;
+            return signal;
+        }
+
+        /// <summary>Sets up the devices from the specified train.dat file.</summary>
+        /// <param name="file">The train.dat file.</param>
+        internal void LoadTrainDatFile(string file)
+        {
+            string[] lines = File.ReadAllLines(file, Encoding.UTF8);
+            for (int i = 0; i < lines.Length; i++)
+            {
+                int semicolon = lines[i].IndexOf(';');
+                if (semicolon >= 0)
+                {
+                    lines[i] = lines[i].Substring(0, semicolon).Trim();
+                }
+                else
+                {
+                    lines[i] = lines[i].Trim();
+                }
+            }
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Equals("#DEVICE", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (i < lines.Length - 1)
+                    {
+                        int value = int.Parse(lines[i + 1], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                        if (value == 0)
+                        {
+                            this.AtsSx = new AtsSx(this);
+                        }
+                        else if (value == 1)
+                        {
+                            this.AtsSx = new AtsSx(this);
+                            this.AtsP = new AtsP(this);
+                        }
+                    }
+                    if (i < lines.Length - 2)
+                    {
+                        int value = int.Parse(lines[i + 2], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                        if (value == 1)
+                        {
+                            this.Atc = new Atc(this);
+                        }
+                        else if (value == 2)
+                        {
+                            this.Atc = new Atc(this);
+                            this.Atc.AutomaticSwitch = true;
+                        }
+                    }
+                    if (i < lines.Length - 3)
+                    {
+                        int value = int.Parse(lines[i + 3], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                        if (value == 1)
+                        {
+                            this.Eb = new Eb(this);
+                        }
+                    }
+                    break;
+                }
+            }
+            // --- devices ---
+            List<Device> devices = new List<Device>();
+            if (this.Eb != null)
+            {
+                devices.Add(this.Eb);
+            }
+            if (this.Atc != null)
+            {
+                devices.Add(this.Atc);
+            }
+            if (this.AtsP != null)
+            {
+                devices.Add(this.AtsP);
+            }
+            if (this.AtsSx != null)
+            {
+                devices.Add(this.AtsSx);
+            }
+            this.Devices = devices.ToArray();
+        }
 
 		/// <summary>Is called when the system should initialize.</summary>
 		/// <param name="mode">The initialization mode.</param>
@@ -1931,6 +2387,62 @@ namespace Plugin {
                         PZB.Trigger(beacon.Type, beacon.Optional);
                         break;
                 }
+            }
+            //Japanese Safety System Beacons
+            if (this.Atc != null | this.Ato != null | this.AtsP != null | this.AtsPs != null | this.AtsSx != null |
+                this.Calling != null | this.Tasc != null)
+            {
+                if (beacon.Type != 44)
+                {
+                    Device[] devices = this.Devices;
+                    for (int i = 0; i < (int) devices.Length; i++)
+                    {
+                        devices[i].SetBeacon(beacon);
+                    }
+                    //this.Calling.SetBeacon(beacon);
+                }
+                /*
+                 * This should be irrelevant
+                 * I hope
+                 * 
+                 * 
+                else
+                {
+                    int optional = beacon.Optional%100;
+                    if (optional == 0)
+                    {
+                        this.ContinuousAnalogTransmissionAvailable = false;
+                        this.ContinuousAnalogTransmissionLastFrequency = 0;
+                        return;
+                    }
+                    if (optional == 1)
+                    {
+                        int num = beacon.Optional/100%1000;
+                        if (num >= 73)
+                        {
+                            int optional1 = beacon.Optional/100000%1000;
+                            int num1 = beacon.Optional/100000000;
+                            if (num1 >= 10)
+                            {
+                                num1 = 0;
+                            }
+                            if (!this.ContinuousAnalogTransmissionAvailable)
+                            {
+                                int num2 = num;
+                                int num3 = 1000*num1 + optional1;
+                                this.SetBeacon(new BeaconData(num2, num3, beacon.Signal));
+                            }
+                            this.ContinuousAnalogTransmissionAvailable = true;
+                            this.ContinuousAnalogTransmissionSignalPosition = this.State.Location +
+                                                                              beacon.Signal.Distance;
+                            this.ContinuousAnalogTransmissionSignalAspect = num1;
+                            this.ContinuousAnalogTransmissionActiveFrequency = num;
+                            this.ContinuousAnalogTransmissionIdleFrequency = optional1;
+                            return;
+                        }
+                    }
+                }
+                */
             }
         }
 
