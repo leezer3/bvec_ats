@@ -19,7 +19,6 @@ namespace Plugin
         internal bool neutralrvrtripped;
         /// <summary>The engine has overheated</summary>
         internal bool overheated;
-        internal bool canisolate;
         internal bool safetyisolated;
         /// <summary>The total distance travelled</summary>
         internal double travelled;
@@ -166,8 +165,10 @@ namespace Plugin
         internal string PZBReleaseKey;
         internal string PZBStopOverrideKey;
 
+        /// <summary>The maximum power notch allowed by the engine</summary>
         internal int MaximumPowerNotch;
-        internal bool SafetySystemMaxPowerCut;
+        /// <summary>The maximum power notch allowed by the safety system</summary>
+        internal int SafetySystemMaximumPowerNotch;
 
         //Arrays
         int[] klaxonarray;
@@ -242,6 +243,7 @@ namespace Plugin
                 tractiontype = 2;
             }
 		    MaximumPowerNotch = this.Train.Specs.PowerNotches;
+		    SafetySystemMaximumPowerNotch = this.Train.Specs.PowerNotches;
 		}
 
         /// <summary>Is called every frame.</summary>
@@ -249,6 +251,11 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
+            //Cuts the power if required
+            if (MaximumPowerNotch < this.Train.Handles.PowerNotch)
+            {
+                data.Handles.PowerNotch = MaximumPowerNotch;
+            }
             //Door interlocks; Fitted to all trains
             if (this.Train.Doors > 0)
             {
@@ -370,7 +377,7 @@ namespace Plugin
                 //Set brake notch demanded
                 data.Handles.BrakeNotch = currentbrakenotch;
                 //Update debug messages
-                if (Train.AWS.enabled == true && Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
+                if (Train.AWS != null && Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
                 {
                     data.DebugMessage = "EB Brakes demanded by AWS System";
                 }
@@ -634,7 +641,7 @@ namespace Plugin
         //Call this function to set the maximum permissable power notch
         /// <summary>Sets the maximum permissiable power notch.</summary>
         /// <param name="NotchRequested">The notch requested.</param>
-        /// <param name="blocking">Whether this is being requested by a safety system, or the traction model.</param>
+        /// <param name="SafetySystem">Whether this is being requested by a safety system, or the traction model.</param>
         /// Lower notches will always succeed.
         /// A notch increase must always be first requested by a safety system if applicable
         internal void SetMaxPowerNotch(int NotchRequested, bool SafetySystem)
@@ -644,18 +651,14 @@ namespace Plugin
                 MaximumPowerNotch = NotchRequested;
                 if (SafetySystem == true)
                 {
-                    //Set the bool to show that the power *was* cut by a safety system
-                    SafetySystemMaxPowerCut = true;
+                    //Set the maximum power notch allowed by the safety system
+                    SafetySystemMaximumPowerNotch = NotchRequested;
                 }
             }
             else
             {
-                if (SafetySystemMaxPowerCut ==  true && SafetySystem == false)
-                {
-                    //A safety system has cut the power, but this call has not been made from a safety system
-                    return;
-                }
-                MaximumPowerNotch = NotchRequested;
+                //Return the minimum of the notch requested and the safety system's maximum power notch
+                MaximumPowerNotch = Math.Min(SafetySystemMaximumPowerNotch, NotchRequested);
             }
         }
 
@@ -734,7 +737,7 @@ namespace Plugin
         {
             if (independantreset == true)
             {
-                if (Train.AWS.enabled == true && Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
+                if (Train.AWS != null && Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
                 {
                     return;
                 }
@@ -815,6 +818,11 @@ namespace Plugin
         /// <summary>Attempts to disable or re-enable the TPWS & AWS safety systems.</summary>
         internal void isolatetpwsaws()
         {
+            if (Train.AWS == null)
+            {
+                return;
+            }
+            bool CanIsolate = false;
             if (safetyisolated == false)
             {
                 //First check if TPWS is enabled in this train [AWS must therefore be enabled]
@@ -822,18 +830,18 @@ namespace Plugin
                 {
                     if (Train.TPWS.SafetyState == TPWS.SafetyStates.None && (Train.AWS.SafetyState == AWS.SafetyStates.Clear || Train.AWS.SafetyState == AWS.SafetyStates.None))
                     {
-                        canisolate = true;
+                        CanIsolate = true;
                     }
                 }
                 else if (Train.TPWS.enabled == false && Train.AWS.enabled == true)
                 {
                     if (Train.AWS.SafetyState == AWS.SafetyStates.Clear || Train.AWS.SafetyState == AWS.SafetyStates.None)
                     {
-                        canisolate = true;
+                        CanIsolate = true;
                     }
                 }
 
-                if (canisolate == true)
+                if (CanIsolate == true)
                 {
                     if (Train.TPWS.enabled == true)
                     {
@@ -851,6 +859,10 @@ namespace Plugin
         /// <summary>Enables the AWS & TPWS systems if they are fitted.</summary>
         internal void reenabletpwsaws()
         {
+            if (Train.AWS == null)
+            {
+                return;
+            }
             if (safetyisolated == true)
             {
                 if (Train.AWS.enabled == true)
@@ -980,30 +992,33 @@ namespace Plugin
                     }
                 }
 
-
-                //Acknowledge AWS warning
-                if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerActive)
+                if (Train.AWS != null)
                 {
-                    Train.AWS.Acknowlege();
-                }
-
-                //Reset AWS
-                if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired && Train.trainspeed == 0 && Train.Handles.Reverser == 0)
-                {
-                    if (SoundManager.IsPlaying(Train.AWS.awswarningsound))
+                    //Acknowledge AWS warning
+                    if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerActive)
                     {
-                        SoundManager.Stop(Train.AWS.awswarningsound);
+                        Train.AWS.Acknowlege();
                     }
-                    Train.AWS.Reset();
-                    resetpowercutoff();
+                    //Reset AWS
+                    else if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired && Train.trainspeed == 0 &&
+                        Train.Handles.Reverser == 0)
+                    {
+                        if (SoundManager.IsPlaying(Train.AWS.awswarningsound))
+                        {
+                            SoundManager.Stop(Train.AWS.awswarningsound);
+                        }
+                        Train.AWS.Reset();
+                        resetpowercutoff();
+                    }
                 }
-
-                //Acknowledge TPWS Brake Demand
-                if (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand)
+                if (Train.TPWS != null)
                 {
-                    Train.TPWS.AcknowledgeBrakeDemand();
+                    //Acknowledge TPWS Brake Demand
+                    if (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand)
+                    {
+                        Train.TPWS.AcknowledgeBrakeDemand();
+                    }
                 }
-
                 //Acknowledge Self-Test warning
                 if (Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.AwaitingDriverInteraction)
                 {
@@ -1330,7 +1345,7 @@ namespace Plugin
                     Train.SCMT_Traction.TestSCMT();
                 }
             }
-            if (Train.CAWS.enabled == true)
+            if (Train.CAWS != null)
             {
                 if (keypressed == CAWSKey)
                 {

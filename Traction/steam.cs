@@ -2,17 +2,19 @@
 using OpenBveApi.Runtime;
 
 
-namespace Plugin {
-	/// <summary>Represents a steam locomotive.</summary>
-	internal class steam : Device {
-		
-		// --- members ---
-		
-		/// <summary>The underlying train.</summary>
-		private readonly Train Train;
-		
-		
-		//Internal Variables
+namespace Plugin
+{
+    /// <summary>Represents a steam locomotive.</summary>
+    internal class steam : Device
+    {
+
+        // --- members ---
+
+        /// <summary>The underlying train.</summary>
+        private readonly Train Train;
+
+
+        //Internal Variables
         internal double heatingtimer;
         internal double currentheat;
         internal double cutoff;
@@ -24,7 +26,7 @@ namespace Plugin {
         internal int new_power;
         internal int pressureup;
         internal int pressureuse;
-	    internal int steamheatlevel;
+        internal int steamheatlevel;
         /// <summary>Stores the current boiler pressure</summary>
         internal int stm_boilerpressure;
         /// <summary>Stores the current boiler water level</summary>
@@ -56,12 +58,12 @@ namespace Plugin {
         /// <summary>Stores whether the blowers are currently active</summary>
         internal bool blowers;
 
-		// --- constants ---
-	    /// <summary>Is our transmission automatic</summary>
-	    internal bool automatic;
+        // --- constants ---
+        /// <summary>Is our transmission automatic</summary>
+        internal bool automatic;
 
-		/// <summary>Do we heave a part that heats up?</summary>
-		internal int heatingpart = 0;
+        /// <summary>Do we heave a part that heats up?</summary>
+        internal int heatingpart = 0;
 
         /// <summary>Overheat warning temperature</summary>
         internal double overheatwarn = 0;
@@ -77,7 +79,7 @@ namespace Plugin {
 
         /// <summary>Panel indicator for overheat indicator</summary>
         internal int overheatindicator = -1;
-        
+
         /// <summary>Default paramaters</summary>
         /// 
         /// Used if no value is loaded from the config file
@@ -127,7 +129,7 @@ namespace Plugin {
         /// <summary>The blowers factor for the fire</summary>
         internal double blowers_firefactor = 1;
         /// <summary>The number of pressure units used by each steam heating 'notch'</summary>
-	    internal double steamheatpressureuse = -1;
+        internal double steamheatpressureuse = -1;
         /// <summary>The starting mass of the fire</summary>
         internal double firestartmass = -1;
         /// <summary>The maximum fire mass</summary>
@@ -137,12 +139,12 @@ namespace Plugin {
         /// <summary>The number of units added per second whilst coal is being shovelled</summary>
         internal double shovellingrate = 10;
         /// <summary>Stores whether the cylinder cocks are currently open</summary>
-	    internal bool cylindercocks;
+        internal bool cylindercocks;
 
         /// <summary>The base pressure use per second when the cylinder cocks are open</summary>
-	    internal double cylindercocks_basepressureuse = 0;
+        internal double cylindercocks_basepressureuse = 0;
         /// <summary>The pressure use of each throttle notch whilst the cylinder cocks are open</summary>
-	    internal double cylindercocks_notchpressureuse = 0;
+        internal double cylindercocks_notchpressureuse = 0;
         /// <summary>Stores whether advanced firing is enabled</summary>
         internal bool advancedfiring;
 
@@ -170,37 +172,42 @@ namespace Plugin {
         internal Component Injector = new Component();
         /// <summary>Cylinder cocks- Removes water from the cylinders</summary>
         internal Component CylinderCocks = new Component();
-	    /// <summary>Overheat Alarm</summary>
-	    internal Component OverheatAlarm = new Component();
+        /// <summary>Overheat Alarm</summary>
+        internal Component OverheatAlarm = new Component();
         /// <summary>Boiler excess pressure blowoff</summary>
         internal Component Blowoff = new Component();
         /// <summary>Blowers- Currrently only increase steam production rates</summary>
         /// TODO: Fire not currently complete
         internal Component Blowers = new Component();
 
-	    internal double blowofftimer;
+        internal double blowofftimer;
 
         //Used to run the auto blowers & injector timer
-	    internal double blowerstimer;
+        internal double blowerstimer;
 
-	    internal double maintimer;
+        internal double maintimer;
+
+        //Stores the last calculated power notch
+        internal int LastPower;
         //Arrays
         int[] heatingarray;
-		
-		// --- constructors ---
-		
-		/// <summary>Creates a new instance of this system.</summary>
-		/// <param name="train">The train.</param>
-		internal steam(Train train) {
-			this.Train = train;
+
+        // --- constructors ---
+
+        /// <summary>Creates a new instance of this system.</summary>
+        /// <param name="train">The train.</param>
+        internal steam(Train train)
+        {
+            this.Train = train;
             this.cutofftimer = 0.0;
-		    this.maintimer = 0.0;
+            this.maintimer = 0.0;
 
 
-		}
-		
-		//<param name="mode">The initialization mode.</param>
-		internal override void Initialize(InitializationModes mode) {
+        }
+
+        //<param name="mode">The initialization mode.</param>
+        internal override void Initialize(InitializationModes mode)
+        {
             stm_reverser = 0;
             stm_power = 0;
             cutoff = 30;
@@ -232,14 +239,15 @@ namespace Plugin {
                 firemass = (int)firestartmass;
             }
             firetemp = (int)firestartemp;
+            LastPower = 0;
 
-		}
+        }
 
-        
 
-		/// <summary>Is called every frame.</summary>
-		/// <param name="data">The data.</param>
-		/// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
+
+        /// <summary>Is called every frame.</summary>
+        /// <param name="data">The data.</param>
+        /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
             //Check we've got a maximum temperature and a heating part
@@ -318,7 +326,7 @@ namespace Plugin {
                 {
 
                     cutoff = cutoffmin;
-                } 
+                }
             }
             else
             {
@@ -416,7 +424,7 @@ namespace Plugin {
                         new_power = Math.Max((int)(this.Train.Specs.PowerNotches - ((Math.Abs(cutoffmin) - Math.Abs(cutoff)) < 0 ? -((int)Math.Abs(cutoffmin)
                             - Math.Abs(cutoff)) : ((int)Math.Abs(cutoffmin) - Math.Abs(cutoff))) / cutoffdeviation), 0);
                     }
-                    
+
                 }
                 else
                 {
@@ -445,9 +453,9 @@ namespace Plugin {
                 int bp_range = (int)boilermaxpressure - (int)boilerminpressure;
                 int pwr_limit = Math.Min(new_power, (int)((bp / (float)(bp_range) + (1.0 / this.Train.Specs.PowerNotches - 0.01)) * this.Train.Specs.PowerNotches));
 
-                
 
-                new_power = Math.Max(data.Handles.PowerNotch - this.Train.Specs.PowerNotches + pwr_limit, 0);
+
+                new_power = Math.Max(Train.Handles.PowerNotch - this.Train.Specs.PowerNotches + pwr_limit, 0);
 
                 //CALL NEW FUNCTION TO CHANGE POWER
             }
@@ -455,15 +463,9 @@ namespace Plugin {
 
             if (Train.drastate != true)
             {
-                if (new_power != stm_power)
-                {
-                    stm_power = new_power;
-                    data.Handles.PowerNotch = stm_power;
-                }
-                else
-                {
-                    data.Handles.PowerNotch = stm_power;
-                }
+                stm_power = new_power;
+                LastPower = new_power;
+                Train.tractionmanager.SetMaxPowerNotch(stm_power, false);
             }
 
             {
@@ -499,7 +501,7 @@ namespace Plugin {
                         {
                             if (blowers == true)
                             {
-                                fire_tempchange = (int)Math.Ceiling((double) (((firemass*0.5) - 10)/(firemass*0.05))*blowers_firefactor);
+                                fire_tempchange = (int)Math.Ceiling((double)(((firemass * 0.5) - 10) / (firemass * 0.05)) * blowers_firefactor);
                             }
                             else
                             {
@@ -525,7 +527,7 @@ namespace Plugin {
                         }
                         if (blowers == true)
                         {
-                            finalsteamrate = (int) ((((double) calculatedsteamrate/1000)*firetemp)*blowers_pressurefactor);
+                            finalsteamrate = (int)((((double)calculatedsteamrate / 1000) * firetemp) * blowers_pressurefactor);
                         }
                         else
                         {
@@ -538,7 +540,7 @@ namespace Plugin {
                 {
                     if (blowers == true)
                     {
-                        pressureup = (int) (((boilerwatertosteamrate/60)*maintimer)*blowers_pressurefactor);
+                        pressureup = (int)(((boilerwatertosteamrate / 60) * maintimer) * blowers_pressurefactor);
                     }
                     else
                     {
@@ -562,9 +564,9 @@ namespace Plugin {
                     {
                         stm_boilerpressure = stm_boilerpressure - 4;
                     }
-                    
+
                 }
-                
+
             }
 
             if (automatic == true)
@@ -626,7 +628,7 @@ namespace Plugin {
                     stm_boilerpressure = stm_boilerpressure - ((int)injectorrate / 4);
                 }
             }
-		    
+
             //This section of code governs pressure usage
             if (stm_reverser != 0)
             {
@@ -650,19 +652,19 @@ namespace Plugin {
                 }
             }
             //This section of code defines the pressure used by the train's steam heating system
-		    if (steamheatpressureuse != -1 && steamheatlevel != 0)
-		    {
-		        if (maintimer > 1)
-		        {
-		            stm_boilerpressure -= (int)(steamheatlevel*steamheatpressureuse);
-		        }
-		    }
+            if (steamheatpressureuse != -1 && steamheatlevel != 0)
+            {
+                if (maintimer > 1)
+                {
+                    stm_boilerpressure -= (int)(steamheatlevel * steamheatpressureuse);
+                }
+            }
             //This section of code defines the pressure used by the cylinder cocks when open
-		    if (cylindercocks == true && this.maintimer > 1)
-		    {
-		        stm_boilerpressure -= (int)(cylindercocks_basepressureuse + (cylindercocks_notchpressureuse*data.Handles.PowerNotch));
-		    }
-		    //This section of code fills our tanks from a water tower
+            if (cylindercocks == true && this.maintimer > 1)
+            {
+                stm_boilerpressure -= (int)(cylindercocks_basepressureuse + (cylindercocks_notchpressureuse * Train.Handles.PowerNotch));
+            }
+            //This section of code fills our tanks from a water tower
             if (fuelling == true)
             {
                 if (maintimer > 1)
@@ -685,11 +687,11 @@ namespace Plugin {
                 }
                 if (steamheatpressureuse != -1 && steamheatlevel != 0)
                 {
-                    debugpressureuse += (int)(steamheatlevel*steamheatpressureuse);
+                    debugpressureuse += (int)(steamheatlevel * steamheatpressureuse);
                 }
                 if (cylindercocks == true)
                 {
-                    debugpressureuse += (int)(cylindercocks_basepressureuse + (cylindercocks_notchpressureuse * data.Handles.PowerNotch));
+                    debugpressureuse += (int)(cylindercocks_basepressureuse + (cylindercocks_notchpressureuse * Train.Handles.PowerNotch));
                 }
                 this.Train.tractionmanager.DebugWindowData.SteamEngine.BoilerPressure = stm_boilerpressure;
                 this.Train.tractionmanager.DebugWindowData.SteamEngine.PressureGenerationRate = pressureup;
@@ -705,11 +707,11 @@ namespace Plugin {
                 this.Train.tractionmanager.DebugWindowData.SteamEngine.AutoCutoff = automatic;
                 if (cylindercocks == true)
                 {
-                    this.Train.tractionmanager.DebugWindowData.SteamEngine.CylinderCocks = "Open";    
+                    this.Train.tractionmanager.DebugWindowData.SteamEngine.CylinderCocks = "Open";
                 }
                 else
                 {
-                    this.Train.tractionmanager.DebugWindowData.SteamEngine.CylinderCocks = "Closed";    
+                    this.Train.tractionmanager.DebugWindowData.SteamEngine.CylinderCocks = "Closed";
                 }
 
             }
@@ -814,105 +816,105 @@ namespace Plugin {
                     }
                 }
             }
-        {
-            //Sounds
-            if (Injector.LoopSound != -1)
             {
-                if (stm_injector == true)
+                //Sounds
+                if (Injector.LoopSound != -1)
                 {
-                    if (Injector.TogglePlayed == false)
+                    if (stm_injector == true)
                     {
-                        if (Injector.PlayOnceSound != -1)
+                        if (Injector.TogglePlayed == false)
                         {
-                            SoundManager.Play(Injector.PlayOnceSound, 2.0, 1.0, false);
+                            if (Injector.PlayOnceSound != -1)
+                            {
+                                SoundManager.Play(Injector.PlayOnceSound, 2.0, 1.0, false);
+                            }
+                            Injector.TogglePlayed = true;
                         }
-                        Injector.TogglePlayed = true;
+                        else
+                        {
+                            if (!SoundManager.IsPlaying(Injector.PlayOnceSound) || Injector.PlayOnceSound == -1)
+                            {
+                                SoundManager.Play(Injector.LoopSound, 2.0, 1.0, true);
+                            }
+                        }
+
                     }
                     else
                     {
-                        if (!SoundManager.IsPlaying(Injector.PlayOnceSound) || Injector.PlayOnceSound == -1)
+                        Injector.TogglePlayed = false;
+                        if (SoundManager.IsPlaying(Injector.LoopSound))
                         {
-                            SoundManager.Play(Injector.LoopSound, 2.0, 1.0, true);
-                        }
-                    }
-                    
-                }
-                else
-                {
-                    Injector.TogglePlayed = false;
-                    if (SoundManager.IsPlaying(Injector.LoopSound))
-                    {
-                        SoundManager.Stop(Injector.LoopSound);
-                        if (Injector.PlayOnceSound != -1)
-                        {
-                            SoundManager.Play(Injector.PlayOnceSound, 2.0, 1.0, false);
+                            SoundManager.Stop(Injector.LoopSound);
+                            if (Injector.PlayOnceSound != -1)
+                            {
+                                SoundManager.Play(Injector.PlayOnceSound, 2.0, 1.0, false);
+                            }
                         }
                     }
                 }
-            }
-            if (CylinderCocks.LoopSound != -1)
-            {
-                if (cylindercocks == true)
+                if (CylinderCocks.LoopSound != -1)
                 {
-                    if (CylinderCocks.TogglePlayed == false)
+                    if (cylindercocks == true)
                     {
-                        if (CylinderCocks.PlayOnceSound != -1)
+                        if (CylinderCocks.TogglePlayed == false)
                         {
-                            SoundManager.Play(CylinderCocks.PlayOnceSound, 2.0, 1.0, false);
+                            if (CylinderCocks.PlayOnceSound != -1)
+                            {
+                                SoundManager.Play(CylinderCocks.PlayOnceSound, 2.0, 1.0, false);
+                            }
+                            CylinderCocks.TogglePlayed = true;
                         }
-                        CylinderCocks.TogglePlayed = true;
+                        else
+                        {
+                            if ((!SoundManager.IsPlaying(CylinderCocks.PlayOnceSound) || CylinderCocks.PlayOnceSound == -1) && Train.Handles.PowerNotch > 0)
+                            {
+                                SoundManager.Play(CylinderCocks.LoopSound, 2.0, 1.0, true);
+                            }
+                        }
+
                     }
                     else
                     {
-                        if ((!SoundManager.IsPlaying(CylinderCocks.PlayOnceSound) || CylinderCocks.PlayOnceSound == -1) && Train.Handles.PowerNotch > 0)
+                        CylinderCocks.TogglePlayed = false;
+                        if (SoundManager.IsPlaying(CylinderCocks.LoopSound))
                         {
-                            SoundManager.Play(CylinderCocks.LoopSound, 2.0, 1.0, true);
+                            SoundManager.Stop(CylinderCocks.LoopSound);
+                            if (CylinderCocks.PlayOnceSound != -1)
+                            {
+                                SoundManager.Play(CylinderCocks.PlayOnceSound, 2.0, 1.0, false);
+                            }
                         }
                     }
-
                 }
-                else
+
+                if (Blowers.LoopSound != -1)
                 {
-                    CylinderCocks.TogglePlayed = false;
-                    if (SoundManager.IsPlaying(CylinderCocks.LoopSound))
+                    if (Blowers.TogglePlayed == true && !SoundManager.IsPlaying(Blowers.LoopSound))
                     {
-                        SoundManager.Stop(CylinderCocks.LoopSound);
-                        if (CylinderCocks.PlayOnceSound != -1)
-                        {
-                            SoundManager.Play(CylinderCocks.PlayOnceSound, 2.0, 1.0, false);
-                        }
+                        SoundManager.Play(Blowers.LoopSound, 2.0, 1.0, true);
+                    }
+                    else if (blowers == false)
+                    {
+                        SoundManager.Stop(Blowers.LoopSound);
+                    }
+                }
+                if (OverheatAlarm.LoopSound != -1)
+                {
+                    if (temperature > overheat)
+                    {
+                        SoundManager.Play(OverheatAlarm.LoopSound, 1.0, 1.0, true);
+                    }
+                    else
+                    {
+                        SoundManager.Stop(OverheatAlarm.LoopSound);
                     }
                 }
             }
-
-            if (Blowers.LoopSound != -1)
-            {
-                if (Blowers.TogglePlayed == true && !SoundManager.IsPlaying(Blowers.LoopSound))
-                {
-                    SoundManager.Play(Blowers.LoopSound, 2.0, 1.0, true);
-                }
-                else if (blowers == false)
-                {
-                    SoundManager.Stop(Blowers.LoopSound);
-                }
-            }
-            if (OverheatAlarm.LoopSound != -1)
-            {
-                if (temperature > overheat)
-                {
-                    SoundManager.Play(OverheatAlarm.LoopSound, 1.0, 1.0, true);
-                }
-                else
-                {
-                    SoundManager.Stop(OverheatAlarm.LoopSound);
-                }
-            }
-        }
             //Reset the main timer if it's over 1 second
-		    if (this.maintimer > 1)
-		    {
-		        this.maintimer = 0.0;
-		    }
+            if (this.maintimer > 1)
+            {
+                this.maintimer = 0.0;
+            }
         }
-	}
+    }
 }

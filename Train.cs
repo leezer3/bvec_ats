@@ -229,7 +229,18 @@ namespace Plugin {
 			this.Panel = panel;
 			
 		}
-		
+
+	    internal void LoadAWSTPWS()
+	    {
+	        if (this.AWS != null)
+	        {
+	            return;
+	        }
+            //This function loads AWS and TPWS into memory
+            this.TPWS = new TPWS(this);
+            this.AWS = new AWS(this);
+            this.StartupSelfTestManager = new StartupSelfTestManager(this);
+	    }
 		
 		// --- functions ---
 		
@@ -243,10 +254,10 @@ namespace Plugin {
             
             //Only initialise traction types if required
             this.tractionmanager = new tractionmanager(this);
-            this.StartupSelfTestManager = new StartupSelfTestManager(this);
-            this.AWS = new AWS(this);
-            this.CAWS = new CAWS(this);
-            this.TPWS = new TPWS(this);
+            
+            
+            
+            
             //this.Calling = new Calling(this, playSound);
             this.Driver = new AI_Driver(this);
             this.DebugLogger = new DebugLogger();
@@ -303,10 +314,12 @@ namespace Plugin {
                                 DebugLogger.LogMessage("Vigilance system(s) enabled");
 			                    break;
 			                case "aws":
+                                LoadAWSTPWS();
 			                    this.AWS.enabled = true;
                                 DebugLogger.LogMessage("AWS enabled");
 			                    break;
 			                case "tpws":
+                                LoadAWSTPWS();
 			                    this.TPWS.enabled = true;
                                 DebugLogger.LogMessage("TPWS enabled");
 			                    break;
@@ -316,6 +329,7 @@ namespace Plugin {
                                 DebugLogger.LogMessage("SCMT enabled");
                                 break;
                             case "caws":
+                                this.CAWS = new CAWS(this);
                                 this.CAWS.enabled = true;
                                 DebugLogger.LogMessage("CAWS enabled");
                                 break;
@@ -1983,7 +1997,9 @@ namespace Plugin {
 		{
 			this.PluginInitializing = false;
 			if (data.ElapsedTime.Seconds > 0.0 & data.ElapsedTime.Seconds < 1.0) {
-				
+				//Odakyufan's code requires clearing the array each time
+                //This doesn't hurt anything, but may cause a small drop in performance??
+                Array.Clear(this.Panel, 0, this.Panel.Length);
 				// --- devices ---
 				this.State = data.Vehicle;
 				this.Handles = new ReadOnlyHandles(data.Handles);
@@ -2213,7 +2229,7 @@ namespace Plugin {
                     break;
             }
             //AWS Beacons
-            if (this.AWS.enabled == true)
+            if (this.AWS != null)
             {
                 switch (beacon.Type)
                 {
@@ -2263,7 +2279,7 @@ namespace Plugin {
                         DebugLogger.LogMessage("Beacon received: Legacy AWS Permenant");
                         break;
                 }
-                if (this.TPWS.enabled == true)
+                if (this.TPWS != null)
                 {
                     switch (beacon.Type)
                     {

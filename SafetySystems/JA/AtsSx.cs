@@ -108,10 +108,13 @@ namespace Plugin
                         this.CompatibilityDistanceAccumulator = 0;
                     }
                 }
+                /*
+                 * Now handled in the Traction Manager
                 if (this.State != AtsSx.States.Disabled & this.Train.Doors != 0)
                 {
                     data.Handles.PowerNotch = 0;
                 }
+                 */
             }
             else if (this.State != AtsSx.States.Disabled & this.State != AtsSx.States.Suppressed)
             {

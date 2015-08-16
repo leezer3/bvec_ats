@@ -351,10 +351,13 @@ namespace Plugin
                     }
                     blocking = true;
                 }
+                /*
+                 * Now handled in the Traction Manager
                 if (this.State != Atc.States.Disabled & this.Train.Doors != DoorStates.None)
                 {
                     data.Handles.PowerNotch = 0;
                 }
+                 */
             }
             else
             {
@@ -366,6 +369,12 @@ namespace Plugin
                 this.Pattern.Update(this);
                 this.ServiceBrakesTimer = 0;
             }
+            //Panel Indicators Start Here
+
+            /*
+             * Reset Panel Indicators
+             */
+            
             if (this.State == Atc.States.Ats)
             {
                 this.Train.Panel[21] = 1;
@@ -385,16 +394,11 @@ namespace Plugin
                     {
                         this.Train.Panel[this.Pattern.Signal.Aspect - 79] = 1;
                     }
-                    int num4 = 11;
-                    while (num4 >= 1)
+                    for (int i = 11; i >= 1; i--)
                     {
-                        if (this.Pattern.Signal.FinalSpeed + 0.001 < this.CompatibilitySpeeds[num4])
+                        if (this.Pattern.Signal.FinalSpeed + 0.001 >= this.CompatibilitySpeeds[i])
                         {
-                            num4--;
-                        }
-                        else
-                        {
-                            this.Train.Panel[271] = num4;
+                            this.Train.Panel[271] = i;
                             break;
                         }
                     }
@@ -866,18 +870,6 @@ namespace Plugin
                         return;
                     }
             }
-        }
-
-        internal override void SetBrake(int brakeNotch)
-        {
-        }
-
-        internal override void SetPower(int powerNotch)
-        {
-        }
-
-        internal override void SetReverser(int reverser)
-        {
         }
 
         internal override void SetSignal(SignalData[] signal)

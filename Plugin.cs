@@ -20,8 +20,8 @@ namespace Plugin {
 		/// <returns>Whether the plugin was loaded successfully.</returns>
         public bool Load(LoadProperties properties)
         {
-            properties.Panel = new int[272];
-            SoundManager.Initialise(properties.PlaySound, 256);
+            properties.Panel = new int[512];
+            SoundManager.Initialise(properties.PlaySound, 512);
             properties.AISupport = AISupport.Basic;
             this.Train = new Train(properties.Panel);
             //No AI Support
@@ -35,6 +35,7 @@ namespace Plugin {
             string OS_ATSconfigFile = Path.Combine(properties.TrainFolder, "OS_ATS1.cfg");
             string SZ_ATSconfigFile = Path.Combine(properties.TrainFolder, "OS_SZ_ATS1.cfg");
             string SZ_ATS_2configFile = Path.Combine(properties.TrainFolder, "OS_SZ_Ats2_0.cfg");
+            string ODF_ATSconfigFile = Path.Combine(properties.TrainFolder, "OdakyufanAts.cfg");
             TrainFolder = properties.TrainFolder;
             //Delete error.log from previous run
             if (File.Exists(Path.Combine(properties.TrainFolder, "error.log")))
@@ -198,6 +199,22 @@ namespace Plugin {
                     return false;
                 }
             }
+            else if (File.Exists(ODF_ATSconfigFile))
+            {
+                //We've found an OdyakufanATS equipped train
+                //Upgrade for this is in alpha
+                try
+                {
+                    File.Copy(ODF_ATSconfigFile, configFile);
+                    this.Train.LoadConfigurationFile(configFile);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    properties.FailureReason = "Error loading the configuration file: " + ex.Message;
+                    return false;
+                }
+            }
             else
             {
                 properties.FailureReason = "No supported configuration files exist.";
@@ -222,7 +239,7 @@ namespace Plugin {
                     {
                         sw.WriteLine("No OS_ATS configuration file found");
                     }
-                } 
+                }
                 return false;
             }
         }

@@ -197,6 +197,8 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
+            //Required to reset the max notch before each frame
+            this.Train.tractionmanager.SetMaxPowerNotch(this.Train.Specs.PowerNotches, false);
             //Check we've got a maximum temperature and a heating part
             if (overheat != 0 && heatingpart != 0)
             {
@@ -288,7 +290,8 @@ namespace Plugin
                             //Reduce max throttle by percentage of how many pickups are in the gap
                             double throttlemultiplier = (double)j / (double)pickuparray.Length;
                             new_power = (int)(this.Train.Specs.PowerNotches * throttlemultiplier);
-                            data.Handles.PowerNotch = new_power;
+                            this.Train.tractionmanager.SetMaxPowerNotch(new_power, false);
+                            //data.Handles.PowerNotch = new_power;
                         }
                         else if (powergapbehaviour == 2)
                         {
@@ -330,7 +333,8 @@ namespace Plugin
                             //Reduce max throttle by percentage of how many pickups are in the gap
                             double throttlemultiplier = (double)j / (double)pickuparray.Length;
                             new_power = (int)(this.Train.Specs.PowerNotches * throttlemultiplier);
-                            data.Handles.PowerNotch = new_power;
+                            this.Train.tractionmanager.SetMaxPowerNotch(new_power, false);
+                            //data.Handles.PowerNotch = new_power;
                         }
                         else if (powergapbehaviour == 2)
                         {
@@ -605,7 +609,7 @@ namespace Plugin
                     SoundManager.Stop(powerloopsound);
                 }
             }
-            else if (powerloopsound != -1 && data.Handles.PowerNotch == 0)
+            else if (powerloopsound != -1 && this.Train.Handles.PowerNotch == 0)
             {
                 SoundManager.Stop(powerloopsound);
             }

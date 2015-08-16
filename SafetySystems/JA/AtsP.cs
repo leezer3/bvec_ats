@@ -311,10 +311,14 @@ namespace Plugin
                 {
                     blocking = true;
                 }
+                /*
+                 * Now handled in the Traction Manager
+                 * 
                 if (this.State != AtsP.States.Disabled & this.Train.Doors != DoorStates.None)
                 {
                     data.Handles.PowerNotch = 0;
                 }
+                 */
             }
             else if (this.State != AtsP.States.Disabled & this.State != AtsP.States.Suppressed)
             {

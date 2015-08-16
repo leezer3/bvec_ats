@@ -172,7 +172,8 @@ namespace Plugin
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
 
-
+            //Required to reset the max notch before each frame
+            this.Train.tractionmanager.SetMaxPowerNotch(this.Train.Specs.PowerNotches, false);
 
             //If reverser is put into neutral when moving, block the gears
             if (reversercontrol != 0 && Train.trainspeed > 0 && Train.Handles.Reverser == 0)
@@ -314,11 +315,12 @@ namespace Plugin
                 //Finally set the power notch
                 if (gear != 0)
                 {
-                    data.Handles.PowerNotch = Math.Min(power_limit, this.Train.Handles.PowerNotch);
+                    this.Train.tractionmanager.SetMaxPowerNotch(Math.Min(power_limit, this.Train.Handles.PowerNotch), false);
+                    //data.Handles.PowerNotch = Math.Min(power_limit, this.Train.Handles.PowerNotch);
                 }
                 else
                 {
-                    data.Handles.PowerNotch = 0;
+                    this.Train.tractionmanager.SetMaxPowerNotch(0, false);
                 }
 
                 //If revving the engine is allowed in neutral

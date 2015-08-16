@@ -49,7 +49,9 @@ namespace Plugin
             else if (!(this.Train.Atc.State == Atc.States.Normal & data.Handles.Reverser == 1 & data.Handles.BrakeNotch == 0))
             {
                 this.Notch = 0;
-                data.Handles.PowerNotch = 0;
+                //Set maximum power notch to zero via the Traction Manager
+                Train.tractionmanager.SetMaxPowerNotch(0, true);
+                //data.Handles.PowerNotch = 0;
             }
             else
             {
@@ -72,7 +74,9 @@ namespace Plugin
                 if (this.State != Ato.States.Power)
                 {
                     this.Notch = 0;
-                    data.Handles.PowerNotch = 0;
+                    //Set maximum power notch to zero via the Traction Manager
+                    Train.tractionmanager.SetMaxPowerNotch(0, true);
+                    //data.Handles.PowerNotch = 0;
                 }
                 else
                 {
@@ -95,7 +99,9 @@ namespace Plugin
                         notch.Notch = notch.Notch + 1;
                         this.Countdown = this.PowerApplicationTime / (double)this.Train.Specs.PowerNotches;
                     }
-                    data.Handles.PowerNotch = this.Notch;
+                    //Pass the calculated maximum power notch to the traction manager
+                    Train.tractionmanager.SetMaxPowerNotch(this.Notch, true);
+                    //data.Handles.PowerNotch = this.Notch;
                 }
             }
             if (this.Countdown > 0)
