@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+ * Largely public domain code by Odakyufan
+ * Modified to work with BVEC_ATS traction manager
+ * 
+ */
+
+using System;
 using OpenBveApi.Runtime;
 
 namespace Plugin {
