@@ -94,6 +94,7 @@ namespace Plugin
             /* Unconditionally resets the Train Protection and Warning System, cancelling any warnings which are already in effect */
             this.Reinitialise(InitializationModes.OnService);
             Train.tractionmanager.resetbrakeapplication();
+            Train.tractionmanager.resetpowercutoff();
         }
 
         /// <summary>Call this method from the Traction Manager to isolate the TPWS.</summary>

@@ -298,7 +298,7 @@ namespace Plugin
             this.MySafetyState = SafetyStates.None;
             this.SunflowerState = SunflowerStates.Warn;
             Train.tractionmanager.resetbrakeapplication();
-
+            Train.tractionmanager.resetpowercutoff();
         }
 
         /// <summary>Call this method to isolate the Automatic Warning System</summary>

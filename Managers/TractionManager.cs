@@ -1020,7 +1020,7 @@ namespace Plugin
                     }
                 }
                 //Acknowledge Self-Test warning
-                if (Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.AwaitingDriverInteraction)
+                if (Train.StartupSelfTestManager != null && Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.AwaitingDriverInteraction)
                 {
                     Train.StartupSelfTestManager.driveracknowledge();
                 }
