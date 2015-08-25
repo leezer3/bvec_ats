@@ -212,6 +212,9 @@ namespace Plugin {
         /// <summary>The ATO device, or a null reference if not installed.</summary>
         internal Ato Ato;
 
+	    internal WesternDiesel WesternDiesel;
+
+
 		/// <summary>A list of all the devices installed on this train</summary>
 		internal Device[] Devices;
 
@@ -380,6 +383,9 @@ namespace Plugin {
                                 break;
                             case "ato":
                                 this.Ato = new Ato(this);
+                                break;
+                            case "westerndiesel":
+                                this.WesternDiesel = new WesternDiesel(this);
                                 break;
 			                default:
 			                    throw new InvalidDataException("The section " + line[0] + " is not supported.");

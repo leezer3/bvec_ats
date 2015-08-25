@@ -17,7 +17,7 @@ namespace Plugin.Traction.Diesel
 
         internal int EngineLoopSound = -1;
 
-
+        internal bool StarterKeyPressed;
 
         readonly StarterMotor Starter = new StarterMotor();
         readonly GearBox Gears = new GearBox();
@@ -40,7 +40,7 @@ namespace Plugin.Traction.Diesel
                     if (ComplexStarterModel)
                     {
                         //If this method returns true, then our engine is now running
-                        if (Starter.RunComplexStarter(data.ElapsedTime.Milliseconds))
+                        if (Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed))
                         {
                             EngineRunning = true;
                         }

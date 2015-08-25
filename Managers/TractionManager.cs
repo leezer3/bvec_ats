@@ -140,6 +140,14 @@ namespace Plugin
         internal string steamheatincreasekey;
         internal string steamheatdecreasekey;
         internal string cylindercockskey;
+        //Diesel locomotive functions
+        internal string EngineStartKey;
+
+        //These keys are for the Western locomotive
+        //This has it's own manager type
+        internal string WesternBatterySwitch;
+        internal string WesternMasterKey;
+        internal string WesternTransmissionResetButton;
 
         //KEYS ADDED BY OS_SZ_ATS
 
@@ -1392,6 +1400,36 @@ namespace Plugin
                     Train.PZB.StopOverrideKeyPressed = true;
                 }
             }
+            //Western Diesel Locomotive
+            if (Train.WesternDiesel != null)
+            {
+                if (keypressed == safetykey)
+                {
+                    if (Train.WesternDiesel.StartupManager.StartupState == WesternStartupManager.SequenceStates.DirectionSelected)
+                    {
+                        //Acknowledge the DSD Buzzer
+                        Train.WesternDiesel.StartupManager.StartupState = WesternStartupManager.SequenceStates.DSDAcknowledged;
+                    }
+                }
+                if (keypressed == EngineStartKey)
+                {
+                    Train.WesternDiesel.StarterKeyPressed = true;
+                }
+                if (keypressed == WesternBatterySwitch)
+                {
+                    if (Train.WesternDiesel.BatteryIsolated == true)
+                    {
+                        Train.WesternDiesel.BatteryIsolated = false;
+                    }
+                }
+                if (keypressed == WesternMasterKey)
+                {
+                    if (Train.WesternDiesel.StartupManager.StartupState == WesternStartupManager.SequenceStates.BatteryEnergized)
+                    {
+                        Train.WesternDiesel.StartupManager.StartupState = WesternStartupManager.SequenceStates.MasterKeyInserted;
+                    }
+                }
+            }
         }
 
         internal override void KeyUp(VirtualKeys key)
@@ -1508,6 +1546,14 @@ namespace Plugin
                     {
                         Train.PZB.PZBBefehlState = PZB.PZBBefehlStates.None;
                     }
+                }
+            }
+            //Western Diesel Locomotive
+            if (Train.WesternDiesel != null)
+            {
+                if (keypressed == EngineStartKey)
+                {
+                    Train.WesternDiesel.StarterKeyPressed = false;
                 }
             }
         }

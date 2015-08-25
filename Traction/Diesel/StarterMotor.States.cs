@@ -1,4 +1,4 @@
-﻿namespace Plugin.Traction.Diesel
+﻿namespace Plugin
 {
     partial class StarterMotor
     {

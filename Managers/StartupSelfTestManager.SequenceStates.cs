@@ -18,6 +18,7 @@
 			Initialised = 5,
 			/// <summary>The train systems have failed the startup self-test procedure, and the train is not in service. The numerical value of this constant is 6.</summary>
 			Failed = 6
+
 		}
 	}
 }

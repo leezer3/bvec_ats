@@ -148,11 +148,14 @@
     <Compile Include="Structures\Component.cs" />
     <Compile Include="Structures\DebugData.cs" />
     <Compile Include="SafetySystems\JA\Tasc.cs" />
+    <Compile Include="Traction\Diesel\Western.cs" />
     <Compile Include="Traction\Diesel\DieselEngine.cs" />
     <Compile Include="Traction\Diesel\Gearbox.cs" />
     <Compile Include="Traction\Diesel\StarterMotor.cs" />
     <Compile Include="SafetySystems\vigilance.DeadmanStates.cs" />
     <Compile Include="Traction\diesel.cs" />
+    <Compile Include="Traction\Diesel\WesternStartup.cs" />
+    <Compile Include="Traction\Diesel\WesternStartup.States.cs" />
     <Compile Include="Traction\Electric\electric.cs" />
     <Compile Include="Traction\Electric\Electric.PantographStates.cs" />
     <Compile Include="Managers\StartupSelfTestManager.cs" />

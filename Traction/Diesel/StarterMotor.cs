@@ -1,7 +1,7 @@
 ﻿using System;
 using OpenBveApi.Sounds;
 
-namespace Plugin.Traction.Diesel
+namespace Plugin
 {
     /*
      * 
@@ -42,6 +42,7 @@ namespace Plugin.Traction.Diesel
         internal bool ComplexStarterModel;
 
         internal double StarterMotorTimer;
+        internal bool SimpleStarterPlayer;
 
         readonly Random RandomNumber = new Random();
 
@@ -53,8 +54,19 @@ namespace Plugin.Traction.Diesel
         }
 
         /// <summary>Runs the complex starter model. If this method returns true, the engine has started.</summary>
-        internal bool RunComplexStarter(double ElapsedTime)
+        internal bool RunComplexStarter(double ElapsedTime, bool StarterKeyPresed)
         {
+            if (!StarterKeyPresed && StarterMotorState == StarterMotorStates.Active)
+            {
+                //If our starter key is no longer pressed, then we should switch to the run-down state & stop the loop sound
+                SoundManager.Stop(StarterLoopSound);
+                StarterMotorState = StarterMotorStates.RunDown;
+            }
+            if (StarterKeyPresed && StarterMotorState == StarterMotorStates.None)
+            {
+                //If the starter key has been pressed and the starter motor is inactive, start the start sequence
+                StarterMotorState = StarterMotorStates.Active;
+            }
             switch (StarterMotorState)
             {
                 case StarterMotor.StarterMotorStates.RunUp:
@@ -80,13 +92,10 @@ namespace Plugin.Traction.Diesel
                     {
                         StarterMotorState = StarterMotor.StarterMotorStates.EngineFire;
                     }
-                    else
+                    //We've missed the firing trigger, but have hit the stall trigger- Stall
+                    if (StallProbability == MaximumStallProbability)
                     {
-                        //We've missed the firing trigger, but have hit the stall trigger- Stall
-                        if (StallProbability == MaximumStallProbability)
-                        {
-                            StarterMotorState = StarterMotor.StarterMotorStates.EngineStall;
-                        }
+                        StarterMotorState = StarterMotor.StarterMotorStates.EngineStall;
                     }
                     return false;
                 case StarterMotor.StarterMotorStates.EngineFire:
@@ -131,9 +140,25 @@ namespace Plugin.Traction.Diesel
             }
         }
 
-        /// <summary>Runs the simple starter model. If this method returns true, the engine has started.</summary>
+        /// <summary>Runs the simple starter model. When this method returns true, the engine has started.</summary>
         internal bool RunSimpleStarter(double ElapsedTime)
         {
+            if (!SimpleStarterPlayer && !SoundManager.IsPlaying(StarterRunUpSound))
+            {
+                SoundManager.Play(StarterRunUpSound, 1.0, 1.0, false);
+                SimpleStarterPlayer = true;
+            }
+            if (SimpleStarterPlayer && !SoundManager.IsPlaying(StarterRunUpSound))
+            {
+                SoundManager.Play(StarterLoopSound, 1.0, 1.0, false);
+            }
+            StarterMotorTimer += ElapsedTime;
+            if (StarterMotorTimer >= 10000)
+            {
+                SoundManager.Stop(StarterLoopSound);
+                SoundManager.Play(EngineFireSound, 1.0, 1.0, false);
+                return true;
+            }
             return false;
         }
     }

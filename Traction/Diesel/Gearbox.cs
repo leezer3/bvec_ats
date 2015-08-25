@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using OpenBveApi.Runtime;
 
-namespace Plugin.Traction.Diesel
+
+namespace Plugin
 {
     class GearBox
     {
