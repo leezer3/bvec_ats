@@ -530,11 +530,14 @@ namespace Plugin {
                                             }
                                             break;
 			                            case "blowoffsound":
-			                                InternalFunctions.ValidateIndex(value, ref steam.Blowoff.PlayOnceSound, key);
+			                                InternalFunctions.ValidateIndex(value, ref steam.Blowoff.SoundIndex, key);
 			                                break;
                                         case "blowoffindicator":
                                             InternalFunctions.ValidateIndex(value, ref steam.Blowoff.PanelIndex, key);
                                             break;
+                                        case "blowofftime":
+                                            InternalFunctions.ParseNumber(value, ref steam.Blowoff.BlowoffTime, key);
+			                                break;
 			                            case "klaxonpressureuse":
 			                                InternalFunctions.ParseNumber(value, ref steam.klaxonpressureuse, key);
 			                                break;
@@ -557,7 +560,7 @@ namespace Plugin {
                                             InternalFunctions.ParseNumber(value, ref steam.steamheatpressureuse, key);
                                             break;
                                         case "boilerblowoffpressure":
-                                            InternalFunctions.ParseNumber(value, ref steam.blowoffpressure, key);
+                                            InternalFunctions.ParseNumber(value, ref steam.Blowoff.TriggerPressure, key);
                                             break;
                                         case "regulatorpressureuse":
                                             InternalFunctions.ParseNumber(value, ref steam.regulatorpressureuse, key);

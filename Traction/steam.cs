@@ -113,8 +113,8 @@ namespace Plugin
         internal double cutoffchangespeed = 40;
         /// <summary>The starting boiler water level</summary>
         internal double boilerstartwaterlevel = -1;
-        /// <summary>The pressure at which the boiler blowoff will operate</summary>
-        internal double blowoffpressure = 21000;
+        
+        
         internal string heatingrate = "0";
         /// <summary>The number of fuel units added per second whilst fuelling</summary>
         internal double fuelfillspeed = 50;
@@ -147,7 +147,7 @@ namespace Plugin
         internal double cylindercocks_notchpressureuse = 0;
         /// <summary>Stores whether advanced firing is enabled</summary>
         internal bool advancedfiring;
-
+        
         //Panel Indicies
         /// <summary>The panel index of the reverser indicator</summary>
         internal int reverserindex = -1;
@@ -175,18 +175,16 @@ namespace Plugin
         /// <summary>Overheat Alarm</summary>
         internal Component OverheatAlarm = new Component();
         /// <summary>Boiler excess pressure blowoff</summary>
-        internal Component Blowoff = new Component();
+        internal Blowoff Blowoff = new Blowoff();
         /// <summary>Blowers- Currrently only increase steam production rates</summary>
         /// TODO: Fire not currently complete
         internal Component Blowers = new Component();
-
-        internal double blowofftimer;
 
         //Used to run the auto blowers & injector timer
         internal double blowerstimer;
 
         internal double maintimer;
-
+        
         //Stores the last calculated power notch
         internal int LastPower;
         //Arrays
@@ -240,7 +238,11 @@ namespace Plugin
             }
             firetemp = (int)firestartemp;
             LastPower = 0;
+            if (Blowoff.BlowoffTime != 0)
+            {
+                Blowoff.BlowoffRate = (Blowoff.TriggerPressure - boilermaxpressure) / Blowoff.BlowoffTime;
 
+            }
         }
 
 
@@ -548,21 +550,57 @@ namespace Plugin
                     }
                     stm_boilerpressure = stm_boilerpressure + pressureup;
                     stm_boilerwater = stm_boilerwater - pressureup;
-                    //Blowoff
-                    if (stm_boilerpressure > blowoffpressure)
+                    //Newer standard blowoff handling
+                    if (stm_boilerpressure > boilermaxpressure)
                     {
-                        stm_boilerpressure = (int)boilermaxpressure;
-                        if (Blowoff.PlayOnceSound != -1)
+                        
+                        switch (Blowoff.BlowoffState)
                         {
-                            SoundManager.Play(Blowoff.PlayOnceSound, 2.0, 1.0, false);
+                            case Blowoff.BlowoffStates.None:
+                                
+                                //Switch to the over maximum pressure state, as we are over the max pressure
+                                Blowoff.BlowoffState = Blowoff.BlowoffStates.OverMaxPressure;
+                                Blowoff.Played = false;
+                                break;
+                            case Blowoff.BlowoffStates.OverMaxPressure:
+                                if (stm_boilerpressure > Blowoff.TriggerPressure)
+                                {
+                                    //If our boiler pressure is over the blowoff pressure, then switch to blowoff
+                                    Blowoff.BlowoffState = Blowoff.BlowoffStates.Blowoff;
+                                    break;
+                                }
+                                //Otherwise, reduce the pressure by 4
+                                //This is an OS_ATS quirk, remove???
+                                stm_boilerpressure = stm_boilerpressure - 4;
+                                break;
+                                case Blowoff.BlowoffStates.Blowoff:
+                                //Trigger the sound- Play only once
+                                if (!SoundManager.IsPlaying(Blowoff.SoundIndex) && Blowoff.Played == false)
+                                {
+                                    SoundManager.Play(Blowoff.SoundIndex, 1.0, 1.0, false);
+                                }
+                                Blowoff.Timer += maintimer;
+                                if (Blowoff.BlowoffRate != 0)
+                                {
+                                    //If a blowoff time has been set, then reduce the pressure by the calculated blowoff rate
+                                    stm_boilerpressure -= (int) Blowoff.BlowoffRate;
+                                }
+                                else
+                                {
+                                    //Otherwise, just run a simple 10-second timer
+                                    if (Blowoff.Timer > 10)
+                                    {
+                                        //Now reduce the boiler pressure to max, and drop the state back to none
+                                        stm_boilerpressure = (int)boilermaxpressure;
+                                        Blowoff.BlowoffState = Blowoff.BlowoffStates.None;
+                                    }
+                                }
+                                break;
                         }
-                        Blowoff.TogglePlayed = true;
-                        Train.DebugLogger.LogMessage("The boiler over-pressure blowoff triggered");
-
                     }
-                    else if (stm_boilerpressure > boilermaxpressure)
+                    else
                     {
-                        stm_boilerpressure = stm_boilerpressure - 4;
+                        Blowoff.BlowoffState = Blowoff.BlowoffStates.None;
                     }
 
                 }
@@ -794,26 +832,18 @@ namespace Plugin
                 }
                 if (Blowoff.PanelIndex != -1)
                 {
-                    if (Blowoff.TogglePlayed == true)
+                    if (Blowoff.BlowoffState == Blowoff.BlowoffStates.Blowoff)
                     {
-                        this.Train.Panel[(Blowoff.PanelIndex)] = 1;
-                        //Run a 10 second timer for the blowoff index to display
-                        this.blowofftimer += data.ElapsedTime.Seconds;
-                        if (this.blowofftimer > 10)
-                        {
-                            Blowoff.TogglePlayed = false;
-                            this.blowofftimer = 0;
-                        }
+                        this.Train.Panel[Blowoff.PanelIndex] = 1;
                     }
                     else
                     {
-                        this.Train.Panel[(Blowoff.PanelIndex)] = 0;
-
+                        this.Train.Panel[Blowoff.PanelIndex] = 0;
                     }
-                    if (steamheatindicator != -1)
-                    {
-                        this.Train.Panel[(steamheatindicator)] = steamheatlevel;
-                    }
+                }
+                if (steamheatindicator != -1)
+                {
+                    this.Train.Panel[(steamheatindicator)] = steamheatlevel;
                 }
             }
             {

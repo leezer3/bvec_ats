@@ -171,6 +171,8 @@
     </Compile>
     <Compile Include="SafetySystems\EN\TPWS.cs" />
     <Compile Include="Managers\TractionManager.cs" />
+    <Compile Include="Traction\Steam\Blowoff.States.cs" />
+    <Compile Include="Traction\Steam\Blowoff.cs" />
     <Compile Include="Train.cs" />
     <Compile Include="SafetySystems\EN\TPWS.SafetyStates.cs" />
     <Compile Include="SafetySystems\vigilance.cs" />
