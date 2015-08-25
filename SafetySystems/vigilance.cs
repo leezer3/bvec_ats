@@ -202,7 +202,7 @@ namespace Plugin
                     if (deadmanshandle != 0)
                     {
                         //Initialise and set the start state
-                        if (Train.StartupSelfTestManager.SequenceState != StartupSelfTestManager.SequenceStates.Initialised)
+                        if (Train.StartupSelfTestManager != null && Train.StartupSelfTestManager.SequenceState != StartupSelfTestManager.SequenceStates.Initialised)
                         {
                             //Startup self-test has not been performed, no systems active
                             DeadmansHandleState = DeadmanStates.None;

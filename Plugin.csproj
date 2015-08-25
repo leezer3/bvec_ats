@@ -146,6 +146,7 @@
     </Compile>
     <Compile Include="SafetySystems\JA\IndicatorLights.cs" />
     <Compile Include="Structures\Component.cs" />
+    <Compile Include="Structures\CustomIndicator.cs" />
     <Compile Include="Structures\DebugData.cs" />
     <Compile Include="SafetySystems\JA\Tasc.cs" />
     <Compile Include="Traction\Diesel\Western.cs" />

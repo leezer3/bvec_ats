@@ -1,7 +1,7 @@
 ﻿using System;
 using OpenBveApi.Runtime;
 using System.Drawing;
-using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Microsoft.Win32;
 
 namespace Plugin
@@ -98,6 +98,7 @@ namespace Plugin
         internal int travelmetermode = 0;
         internal string klaxonindicator = "-1";
         internal string customindicators = "-1";
+        internal string customindicatorsounds = "-1";
 
         //Default Key Assignments
         //Keys Down
@@ -181,8 +182,9 @@ namespace Plugin
 
         //Arrays
         int[] klaxonarray;
-        int[,] customindicatorsarray;
-
+        //Custom Indicators
+        internal CustomIndicator[] CustomIndicatorsArray = new CustomIndicator[10];
+        
         internal tractionmanager(Train train) {
 			this.Train = train;
                        
@@ -218,21 +220,62 @@ namespace Plugin
             {
                 //Split custom indicators into an array
                 string[] splitcustomindicators = customindicators.Split(',');
-                customindicatorsarray = new int[10, 2];
-                for (int i = 0; i < 9; i++)
+                for (int i = 0; i < CustomIndicatorsArray.Length; i++)
                 {
-                    //Parse the panel value and set second array value to false
+                    CustomIndicatorsArray[i] = new CustomIndicator();
+                    //Parse the panel value
                     if (i < splitcustomindicators.Length)
                     {
-                        customindicatorsarray[i, 0] = Int32.Parse(splitcustomindicators[i]);
-                        customindicatorsarray[i, 1] = 0;
+                        CustomIndicatorsArray[i].PanelIndex = Int32.Parse(splitcustomindicators[i]);
                     }
-                    else
+                    //Set the key assignments
+                    if (String.IsNullOrEmpty(CustomIndicatorsArray[i].Key))
                     {
-                        customindicatorsarray[i, 0] = -1;
-                        customindicatorsarray[i, 1] = 0;
+                        switch (i)
+                        {
+                            case 0:
+                                CustomIndicatorsArray[i].Key = customindicatorkey1;
+                            break;
+                            case 1:
+                                CustomIndicatorsArray[i].Key = customindicatorkey2;
+                            break;
+                            case 2:
+                                CustomIndicatorsArray[i].Key = customindicatorkey3;
+                            break;
+                            case 3:
+                                CustomIndicatorsArray[i].Key = customindicatorkey4;
+                            break;
+                            case 4:
+                                CustomIndicatorsArray[i].Key = customindicatorkey5;
+                            break;
+                            case 5:
+                                CustomIndicatorsArray[i].Key = customindicatorkey6;
+                            break;
+                            case 6:
+                                CustomIndicatorsArray[i].Key = customindicatorkey7;
+                            break;
+                            case 7:
+                                CustomIndicatorsArray[i].Key = customindicatorkey8;
+                            break;
+                            case 8:
+                                CustomIndicatorsArray[i].Key = customindicatorkey9;
+                            break;
+                            case 9:
+                                CustomIndicatorsArray[i].Key = customindicatorkey10;
+                            break;
+                        }
                     }
                 }
+                string[] splitcustomindicatorsounds = customindicatorsounds.Split(',');
+                for (int i = 0; i < CustomIndicatorsArray.Length; i++)
+                {
+                    //Parse the sound index value if the array value is not empty
+                    if (i < splitcustomindicators.Length && !String.IsNullOrEmpty(splitcustomindicatorsounds[i]))
+                    {
+                        CustomIndicatorsArray[i].SoundIndex = Int32.Parse(splitcustomindicatorsounds[i]);
+                    }
+                }
+
             }
             catch
             {
@@ -601,11 +644,11 @@ namespace Plugin
             }
             {
                 //Custom Indicators
-                for (int i = 0; i < customindicatorsarray.GetLength(0); i++)
+                for (int i = 0; i < CustomIndicatorsArray.GetLength(0); i++)
                 {
-                    if (customindicatorsarray[i, 0] != -1)
+                    if (CustomIndicatorsArray[i].PanelIndex != -1)
                     {
-                        Train.Panel[customindicatorsarray[i, 0]] = customindicatorsarray[i, 1];
+                        Train.Panel[CustomIndicatorsArray[i].PanelIndex] = Convert.ToInt32(CustomIndicatorsArray[i].Active);
                     }
                 }
             }
@@ -1091,157 +1134,20 @@ namespace Plugin
             {
                 Train.electric.pantographtoggle(1);
             }
-            
-            if (keypressed == customindicatorkey1)
+
+            foreach (CustomIndicator Indicator in CustomIndicatorsArray)
             {
-                //Toggle Custom Indicator 1
-                if (customindicatorsarray[0, 0] != -1)
+                if (keypressed == Indicator.Key)
                 {
-                    if (customindicatorsarray[0, 1] == 0)
+                    Indicator.Active = !Indicator.Active;
+                    //Play the toggle sound if this has been set
+                    if (Indicator.SoundIndex != -1)
                     {
-                        customindicatorsarray[0, 1] = 1;
-                    }
-                    else
-                    {
-                        customindicatorsarray[0, 1] = 0;
+                        SoundManager.Play(Indicator.SoundIndex, 1.0, 1.0, false);
                     }
                 }
             }
-            if (keypressed == customindicatorkey2)
-            {
-                //Toggle Custom Indicator 1
-                if (customindicatorsarray[1, 0] != -1)
-                {
-                    if (customindicatorsarray[1, 1] == 0)
-                    {
-                        customindicatorsarray[1, 1] = 1;
-                    }
-                    else
-                    {
-                        customindicatorsarray[1, 1] = 0;
-                    }
-                }
-            }
-            if (keypressed == customindicatorkey3)
-            {
-                //Toggle Custom Indicator 1
-                if (customindicatorsarray[2, 0] != -1)
-                {
-                    if (customindicatorsarray[2, 1] == 0)
-                    {
-                        customindicatorsarray[2, 1] = 1;
-                    }
-                    else
-                    {
-                        customindicatorsarray[2, 1] = 0;
-                    }
-                }
-            }
-            if (keypressed == customindicatorkey4)
-            {
-                //Toggle Custom Indicator 1
-                if (customindicatorsarray[3, 0] != -1)
-                {
-                    if (customindicatorsarray[3, 1] == 0)
-                    {
-                        customindicatorsarray[3, 1] = 1;
-                    }
-                    else
-                    {
-                        customindicatorsarray[3, 1] = 0;
-                    }
-                }
-            }
-            if (keypressed == customindicatorkey5)
-            {
-                //Toggle Custom Indicator 1
-                if (customindicatorsarray[4, 0] != -1)
-                {
-                    if (customindicatorsarray[4, 1] == 0)
-                    {
-                        customindicatorsarray[4, 1] = 1;
-                    }
-                    else
-                    {
-                        customindicatorsarray[4, 1] = 0;
-                    }
-                }
-            }
-            if (keypressed == customindicatorkey6)
-            {
-                //Toggle Custom Indicator 1
-                if (customindicatorsarray[5, 0] != -1)
-                {
-                    if (customindicatorsarray[5, 1] == 0)
-                    {
-                        customindicatorsarray[5, 1] = 1;
-                    }
-                    else
-                    {
-                        customindicatorsarray[5, 1] = 0;
-                    }
-                }
-            }
-            if (keypressed == customindicatorkey7)
-            {
-                //Toggle Custom Indicator 1
-                if (customindicatorsarray[6, 0] != -1)
-                {
-                    if (customindicatorsarray[6, 1] == 0)
-                    {
-                        customindicatorsarray[6, 1] = 1;
-                    }
-                    else
-                    {
-                        customindicatorsarray[6, 1] = 0;
-                    }
-                }
-            }
-            if (keypressed == customindicatorkey8)
-            {
-                //Toggle Custom Indicator 1
-                if (customindicatorsarray[7, 0] != -1)
-                {
-                    if (customindicatorsarray[7, 1] == 0)
-                    {
-                        customindicatorsarray[7, 1] = 1;
-                    }
-                    else
-                    {
-                        customindicatorsarray[7, 1] = 0;
-                    }
-                }
-            }
-            if (keypressed == customindicatorkey9)
-            {
-                //Toggle Custom Indicator 1
-                if (customindicatorsarray[8, 0] != -1)
-                {
-                    if (customindicatorsarray[8, 1] == 0)
-                    {
-                        customindicatorsarray[8, 1] = 1;
-                    }
-                    else
-                    {
-                        customindicatorsarray[8, 1] = 0;
-                    }
-                }
-            }
-            if (keypressed == customindicatorkey10)
-            {
-                //Toggle Custom Indicator 1
-                if (customindicatorsarray[9, 0] != -1)
-                {
-                    if (customindicatorsarray[9, 1] == 0)
-                    {
-                        customindicatorsarray[9, 1] = 1;
-                    }
-                    else
-                    {
-                        customindicatorsarray[9, 1] = 0;
-                    }
-                }
-            }
+
             if (keypressed == headcodekey)
             {
                 Animations.headcodetoggle();
