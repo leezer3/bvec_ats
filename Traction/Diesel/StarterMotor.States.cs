@@ -17,7 +17,9 @@
             /// <summary>The starter motor is currently running down. The numerical value of this constant is 5.</summary>
             RunDown = 5,
             /// <summary>The starter motor sequence can now be restarted. The numerical value of this constant is 6.</summary>
-            CanRestart = 6
+            CanRestart = 6,
+            /// <summary>The engine is now running. The numerical value of this constant is 7.</summary>
+            EngineRunning = 7
         }
     }
 }

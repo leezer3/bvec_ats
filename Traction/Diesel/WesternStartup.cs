@@ -5,12 +5,6 @@
     internal partial class WesternStartupManager
     {
         /// <summary>Gets the state of the startup self-test sequence.</summary>
-        internal SequenceStates StartupState
-        {
-            get { return this.StartupState; }
-            set { this.StartupState = value; }
-        }
-
-
+        internal SequenceStates StartupState { get; set; }
     }
 }

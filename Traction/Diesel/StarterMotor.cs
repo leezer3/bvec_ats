@@ -15,11 +15,11 @@ namespace Plugin
     partial class StarterMotor
     {
         /// <summary>The time in milliseconds taken for the starter motor to run up</summary>
-        internal int StartDelay = 0;
+        internal double StartDelay = 0;
         /// <summary>The time in milliseconds taken for the starter motor to run down</summary>
-        internal int RunDownDelay = 0;
+        internal double RunDownDelay = 0;
         /// <summary>The time in milliseconds taken for the engine to fire up</summary>
-        internal int FireUpDelay = 0;
+        internal double FireUpDelay = 0;
         /// <summary>The sound played whilst the starter motor is running up</summary>
         internal int StarterRunUpSound = -1;
         /// <summary>The sound played whilst the starter motor is active</summary>
@@ -39,6 +39,8 @@ namespace Plugin
         internal int MinimumStallProbability = 0;
         internal int MaximumStallProbability = 0;
 
+        internal bool StartBlocked;
+
         internal bool ComplexStarterModel;
 
         internal double StarterMotorTimer;
@@ -47,11 +49,7 @@ namespace Plugin
         readonly Random RandomNumber = new Random();
 
         /// <summary>Gets the state of the starter motor.</summary>
-        internal StarterMotorStates StarterMotorState
-        {
-            get { return this.StarterMotorState; }
-            set { this.StarterMotorState = value; }
-        }
+        internal StarterMotorStates StarterMotorState { get; set; }
 
         /// <summary>Runs the complex starter model. If this method returns true, the engine has started.</summary>
         internal bool RunComplexStarter(double ElapsedTime, bool StarterKeyPresed)
@@ -62,10 +60,15 @@ namespace Plugin
                 SoundManager.Stop(StarterLoopSound);
                 StarterMotorState = StarterMotorStates.RunDown;
             }
-            if (StarterKeyPresed && StarterMotorState == StarterMotorStates.None)
+            if (StarterKeyPresed && StarterMotorState == StarterMotorStates.None && StartBlocked == false)
             {
                 //If the starter key has been pressed and the starter motor is inactive, start the start sequence
-                StarterMotorState = StarterMotorStates.Active;
+                StarterMotorState = StarterMotorStates.RunUp;
+            }
+            if (!StarterKeyPresed && StarterMotorState == StarterMotorStates.None && StartBlocked)
+            {
+                //If the starter motor has returned to an inactive state and the starter key has been released, lift the block
+                StartBlocked = false;
             }
             switch (StarterMotorState)
             {
@@ -91,11 +94,13 @@ namespace Plugin
                     if (StartProbability == MaximumFireProbability)
                     {
                         StarterMotorState = StarterMotor.StarterMotorStates.EngineFire;
+                        return false;
                     }
                     //We've missed the firing trigger, but have hit the stall trigger- Stall
                     if (StallProbability == MaximumStallProbability)
                     {
                         StarterMotorState = StarterMotor.StarterMotorStates.EngineStall;
+                        return false;
                     }
                     return false;
                 case StarterMotor.StarterMotorStates.EngineFire:
@@ -103,11 +108,11 @@ namespace Plugin
                     SoundManager.Play(EngineFireSound, 1.0, 1.0, false);
                     //Elapse the timer
                     StarterMotorTimer += ElapsedTime;
-                    //If the fireup sequence is complete, then drop back to inactive
+                    //If the fireup sequence is complete, then shift to the running state
                     if (StarterMotorTimer > FireUpDelay)
                     {
                         StarterMotorTimer = 0.0;
-                        StarterMotorState = StarterMotor.StarterMotorStates.None;
+                        StarterMotorState = StarterMotor.StarterMotorStates.EngineRunning;
                         return true;
                     }
                     return false;
@@ -121,7 +126,8 @@ namespace Plugin
                     {
                         StarterMotorTimer = 0.0;
                         StarterMotorState = StarterMotor.StarterMotorStates.None;
-                        return true;
+                        StartBlocked = true;
+                        return false;
                     }
                     return false;
                 case StarterMotor.StarterMotorStates.RunDown:

@@ -21,7 +21,7 @@ namespace Plugin
         /// <summary>Stores whether the No. 2 Engine is currently running.</summary>
         internal bool Engine2Running;
         /// <summary>Stores which engine is currently selected for control.</summary>
-        internal int EngineSelector;
+        internal int EngineSelector = 2;
         /// <summary>Stores whether the starter key is currently pressed.</summary>
         internal bool StarterKeyPressed;
         /// <summary>Stores whether the battery is currently isolated.</summary>
@@ -33,19 +33,29 @@ namespace Plugin
         internal int ILCluster2 = -1;
         /// <summary>The panel variable for the master key.</summary>
         internal int MasterKey = -1;
+        /// <summary>The panel variable for the battery volts gauge.</summary>
+        internal int BatteryVoltsGauge = -1;
+        /// <summary>The panel variable for the battery charge gauge.</summary>
+        internal int BatteryChargeGauge = -1;
         internal bool ComplexStarterModel;
 
         internal int EngineLoopSound = -1;
 
         /// <summary>The sound index for the DSD Buzzer.</summary>
         internal int DSDBuzzer = -1;
+        /// <summary>The sound index for the battery isolation switch & master switch.</summary>
+        internal int SwitchSound = -1;
 
-        readonly StarterMotor Engine1Starter = new StarterMotor();
-        readonly StarterMotor Engine2Starter = new StarterMotor();
+        internal readonly StarterMotor Engine1Starter = new StarterMotor();
+        internal readonly StarterMotor Engine2Starter = new StarterMotor();
         internal readonly WesternStartupManager StartupManager = new WesternStartupManager();
         readonly GearBox Gears = new GearBox();
 
-
+        internal override void Initialize(InitializationModes mode)
+        {
+            Engine1Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
+            Engine2Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
+        }
 
 
         /// <summary>Is called every frame.</summary>
@@ -65,15 +75,23 @@ namespace Plugin
                         Engine1Running = true;
                     }
                 }
-
-                //Stop the engine loop sound from playing & demand power cutoff
-                SoundManager.Stop(EngineLoopSound);
-                Train.tractionmanager.demandpowercutoff();
             }
             else
             {
-                //Play the engine loop sound & reset power cutoff
-                SoundManager.Play(EngineLoopSound, 1.0, 1.0, false);
+                //If the engine running state has been triggered, then this will start the loop sound with appropriate paramaters
+                if (Engine1Starter.StarterMotorState == StarterMotor.StarterMotorStates.EngineRunning && !SoundManager.IsPlaying(Engine1Starter.EngineFireSound))
+                {
+                    if (Engine2Running == false)
+                    {
+                        SoundManager.Play(EngineLoopSound, 0.5, 1.0, true);
+                    }
+                    else
+                    {
+                        SoundManager.Play(EngineLoopSound, 1.0, 1.0, true);
+                    }
+                    Engine1Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
+                }
+                //Reset the power cutoff
                 Train.tractionmanager.resetpowercutoff();
             }
             if (Engine2Running == false)
@@ -87,16 +105,30 @@ namespace Plugin
                         Engine2Running = true;
                     }
                 }
-
-                //Stop the engine loop sound from playing & demand power cutoff
-                SoundManager.Stop(EngineLoopSound);
-                Train.tractionmanager.demandpowercutoff();
             }
             else
             {
-                //Play the engine loop sound & reset power cutoff
-                SoundManager.Play(EngineLoopSound, 1.0, 1.0, false);
+                //If the engine running state has been triggered, then this will start the loop sound with appropriate paramaters
+                if (Engine2Starter.StarterMotorState == StarterMotor.StarterMotorStates.EngineRunning && !SoundManager.IsPlaying(Engine1Starter.EngineFireSound))
+                {
+                    if (Engine1Running == false)
+                    {
+                        SoundManager.Play(EngineLoopSound, 0.5, 1.0, true);
+                    }
+                    else
+                    {
+                        SoundManager.Play(EngineLoopSound, 1.0, 1.0, true);
+                    }
+                    Engine2Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
+                }
+                //Reset the power cutoff
                 Train.tractionmanager.resetpowercutoff();
+            }
+            //If neither engine is running, stop the playing loop sound and demand power cutoff
+            if (Engine1Running == false && Engine2Running == false)
+            {
+                SoundManager.Stop(EngineLoopSound);
+                Train.tractionmanager.demandpowercutoff();
             }
             //This loco has a gearbox
             data.Handles.PowerNotch = Gears.RunGearBox();
@@ -109,6 +141,7 @@ namespace Plugin
                     case WesternStartupManager.SequenceStates.Pending:
                         if (BatteryIsolated == false)
                         {
+                            SoundManager.Play(SwitchSound, 1.0, 1.0 ,false);
                             StartupManager.StartupState = WesternStartupManager.SequenceStates.BatteryEnergized;
                         }
                         break;
@@ -197,10 +230,57 @@ namespace Plugin
                         this.Train.Panel[MasterKey] = 0;   
                     }
                 }
+                if (BatteryVoltsGauge != -1)
+                {
+                    //If the startup sequence is greater than or equal to 1, then there are battery volts available
+                    //This panel index should rotate the volts switch and increase the voltmeter dial to running
+                    if ((int) StartupManager.StartupState >= 1)
+                    {
+                        this.Train.Panel[BatteryVoltsGauge] = 1;
+                    }
+                    else
+                    {
+                        this.Train.Panel[BatteryVoltsGauge] = 0;
+                    }
+                }
+                if (BatteryChargeGauge != -1)
+                {
+                    //If the startup sequence is greater than or equal to 1, then the battery charge gauge should go to nil
+                    if ((int)StartupManager.StartupState >= 1)
+                    {
+                        if (Engine1Starter.StarterMotorState != StarterMotor.StarterMotorStates.None || Engine2Starter.StarterMotorState != StarterMotor.StarterMotorStates.None)
+                        {
+                            //The battery is discharging due to a starter motor running
+                            this.Train.Panel[BatteryChargeGauge] = 1;    
+                        }
+                        else if (Engine1Running || Engine2Running)
+                        {
+                            //The battery is charging as an engine is running
+                            this.Train.Panel[BatteryChargeGauge] = 3;
+                        }
+                        else
+                        {
+                            //The battery is neither charging or discharging as no engines are running
+                            this.Train.Panel[BatteryChargeGauge] = 2;
+                        }
+                    }
+                    else
+                    {
+                        //The gauge is at the rest position
+                        this.Train.Panel[BatteryChargeGauge] = 0;
+                    }
+                }
             }
             //Temporarily pass the startup self-test manager state out to string
             //Remove this later....
-            data.DebugMessage = StartupManager.StartupState.ToString();
+            if (StartupManager.StartupState != WesternStartupManager.SequenceStates.ReadyToStart)
+            {
+                data.DebugMessage = StartupManager.StartupState.ToString();
+            }
+            else
+            {
+                data.DebugMessage = Engine2Starter.StarterMotorState.ToString();
+            }
         }
     }
 }

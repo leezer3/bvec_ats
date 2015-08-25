@@ -148,6 +148,7 @@ namespace Plugin
         internal string WesternBatterySwitch;
         internal string WesternMasterKey;
         internal string WesternTransmissionResetButton;
+        internal string WesternEngineSwitchKey;
 
         //KEYS ADDED BY OS_SZ_ATS
 
@@ -1427,6 +1428,17 @@ namespace Plugin
                     if (Train.WesternDiesel.StartupManager.StartupState == WesternStartupManager.SequenceStates.BatteryEnergized)
                     {
                         Train.WesternDiesel.StartupManager.StartupState = WesternStartupManager.SequenceStates.MasterKeyInserted;
+                    }
+                }
+                if (keypressed == WesternEngineSwitchKey)
+                {
+                    if (Train.WesternDiesel.EngineSelector == 1)
+                    {
+                        Train.WesternDiesel.EngineSelector = 2;
+                    }
+                    else
+                    {
+                        Train.WesternDiesel.EngineSelector = 1;
                     }
                 }
             }

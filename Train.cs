@@ -807,6 +807,49 @@ namespace Plugin {
 
 			                        }
 			                        break;
+                                case "westerndiesel":
+                                    switch (key)
+                                    {
+                                        case "ilcluster1":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.ILCluster1, key);
+                                            break;
+                                        case "ilcluster2":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.ILCluster2, key);
+                                            break;
+                                        case "masterkey":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.MasterKey, key);
+                                            break;
+                                        case "startdelay":
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.StartDelay, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.StartDelay, key);
+                                            break;
+                                        case "fireupdelay":
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.FireUpDelay, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.FireUpDelay, key);
+                                            break;
+                                        case "rundowndelay":
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.RunDownDelay, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.RunDownDelay, key);
+                                            break;
+                                        case "dsdsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.DSDBuzzer, key);
+                                            break;
+                                        case "engineloopsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.EngineLoopSound, key);
+                                            break;
+                                        case "enginefiresound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Starter.EngineFireSound, key);
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Starter.EngineFireSound, key);
+                                            break;
+                                        case "enginestallsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Starter.EngineStallSound, key);
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Starter.EngineStallSound, key);
+                                            break;
+                                        case "switchsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.SwitchSound, key);
+                                            break;
+                                    }
+                                    break;
 			                    case "vigilance":
 			                        switch (key)
 			                        {
@@ -1474,7 +1517,9 @@ namespace Plugin {
 			                            case "fuelkey":
 			                                this.tractionmanager.fuelkey = value;
 			                                break;
-
+                                        case "enginestartkey":
+			                                this.tractionmanager.EngineStartKey = value;
+			                                break;
 			                            case "wiperspeedup":
 			                                this.tractionmanager.wiperspeedup = value;
 			                                break;
@@ -1609,6 +1654,19 @@ namespace Plugin {
                                         case "pzbstopoverridekey":
 			                                this.tractionmanager.PZBStopOverrideKey = value;
 			                                break;
+                                        //Keys added for BR Class 52 'Western' Diesel Locomotive
+                                        case "westernbatteryswitch":
+                                            this.tractionmanager.WesternBatterySwitch = value;
+                                            break;
+                                        case "westernmasterkey":
+			                                this.tractionmanager.WesternMasterKey = value;
+                                            break;
+                                        case "westerntransmissionresetkey":
+			                                this.tractionmanager.WesternTransmissionResetButton = value;
+                                            break;
+                                        case "westernengineswitchkey":
+			                                this.tractionmanager.WesternEngineSwitchKey = value;
+			                                break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
@@ -1720,6 +1778,10 @@ namespace Plugin {
             if (this.AtsSx != null)
             {
                 devices.Add(this.AtsSx);
+            }
+            if (this.WesternDiesel != null)
+            {
+                devices.Add(this.WesternDiesel);
             }
 			this.Devices = devices.ToArray();
 		}
