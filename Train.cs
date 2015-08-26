@@ -851,6 +851,12 @@ namespace Plugin {
                                         case "switchsound":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.SwitchSound, key);
                                             break;
+                                        case "voltsgauge":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.BatteryVoltsGauge, key);
+                                            break;
+                                        case "ampsgauge":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.BatteryChargeGauge, key);
+                                            break;
                                     }
                                     break;
 			                    case "vigilance":

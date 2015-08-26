@@ -16,6 +16,7 @@ namespace Plugin.AI
             this.Train = train;
         }
 
+        internal bool WesternEnginesRunning;
         internal bool PantographRising;
         internal bool SelfTestPerformed;
         internal int SelfTestSequence = 0;
@@ -26,8 +27,7 @@ namespace Plugin.AI
             //Check if we need to perform the startup self-test
             if (SelfTestPerformed == false)
             {
-
-                if (Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.Initialised)
+                if (Train.StartupSelfTestManager == null ||Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.Initialised)
                 {
                     SelfTestPerformed = true;
                 }
@@ -83,6 +83,9 @@ namespace Plugin.AI
                 case 2:
                     ElectricLocomotive(ref data);
                     break;
+                case 3:
+                    WesternDiesel(ref data);
+                    break;
             }
             //Hit the deadman's handle key if required
             if (Train.vigilance != null && Train.vigilance.deadmanshandle != 0)
@@ -134,6 +137,73 @@ namespace Plugin.AI
             {
                 Train.diesel.automatic = true;
             }
+        }
+
+        /// <summary>Represents the driver class for a BR Class 52 'Western' Diesel</summary>
+        internal void WesternDiesel(ref AIData data)
+        {
+            if (WesternEnginesRunning == false)
+            {
+                switch (Train.WesternDiesel.StartupManager.StartupState)
+                {
+                    //First, check if the battery is currently isolated
+                    case WesternStartupManager.SequenceStates.Pending:
+                        Train.WesternDiesel.BatteryIsolated = false;
+                        data.Response = AIResponse.Short;
+                        return;
+                    //The battery is energised, so insert the master key
+                    case WesternStartupManager.SequenceStates.BatteryEnergized:
+                        Train.WesternDiesel.StartupManager.StartupState =
+                            WesternStartupManager.SequenceStates.MasterKeyInserted;
+                        data.Response = AIResponse.Short;
+                        return;
+                    //Shift the reverser forwards
+                    case WesternStartupManager.SequenceStates.MasterKeyInserted:
+                        if (data.Handles.Reverser == 0)
+                        {
+                            data.Handles.Reverser = 1;
+                            data.Response = AIResponse.Long;
+                            return;
+                        }
+                        data.Handles.Reverser = 0;
+                        data.Response = AIResponse.Long;
+                        return;
+                    //Acknowledge DSD
+                    case WesternStartupManager.SequenceStates.DirectionSelected:
+                        Train.WesternDiesel.StartupManager.StartupState =
+                            WesternStartupManager.SequenceStates.DSDAcknowledged;
+                        data.Response = AIResponse.Long;
+                        return;
+                    //Return reverser to neutral
+                    case WesternStartupManager.SequenceStates.DSDAcknowledged:
+                        data.Handles.Reverser = 0;
+                        data.Response = AIResponse.Long;
+                        return;
+                    //Turn on starter motor
+                    case WesternStartupManager.SequenceStates.ReadyToStart:
+                        Train.WesternDiesel.StarterKeyPressed = true;
+                        if (Train.WesternDiesel.Engine2Running == true)
+                        {
+                            Train.WesternDiesel.EngineSelector = 1;
+                            data.Response = AIResponse.Long;
+                        }
+                        if (Train.WesternDiesel.Engine1Running == true)
+                        {
+                            Train.WesternDiesel.StarterKeyPressed = false;
+                            WesternEnginesRunning = true;
+                            data.Response = AIResponse.Long;
+                        }
+                        return;
+
+
+                }
+            }
+            else
+            {
+                //Our engines are running
+                //This will require implementation of handling for the Tooth on Tooth button
+            }
+
         }
 
         /// <summary>Represents the driver class for an electric locomotive</summary>

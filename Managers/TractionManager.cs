@@ -282,6 +282,8 @@ namespace Plugin
                 InternalFunctions.LogError("customindicators",0);
             }
             //Set traction type to pass to debug window
+            //TODO:
+            //This should be able to be moved to when the traction type is loaded
             if (Train.steam != null)
             {
                 tractiontype = 0;
@@ -290,10 +292,20 @@ namespace Plugin
             {
                 tractiontype = 1;
             }
-            else
+            else if (Train.electric != null)
             {
                 tractiontype = 2;
             }
+            else if (Train.WesternDiesel != null)
+            {
+                tractiontype = 3;
+            }
+            else
+            {
+                //Set traction type to 99 (Unknown)
+                tractiontype = 99;
+            }
+            
 		    MaximumPowerNotch = this.Train.Specs.PowerNotches;
 		    SafetySystemMaximumPowerNotch = this.Train.Specs.PowerNotches;
 		}
@@ -730,6 +742,7 @@ namespace Plugin
             //Do not reset power cutoff if still overheated
             if (overheated == true)
             {
+                Train.DebugLogger.LogMessage("Traction power was not restored due to an overheated engine");
                 return;
             }
             //Do not reset power cutoff if AWS brake demands are active
@@ -737,31 +750,37 @@ namespace Plugin
                 (Train.AWS.SafetyState == AWS.SafetyStates.TPWSAWSBrakeDemandIssued ||
                  Train.AWS.SafetyState == AWS.SafetyStates.TPWSTssBrakeDemandIssued))
             {
+                Train.DebugLogger.LogMessage("Traction power was not restored due to an AWS/ TPWS intervention");
                 return;
             }
             //Do not reset power cutoff if DRA is active
             if (Train.drastate == true)
             {
+                Train.DebugLogger.LogMessage("Traction power was not restored due to the DRA being active");
                 return;
             }
             //Do not reset power cutoff if doors are still open
             if (doorlock == true)
             {
+                Train.DebugLogger.LogMessage("Traction power was not restored due to the doors power lock being active");
                 return;
             }
             //Do not reset power cutoff if ATC is still demanding power cutoff via open doors
             if (Train.Atc != null && (Train.Atc.State != Atc.States.Disabled && this.Train.Doors != DoorStates.None))
             {
+                Train.DebugLogger.LogMessage("Traction power was not restored due to the ATC door power lock being active");
                 return;
             }
             //Do not reset power cutoff if ATS-P is still demanding power cutoff via open doors
             if (Train.AtsP != null && (Train.AtsP.State != AtsP.States.Disabled && this.Train.Doors != DoorStates.None))
             {
+                Train.DebugLogger.LogMessage("Traction power was not restored due to the ATS-P power lock being active");
                 return;
             }
             //Do not reset power cutoff if ATS-SX is still demanding power cutoff via open doors
             if (Train.AtsSx != null && (Train.AtsSx.State != AtsSx.States.Disabled && this.Train.Doors != DoorStates.None))
             {
+                Train.DebugLogger.LogMessage("Traction power was not restored due to the ATS-Sx power lock being active");
                 return;
             }
             Train.tractionmanager.powercutoffdemanded = false;

@@ -38,6 +38,8 @@ namespace Plugin
         /// <summary>The panel variable for the battery charge gauge.</summary>
         internal int BatteryChargeGauge = -1;
         internal bool ComplexStarterModel;
+        /// <summary>This is the number of RPM per notch.</summary>
+        internal int RPMPerNotch = (1530 - 630) / 10;
 
         internal int EngineLoopSound = -1;
 
@@ -49,6 +51,7 @@ namespace Plugin
         internal readonly StarterMotor Engine1Starter = new StarterMotor();
         internal readonly StarterMotor Engine2Starter = new StarterMotor();
         internal readonly WesternStartupManager StartupManager = new WesternStartupManager();
+        internal readonly WesternGearBox GearBox = new WesternGearBox();
         readonly GearBox Gears = new GearBox();
 
         internal override void Initialize(InitializationModes mode)
@@ -92,7 +95,11 @@ namespace Plugin
                     Engine1Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
                 }
                 //Reset the power cutoff
-                Train.tractionmanager.resetpowercutoff();
+                if (Train.tractionmanager.powercutoffdemanded == true)
+                {
+                    Train.DebugLogger.LogMessage("Western Diesel- Engine 1 started.");
+                    Train.tractionmanager.resetpowercutoff();
+                }
             }
             if (Engine2Running == false)
             {
@@ -122,13 +129,51 @@ namespace Plugin
                     Engine2Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
                 }
                 //Reset the power cutoff
-                Train.tractionmanager.resetpowercutoff();
+                if (Train.tractionmanager.powercutoffdemanded == true)
+                {
+                    Train.DebugLogger.LogMessage("Western Diesel- Engine 2 started.");
+                    Train.tractionmanager.resetpowercutoff();
+                }
             }
             //If neither engine is running, stop the playing loop sound and demand power cutoff
             if (Engine1Running == false && Engine2Running == false)
             {
+                
                 SoundManager.Stop(EngineLoopSound);
-                Train.tractionmanager.demandpowercutoff();
+                if (Train.tractionmanager.powercutoffdemanded == false)
+                {
+                    Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to no available engines.");
+                    Train.tractionmanager.demandpowercutoff();
+                }
+            }
+            else
+            {
+                if (GearBox.TorqueConvertorState != WesternGearBox.TorqueConvertorStates.OnService)
+                {
+                    //If the torque convertor is not on service, then cut power
+                    if (Train.tractionmanager.powercutoffdemanded == false)
+                    {
+                        Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due the torque convertor being out of service.");
+                        Train.tractionmanager.demandpowercutoff();
+                    }
+                    //Now, run the startup sequence
+                    if (Train.Handles.Reverser != 0 && Train.Handles.PowerNotch != 0)
+                    {
+                        if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.Empty)
+                        {
+                            GearBox.TorqueConvertorState = WesternGearBox.TorqueConvertorStates.FillInProgress;
+                        }
+                        GearBox.TorqueConvertorTimer += data.ElapsedTime.Milliseconds;
+                        if (GearBox.TorqueConvertorTimer > 6000)
+                        {
+                            GearBox.TorqueConvertorState = WesternGearBox.TorqueConvertorStates.OnService;
+                            GearBox.TorqueConvertorTimer = 0.0;
+                            Train.DebugLogger.LogMessage("Western Diesel- An attempt was made to restore traction power due to the torque convertor coming on service.");
+                            Train.tractionmanager.resetpowercutoff();
+                        }
+                    }
+
+                }
             }
             //This loco has a gearbox
             data.Handles.PowerNotch = Gears.RunGearBox();
@@ -182,8 +227,17 @@ namespace Plugin
                     }
                     else
                     {
-                        //If we are not in the pending state, then IL cluster 2 should be all lit
-                        this.Train.Panel[ILCluster2] = 1;
+                        //If we are not in the pending state, but our torque convertor is not yet on service
+                        //All lights should be blue, other than torque convertor (Red)
+                        if (GearBox.TorqueConvertorState != WesternGearBox.TorqueConvertorStates.OnService)
+                        {
+                            this.Train.Panel[ILCluster2] = 1;
+                        }
+                        //Otherwise, all lights blue
+                        else
+                        {
+                            this.Train.Panel[ILCluster2] = 2;
+                        }
                     }
                 }
                 if (ILCluster1 != -1)
@@ -236,7 +290,14 @@ namespace Plugin
                     //This panel index should rotate the volts switch and increase the voltmeter dial to running
                     if ((int) StartupManager.StartupState >= 1)
                     {
-                        this.Train.Panel[BatteryVoltsGauge] = 1;
+                        if (Engine1Starter.StarterMotorState != StarterMotor.StarterMotorStates.None || Engine2Starter.StarterMotorState != StarterMotor.StarterMotorStates.None)
+                        {
+                            this.Train.Panel[BatteryVoltsGauge] = 2;
+                        }
+                        else
+                        {
+                            this.Train.Panel[BatteryVoltsGauge] = 1;
+                        }
                     }
                     else
                     {
@@ -256,12 +317,12 @@ namespace Plugin
                         else if (Engine1Running || Engine2Running)
                         {
                             //The battery is charging as an engine is running
-                            this.Train.Panel[BatteryChargeGauge] = 3;
+                            this.Train.Panel[BatteryChargeGauge] = 2;
                         }
                         else
                         {
                             //The battery is neither charging or discharging as no engines are running
-                            this.Train.Panel[BatteryChargeGauge] = 2;
+                            this.Train.Panel[BatteryChargeGauge] = 0;
                         }
                     }
                     else

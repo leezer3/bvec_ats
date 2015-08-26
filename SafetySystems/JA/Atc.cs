@@ -437,8 +437,8 @@ namespace Plugin
                                 {
                                     break;
                                 }
-                                int num5 = Math.Min(Math.Max(0, (int)Math.Floor(0.72 * this.Pattern.CurrentSpeed + 0.001)), 59);
-                                int num6 = Math.Min(Math.Max(0, (int)Math.Floor(0.72 * this.Pattern.Signal.FinalSpeed + 0.001)), 59);
+                                int num5 = Math.Min(Math.Max(0, (int)Math.Floor(0.72 * this.Pattern.CurrentSpeed + 0.001)), 100);
+                                int num6 = Math.Min(Math.Max(0, (int)Math.Floor(0.72 * this.Pattern.Signal.FinalSpeed + 0.001)), 100);
                                 for (int i = num6; i <= num5; i++)
                                 {
                                     this.Train.Panel[120 + i] = 1;

@@ -155,6 +155,7 @@
     <Compile Include="Traction\Diesel\StarterMotor.cs" />
     <Compile Include="SafetySystems\vigilance.DeadmanStates.cs" />
     <Compile Include="Traction\diesel.cs" />
+    <Compile Include="Traction\Diesel\WesternGearBox.cs" />
     <Compile Include="Traction\Diesel\WesternStartup.cs" />
     <Compile Include="Traction\Diesel\WesternStartup.States.cs" />
     <Compile Include="Traction\Electric\electric.cs" />
