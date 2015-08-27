@@ -27,6 +27,8 @@ namespace Plugin
         internal int EngineSelector = 2;
         /// <summary>Stores whether the starter key is currently pressed.</summary>
         internal bool StarterKeyPressed;
+        /// <summary>Stores whether the engine stop key is currently pressed.</summary>
+        internal bool StopKeyPressed;
         /// <summary>Stores whether the battery is currently isolated.</summary>
         internal bool BatteryIsolated = true;
 
@@ -51,6 +53,10 @@ namespace Plugin
         internal int RPMGauge1 = -1;
         /// <summary>The panel variable for the engine #2 RPM Gauge.</summary>
         internal int RPMGauge2 = -1;
+        /// <summary>The panel variable for the engine #1 button states.</summary>
+        internal int Engine1Button = -1;
+        /// <summary>The panel variable for the engine #2 button states.</summary>
+        internal int Engine2Button = -1;
 
         internal int EngineLoopSound = -1;
 
@@ -221,7 +227,7 @@ namespace Plugin
             }
 
             //This section of code handles the startup self-test routine
-            if (StartupManager.StartupState != WesternStartupManager.SequenceStates.ReadyToStart)
+            if (StartupManager.StartupState != WesternStartupManager.SequenceStates.ReadyToStart || StartupManager.StartupState != WesternStartupManager.SequenceStates.AWSOnline)
             {
                 switch (StartupManager.StartupState)
                 {
@@ -419,6 +425,50 @@ namespace Plugin
                         this.Train.Panel[RPMGauge2] = 0;
                     }
                 }
+                if (Engine1Button != -1)
+                {
+                    if (EngineSelector == 1)
+                    {
+                        if (StarterKeyPressed)
+                        {
+                            this.Train.Panel[Engine1Button] = 1;    
+                        }
+                        else if (StopKeyPressed)
+                        {
+                            this.Train.Panel[Engine1Button] = 2;    
+                        }
+                        else
+                        {
+                            this.Train.Panel[Engine1Button] = 0;    
+                        }
+                    }
+                    else
+                    {
+                        this.Train.Panel[Engine1Button] = 0;
+                    }
+                }
+                if (Engine2Button != -1)
+                {
+                    if (EngineSelector == 2)
+                    {
+                        if (StarterKeyPressed)
+                        {
+                            this.Train.Panel[Engine2Button] = 1;
+                        }
+                        else if (StopKeyPressed)
+                        {
+                            this.Train.Panel[Engine2Button] = 2;
+                        }
+                        else
+                        {
+                            this.Train.Panel[Engine2Button] = 0;
+                        }
+                    }
+                    else
+                    {
+                        this.Train.Panel[Engine2Button] = 0;
+                    }
+                }
             }
             //Temporarily pass the startup self-test manager state out to string
             //Remove this later....
@@ -429,6 +479,31 @@ namespace Plugin
             else
             {
                 data.DebugMessage = Engine2Starter.StarterMotorState.ToString();
+            }
+        }
+
+        internal void ToggleAWS()
+        {
+            //If we are the locomotive is ready to start, then switch the AWS to online
+            //This will begin the standard BVE startup self-test sequence
+            if (StartupManager.StartupState == WesternStartupManager.SequenceStates.ReadyToStart)
+            {
+                Train.DebugLogger.LogMessage("Western Diesel- AWS System energized.");
+                StartupManager.StartupState = WesternStartupManager.SequenceStates.AWSOnline;
+                return;
+            }
+            //If the AWS safety state is clear or none, then we may isolate it
+            if (Train.AWS.SafetyState == AWS.SafetyStates.Clear || Train.AWS.SafetyState == AWS.SafetyStates.None)
+            {
+                Train.DebugLogger.LogMessage("Western Diesel- AWS System Isolated.");
+                Train.tractionmanager.isolatetpwsaws();
+                return;
+            }
+            //If the AWS has been isolated by the driver, issue an unconditional reset
+            if (Train.AWS.SafetyState == AWS.SafetyStates.Isolated)
+            {
+                Train.DebugLogger.LogMessage("Western Diesel- AWS System reset.");
+                Train.tractionmanager.reenabletpwsaws();
             }
         }
     }

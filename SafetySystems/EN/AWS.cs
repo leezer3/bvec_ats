@@ -162,10 +162,16 @@ namespace Plugin
                         }
                         else
                         {
-                            Train.DebugLogger.LogMessage("Power cutoff was demanded by the AWS");
-                            Train.tractionmanager.demandpowercutoff();
-                            Train.DebugLogger.LogMessage("Emergency brakes were demanded by the AWS");
-                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                            if (Train.tractionmanager.powercutoffdemanded == false)
+                            {
+                                Train.DebugLogger.LogMessage("Power cutoff was demanded by the AWS due to a warning not being acknowledged in time");
+                                Train.tractionmanager.demandpowercutoff();
+                            }
+                            if (Train.tractionmanager.currentbrakenotch != this.Train.Specs.BrakeNotches +1)
+                            {
+                                Train.DebugLogger.LogMessage("Emergency brakes were demanded by the AWS due to a warning not being acknowledged in time");
+                                Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                            }
                         }
                     }
                     else if (this.MySafetyState == SafetyStates.SelfTest)
@@ -226,13 +232,16 @@ namespace Plugin
                     this.SunflowerState = SunflowerStates.Warn;
                 }
                 /* Set the state of the AWS Sunflower instrument */
-                if (this.SunflowerState == SunflowerStates.Warn)
+                if (awsindicator != -1)
                 {
-                    this.Train.Panel[10] = 1;
-                }
-                else
-                {
-                    this.Train.Panel[10] = 0;
+                    if (this.SunflowerState == SunflowerStates.Warn)
+                    {
+                        this.Train.Panel[awsindicator] = 1;
+                    }
+                    else
+                    {
+                        this.Train.Panel[awsindicator] = 0;
+                    }
                 }
             }
         }
@@ -297,8 +306,14 @@ namespace Plugin
             this.suppressionlocation = 0;
             this.MySafetyState = SafetyStates.None;
             this.SunflowerState = SunflowerStates.Warn;
-            Train.tractionmanager.resetbrakeapplication();
-            Train.tractionmanager.resetpowercutoff();
+            if (Train.tractionmanager.brakedemanded == true)
+            {
+                Train.tractionmanager.resetbrakeapplication();
+            }
+            if (Train.tractionmanager.powercutoffdemanded == true)
+            {
+                Train.tractionmanager.resetpowercutoff();
+            }
         }
 
         /// <summary>Call this method to isolate the Automatic Warning System</summary>

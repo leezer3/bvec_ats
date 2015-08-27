@@ -125,7 +125,11 @@ namespace Plugin
                         /* TPWS OSS is enabled with legacy behaviour, so check the train's current speed, and issue a Brake Demand if travelling too fast */
                         if (Train.trainspeed > this.osslastspeed)
                         {
-                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches +1);
+                            if (Train.tractionmanager.currentbrakenotch != this.Train.Specs.BrakeNotches + 1)
+                            {
+                                Train.DebugLogger.LogMessage("Emergency brakes were demanded by the TPWS Overspeed system");
+                                Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                            }
                             this.MySafetyState = SafetyStates.TssBrakeDemand;
                             this.osslastspeed = 0;
                         }
@@ -227,7 +231,11 @@ namespace Plugin
                     {
                         /* A TPWS Brake Demand has been issued.
                          * Increment the blink timer to enable the Brake Demand indicator to flash */
-                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                        if (Train.tractionmanager.currentbrakenotch != this.Train.Specs.BrakeNotches + 1)
+                        {
+                            Train.DebugLogger.LogMessage("Emergency brakes were demanded by the TPWS Trainstop system");
+                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                        }
                         this.indicatorblinktimer = this.indicatorblinktimer + (int)data.ElapsedTime.Milliseconds;
                         if (this.indicatorblinktimer >= 0 && indicatorblinktimer < this.brakeindicatorblinkrate)
                         {
@@ -336,10 +344,7 @@ namespace Plugin
                         /* Issue the brake demand */
                         this.MySafetyState = SafetyStates.TssBrakeDemand;
                         Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
-                  //      if (Plugin.Diesel.Enabled)
-                  //      {
-                  //          InterlockManager.DemandTractionPowerCutoff();
-                  //      }
+
 
                         /* Raise an event signalling that a TPWS Brake Demand has been made, for event subscribers (such as the AWS). */
                         if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerActive ||

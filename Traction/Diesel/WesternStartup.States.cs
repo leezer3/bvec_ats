@@ -23,6 +23,8 @@
             NeutralSelected = 6,
             /// <summary>The locomotive is now ready to start. The numerical value of this constant is 6.</summary>
             ReadyToStart = 7,
+            /// <summary>The locomotive's AWS system has been energized.</summary>
+            AWSOnline = 8
         }
     }
 }

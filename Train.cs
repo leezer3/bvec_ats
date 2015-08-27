@@ -866,6 +866,12 @@ namespace Plugin {
                                         case "rpmgauge2":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.RPMGauge2, key);
                                             break;
+                                        case "engine1button":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Button, key);
+                                            break;
+                                        case "engine2button":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Button, key);
+                                            break;
                                     }
                                     break;
 			                    case "vigilance":
@@ -1588,7 +1594,6 @@ namespace Plugin {
 			                                break;
 			                            case "customindicatorkey10":
 			                                this.tractionmanager.customindicatorkey10 = value;
-			                                break;
 			                                break;
 			                            case "frontpantographkey":
 			                                this.tractionmanager.frontpantographkey = value;

@@ -150,6 +150,7 @@ namespace Plugin
         internal string WesternMasterKey;
         internal string WesternTransmissionResetButton;
         internal string WesternEngineSwitchKey;
+        internal string WesternAWSIsolationKey;
 
         //KEYS ADDED BY OS_SZ_ATS
 
@@ -489,7 +490,7 @@ namespace Plugin
                 {
                     data.DebugMessage = "Brake Notch demanaded by SCMT Constant Speed Device";
                 }
-                else if (Train.CAWS.enabled == true)
+                else if (Train.CAWS != null && Train.CAWS.enabled == true)
                 {
                     data.DebugMessage = "EB Brakes demanded by CAWS Safety System";
                 }
@@ -1139,14 +1140,21 @@ namespace Plugin
             }
             if (keypressed == isolatesafetykey)
             {
-                //Isolate Safety Systems
-                if (safetyisolated == false)
+                if (Train.WesternDiesel != null)
                 {
-                    isolatetpwsaws();
+                    Train.WesternDiesel.ToggleAWS();
                 }
                 else
                 {
-                    reenabletpwsaws();
+                    //Isolate Safety Systems
+                    if (safetyisolated == false)
+                    {
+                        isolatetpwsaws();
+                    }
+                    else
+                    {
+                        reenabletpwsaws();
+                    }
                 }
             }
             //Toggle Pantographs
@@ -1359,6 +1367,11 @@ namespace Plugin
                     {
                         Train.WesternDiesel.StartupManager.StartupState = WesternStartupManager.SequenceStates.MasterKeyInserted;
                     }
+                }
+                
+                if (keypressed == WesternAWSIsolationKey)
+                {
+                    Train.WesternDiesel.ToggleAWS();
                 }
                 if (keypressed == WesternEngineSwitchKey)
                 {

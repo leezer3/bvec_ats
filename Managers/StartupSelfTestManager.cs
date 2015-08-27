@@ -40,6 +40,12 @@ namespace Plugin {
 
         internal override void Initialize(InitializationModes mode)
         {
+            if (Train.WesternDiesel != null)
+            {
+                Train.AWS.enabled = false;
+                Train.TPWS.enabled = false;
+                return;
+            }
             if (Train.AWS.enabled == false && Train.TPWS.enabled == false)
             {
                 //Set to initialised if no AWS/ TPWS is installed
@@ -75,7 +81,13 @@ namespace Plugin {
 		/// <summary>Re-initialises the system to its default state. This will also clear any active warnings, so if calling this method externally,
 		/// only do so via the Plugin.Initialize() method.</summary>
 		/// <param name="mode">The initialisation mode as set by the host application.</param>
-		internal static void Reinitialise(InitializationModes mode) {
+		internal void Reinitialise(InitializationModes mode) {
+            if (Train.WesternDiesel != null)
+            {
+                Train.AWS.enabled = false;
+                Train.TPWS.enabled = false;
+                return;
+            }
 			if (mode == InitializationModes.OnService) {
 				MySequenceTimer = SequenceDuration;
 				MySequenceState = SequenceStates.Initialised;
@@ -98,6 +110,21 @@ namespace Plugin {
         /// <param name="data">The data.</param>
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
 		internal override void Elapse(ElapseData data, ref bool blocking){
+            //The Western requires special handling- Return if AWS has not been switched in from the cab
+            if (Train.WesternDiesel != null && Train.AWS.enabled == false)
+            {
+                if (Train.WesternDiesel.StartupManager.StartupState == WesternStartupManager.SequenceStates.AWSOnline)
+                {
+                    //Enable AWS if the Western has switched it online
+                    Train.AWS.enabled = true;
+                }
+                else
+                {
+                    //Otherwise, we don't want to do any processing so back out
+                    //Doing anything else messes up the timing of the self-test sequence
+                    return;
+                }
+            }
 			if (StartupSelfTestManager.MySequenceState == StartupSelfTestManager.SequenceStates.Pending) {
 				Train.selftest = false;
 				/* Check the reverser state to see if the master switch has been set to on */
