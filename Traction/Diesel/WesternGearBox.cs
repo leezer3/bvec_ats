@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections;
+using System.Text;
 
 namespace Plugin
 {
@@ -19,5 +21,40 @@ namespace Plugin
             /// <summary>The torque converter is on service. The numerical value of this constant is 2.</summary>
             OnService = 2,
         }
+        /// <summary>Returns the maximum power notch allowed.</summary>
+        internal int PowerNotch(int CurrentRPM, int NumberOfEngines, bool TurboChargerActive)
+        {
+            //Our initial calculated power notch will always be zero
+            int FinalPowerNotch = 0;
+            //First calculate the RPM as a percent of the standard maximum RPM
+            //1650 is the BR spec for the engines, 1400 is the derated preserved spec
+            //Maybe requires a twidde to change this, but that then requires train.dat editing.....
+            double RPMPercentage = CurrentRPM / 1650.0;
+            //Now calculate the maximum power notch using Math.Ceiling
+            double CalculatedPowerNotch = Math.Ceiling(8 * RPMPercentage);
+            switch (NumberOfEngines)
+            {
+                case 1:
+                    //If running on one engine, our final power notch is the calculated notch divided by two and rounded up
+                    FinalPowerNotch = (int)Math.Ceiling(CalculatedPowerNotch / 2);
+                    //We should only activate the final two power notches if the turbocharger is active
+                    if (TurboChargerActive == true)
+                    {
+                        FinalPowerNotch += 2;
+                    }
+                    break;
+                case 2:
+                    //If running on two engines, then use the calculated power notch rounded up
+                    FinalPowerNotch = (int)Math.Ceiling(CalculatedPowerNotch);
+                    //We should only activate the final two power notches if the turbocharger is active
+                    if (TurboChargerActive == true)
+                    {
+                        FinalPowerNotch += 2;
+                    }
+                    break;
+            }
+            return FinalPowerNotch;
+        }
+        
     }
 }

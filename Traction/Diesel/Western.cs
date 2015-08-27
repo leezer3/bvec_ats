@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using OpenBveApi.Runtime;
 
 namespace Plugin
@@ -20,6 +21,8 @@ namespace Plugin
         internal bool Engine1Running;
         /// <summary>Stores whether the No. 2 Engine is currently running.</summary>
         internal bool Engine2Running;
+        /// <summary>Stores the number of currently running engines.</summary>
+        internal int NumberOfEnginesRunning;
         /// <summary>Stores which engine is currently selected for control.</summary>
         internal int EngineSelector = 2;
         /// <summary>Stores whether the starter key is currently pressed.</summary>
@@ -39,12 +42,23 @@ namespace Plugin
         internal int BatteryChargeGauge = -1;
         internal bool ComplexStarterModel;
         /// <summary>This is the number of RPM per notch.</summary>
-        internal int RPMPerNotch = (1530 - 630) / 10;
+        internal int RPMPerNotch = 100;
+        /// <summary>This is the rate RPM increases per second up-to the maximum RPM.</summary>
+        internal int RPMChange = 100;
+        /// <summary>This stores the current RPM. It is shared across both engines, with a small random factor for display on the gauges</summary>
+        internal int CurrentRPM;
+        /// <summary>The panel variable for the engine #1 RPM Gauge.</summary>
+        internal int RPMGauge1 = -1;
+        /// <summary>The panel variable for the engine #2 RPM Gauge.</summary>
+        internal int RPMGauge2 = -1;
 
         internal int EngineLoopSound = -1;
 
+        internal double RPMTimer;
         /// <summary>The sound index for the DSD Buzzer.</summary>
         internal int DSDBuzzer = -1;
+        /// <summary>The sound index for the DSD Buzzer.</summary>
+        internal int NeutralSelectedSound = -1;
         /// <summary>The sound index for the battery isolation switch & master switch.</summary>
         internal int SwitchSound = -1;
 
@@ -52,12 +66,12 @@ namespace Plugin
         internal readonly StarterMotor Engine2Starter = new StarterMotor();
         internal readonly WesternStartupManager StartupManager = new WesternStartupManager();
         internal readonly WesternGearBox GearBox = new WesternGearBox();
-        readonly GearBox Gears = new GearBox();
 
         internal override void Initialize(InitializationModes mode)
         {
             Engine1Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
             Engine2Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
+            RPMTimer = 0;
         }
 
 
@@ -76,6 +90,10 @@ namespace Plugin
                     if (Engine1Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed))
                     {
                         Engine1Running = true;
+                        //Reset the power cutoff
+                        Train.DebugLogger.LogMessage("Western Diesel- Engine 1 started.");
+                        Train.tractionmanager.resetpowercutoff();
+                        NumberOfEnginesRunning += 1;
                     }
                 }
             }
@@ -94,12 +112,6 @@ namespace Plugin
                     }
                     Engine1Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
                 }
-                //Reset the power cutoff
-                if (Train.tractionmanager.powercutoffdemanded == true)
-                {
-                    Train.DebugLogger.LogMessage("Western Diesel- Engine 1 started.");
-                    Train.tractionmanager.resetpowercutoff();
-                }
             }
             if (Engine2Running == false)
             {
@@ -110,6 +122,10 @@ namespace Plugin
                     if (Engine2Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed))
                     {
                         Engine2Running = true;
+                        //Reset the power cutoff
+                        Train.DebugLogger.LogMessage("Western Diesel- Engine 2 started.");
+                        Train.tractionmanager.resetpowercutoff(); 
+                        NumberOfEnginesRunning += 1;
                     }
                 }
             }
@@ -128,12 +144,7 @@ namespace Plugin
                     }
                     Engine2Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
                 }
-                //Reset the power cutoff
-                if (Train.tractionmanager.powercutoffdemanded == true)
-                {
-                    Train.DebugLogger.LogMessage("Western Diesel- Engine 2 started.");
-                    Train.tractionmanager.resetpowercutoff();
-                }
+                
             }
             //If neither engine is running, stop the playing loop sound and demand power cutoff
             if (Engine1Running == false && Engine2Running == false)
@@ -168,15 +179,46 @@ namespace Plugin
                         {
                             GearBox.TorqueConvertorState = WesternGearBox.TorqueConvertorStates.OnService;
                             GearBox.TorqueConvertorTimer = 0.0;
-                            Train.DebugLogger.LogMessage("Western Diesel- An attempt was made to restore traction power due to the torque convertor coming on service.");
+                            Train.DebugLogger.LogMessage("Western Diesel- The gearbox fill cycle has completed sucessfully and the torque convertor is now on service");
                             Train.tractionmanager.resetpowercutoff();
                         }
                     }
 
                 }
             }
-            //This loco has a gearbox
-            data.Handles.PowerNotch = Gears.RunGearBox();
+            //This section of code handles the engine RPM calculations
+            {
+                int MaximumRPM;
+                //Calculate the current maximum RPM figure
+                if (Engine1Running || Engine2Running)
+                {
+                    MaximumRPM = 600 + (RPMPerNotch * Train.Handles.PowerNotch);
+                }
+                else
+                {
+                    MaximumRPM = 0;
+                }
+                //Elapse our timer
+                RPMTimer += data.ElapsedTime.Milliseconds;
+                //If we are over 1 second, then either increase or decrease by the RPM change rate
+                if (RPMTimer > 1000)
+                {
+                    if (CurrentRPM < MaximumRPM)
+                    {
+                        CurrentRPM += RPMChange;
+                    }
+                    else if (CurrentRPM > MaximumRPM)
+                    {
+                        CurrentRPM -= RPMChange;
+                    }
+                    RPMTimer = 0;
+                }
+
+            }
+            if (Train.Handles.PowerNotch != 0 && Train.tractionmanager.powercutoffdemanded == false)
+            {
+                data.Handles.PowerNotch = Train.WesternDiesel.GearBox.PowerNotch(1650,2,true);
+            }
 
             //This section of code handles the startup self-test routine
             if (StartupManager.StartupState != WesternStartupManager.SequenceStates.ReadyToStart)
@@ -207,6 +249,8 @@ namespace Plugin
                         if (Train.Handles.Reverser == 0)
                         {
                             StartupManager.StartupState = WesternStartupManager.SequenceStates.NeutralSelected;
+                            //Play 3 clicks sound effect
+                            SoundManager.Play(NeutralSelectedSound, 0.5, 1.0, false);
                         }
                         break;
                     case WesternStartupManager.SequenceStates.NeutralSelected:
@@ -258,17 +302,39 @@ namespace Plugin
                         else if (Engine1Running == true && Engine2Running == false)
                         {
                             //Engine 1 IL blue, engine 2 IL red
-                            this.Train.Panel[ILCluster1] = 2;
+                            if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress)
+                            {
+                                this.Train.Panel[ILCluster1] = 5;
+                            }
+                            else
+                            {
+                                this.Train.Panel[ILCluster1] = 2;    
+                            }
+                            
                         }
                         else if (Engine1Running == false && Engine2Running == true)
                         {
-                            //Engine 1 IL red, engine 2 IL blue
-                            this.Train.Panel[ILCluster1] = 3;
+                            //Engine 2 IL blue, engine 1 IL red
+                            if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress)
+                            {
+                                this.Train.Panel[ILCluster1] = 6;
+                            }
+                            else
+                            {
+                                this.Train.Panel[ILCluster1] = 3;
+                            }
                         }
                         else
                         {
                             //Both engine ILs blue
-                            this.Train.Panel[ILCluster1] = 4;
+                            if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress)
+                            {
+                                this.Train.Panel[ILCluster1] = 7;
+                            }
+                            else
+                            {
+                                this.Train.Panel[ILCluster1] = 4;
+                            }
                         }
                     }
                 }
@@ -329,6 +395,28 @@ namespace Plugin
                     {
                         //The gauge is at the rest position
                         this.Train.Panel[BatteryChargeGauge] = 0;
+                    }
+                }
+                if (RPMGauge1 != -1)
+                {
+                    if (Engine1Running == true)
+                    {
+                        this.Train.Panel[RPMGauge1] = CurrentRPM;
+                    }
+                    else
+                    {
+                        this.Train.Panel[RPMGauge1] = 0;
+                    }
+                }
+                if (RPMGauge2 != -1)
+                {
+                    if (Engine2Running == true)
+                    {
+                        this.Train.Panel[RPMGauge2] = CurrentRPM;
+                    }
+                    else
+                    {
+                        this.Train.Panel[RPMGauge2] = 0;
                     }
                 }
             }

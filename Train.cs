@@ -837,6 +837,9 @@ namespace Plugin {
                                         case "dsdsound":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.DSDBuzzer, key);
                                             break;
+                                        case "neutralselectedsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.NeutralSelectedSound, key);
+                                            break;
                                         case "engineloopsound":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.EngineLoopSound, key);
                                             break;
@@ -856,6 +859,12 @@ namespace Plugin {
                                             break;
                                         case "ampsgauge":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.BatteryChargeGauge, key);
+                                            break;
+                                        case "rpmgauge1":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.RPMGauge1, key);
+                                            break;
+                                        case "rpmgauge2":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.RPMGauge2, key);
                                             break;
                                     }
                                     break;

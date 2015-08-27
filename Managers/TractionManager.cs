@@ -783,6 +783,11 @@ namespace Plugin
                 Train.DebugLogger.LogMessage("Traction power was not restored due to the ATS-Sx power lock being active");
                 return;
             }
+            if (Train.WesternDiesel != null && Train.WesternDiesel.GearBox.TorqueConvertorState != WesternGearBox.TorqueConvertorStates.OnService)
+            {
+                Train.DebugLogger.LogMessage("Traction power was not restored due to the Western Diesel torque convertor being out of service");
+                return;
+            }
             Train.tractionmanager.powercutoffdemanded = false;
             Train.DebugLogger.LogMessage("Traction power restored");
 
