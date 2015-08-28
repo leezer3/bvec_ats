@@ -72,6 +72,7 @@ namespace Plugin
         internal readonly StarterMotor Engine2Starter = new StarterMotor();
         internal readonly WesternStartupManager StartupManager = new WesternStartupManager();
         internal readonly WesternGearBox GearBox = new WesternGearBox();
+        internal readonly Turbocharger Turbocharger = new Turbocharger();
 
         internal override void Initialize(InitializationModes mode)
         {
@@ -223,7 +224,7 @@ namespace Plugin
             }
             if (Train.Handles.PowerNotch != 0 && Train.tractionmanager.powercutoffdemanded == false)
             {
-                data.Handles.PowerNotch = Train.WesternDiesel.GearBox.PowerNotch(1650,2,true);
+                data.Handles.PowerNotch = Train.WesternDiesel.GearBox.PowerNotch(CurrentRPM,NumberOfEnginesRunning,Turbocharger.RunTurbocharger(data.ElapsedTime.Milliseconds, CurrentRPM));
             }
 
             //This section of code handles the startup self-test routine

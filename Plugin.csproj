@@ -149,6 +149,7 @@
     <Compile Include="Structures\CustomIndicator.cs" />
     <Compile Include="Structures\DebugData.cs" />
     <Compile Include="SafetySystems\JA\Tasc.cs" />
+    <Compile Include="Traction\Diesel\Turbocharger.cs" />
     <Compile Include="Traction\Diesel\Western.cs" />
     <Compile Include="Traction\Diesel\DieselEngine.cs" />
     <Compile Include="Traction\Diesel\Gearbox.cs" />

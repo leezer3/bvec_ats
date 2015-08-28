@@ -29,7 +29,7 @@ namespace Plugin
             //First calculate the RPM as a percent of the standard maximum RPM
             //1650 is the BR spec for the engines, 1400 is the derated preserved spec
             //Maybe requires a twidde to change this, but that then requires train.dat editing.....
-            double RPMPercentage = CurrentRPM / 1650.0;
+            double RPMPercentage = (CurrentRPM - 600) / 1050.0;
             //Now calculate the maximum power notch using Math.Ceiling
             double CalculatedPowerNotch = Math.Ceiling(8 * RPMPercentage);
             switch (NumberOfEngines)
