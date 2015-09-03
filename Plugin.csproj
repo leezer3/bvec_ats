@@ -222,4 +222,9 @@
   <ItemGroup>
     <Compile Include="Traction\Diesel\StarterMotor.States.cs" />
   </ItemGroup>
+  <PropertyGroup>
+    <PreBuildEvent>set textTemplatingPath="%25CommonProgramFiles(x86)%25\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe"
+if %25textTemplatingPath%25=="\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe" set textTemplatingPath="%25CommonProgramFiles%25\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe"
+%25textTemplatingPath%25 "$(ProjectDir)\Properties\AssemblyInfo.tt"</PreBuildEvent>
+  </PropertyGroup>
 </Project>
