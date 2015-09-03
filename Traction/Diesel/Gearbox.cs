@@ -5,6 +5,7 @@ using System.Globalization;
 
 namespace Plugin
 {
+    /// <summary>Represents a generic OS_ATS gearbox.</summary>
     class GearBox
     {
         /// <summary>The underlying train.</summary>

@@ -1,5 +1,4 @@
 ﻿using System;
-using OpenBveApi.Sounds;
 
 namespace Plugin
 {
@@ -12,6 +11,7 @@ namespace Plugin
 
     //This represents a Diesel engine starter motor
     //Basic paramaters as per UKDT
+    /// <summary>Represents a diesel engine starter motor</summary>
     partial class StarterMotor
     {
         /// <summary>The time in milliseconds taken for the starter motor to run up</summary>
@@ -39,8 +39,10 @@ namespace Plugin
         internal int MinimumStallProbability = 0;
         internal int MaximumStallProbability = 0;
 
+        /// <summary>Stores whether the current start attempt is blocked (e.g. by a stall in progress)</summary>
         internal bool StartBlocked;
 
+        /// <summary>Stores whether the complex starter model is to be used</summary>
         internal bool ComplexStarterModel;
 
         internal double StarterMotorTimer;

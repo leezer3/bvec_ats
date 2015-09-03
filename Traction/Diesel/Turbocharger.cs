@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Plugin
+﻿namespace Plugin
 {
     class Turbocharger
     {

@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections;
-using System.Text;
 
 namespace Plugin
 {
 
-    /// <summary>Manages the startup and self-test sequence.</summary>
+    /// <summary>Represents the gearbox of a BR Class 52 'Western'.</summary>
     internal class WesternGearBox
     {
-        /// <summary>Gets the state of the startup self-test sequence.</summary>
+        /// <summary>Gets the state of the torque convertor.</summary>
         internal TorqueConvertorStates TorqueConvertorState { get; set; }
         /// <summary>Stores the timer used for filling the torque convertor.</summary>
         internal double TorqueConvertorTimer = 0.0;
