@@ -816,40 +816,49 @@ namespace Plugin
             {
                 if (Train.AWS != null && Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to a AWS/ TPWS intervention.");
                     return;
                 }
                 if (Train.overspeedtripped == true)
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to the overspeed device being active.");
                     return;
                 }
                 if (Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to the deadman's handle being active.");
                     return;
                 }
                 if (Train.TPWS != null && (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand ||
                                                 Train.TPWS.SafetyState == TPWS.SafetyStates.BrakeDemandAcknowledged ||
                                                 Train.TPWS.SafetyState == TPWS.SafetyStates.BrakesAppliedCountingDown))
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to a AWS/ TPWS intervention.");
                     return;
                 }
                 if (doorlock == true)
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to the doors power lock being active.");
                     return;
                 }
                 if (Train.tractionmanager.neutralrvrtripped && neutralrvrbrake == 2)
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to the neutral reverser safety device.");
                     return;
                 }
                 if (Train.SCMT.enabled == true && SCMT.EBDemanded == true)
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to a SCMT intervention.");
                     return;
                 }
                 if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.EbApplied)
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to a SCMT Vigilante intervention.");
                     return;
                 }
                 if (Train.CAWS.enabled == true && Train.CAWS.EmergencyBrakeCountdown < 0.0)
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to a CAWS intervention.");
                     return;
                 }
                 //These conditions set a different brake notch to EB
@@ -863,30 +872,36 @@ namespace Plugin
                 //Set brake notch 1 for SCMT constant speed device
                 if (Train.SCMT.enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
                 {
+                    Train.DebugLogger.LogMessage("The currently demanded brake notch was changed to 1 due to the SCMT constant-speed brake.");
                     currentbrakenotch = 1;
                     return;
                 }
                 //Do not reset brake application if ATC is currently demanding one
                 if (Train.Atc != null && (Train.Atc.State == Atc.States.ServiceHalf || Train.Atc.State == Atc.States.ServiceFull || Train.Atc.State == Atc.States.Emergency))
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to a ATC intervention.");
                     return;
                 }
                 //Do not reset brake application if ATS-P is currently demanding one
                 if (Train.AtsP != null && (Train.AtsP.State == AtsP.States.Brake || Train.AtsP.State == AtsP.States.Service || Train.AtsP.State == AtsP.States.Emergency))
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to a ATS-P intervention.");
                     return;
                 }
                 //Do not reset brake application if ATS-PS is currently demanding one
                 if (Train.AtsPs != null && (Train.AtsPs.State == AtsPs.States.Emergency))
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to a ATS-PS intervention.");
                     return;
                 }
                 //Do not reset brake application if ATS-SX is currently demanding one
                 if (Train.AtsSx != null && (Train.AtsSx.State == AtsSx.States.Emergency))
                 {
+                    Train.DebugLogger.LogMessage("The current brake application was not reset due to a ATS-S intervention.");
                     return;
                 }
             }
+            Train.DebugLogger.LogMessage("The current brake application was reset.");
             currentbrakenotch = 0;
             brakedemanded = false;
         }

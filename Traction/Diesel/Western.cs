@@ -59,7 +59,11 @@ namespace Plugin
         internal int Engine2Button = -1;
 
         internal int EngineLoopSound = -1;
-
+        /*
+         * This bool should be toggled when an engine starts-
+         * It allows us to hold-on the brakes until the air compressors prototypically start
+         */
+        internal bool CompressorsRunning = false;
         internal double RPMTimer;
         /// <summary>The sound index for the DSD Buzzer.</summary>
         internal int DSDBuzzer = -1;
@@ -163,9 +167,23 @@ namespace Plugin
                     Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to no available engines.");
                     Train.tractionmanager.demandpowercutoff();
                 }
+                if (Train.tractionmanager.brakedemanded == false)
+                {
+                    Train.DebugLogger.LogMessage("Western Diesel- Brakes applied due to no running compressors.");
+                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
+                }
             }
             else
             {
+                if (CompressorsRunning == false)
+                {
+                    CompressorsRunning = true;
+                    if (Train.tractionmanager.brakedemanded == true)
+                    {
+                        Train.DebugLogger.LogMessage("Western Diesel- An attempt was made to reset the current brake application due to the compressors starting.");
+                        Train.tractionmanager.resetbrakeapplication();
+                    }
+                }
                 if (GearBox.TorqueConvertorState != WesternGearBox.TorqueConvertorStates.OnService)
                 {
                     //If the torque convertor is not on service, then cut power

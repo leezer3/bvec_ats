@@ -107,7 +107,10 @@ namespace Plugin
                     return false;
                 case StarterMotor.StarterMotorStates.EngineFire:
                     SoundManager.Stop(StarterLoopSound);
-                    SoundManager.Play(EngineFireSound, 1.0, 1.0, false);
+                    if (!SoundManager.IsPlaying(EngineFireSound))
+                    {
+                        SoundManager.Play(EngineFireSound, 1.0, 1.0, false);
+                    }
                     //Elapse the timer
                     StarterMotorTimer += ElapsedTime;
                     //If the fireup sequence is complete, then shift to the running state
