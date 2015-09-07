@@ -6,7 +6,6 @@
 using OpenBveApi.Runtime;
 using System;
 using System.Collections.Generic;
-using OpenBveApi.Sounds;
 
 namespace Plugin
 {
@@ -14,28 +13,37 @@ namespace Plugin
     {
         private const double CompatibilitySuppressDistance = 50;
 
+        /// <summary>The underlying train.</summary>
         private Train Train;
 
+        /// <summary>The current state of the system.</summary>
         internal Atc.States State;
 
         private bool SwitchToAtcOnce;
 
+        /// <summary>Whether emergency operation is enabled. In emergency operation, the train is allowed to travel at 15 km/h (or a custom value) regardless of the actually permitted speed.</summary>
         internal bool EmergencyOperation;
 
+        /// <summary>The current signal aspect.</summary>
         private int Aspect;
 
         private double BlockLocation;
 
+        /// <summary>The current signal pattern.</summary>
         internal Atc.SignalPattern Pattern;
 
+        /// <summary>The state of the compatibility ATC track.</summary>
         private Atc.CompatibilityStates CompatibilityState;
 
+        /// <summary>A list of all ATC speed limits in the route.</summary>
         private List<Atc.CompatibilityLimit> CompatibilityLimits;
 
+        /// <summary>The element in the CompatibilityLimits list that holds the last encountered speed limit.</summary>
         private int CompatibilityLimitPointer;
 
         private double CompatibilitySuppressLocation = double.MinValue;
 
+        /// <summary>The state of the preceding train, or a null reference.</summary>
         private PrecedingVehicleState PrecedingTrain;
 
         private int RealTimeAdvanceWarningUpcomingSignalAspect = -1;
@@ -46,9 +54,24 @@ namespace Plugin
 
         private double ServiceBrakesTimer;
 
+        /// <summary>Represents the signal that indicates that ATC is not available.</summary>
         private readonly Atc.Signal NoSignal = Atc.Signal.CreateNoSignal(-1);
 
-        private readonly double[] CompatibilitySpeeds = new double[] { -1, 0, 4.16666666666667, 6.94444444444444, 12.5, 15.2777777777778, 18.0555555555556, 20.8333333333333, 25, 27.7777777777778, 30.5555555555556, 33.3333333333333 };
+        /// <summary>The compatibility speeds. A value of -1 indicates that ATC is not available.</summary>
+        private readonly double[] CompatibilitySpeeds = new double[] {
+			-1.0,
+			0.0,
+			15.0 / 3.6,
+			25.0 / 3.6,
+			45.0 / 3.6,
+			55.0 / 3.6,
+			65.0 / 3.6,
+			75.0 / 3.6,
+			90.0 / 3.6,
+			100.0 / 3.6,
+			110.0 / 3.6,
+			120.0 / 3.6
+		};
 
         private double MaximumDeceleration = 1.11111111111111;
 
@@ -76,9 +99,11 @@ namespace Plugin
 
         private double ServiceBrakesSpeedDifference = 2.77777777777778;
 
+        /// <summary>Whether to automatically switch between ATS and ATC.</summary>
         internal bool AutomaticSwitch;
 
-        internal Atc.Signal EmergencyOperationSignal = Atc.Signal.CreateEmergencyOperationSignal(4.16666666666667);
+        /// <summary>Represents the signal for the emergency operation mode, or a null reference if emergency operation is not available.</summary>
+        internal Atc.Signal EmergencyOperationSignal = Atc.Signal.CreateEmergencyOperationSignal(15.0/ 3/6);
 
         internal List<Atc.Signal> Signals = new List<Atc.Signal>();
 
@@ -555,6 +580,8 @@ namespace Plugin
             }
         }
 
+        /// <summary>Gets the ATC speed from the current and upcoming speed limits.</summary>
+        /// <returns>The ATC speed, or -1 if ATC is not available.</returns>
         private double GetAtcSpeedFromLimit()
         {
             if (this.CompatibilityState == Atc.CompatibilityStates.Ats)
@@ -603,6 +630,8 @@ namespace Plugin
             return this.CompatibilityLimits[this.CompatibilityLimitPointer + 1].Limit;
         }
 
+        /// <summary>Gets the ATC speed from the distance to the preceding train if operating in compatibility ATC mode.</summary>
+        /// <returns>The ATC speed, or -1 if ATC is not available.</returns>
         private double GetAtcSpeedFromTrain()
         {
             if (this.CompatibilityState == Atc.CompatibilityStates.Ats)
@@ -886,6 +915,8 @@ namespace Plugin
             this.RealTimeAdvanceWarningUpcomingSignalLocation = this.Train.State.Location + signal[1].Distance;
         }
 
+        /// <summary>Whether the driver should switch to ATC. This returns false if already operating in ATC.</summary>
+        /// <returns>Whether the driver should switch to ATC.</returns>
         internal bool ShouldSwitchToAtc()
         {
             if (this.State == Atc.States.Ats && this.Pattern.Signal.Kirikae == Atc.KirikaeStates.ToAtc && Math.Abs(this.Train.State.Speed.MetersPerSecond) < 0.277777777777778)
@@ -895,6 +926,8 @@ namespace Plugin
             return false;
         }
 
+        /// <summary>Whether the driver should switch to ATS. This returns false if already operating in ATS.</summary>
+        /// <returns>Whether the driver should switch to ATS.</returns>
         internal bool ShouldSwitchToAts()
         {
             if (this.State == Atc.States.Normal | this.State == Atc.States.ServiceHalf | this.State == Atc.States.ServiceFull | this.State == Atc.States.Emergency && this.Pattern.Signal.Kirikae == Atc.KirikaeStates.ToAts && Math.Abs(this.Train.State.Speed.MetersPerSecond) < 0.277777777777778)
@@ -925,31 +958,41 @@ namespace Plugin
             ToAts
         }
 
+        /// <summary>The possible states of the ATC/ ATS switch panel indicator.</summary>
         internal enum KirikaeStates
         {
+            /// <summary>The ATC/ ATS state is unchanged.</summary>
             Unchanged,
+            /// <summary>The train should switch to ATS.</summary>
             ToAts,
+            /// <summary>The train should switch to ATC.</summary>
             ToAtc
         }
 
+        /// <summary>Represents a signal that was received from the track.</summary>
         internal class Signal
         {
+            /// <summary>The aspect underlying this signal, or -1 if not relevant.</summary>
             internal int Aspect;
-
+            /// <summary>What the signal indicator should show for this signal.</summary>
             internal Atc.SignalIndicators Indicator;
-
+            /// <summary>The initial speed limit at the beginning of the block, or System.Double.MaxValue to carry over the current speed limit.</summary>
             internal double InitialSpeed;
-
+            /// <summary>The final speed limit at the end of the block, or a negative number for an emergency brake application.</summary>
             internal double FinalSpeed;
-
+            /// <summary>The distance to the end of the block, or a non-positive number to indicate that the final speed should apply immediately, or System.Double.MaxValue if the distance to the end of the block is not known.</summary>
             internal double Distance;
-
+            /// <summary>The state of the ATC Switch Indicator.</summary>
             internal Atc.KirikaeStates Kirikae;
 
             internal bool ZenpouYokoku;
 
             internal bool OverrunProtector;
 
+            /// <summary>Creates a new signal.</summary>
+            /// <param name="aspect">The aspect underlying this signal, or -1 if not relevant.</param>
+            /// <param name="indicator">What the signal indicator should show for this signal.</param>
+            /// <param name="finalSpeed">The immediate speed limit, or a negative number for an emergency brake application.</param>
             internal Signal(int aspect, Atc.SignalIndicators indicator, double finalSpeed)
             {
                 this.Aspect = aspect;
@@ -962,6 +1005,12 @@ namespace Plugin
                 this.OverrunProtector = false;
             }
 
+            /// <summary>Creates a new signal.</summary>
+            /// <param name="aspect">The aspect underlying this signal, or -1 if not relevant.</param>
+            /// <param name="indicator">What the signal indicator should show for this signal.</param>
+            /// <param name="initialSpeed">The initial speed limit at the beginning of the block, or System.Double.MaxValue to carry over the current speed limit.</param>
+            /// <param name="finalSpeed">The final speed limit at the end of the block, or a negative number for an emergency brake application.</param>
+            /// <param name="distance">The distance to the end of the block, or a non-positive number to indicate that the final speed should apply immediately, or System.Double.MaxValue if the distance to the end of the block is not known.</param>
             internal Signal(int aspect, Atc.SignalIndicators indicator, double initialSpeed, double finalSpeed, double distance)
             {
                 this.Aspect = aspect;
@@ -974,6 +1023,13 @@ namespace Plugin
                 this.OverrunProtector = false;
             }
 
+            /// <summary>Creates a new signal.</summary>
+            /// <param name="aspect">The aspect underlying this signal, or -1 if not relevant.</param>
+            /// <param name="indicator">What the signal indicator should show for this signal.</param>
+            /// <param name="initialSpeed">The initial speed limit at the beginning of the block, or System.Double.MaxValue to carry over the current speed limit.</param>
+            /// <param name="finalSpeed">The final speed limit at the end of the block, or a negative number for an emergency brake application.</param>
+            /// <param name="distance">The distance to the end of the block, or a non-positive number to indicate that the final speed should apply immediately, or System.Double.MaxValue if the distance to the end of the block is not known.</param>
+            /// <param name="kirikae">The state which the ATC switch indicator should show.</param>
             internal Signal(int aspect, Atc.SignalIndicators indicator, double initialSpeed, double finalSpeed, double distance, Atc.KirikaeStates kirikae, bool zenpouYokoku, bool overrunProtector)
             {
                 this.Aspect = aspect;
@@ -986,6 +1042,8 @@ namespace Plugin
                 this.OverrunProtector = overrunProtector;
             }
 
+            /// <summary>Creates a new signal.</summary>
+            /// <param name="limit">The speed over which EB brakes will be applied.</param>
             internal static Atc.Signal CreateEmergencyOperationSignal(double limit)
             {
                 return new Atc.Signal(-1, Atc.SignalIndicators.None, limit, limit, -1, Atc.KirikaeStates.Unchanged, false, false);
@@ -997,12 +1055,18 @@ namespace Plugin
             }
         }
 
+        /// <summary>Represents different states of the the signal indicator inside the cab.</summary>
         internal enum SignalIndicators
         {
+            /// <summary>The signal shows nothing.</summary>
             None,
+            /// <summary>The signal is green.</summary>
             Green,
+            /// <summary>The signal is red.</summary>
             Red,
+            /// <summary>The signal is red and the P lamp is lit.</summary>
             P,
+            /// <summary>The signal is red and the X lamp is lit.</summary>
             X
         }
 
