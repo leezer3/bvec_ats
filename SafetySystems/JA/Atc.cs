@@ -397,7 +397,7 @@ namespace Plugin
             //Panel Indicators Start Here
 
             /*
-             * Reset Panel Indicators
+             * Reset Panel Indicators done in main function ATM
              */
             
             if (this.State == Atc.States.Ats)
@@ -763,10 +763,6 @@ namespace Plugin
             return signal;
         }
 
-        internal override void HornBlow(HornTypes type)
-        {
-        }
-
         internal override void Initialize(InitializationModes mode)
         {
             if (mode == InitializationModes.OffEmergency)
@@ -782,6 +778,7 @@ namespace Plugin
             switch (key)
             {
                 case VirtualKeys.C1:
+                    //Switch to ATS
                     {
                         if (!(this.State == Atc.States.Normal | this.State == Atc.States.ServiceHalf | this.State == Atc.States.ServiceFull | this.State == Atc.States.Emergency))
                         {
@@ -802,6 +799,7 @@ namespace Plugin
                         return;
                     }
                 case VirtualKeys.C2:
+                    //Switch to ATC
                     {
                         if (this.State != Atc.States.Ats)
                         {
@@ -830,6 +828,7 @@ namespace Plugin
                         return;
                     }
                 case VirtualKeys.G:
+                    //Activates or de-activates the system
                     {
                         if (this.State == Atc.States.Disabled)
                         {
@@ -840,6 +839,7 @@ namespace Plugin
                         return;
                     }
                 case VirtualKeys.H:
+                    //Enables or disables emergency operation mode
                     {
                         if (this.EmergencyOperationSignal == null)
                         {
@@ -853,10 +853,6 @@ namespace Plugin
                         return;
                     }
             }
-        }
-
-        internal override void KeyUp(VirtualKeys key)
-        {
         }
 
         internal override void SetBeacon(BeaconData beacon)
@@ -937,12 +933,16 @@ namespace Plugin
             return false;
         }
 
+        /// <summary>Represents a speed limit at a specific track position.</summary>
         private struct CompatibilityLimit
         {
+            /// <summary>The speed limit.</summary>
             internal double Limit;
-
+            /// <summary>The track position.</summary>
             internal double Location;
-
+            /// <summary>Creates a new compatibility limit.</summary>
+            /// <param name="limit">The speed limit.</param>
+            /// <param name="location">The track position.</param>
             internal CompatibilityLimit(double limit, double location)
             {
                 this.Limit = limit;
@@ -984,9 +984,9 @@ namespace Plugin
             internal double Distance;
             /// <summary>The state of the ATC Switch Indicator.</summary>
             internal Atc.KirikaeStates Kirikae;
-
+            /// <summary>??? Whether this is a distant signal ???</summary>
             internal bool ZenpouYokoku;
-
+            /// <summary>Whether overrun protection is active on this signal.</summary>
             internal bool OverrunProtector;
 
             /// <summary>Creates a new signal.</summary>
@@ -1030,6 +1030,8 @@ namespace Plugin
             /// <param name="finalSpeed">The final speed limit at the end of the block, or a negative number for an emergency brake application.</param>
             /// <param name="distance">The distance to the end of the block, or a non-positive number to indicate that the final speed should apply immediately, or System.Double.MaxValue if the distance to the end of the block is not known.</param>
             /// <param name="kirikae">The state which the ATC switch indicator should show.</param>
+            /// <param name="zenpouYokoku">??? Whether this is a distant signal ???</param>
+            /// <param name="overrunProtector">Whether overrun protection is active on this signal</param>
             internal Signal(int aspect, Atc.SignalIndicators indicator, double initialSpeed, double finalSpeed, double distance, Atc.KirikaeStates kirikae, bool zenpouYokoku, bool overrunProtector)
             {
                 this.Aspect = aspect;
@@ -1072,14 +1074,15 @@ namespace Plugin
 
         internal class SignalPattern
         {
+            /// <summary>The current signal.</summary>
             internal Atc.Signal Signal;
-
+            /// <summary>The top speed limit (the current speed limit never exceeds this value).</summary>
             internal double TopSpeed;
-
+            /// <summary>The current speed limit (above which the brakes are engaged).</summary>
             internal double CurrentSpeed;
-
+            /// <summary>The release speed limit (below which the brakes are released).</summary>
             internal double ReleaseSpeed;
-
+            /// <summary>Creates a new signal pattern, assuming the beginning of the block.</summary>
             internal SignalPattern(Atc.Signal signal, Atc atc)
             {
                 this.Signal = signal;
@@ -1087,6 +1090,10 @@ namespace Plugin
                 this.Update(atc);
             }
 
+            /// <summary>Checks if two pattern have the same appearance.</summary>
+            /// <param name="oldPattern">The first pattern.</param>
+            /// <param name="newPattern">The second pattern.</param>
+            /// <returns>Whether the patterns have the same apperance.</returns>
             internal static bool ApperanceEquals(Atc.SignalPattern oldPattern, Atc.SignalPattern newPattern)
             {
                 if (oldPattern.Signal.Indicator != newPattern.Signal.Indicator)
@@ -1132,34 +1139,42 @@ namespace Plugin
                 return true;
             }
 
+            /// <summary>Updates the signal pattern.</summary>
             internal void Update(Atc atc)
             {
                 double regularDeceleration;
                 double regularDelay;
                 if (this.Signal.Distance == double.MaxValue)
                 {
+                    //If the distance to the signal is not known, set the ATC speed to the inital speed for this signal's code.
                     this.CurrentSpeed = this.Signal.InitialSpeed;
                 }
                 else if (this.Signal.Distance <= 0)
                 {
+                    //If we have passed the set distance, set the ATC speed to the final speed
                     this.CurrentSpeed = this.Signal.FinalSpeed;
                 }
                 else
                 {
                     double blockLocation = atc.BlockLocation + this.Signal.Distance - atc.Train.State.Location;
+                    //Set the deceleration curve
                     if (!this.Signal.OverrunProtector)
                     {
+                        //If this signal not fitted with overrun protection, use the standard values
                         regularDeceleration = atc.RegularDeceleration;
                         regularDelay = atc.RegularDelay;
                     }
                     else
                     {
+                        //Otherwise use the overrun protection values
                         regularDeceleration = atc.OrpDeceleration;
                         regularDelay = atc.OrpDelay;
                     }
+                    //Calculate the speed required to declerate
                     double finalSpeed = 2 * regularDeceleration * blockLocation + regularDeceleration * regularDeceleration * regularDelay * regularDelay + this.Signal.FinalSpeed * this.Signal.FinalSpeed;
                     if (finalSpeed <= 0)
                     {
+                        //If the deceleration required is less than or equal to zero, return the ATC speed, as we are now at the final speed
                         this.CurrentSpeed = this.Signal.FinalSpeed;
                     }
                     else
@@ -1167,23 +1182,28 @@ namespace Plugin
                         this.CurrentSpeed = Math.Sqrt(finalSpeed) - regularDeceleration * regularDelay;
                         if (this.CurrentSpeed > this.Signal.InitialSpeed)
                         {
+                            //If our speed is greater than the signal's inital speed, set the ATC speed to the signal's inital speed
                             this.CurrentSpeed = this.Signal.InitialSpeed;
                         }
                         else if (this.CurrentSpeed < this.Signal.FinalSpeed)
                         {
+                            //If our speed is less than the signal's final speed, set the ATC speed to the signal's final speed
                             this.CurrentSpeed = this.Signal.FinalSpeed;
                         }
                     }
                     if (blockLocation > 0 & this.CurrentSpeed < atc.OrpReleaseSpeed)
                     {
+                        //If we've decelerated to less than the overrun protection speed, but are still within the block, set the ATC speed to the overrun protection speed
                         this.CurrentSpeed = atc.OrpReleaseSpeed;
                     }
                 }
                 if (this.CurrentSpeed > this.TopSpeed)
                 {
+                    //Restrict the ATC speed to max speed
                     this.CurrentSpeed = this.TopSpeed;
                 }
-                this.ReleaseSpeed = Math.Max(this.Signal.FinalSpeed - 0.277777777777778, this.CurrentSpeed - 0.277777777777778);
+                //The ATC release speed is the maximum of the signal's final speed and our calculated ATC speed
+                this.ReleaseSpeed = Math.Max(this.Signal.FinalSpeed - 1.0 / 3.6, this.CurrentSpeed - 1.0 / 3.6);
             }
         }
 

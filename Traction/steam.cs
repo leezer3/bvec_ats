@@ -797,6 +797,19 @@ namespace Plugin
 
                     }
                 }
+                if (CylinderCocks.PanelIndex != -1)
+                {
+                    if (cylindercocks == true)
+                    {
+                        this.Train.Panel[(CylinderCocks.PanelIndex)] = 1;
+
+                    }
+                    else
+                    {
+                        this.Train.Panel[(CylinderCocks.PanelIndex)] = 0;
+
+                    }
+                }
                 if (automaticindicator != -1)
                 {
                     if (automatic == false)

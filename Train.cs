@@ -529,6 +529,9 @@ namespace Plugin {
                                                 }
                                             }
                                             break;
+                                        case "cylindercocksindicator":
+                                            InternalFunctions.ValidateIndex(value, ref steam.CylinderCocks.PanelIndex, key);
+                                            break;
 			                            case "blowoffsound":
 			                                InternalFunctions.ValidateIndex(value, ref steam.Blowoff.SoundIndex, key);
 			                                break;
@@ -1473,10 +1476,8 @@ namespace Plugin {
                                                         this.Atc.Signals.Add(signal);
                                                         break;
                                                     }
-                                                    else
-                                                    {
-                                                        throw new InvalidDataException("The ATC code " + value + " is not supported.");
-                                                    }
+                                                    throw new InvalidDataException("The ATC code " + value + " is not supported.");
+
                                                 }
                                             }
                                             throw new InvalidDataException("The parameter " + key + " is not supported.");
@@ -1828,30 +1829,22 @@ namespace Plugin {
             double num5;
             double num6;
             int num7;
-            if (code == "S01")
+            //Codes representing a red signal aspect with an ATC speed limit of zero
+            if (code == "S01" || code == "01")
             {
                 return new Atc.Signal(aspect, Atc.SignalIndicators.Red, 0);
             }
-            if (code == "01")
-            {
-                return new Atc.Signal(aspect, Atc.SignalIndicators.Red, 0);
-            }
-            if (code == "S02E")
+            //Codes representing a red signal aspect for which ATC applies EB
+            if (code == "S02E" || code == "02E" || code == "03")
             {
                 return new Atc.Signal(aspect, Atc.SignalIndicators.Red, -1);
             }
-            if (code == "02E")
-            {
-                return new Atc.Signal(aspect, Atc.SignalIndicators.Red, -1);
-            }
+            //Code representing any signal aspect for which ATC is to apply EB
             if (code == "02")
             {
                 return Atc.Signal.CreateNoSignal(aspect);
             }
-            if (code == "03")
-            {
-                return new Atc.Signal(aspect, Atc.SignalIndicators.Red, -1);
-            }
+            //Code representing a beacon which changes the ATC signal indicator to red, and tells the train it should switch to ATS
             if (code == "ATS")
             {
                 return new Atc.Signal(aspect, Atc.SignalIndicators.Red, double.MaxValue, 0, double.MaxValue, Atc.KirikaeStates.ToAts, false, false);
@@ -1920,6 +1913,11 @@ namespace Plugin {
                 string str1 = code.Substring(num8 + 1);
                 if (str1.Contains("@"))
                 {
+                    /* Code made up as follows:
+                     * 
+                     * INITIAL SPEED / FINAL SPEED @ DISTANCE TO FINAL SPEED
+                     * 
+                     */
                     num8 = str1.IndexOf('@');
                     string str2 = str1.Substring(num8 + 1);
                     str1 = str1.Substring(0, num8);
@@ -1927,18 +1925,22 @@ namespace Plugin {
                     {
                         if (num < 0)
                         {
+                            //If initial speed is less than zero, this is invalid
                             return null;
                         }
                         if (num1 < 0)
                         {
+                            //If final speed is less than zero, this is invalid
                             return null;
                         }
                         if (num2 < 0)
                         {
+                            //If distance is less than zero, this is invalid
                             return null;
                         }
                         if (num < num1)
                         {
+                            //If final speed is greater than inital speed, this is invalid
                             return null;
                         }
                         signal = new Atc.Signal(aspect, signalIndicator, (double)num / 3.6, (double)num1 / 3.6, num2);
@@ -1946,16 +1948,24 @@ namespace Plugin {
                 }
                 else if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out num3) && double.TryParse(str1, NumberStyles.Float, CultureInfo.InvariantCulture, out num4))
                 {
+                    /* Code made up as follows:
+                     * 
+                     * INITIAL SPEED / FINAL SPEED
+                     * 
+                     */
                     if (num3 < 0)
                     {
+                        //If intial speed is less than zero, this is invalid
                         return null;
                     }
                     if (num4 < 0)
                     {
+                        //If final speed is less than zero, this is invalid
                         return null;
                     }
                     if (num3 < num4)
                     {
+                        //If final speed is greater than inital speed, this is invalid
                         return null;
                     }
                     signal = new Atc.Signal(aspect, signalIndicator, (double)num3 / 3.6, (double)num4 / 3.6, double.MaxValue);
@@ -1963,6 +1973,11 @@ namespace Plugin {
             }
             else if (code.Contains("@"))
             {
+                /* Code made up as follows:
+                 * 
+                 * FINAL SPEED @ DISTANCE TO FINAL SPEED
+                 * 
+                 */
                 int num9 = code.IndexOf('@');
                 string str3 = code.Substring(0, num9);
                 string str4 = code.Substring(num9 + 1);
@@ -1970,10 +1985,12 @@ namespace Plugin {
                 {
                     if (num5 < 0)
                     {
+                        //If final speed is less than zero, this is invalid
                         return null;
                     }
                     if (num6 < 0)
                     {
+                        //If distance to final speed is less than zero, this is invalid
                         return null;
                     }
                     signal = new Atc.Signal(aspect, signalIndicator, double.MaxValue, (double)num5 / 3.6, num6);
@@ -1981,15 +1998,25 @@ namespace Plugin {
             }
             else if (int.TryParse(code, NumberStyles.Float, CultureInfo.InvariantCulture, out num7))
             {
+                /* Code made up as follows:
+                 * 
+                 * FINAL SPEED
+                 * 
+                 */
                 if ((double)num7 < 0)
                 {
+                    //If final speed is less than zero, this is invalid
                     return null;
                 }
                 signal = new Atc.Signal(aspect, signalIndicator, (double)num7 / 3.6);
             }
+            //Set the state of the ATC/ATS switch indicator
             signal.Kirikae = (flag ? Atc.KirikaeStates.ToAts : Atc.KirikaeStates.ToAtc);
+            //??Set whether this signal is a distant??
             signal.ZenpouYokoku = flag1;
+            //Set whether this signal has overrun protection
             signal.OverrunProtector = flag2;
+            //Finally return the signal
             return signal;
         }
 
