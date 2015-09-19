@@ -115,5 +115,17 @@ namespace Plugin
                 return false;
             }
         }
+
+        /// <summary>Gets the last pitch of the selected sound index.</summary>
+        /// <summary>Returns -1 if the sound is not currently playing.</summary>
+        /// <param name="soundIndex">The sound index to get the last pitch value for.</param>
+        internal static double GetLastPitch(int soundIndex)
+        {
+            if(IsPlaying(soundIndex))
+            {
+                return LastPitch[soundIndex]; 
+            }
+            return -1;
+        }
     }
 }

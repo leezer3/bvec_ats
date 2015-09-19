@@ -846,6 +846,24 @@ namespace Plugin {
                                         case "engineloopsound":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.EngineLoopSound, key);
                                             break;
+                                        case "engineloopsound1":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.EngineLoopSound1, key);
+                                            break;
+                                        case "engineloopsound2":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.EngineLoopSound2, key);
+                                            break;
+                                        case "engineloopsound3":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.EngineLoopSound3, key);
+                                            break;
+                                        case "enginefadesound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.EngineFadeUpSound1, key);
+                                            break;
+                                        case "enginefadesound1":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.EngineFadeUpSound2, key);
+                                            break;
+                                        case "enginefadesound2":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.EngineFadeUpSound3, key);
+                                            break;
                                         case "enginefiresound":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Starter.EngineFireSound, key);
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Starter.EngineFireSound, key);

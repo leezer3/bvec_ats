@@ -80,6 +80,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dialogs\WesternControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Dialogs\WesternControl.Designer.cs">
+      <DependentUpon>WesternControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="SafetySystems\JA\Atc.cs" />
     <Compile Include="SafetySystems\JA\Ato.cs" />
     <Compile Include="SafetySystems\JA\AtsP.cs" />
@@ -204,6 +210,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\AdvancedDrivingMask.resx">
       <DependentUpon>AdvancedDrivingMask.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\WesternControl.resx">
+      <DependentUpon>WesternControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\PZBControl.resx">
       <DependentUpon>PZBControl.cs</DependentUpon>

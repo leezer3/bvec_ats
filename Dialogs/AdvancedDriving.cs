@@ -10,6 +10,7 @@ namespace Plugin
         internal SteamControl SteamPanel;
         internal ElectricControl ElectricPanel;
         internal PZBControl PZBPanel;
+        internal WesternControl WesternPanel;
 
         //The Advanced Driving form provides an independant debug window
         //Intended to show things such as the current steam production rate versus usage (WIP)
@@ -140,6 +141,16 @@ namespace Plugin
                 ElectricPanel.rearpanto.Text = debuginformation[15];
                 ElectricPanel.vcb.Text = debuginformation[16];
                 ElectricPanel.linecurrent.Text = debuginformation[17];
+            }
+            else if (tractiontype == 3)
+            {
+                if (WesternPanel == null)
+                {
+                    WesternPanel = new WesternControl();
+                    Controls.Add(WesternPanel);
+                    WesternPanel.Location = new Point(5, 5);
+                    mask.Size = this.Size;
+                }
             }
             else
             {

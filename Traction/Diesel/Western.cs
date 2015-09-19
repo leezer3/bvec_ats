@@ -49,6 +49,8 @@ namespace Plugin
         internal int RPMChange = 100;
         /// <summary>This stores the current RPM. It is shared across both engines, with a small random factor for display on the gauges</summary>
         internal int CurrentRPM;
+        /// <summary>This stores the previous frames RPM.</summary>
+        internal int PreviousRPM;
         /// <summary>The panel variable for the engine #1 RPM Gauge.</summary>
         internal int RPMGauge1 = -1;
         /// <summary>The panel variable for the engine #2 RPM Gauge.</summary>
@@ -58,7 +60,21 @@ namespace Plugin
         /// <summary>The panel variable for the engine #2 button states.</summary>
         internal int Engine2Button = -1;
 
+        /*
+         * These represent engine loop sounds for each 1/4 of the revolution range
+         */
         internal int EngineLoopSound = -1;
+        internal int EngineLoopSound1 = -1;
+        internal int EngineLoopSound2 = -1;
+        internal int EngineLoopSound3 = -1;
+        /*
+         * These represent fade up sounds for the above
+         */
+        internal int EngineFadeUpSound1 = -1;
+        internal int EngineFadeUpSound2 = -1;
+        internal int EngineFadeUpSound3 = -1;
+
+        internal bool EngineLoop = false;
         /*
          * This bool should be toggled when an engine starts-
          * It allows us to hold-on the brakes until the air compressors prototypically start
@@ -111,7 +127,7 @@ namespace Plugin
             else
             {
                 //If the engine running state has been triggered, then this will start the loop sound with appropriate paramaters
-                if (Engine1Starter.StarterMotorState == StarterMotor.StarterMotorStates.EngineRunning && !SoundManager.IsPlaying(Engine1Starter.EngineFireSound))
+                if (Engine1Starter.StarterMotorState == StarterMotor.StarterMotorStates.EngineRunning && !SoundManager.IsPlaying(Engine1Starter.EngineFireSound) && EngineLoop == false)
                 {
                     if (Engine2Running == false)
                     {
@@ -122,6 +138,7 @@ namespace Plugin
                         SoundManager.Play(EngineLoopSound, 1.0, 1.0, true);
                     }
                     Engine1Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
+                    EngineLoop = true;
                 }
             }
             if (Engine2Running == false)
@@ -143,7 +160,7 @@ namespace Plugin
             else
             {
                 //If the engine running state has been triggered, then this will start the loop sound with appropriate paramaters
-                if (Engine2Starter.StarterMotorState == StarterMotor.StarterMotorStates.EngineRunning && !SoundManager.IsPlaying(Engine1Starter.EngineFireSound))
+                if (Engine2Starter.StarterMotorState == StarterMotor.StarterMotorStates.EngineRunning && !SoundManager.IsPlaying(Engine1Starter.EngineFireSound) && EngineLoop == false)
                 {
                     if (Engine1Running == false)
                     {
@@ -154,6 +171,7 @@ namespace Plugin
                         SoundManager.Play(EngineLoopSound, 1.0, 1.0, true);
                     }
                     Engine2Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
+                    EngineLoop = true;
                 }
                 
             }
@@ -217,7 +235,13 @@ namespace Plugin
                 //Calculate the current maximum RPM figure
                 if (Engine1Running || Engine2Running)
                 {
-                    MaximumRPM = 600 + (RPMPerNotch * Train.Handles.PowerNotch);
+                    MaximumRPM = 600;
+                    //If the torque convertor is on service, then the max RPM may be increased above idle as per power notch
+                    //I assume this is prototypical, however unsure; Seems logical if nothing else!
+                    if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.OnService)
+                    {
+                        MaximumRPM += (RPMPerNotch*Train.Handles.PowerNotch);
+                    }
                 }
                 else
                 {
@@ -489,6 +513,88 @@ namespace Plugin
                     }
                 }
             }
+            //This section of code handles the power sounds
+            //These are not being run by OpenBVE as they are RPM dependant
+            if (EngineLoop == true)
+            {
+                //We are in the first 1/4 of the RPM range
+                if (CurrentRPM > 600 && CurrentRPM < 850)
+                {
+                    if (SoundManager.IsPlaying(EngineLoopSound1))
+                    {
+                        SoundManager.Stop(EngineLoopSound1);
+                    }
+                    var Pitch = 1.0 + ((CurrentRPM - 600)/250.0);
+                    if (SoundManager.GetLastPitch(EngineLoopSound) != Pitch)
+                    {
+                        SoundManager.Play(EngineLoopSound, 1.0, Pitch, true);
+                    }
+                }
+                //We are in the second 1/4 of the RPM range
+                else if (CurrentRPM >= 850 && CurrentRPM < 1100)
+                {
+                    if (SoundManager.IsPlaying(EngineLoopSound))
+                    {
+                        //Stop the idle- 25% loop sound and play the fade-up sound
+                        SoundManager.Stop(EngineLoopSound);
+                        SoundManager.Play(EngineFadeUpSound1, 1.0, 1.0, false);
+                    }
+                    else if (SoundManager.IsPlaying(EngineLoopSound2))
+                    {
+                        SoundManager.Stop(EngineLoopSound2);
+                    }
+                    else if (!SoundManager.IsPlaying(EngineFadeUpSound1))
+                    {
+                        //Finally, trigger the new loop sound
+                        var Pitch = ((CurrentRPM - 850)/250.0) - 0.5;
+                        if (SoundManager.GetLastPitch(EngineLoopSound1) != Pitch)
+                        {
+                            SoundManager.Play(EngineLoopSound1, 1.0, Pitch, true);
+                        }
+                    }
+                }
+                else if (CurrentRPM >= 1100 && CurrentRPM < 1350)
+                {
+                    if (SoundManager.IsPlaying(EngineLoopSound1))
+                    {
+                        SoundManager.Stop(EngineLoopSound1);
+                        SoundManager.Play(EngineFadeUpSound2, 1.0, 1.0, false);
+                    }
+                    else if (SoundManager.IsPlaying(EngineLoopSound3))
+                    {
+                        SoundManager.Stop(EngineLoopSound3);
+                    }
+                    else if (!SoundManager.IsPlaying(EngineFadeUpSound2))
+                    {
+                        var Pitch = ((CurrentRPM - 1100)/250.0) - 0.5;
+                        if (SoundManager.GetLastPitch(EngineLoopSound2) != Pitch)
+                        {
+                            SoundManager.Play(EngineLoopSound2, 1.0, Pitch, true);
+                        }
+                    }
+                }
+                else if (CurrentRPM >= 1350 && CurrentRPM < 1600)
+                {
+                    if (SoundManager.IsPlaying(EngineLoopSound1))
+                    {
+                        SoundManager.Stop(EngineLoopSound2);
+                        SoundManager.Play(EngineFadeUpSound3, 1.0, 1.0, false);
+                    }
+                    else if (!SoundManager.IsPlaying(EngineFadeUpSound3))
+                    {
+                        var Pitch = ((CurrentRPM - 1350)/250.0) - 0.5;
+                        if (SoundManager.GetLastPitch(EngineLoopSound3) != Pitch)
+                        {
+                            SoundManager.Play(EngineLoopSound3, 1.0, Pitch, true);
+                        }
+                    }
+                }
+                else if (CurrentRPM == 600)
+                {
+                    SoundManager.Play(EngineLoopSound, 1.0, 1.0, true);
+                }
+            }
+            PreviousRPM = CurrentRPM;
             //Temporarily pass the startup self-test manager state out to string
             //Remove this later....
             if (StartupManager.StartupState != WesternStartupManager.SequenceStates.ReadyToStart)
