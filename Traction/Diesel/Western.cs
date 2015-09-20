@@ -48,9 +48,9 @@ namespace Plugin
         /// <summary>This is the rate RPM increases per second up-to the maximum RPM.</summary>
         internal int RPMChange = 100;
         /// <summary>This stores the current RPM. It is shared across both engines, with a small random factor for display on the gauges</summary>
-        internal int CurrentRPM;
+        internal double CurrentRPM;
         /// <summary>This stores the previous frames RPM.</summary>
-        internal int PreviousRPM;
+        internal double PreviousRPM;
         /// <summary>The panel variable for the engine #1 RPM Gauge.</summary>
         internal int RPMGauge1 = -1;
         /// <summary>The panel variable for the engine #2 RPM Gauge.</summary>
@@ -245,28 +245,80 @@ namespace Plugin
                 }
                 else
                 {
-                    MaximumRPM = 0;
+                    if (Engine1Starter.StarterMotorState != StarterMotor.StarterMotorStates.None)
+                    {
+                        switch (Engine1Starter.StarterMotorState)
+                        {
+                            case StarterMotor.StarterMotorStates.RunUp:
+                                MaximumRPM = 150;
+                                break;
+                            case StarterMotor.StarterMotorStates.Active:
+                                MaximumRPM = 300;
+                                break;
+                            case StarterMotor.StarterMotorStates.EngineFire:
+                                MaximumRPM = 500;
+                                break;
+                            case StarterMotor.StarterMotorStates.RunDown:
+                                MaximumRPM = 150;
+                                break;
+                            default:
+                                MaximumRPM = 0;
+                                break;
+                        }
+                    }
+                    else if (Engine2Starter.StarterMotorState != StarterMotor.StarterMotorStates.None)
+                    {
+                        switch (Engine2Starter.StarterMotorState)
+                        {
+                            case StarterMotor.StarterMotorStates.RunUp:
+                                MaximumRPM = 150;
+                                break;
+                            case StarterMotor.StarterMotorStates.Active:
+                                MaximumRPM = 300;
+                                break;
+                            case StarterMotor.StarterMotorStates.EngineFire:
+                                MaximumRPM = 500;
+                                break;
+                            case StarterMotor.StarterMotorStates.RunDown:
+                                MaximumRPM = 150;
+                                break;
+                            default:
+                                MaximumRPM = 0;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        MaximumRPM = 0;
+                    }
+
                 }
-                //Elapse our timer
-                RPMTimer += data.ElapsedTime.Milliseconds;
-                //If we are over 1 second, then either increase or decrease by the RPM change rate
-                if (RPMTimer > 1000)
+
+                
+                if (CurrentRPM < MaximumRPM)
                 {
-                    if (CurrentRPM < MaximumRPM)
+                    if (Turbocharger.TurbochargerState != Turbocharger.TurbochargerStates.Running)
                     {
-                        CurrentRPM += RPMChange;
+                        //The standard RPM increase
+                        CurrentRPM += (RPMChange/1000.0)*data.ElapsedTime.Milliseconds;
                     }
-                    else if (CurrentRPM > MaximumRPM)
+                    else
                     {
-                        CurrentRPM -= RPMChange;
+                        //The engine spools up twice as fast when the turbocharger is running
+                        CurrentRPM += ((RPMChange / 1000.0) * data.ElapsedTime.Milliseconds) *2;
                     }
-                    RPMTimer = 0;
                 }
+                else if (CurrentRPM > MaximumRPM)
+                {
+                    CurrentRPM -= (RPMChange / 1000.0) * data.ElapsedTime.Milliseconds;
+                }
+                
+                
 
             }
             if (Train.Handles.PowerNotch != 0 && Train.tractionmanager.powercutoffdemanded == false)
             {
-                data.Handles.PowerNotch = Train.WesternDiesel.GearBox.PowerNotch(CurrentRPM,NumberOfEnginesRunning,Turbocharger.RunTurbocharger(data.ElapsedTime.Milliseconds, CurrentRPM));
+                data.Handles.PowerNotch = Train.WesternDiesel.GearBox.PowerNotch((int)CurrentRPM,NumberOfEnginesRunning,Turbocharger.RunTurbocharger(data.ElapsedTime.Milliseconds, (int)CurrentRPM));
             }
 
             //This section of code handles the startup self-test routine
@@ -450,7 +502,7 @@ namespace Plugin
                 {
                     if (Engine1Running == true)
                     {
-                        this.Train.Panel[RPMGauge1] = CurrentRPM;
+                        this.Train.Panel[RPMGauge1] = (int)CurrentRPM;
                     }
                     else
                     {
@@ -461,7 +513,7 @@ namespace Plugin
                 {
                     if (Engine2Running == true)
                     {
-                        this.Train.Panel[RPMGauge2] = CurrentRPM;
+                        this.Train.Panel[RPMGauge2] = (int)CurrentRPM;
                     }
                     else
                     {
@@ -520,73 +572,41 @@ namespace Plugin
                 //We are in the first 1/4 of the RPM range
                 if (CurrentRPM > 600 && CurrentRPM < 850)
                 {
-                    if (SoundManager.IsPlaying(EngineLoopSound1))
+                    //Pitch increases by 25%, volume by 10%
+                    var Pitch = 1.0 + (((CurrentRPM - 600)/250.0) * 0.25);
+                    var Volume = 1.0 + (((CurrentRPM - 600) / 250.0) * 0.1);
+                    if (SoundManager.GetLastPitch(EngineLoopSound) != Pitch && SoundManager.GetLastVolume(EngineLoopSound) != Volume)
                     {
-                        SoundManager.Stop(EngineLoopSound1);
-                    }
-                    var Pitch = 1.0 + ((CurrentRPM - 600)/250.0);
-                    if (SoundManager.GetLastPitch(EngineLoopSound) != Pitch)
-                    {
-                        SoundManager.Play(EngineLoopSound, 1.0, Pitch, true);
+                        SoundManager.Play(EngineLoopSound, 1.0, Volume, true);
                     }
                 }
                 //We are in the second 1/4 of the RPM range
                 else if (CurrentRPM >= 850 && CurrentRPM < 1100)
                 {
-                    if (SoundManager.IsPlaying(EngineLoopSound))
+                    var Pitch = 1.25 + (((CurrentRPM - 600) / 250.0) * 0.25);
+                    var Volume = 1.1 + (((CurrentRPM - 600) / 250.0) * 0.25);
+                    if (SoundManager.GetLastPitch(EngineLoopSound) != Pitch && SoundManager.GetLastVolume(EngineLoopSound) != Volume)
                     {
-                        //Stop the idle- 25% loop sound and play the fade-up sound
-                        SoundManager.Stop(EngineLoopSound);
-                        SoundManager.Play(EngineFadeUpSound1, 1.0, 1.0, false);
-                    }
-                    else if (SoundManager.IsPlaying(EngineLoopSound2))
-                    {
-                        SoundManager.Stop(EngineLoopSound2);
-                    }
-                    else if (!SoundManager.IsPlaying(EngineFadeUpSound1))
-                    {
-                        //Finally, trigger the new loop sound
-                        var Pitch = ((CurrentRPM - 850)/250.0) - 0.5;
-                        if (SoundManager.GetLastPitch(EngineLoopSound1) != Pitch)
-                        {
-                            SoundManager.Play(EngineLoopSound1, 1.0, Pitch, true);
-                        }
+                        SoundManager.Play(EngineLoopSound, 1.0, Volume, true);
                     }
                 }
+
                 else if (CurrentRPM >= 1100 && CurrentRPM < 1350)
                 {
-                    if (SoundManager.IsPlaying(EngineLoopSound1))
+                    var Pitch = 1.5 + (((CurrentRPM - 600) / 250.0) * 0.25);
+                    var Volume = 1.35 + (((CurrentRPM - 600) / 250.0) * 0.1);
+                    if (SoundManager.GetLastPitch(EngineLoopSound) != Pitch && SoundManager.GetLastVolume(EngineLoopSound) != Volume)
                     {
-                        SoundManager.Stop(EngineLoopSound1);
-                        SoundManager.Play(EngineFadeUpSound2, 1.0, 1.0, false);
-                    }
-                    else if (SoundManager.IsPlaying(EngineLoopSound3))
-                    {
-                        SoundManager.Stop(EngineLoopSound3);
-                    }
-                    else if (!SoundManager.IsPlaying(EngineFadeUpSound2))
-                    {
-                        var Pitch = ((CurrentRPM - 1100)/250.0) - 0.5;
-                        if (SoundManager.GetLastPitch(EngineLoopSound2) != Pitch)
-                        {
-                            SoundManager.Play(EngineLoopSound2, 1.0, Pitch, true);
-                        }
+                        SoundManager.Play(EngineLoopSound, 1.0, Volume, true);
                     }
                 }
                 else if (CurrentRPM >= 1350 && CurrentRPM < 1600)
                 {
-                    if (SoundManager.IsPlaying(EngineLoopSound1))
+                    var Pitch = 1.75 + (((CurrentRPM - 600) / 250.0) * 0.25);
+                    var Volume = 1.45 + (((CurrentRPM - 600) / 250.0) * 0.1);
+                    if (SoundManager.GetLastPitch(EngineLoopSound) != Pitch && SoundManager.GetLastVolume(EngineLoopSound) != Volume)
                     {
-                        SoundManager.Stop(EngineLoopSound2);
-                        SoundManager.Play(EngineFadeUpSound3, 1.0, 1.0, false);
-                    }
-                    else if (!SoundManager.IsPlaying(EngineFadeUpSound3))
-                    {
-                        var Pitch = ((CurrentRPM - 1350)/250.0) - 0.5;
-                        if (SoundManager.GetLastPitch(EngineLoopSound3) != Pitch)
-                        {
-                            SoundManager.Play(EngineLoopSound3, 1.0, Pitch, true);
-                        }
+                        SoundManager.Play(EngineLoopSound, 1.0, Volume, true);
                     }
                 }
                 else if (CurrentRPM == 600)
@@ -595,15 +615,51 @@ namespace Plugin
                 }
             }
             PreviousRPM = CurrentRPM;
-            //Temporarily pass the startup self-test manager state out to string
-            //Remove this later....
+            //Pass out the debug data
             if (StartupManager.StartupState != WesternStartupManager.SequenceStates.ReadyToStart)
             {
                 data.DebugMessage = StartupManager.StartupState.ToString();
             }
             else
             {
-                data.DebugMessage = Engine2Starter.StarterMotorState.ToString();
+                if (StarterKeyPressed)
+                {
+                    if (EngineSelector == 1)
+                    {
+                        data.DebugMessage = Engine1Starter.StarterMotorState.ToString();
+                    }
+                    else
+                    {
+                        data.DebugMessage = Engine1Starter.StarterMotorState.ToString();
+                    }
+                }
+                else
+                {
+                    data.DebugMessage = StartupManager.StartupState.ToString();
+                }
+            }
+
+            if (AdvancedDriving.CheckInst != null)
+            {
+                this.Train.tractionmanager.DebugWindowData.WesternEngine.CurrentRPM = ((int)CurrentRPM).ToString();
+                if (Engine1Running)
+                {
+                    this.Train.tractionmanager.DebugWindowData.WesternEngine.RearEngineState = "Running";
+                }
+                else
+                {
+                    this.Train.tractionmanager.DebugWindowData.WesternEngine.RearEngineState = Engine2Starter.StarterMotorState.ToString();
+                        //"Stopped";
+                }
+                if (Engine2Running)
+                {
+                    this.Train.tractionmanager.DebugWindowData.WesternEngine.FrontEngineState = "Running";
+                }
+                else
+                {
+                    this.Train.tractionmanager.DebugWindowData.WesternEngine.FrontEngineState = "Stopped";
+                }
+
             }
         }
 

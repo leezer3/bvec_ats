@@ -15,11 +15,11 @@ namespace Plugin
     partial class StarterMotor
     {
         /// <summary>The time in milliseconds taken for the starter motor to run up</summary>
-        internal double StartDelay = 0;
+        internal double StartDelay = 1000;
         /// <summary>The time in milliseconds taken for the starter motor to run down</summary>
-        internal double RunDownDelay = 0;
+        internal double RunDownDelay = 1000;
         /// <summary>The time in milliseconds taken for the engine to fire up</summary>
-        internal double FireUpDelay = 0;
+        internal double FireUpDelay = 1000;
         /// <summary>The sound played whilst the starter motor is running up</summary>
         internal int StarterRunUpSound = -1;
         /// <summary>The sound played whilst the starter motor is active</summary>

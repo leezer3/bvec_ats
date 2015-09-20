@@ -151,6 +151,11 @@ namespace Plugin
                     WesternPanel.Location = new Point(5, 5);
                     mask.Size = this.Size;
                 }
+                WesternPanel.debuglabel.Text = debuginformation[0];
+                WesternPanel.RPM.Text = DebugData.WesternEngine.CurrentRPM;
+                WesternPanel.Engine1Status.Text = DebugData.WesternEngine.RearEngineState;
+                WesternPanel.Engine2Status.Text = DebugData.WesternEngine.FrontEngineState;
+
             }
             else
             {

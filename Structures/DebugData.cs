@@ -26,6 +26,7 @@
         
         public SteamLocomotive SteamEngine = new SteamLocomotive();
         public ElectricLocomotive ElectricEngine = new ElectricLocomotive();
+        public WesternDebug WesternEngine = new WesternDebug();
         public class SteamLocomotive
         {
             public int BoilerPressure;
@@ -50,6 +51,13 @@
             public string RearPantographState;
             public bool VCBState;
             public bool LineVolts;
+        }
+
+        public class WesternDebug
+        {
+            public string FrontEngineState;
+            public string RearEngineState;
+            public string CurrentRPM;
         }
     }
 }

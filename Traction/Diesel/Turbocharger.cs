@@ -39,7 +39,7 @@
                     {
                         //If our turbocharger is active, switch to the run-up state and play sound
                         TurbochargerState = TurbochargerStates.RunUp;
-                        SoundManager.Play(TurbochargerRunUpSound, 1.0, 1.0, false);
+                        SoundManager.Play(TurbochargerRunUpSound, 5.0, 1.0, false);
                     }
                     return false;
                 case TurbochargerStates.RunUp:
@@ -59,7 +59,7 @@
                         {
                             TurbochargerState = TurbochargerStates.Running;
                             SoundManager.Stop(TurbochargerRunUpSound);
-                            SoundManager.Play(TurbochargerLoopSound, 1.0, 1.0, true);
+                            SoundManager.Play(TurbochargerLoopSound, 5.0, 1.0, true);
                             TurbochargerTimer = 0;
                         }
                     }
@@ -70,7 +70,7 @@
                         //If the turbocharger is no longer being requested by the engine, then switch to run-down state
                         TurbochargerState = TurbochargerStates.RunDown;
                         SoundManager.Stop(TurbochargerLoopSound);
-                        SoundManager.Play(TurbochargerRunDownSound, 1.0, 1.0, false);
+                        SoundManager.Play(TurbochargerRunDownSound, 5.0, 1.0, false);
                         return false;
                     }
                     break;

@@ -73,6 +73,24 @@ namespace Plugin
 
         }
 
+        //Call this function to parse a large number string input
+        //It will simply attempt to parse the number into an integer
+        /// <summary>Check whether the input is a valid number</summary>
+        internal static void ParseNumber(string input, ref int output, string failingvalue)
+        {
+            try
+            {
+                int finishednumber = Int32.Parse(input);
+                output = finishednumber;
+            }
+            catch
+            {
+                LogError(failingvalue, 3);
+
+            }
+
+        }
+
         //Call this function to parse a number input into a bool
         /// <summary>Parses a bool type setting from a string input</summary>
         internal static void ParseBool(string input, ref bool output, string failingvalue)
