@@ -212,6 +212,8 @@ namespace Plugin {
         /// <summary>The ATO device, or a null reference if not installed.</summary>
         internal Ato Ato;
 
+	    internal LEDLights LedLights;
+
 	    internal WesternDiesel WesternDiesel;
 
 
@@ -353,6 +355,9 @@ namespace Plugin {
                             case "settings":
                                 //Twiddle
                                 break;
+                            case "ledlights":
+                                this.LedLights = new LEDLights();
+			                    break;
                             case "debug":
                                 //Twiddle
                                 //Although we've already parsed this, it needs to be marked as a supported section
@@ -1839,6 +1844,10 @@ namespace Plugin {
             {
                 devices.Add(this.WesternDiesel);
             }
+		    if (this.LedLights != null)
+		    {
+		        devices.Add(this.LedLights);
+		    }
 			this.Devices = devices.ToArray();
 		}
 
@@ -2145,6 +2154,7 @@ namespace Plugin {
 		/// <param name="data">The data.</param>
 		internal void Elapse(ElapseData data)
 		{
+		    
 			this.PluginInitializing = false;
 			if (data.ElapsedTime.Seconds > 0.0 & data.ElapsedTime.Seconds < 1.0) {
 				//Odakyufan's code requires clearing the array each time

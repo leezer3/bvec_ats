@@ -66,8 +66,12 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="OpenBveApi">
-      <HintPath>..\OpenBveApi.dll</HintPath>
+    <Reference Include="BlinkStickDotNet">
+      <HintPath>..\..\BlinkStickDotNet-master\BlinkStickDotNet\bin\Release\BlinkStickDotNet.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenBveApi, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\OBVE\OpenBveApi.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -86,6 +90,7 @@
     <Compile Include="Dialogs\WesternControl.Designer.cs">
       <DependentUpon>WesternControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Functions\BlinkStick.cs" />
     <Compile Include="SafetySystems\JA\Atc.cs" />
     <Compile Include="SafetySystems\JA\Ato.cs" />
     <Compile Include="SafetySystems\JA\AtsP.cs" />

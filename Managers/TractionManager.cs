@@ -69,7 +69,6 @@ namespace Plugin
         //These will probably be renumbered at some stage....
 
         internal AdvancedDrivingData DebugWindowData = new AdvancedDrivingData();
-        
 
         public static string[] debuginformation = new string[30];
         public static int tractiontype;
@@ -671,14 +670,14 @@ namespace Plugin
             {
                 if (AdvancedDriving.CheckInst == null)
                 {
-                    AdvancedDriving.CreateInst.Show();  // This creates and displays Form2
-                    
+                    AdvancedDriving.CreateInst.Show(); // This creates and displays Form2
+
                     using (var key = Registry.CurrentUser.OpenSubKey(@"Software\BVEC_ATS", true))
                     {
                         if (key != null)
                         {
-                            AdvancedDriving.CreateInst.Left = (int)key.GetValue("Left");
-                            AdvancedDriving.CreateInst.Top = (int)key.GetValue("Top");
+                            AdvancedDriving.CreateInst.Left = (int) key.GetValue("Left");
+                            AdvancedDriving.CreateInst.Top = (int) key.GetValue("Top");
                         }
                         else
                         {
@@ -692,6 +691,8 @@ namespace Plugin
                     debuginformation[13] = Convert.ToString(Train.trainspeed) + " km/h";
                     AdvancedDriving.CreateInst.Elapse(debuginformation, tractiontype, DebugWindowData);
                 }
+
+
             }
             else
             {
@@ -699,6 +700,7 @@ namespace Plugin
                 {
                     AdvancedDriving.CreateInst.Close();
                 }
+
             }
             
         }
