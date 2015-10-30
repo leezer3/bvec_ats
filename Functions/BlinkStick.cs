@@ -1,4 +1,5 @@
-﻿using BlinkStickDotNet;
+﻿using System;
+using BlinkStickDotNet;
 using OpenBveApi.Runtime;
 
 //This class is used to light a Blinkstick LED
@@ -10,12 +11,30 @@ namespace Plugin
         /// <summary>The underlying train.</summary>
         private readonly Train Train;
 
+        internal bool Initialised;
+
         private BlinkStick device;
         //<param name="mode">The initialization mode.</param>
         internal override void Initialize(InitializationModes mode)
         {
-            //When we initialise, find the first attached BlinkStick
-            device = BlinkStick.FindFirst();
+            try
+            {
+                //When we initialise, find the first attached BlinkStick
+                device = BlinkStick.FindFirst();
+                if (device != null)
+                {
+                    Initialised = true;
+                    Train.DebugLogger.LogMessage("Blinkstick device sucessfully found");
+                }
+                else
+                {
+                    Train.DebugLogger.LogMessage("No blinkstick devices found");
+                }
+            }
+            catch (Exception)
+            {
+                Train.DebugLogger.LogMessage("An error occured whilst trying to detect attached Blinksticks");
+            }
         }
 
         /// <summary>Is called every frame.</summary>
@@ -23,14 +42,17 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
-            //If the train doors state is not none, then set the LED to yellow
-            if (Train.Doors != DoorStates.None)
+            if (Initialised)
             {
-                device.SetColor("yellow");
-            }
-            else
-            {
-                device.TurnOff();
+                //If the train doors state is not none, then set the LED to yellow
+                if (Train.Doors != DoorStates.None)
+                {
+                    device.SetColor("yellow");
+                }
+                else
+                {
+                    device.TurnOff();
+                }
             }
         }
     }
