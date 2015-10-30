@@ -11,6 +11,13 @@ namespace Plugin
         /// <summary>The underlying train.</summary>
         private readonly Train Train;
 
+        /// <summary>Creates a new instance of this system.</summary>
+        /// <param name="train">The train.</param>
+        internal LEDLights(Train train)
+        {
+            this.Train = train;
+        }
+
         internal bool Initialised;
 
         private BlinkStick device;

@@ -356,7 +356,7 @@ namespace Plugin {
                                 //Twiddle
                                 break;
                             case "ledlights":
-                                this.LedLights = new LEDLights();
+                                this.LedLights = new LEDLights(this);
 			                    break;
                             case "debug":
                                 //Twiddle
