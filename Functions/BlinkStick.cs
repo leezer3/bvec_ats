@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using BlinkStickDotNet;
 using OpenBveApi.Runtime;
 
@@ -19,6 +20,7 @@ namespace Plugin
         }
 
         internal bool Initialised;
+        internal string currentColor;
 
         private BlinkStick device;
         //<param name="mode">The initialization mode.</param>
@@ -49,16 +51,59 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
-            if (Initialised)
+            if (!Initialised) return;
+            //If the train doors state is not none, then set the LED to yellow
+            if (Train.Doors != DoorStates.None && currentColor != "yellow")
             {
-                //If the train doors state is not none, then set the LED to yellow
-                if (Train.Doors != DoorStates.None)
+                currentColor = "yellow";
+                Train.DebugLogger.LogMessage("Blinkstick set to Yellow");
+                SetColor(device, currentColor);
+            }
+            else if(currentColor != null)
+            {
+                Train.DebugLogger.LogMessage("Blinkstick turned off");
+                currentColor = null;
+                TurnOff(device);
+            }
+        }
+
+        /// <summary>Changes the color of a Blinkstick LED- This is a wrapper method for Blinkstick.Net to provide exception handling</summary>
+        /// <param name="device">The device for which we wish to set the color</param>
+        /// <param name="color">The color to set</param>
+        internal void SetColor(BlinkStick device, string color)
+        {
+            if (device.OpenDevice())
+            {
+                try
                 {
-                    device.SetColor("yellow");
+                    device.SetColor(color);
                 }
-                else
+                catch (Exception e)
+                {
+                    //If we fail to set the color, log the exception, and stop trying
+                    Train.DebugLogger.LogMessage("An error occured whilst trying to set the Blinkstick color:");
+                    Train.DebugLogger.LogMessage(e.Message);
+                    Initialised = false;
+                    Train.DebugLogger.LogMessage("No further attempts will be made to access this device.");
+                }
+            }
+        }
+        /// <summary> Turns off a Blinkstick LED- This is a wrapper method for Blinkstick.Net to provide exception handling</summary>
+        /// <param name="device">The device to turn off</param>
+        internal void TurnOff(BlinkStick device)
+        {
+            if (device.OpenDevice())
+            {
+                try
                 {
                     device.TurnOff();
+                }
+                catch (Exception e)
+                {
+                    Train.DebugLogger.LogMessage("An error occured whilst trying turn off the Blinkstick:");
+                    Train.DebugLogger.LogMessage(e.Message);
+                    Initialised = false;
+                    Train.DebugLogger.LogMessage("No further attempts will be made to access this device.");
                 }
             }
         }
