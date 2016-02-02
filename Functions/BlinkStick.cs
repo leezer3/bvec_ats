@@ -59,7 +59,7 @@ namespace Plugin
                 Train.DebugLogger.LogMessage("Blinkstick set to Yellow");
                 SetColor(device, currentColor);
             }
-            else if(currentColor != null)
+            else if (Train.Doors == DoorStates.None && currentColor != null)
             {
                 Train.DebugLogger.LogMessage("Blinkstick turned off");
                 currentColor = null;
