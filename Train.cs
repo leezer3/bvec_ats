@@ -868,6 +868,14 @@ namespace Plugin {
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Starter.EngineStallSound, key);
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Starter.EngineStallSound, key);
                                             break;
+                                        case "starterloopsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Starter.StarterLoopSound, key);
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Starter.StarterLoopSound, key);
+                                            break;
+                                        case "starterrunupsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Starter.StarterRunUpSound, key);
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Starter.StarterRunUpSound, key);
+                                            break;
                                         case "switchsound":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.SwitchSound, key);
                                             break;
@@ -892,17 +900,17 @@ namespace Plugin {
                                         case "rpmchangerate":
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.RPMChange, key);
                                             break;
-                                        case "minimumfireprobability":
-                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.MinimumFireProbability, key);
-                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.MinimumFireProbability, key);
+                                        case "fireprobability":
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.FireProbability, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.FireProbability, key);
                                             break;
-                                        case "maximumfireproability":
+                                        case "maximumfireprobability":
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.MaximumFireProbability, key);
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.MaximumFireProbability, key);
                                             break;
-                                        case "minimumstallprobability":
-                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.MinimumStallProbability, key);
-                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.MinimumStallProbability, key);
+                                        case "stallprobability":
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.StallProbability, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.StallProbability, key);
                                             break;
                                         case "maximumstallprobability":
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.MaximumStallProbability, key);
