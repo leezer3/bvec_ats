@@ -916,6 +916,9 @@ namespace Plugin {
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.MaximumStallProbability, key);
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.MaximumStallProbability, key);
                                             break;
+                                        case "temperaturechangerate":
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.TemperatureChangeRate, key);
+                                            break;
                                     }
                                     break;
 			                    case "vigilance":

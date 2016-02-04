@@ -1,6 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using OpenBveApi.Runtime;
+﻿using OpenBveApi.Runtime;
 
 namespace Plugin
 {
@@ -98,6 +96,10 @@ namespace Plugin
         internal bool Engine2Overheated;
         /// <summary>The basic rate at which engine temperature changes</summary>
         internal double TemperatureChangeRate = 1;
+        /// <summary>Stores the current transmission temperature</summary>
+        internal double TransmissionTemperature = 0;
+        /// <summary>Stores whether the transmission has overheated</summary>
+        internal bool TransmissionOverheated;
         /// <summary>Whether the radiator shutters are open</summary>
         internal bool RadiatorShuttersOpen = true;
         /// <summary>The panel index for the radiator shutters</summary>
@@ -364,7 +366,7 @@ namespace Plugin
                 }
                 data.Handles.PowerNotch = Train.WesternDiesel.GearBox.PowerNotch((int)CurrentRPM,EnginesProvidingPower,Turbocharger.RunTurbocharger(data.ElapsedTime.Milliseconds, (int)CurrentRPM));
             }
-            //This section of code handles engine temperatures
+            //This section of code handles engine & transmission temperatures
             {
                 if (Engine1Running)
                 {
@@ -397,6 +399,19 @@ namespace Plugin
                             }
                         }
                     }
+                    else
+                    {
+                        //If the radiator shutters are closed, temperature decreases half as fast
+                        if (RadiatorShuttersOpen || Train.trainspeed < 20)
+                        {
+                            Engine1Temperature -= (TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds;
+                        }
+                        else
+                        {
+                            Engine1Temperature -= ((TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds)/2;
+                        }
+                    }
+
                 }
                 else
                 {
@@ -443,6 +458,18 @@ namespace Plugin
                             }
                         }
                     }
+                    else
+                    {
+                        //If the radiator shutters are closed, temperature decreases half as fast
+                        if (RadiatorShuttersOpen || Train.trainspeed < 20)
+                        {
+                            Engine2Temperature -= (TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds;
+                        }
+                        else
+                        {
+                            Engine2Temperature -= ((TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds) / 2;
+                        }
+                    }
                 }
                 else
                 {
@@ -458,6 +485,41 @@ namespace Plugin
                             Engine2Temperature -= ((TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds) /2;
                         }
                     }
+                }
+                //Transmission temperatures
+                switch (NumberOfEnginesRunning)
+                {
+                    case 0:
+                        //No engines running- Decrease at full rate
+                        if (TransmissionTemperature > 0)
+                        {
+                            TransmissionTemperature -= (TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds;
+                        }
+                        break;
+                    case 1:
+                        //Less than 1k RPM- Decrease at full rate
+                        if (CurrentRPM < 1000 && TransmissionTemperature > 0)
+                        {
+                            TransmissionTemperature -= (TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds;
+                        }
+                        //Increase at half rate
+                        else if (CurrentRPM > 1200)
+                        {
+                            TransmissionTemperature += ((TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds) /2;
+                        }
+                        break;
+                    case 2:
+                        //Less than 1k RPM- Decrease at full rate
+                        if (CurrentRPM > 1000 && TransmissionTemperature > 0)
+                        {
+                            TransmissionTemperature -= (TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds;
+                        }
+                        //Increase at full rate
+                        else if (CurrentRPM > 1300)
+                        {
+                            TransmissionTemperature += (TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds;
+                        }
+                        break;
                 }
                 //Consequences
                 if (Engine1Temperature > 600)
@@ -503,6 +565,29 @@ namespace Plugin
                         Train.tractionmanager.resetpowercutoff();
                         Train.DebugLogger.LogMessage("Western Diesel- Engine 2 returned to normal operating temperature");
                     }
+                }
+                if (TransmissionTemperature > 600)
+                {
+                    if (TransmissionOverheated == false)
+                    {
+                        TransmissionOverheated = true;
+                        Train.tractionmanager.demandpowercutoff();
+                        Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to the transmission overheating");
+                    }
+
+                }
+                else if (TransmissionTemperature < 400)
+                {
+                    if (TransmissionOverheated)
+                    {
+                        TransmissionOverheated = false;
+                        if ((Engine1Running && !Engine1Overheated) || (Engine2Running && !Engine2Overheated))
+                        {
+                            Train.tractionmanager.resetpowercutoff();
+                        }
+                        Train.DebugLogger.LogMessage("Western Diesel- Transmission returned to normal operating temperature");
+                    }
+
                 }
             }
             //This section of code handles the startup self-test routine
@@ -564,19 +649,40 @@ namespace Plugin
                         }
                         else
                         {
-                            //If we have an overheated engine
-                            if (Engine1Overheated || Engine2Overheated)
+                            //Something has overheated
+                            if (Engine1Overheated || Engine2Overheated && TransmissionOverheated)
                             {
+
                                 if (RadiatorShuttersOpen)
                                 {
                                     //The radiator shutters are open, so the high oil temp light should be lit
-                                    this.Train.Panel[ILCluster2] = 3;
+                                    if (!TransmissionOverheated)
+                                    {
+                                        
+                                        this.Train.Panel[ILCluster2] = 3;
+                                    }
+                                    else
+                                    {
+                                        this.Train.Panel[ILCluster2] = 6;
+                                    }
                                 }
                                 else
                                 {
                                     //The radiator shutters are closed, so the high oil and water temp lights should be lit
-                                    this.Train.Panel[ILCluster2] = 4;
+                                    if (!TransmissionOverheated)
+                                    {
+                                        this.Train.Panel[ILCluster2] = 4;
+                                    }
+                                    else
+                                    {
+                                        this.Train.Panel[ILCluster2] = 5;
+                                    }
                                 }
+                            }
+                            else if (TransmissionOverheated)
+                            {
+                                //Just the transmission
+                                this.Train.Panel[ILCluster2] = 7;
                             }
                             //Otherwise all lights blue
                             else
