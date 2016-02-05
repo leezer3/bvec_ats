@@ -828,7 +828,7 @@ namespace Plugin {
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.ILCluster2, key);
                                             break;
                                         case "masterkey":
-                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.MasterKey, key);
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.MasterKeyIndex, key);
                                             break;
                                         case "startdelay":
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.StartDelay, key);
@@ -878,6 +878,12 @@ namespace Plugin {
                                             break;
                                         case "switchsound":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.SwitchSound, key);
+                                            break;
+                                        case "masterkeysound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.MasterKeySound, key);
+                                            break;
+                                        case "firebellsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.FireBellSound, key);
                                             break;
                                         case "voltsgauge":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.BatteryVoltsGauge, key);
@@ -1599,7 +1605,14 @@ namespace Plugin {
 			                                this.tractionmanager.wiperspeeddown = value;
 			                                break;
 			                            case "isolatesafetykey":
-			                                this.tractionmanager.isolatesafetykey = value;
+			                                if (WesternDiesel == null)
+			                                {
+			                                    this.tractionmanager.isolatesafetykey = value;
+			                                }
+			                                else
+			                                {
+			                                    this.tractionmanager.WesternAWSIsolationKey = value;
+			                                }
 			                                break;
 			                            case "gearupkey":
 			                                this.tractionmanager.gearupkey = value;
@@ -1739,6 +1752,9 @@ namespace Plugin {
                                         case "westernengineswitchkey":
 			                                this.tractionmanager.WesternEngineSwitchKey = value;
 			                                break;
+                                        case "westernfirebellkey":
+                                            this.tractionmanager.WesternFireBellKey = value;
+                                            break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }

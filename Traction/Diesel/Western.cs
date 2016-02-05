@@ -29,13 +29,17 @@ namespace Plugin
         internal bool StopKeyPressed;
         /// <summary>Stores whether the battery is currently isolated.</summary>
         internal bool BatteryIsolated = true;
+        /// <summary>Stores whether the fire bell is currently ringing.</summary>
+        internal bool FireBell = false;
+        /// <summary>Stores whether we are currently in engine-only mode.</summary>
+        internal bool EngineOnly = false;
 
         /// <summary>The panel variable for the current state of the instrument cluster lights (Drivers).</summary>
         internal int ILCluster1 = -1;
         /// <summary>The panel variable for the current state of the instrument cluster lights (Secondmans).</summary>
         internal int ILCluster2 = -1;
         /// <summary>The panel variable for the master key.</summary>
-        internal int MasterKey = -1;
+        internal int MasterKeyIndex = -1;
         /// <summary>The panel variable for the battery volts gauge.</summary>
         internal int BatteryVoltsGauge = -1;
         /// <summary>The panel variable for the battery charge gauge.</summary>
@@ -85,6 +89,10 @@ namespace Plugin
         internal int NeutralSelectedSound = -1;
         /// <summary>The sound index for the battery isolation switch & master switch.</summary>
         internal int SwitchSound = -1;
+        /// <summary>The sound index for the master key insertion/ removal.</summary>
+        internal int MasterKeySound = -1;
+        /// <summary>The sound index for the fire bell test.</summary>
+        internal int FireBellSound = -1;
 
         /// <summary>Stores the current temperature value for engine 1</summary>
         internal double Engine1Temperature = 0;
@@ -345,24 +353,32 @@ namespace Plugin
             {
                 //An engine may be running but not providing power
                 var EnginesProvidingPower = NumberOfEnginesRunning;
-                switch (NumberOfEnginesRunning)
+                if (EngineOnly == true)
                 {
-                    case 1:
-                        if (Engine1Running && Engine1Overheated || Engine2Running && Engine2Overheated)
-                        {
-                            EnginesProvidingPower = 0;
-                        }
-                        break;
-                    case 2:
-                        if (Engine1Overheated)
-                        {
-                            EnginesProvidingPower -= 1;
-                        }
-                        if (Engine2Overheated)
-                        {
-                            EnginesProvidingPower -= 1;
-                        }
-                        break;
+                    switch (NumberOfEnginesRunning)
+                    {
+                        case 1:
+                            if (Engine1Running && Engine1Overheated || Engine2Running && Engine2Overheated)
+                            {
+                                EnginesProvidingPower = 0;
+                            }
+                            break;
+                        case 2:
+                            if (Engine1Overheated)
+                            {
+                                EnginesProvidingPower -= 1;
+                            }
+                            if (Engine2Overheated)
+                            {
+                                EnginesProvidingPower -= 1;
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    //If in engine only mode, no engines are providing power, but we still want the nice sound effects!
+                    EnginesProvidingPower = 0;
                 }
                 data.Handles.PowerNotch = Train.WesternDiesel.GearBox.PowerNotch((int)CurrentRPM,EnginesProvidingPower,Turbocharger.RunTurbocharger(data.ElapsedTime.Milliseconds, (int)CurrentRPM));
             }
@@ -596,9 +612,14 @@ namespace Plugin
                 switch (StartupManager.StartupState)
                 {
                     case WesternStartupManager.SequenceStates.Pending:
+                        if (FireBell == true)
+                        {
+                            //We have isolated the battery, but the fire bell is currently ringing- Stop
+                            FireBell = false;
+                            SoundManager.Stop(FireBellSound);
+                        }
                         if (BatteryIsolated == false)
                         {
-                            SoundManager.Play(SwitchSound, 1.0, 1.0 ,false);
                             StartupManager.StartupState = WesternStartupManager.SequenceStates.BatteryEnergized;
                         }
                         break;
@@ -625,6 +646,16 @@ namespace Plugin
                         break;
                     case WesternStartupManager.SequenceStates.NeutralSelected:
                         StartupManager.StartupState = WesternStartupManager.SequenceStates.ReadyToStart;
+                        break;
+                    case WesternStartupManager.SequenceStates.MasterKeyRemoved:
+                        if (BatteryIsolated)
+                        {
+                            StartupManager.StartupState = WesternStartupManager.SequenceStates.Pending;
+                        }
+                        else
+                        {
+                            StartupManager.StartupState = WesternStartupManager.SequenceStates.BatteryEnergized;
+                        }
                         break;
                 }
             }
@@ -749,16 +780,16 @@ namespace Plugin
                         }
                     }
                 }
-                if (MasterKey != -1)
+                if (MasterKeyIndex != -1)
                 {
                     //If the startup sequence is greater than or equal to 3, then the master key has been inserted
                     if ((int)StartupManager.StartupState >= 3)
                     {
-                        this.Train.Panel[MasterKey] = 1;
+                        this.Train.Panel[MasterKeyIndex] = 1;
                     }
                     else
                     {
-                        this.Train.Panel[MasterKey] = 0;   
+                        this.Train.Panel[MasterKeyIndex] = 0;   
                     }
                 }
                 if (BatteryVoltsGauge != -1)
@@ -973,6 +1004,49 @@ namespace Plugin
             }
         }
 
+        /// <summary>This method should be called when the battery switch is toggled</summary>
+        internal void BatterySwitch()
+        {
+            SoundManager.Play(SwitchSound, 1.0, 1.0, false);
+            //Toggle isolation state
+            if (BatteryIsolated == true)
+            {
+                BatteryIsolated = false;
+            }
+            else
+            {
+                BatteryIsolated = true;
+                StartupManager.StartupState = WesternStartupManager.SequenceStates.Pending;
+            }
+        }
+
+        /// <summary>This method should be called when the master key is inserted or removed</summary>
+        internal void MasterKey()
+        {
+            SoundManager.Play(MasterKeySound, 1.0, 1.0, false);
+            if (StartupManager.StartupState == WesternStartupManager.SequenceStates.BatteryEnergized)
+            {
+                StartupManager.StartupState = WesternStartupManager.SequenceStates.MasterKeyInserted;
+            }
+            else
+            {
+                StartupManager.StartupState = WesternStartupManager.SequenceStates.MasterKeyRemoved;
+            }
+        }
+
+        internal void FireBellTest()
+        {
+            if (StartupManager.StartupState == WesternStartupManager.SequenceStates.Pending || FireBell == true)
+            {
+                FireBell = false;
+                SoundManager.Stop(FireBellSound);
+            }
+            else
+            {
+                FireBell = true;
+                SoundManager.Play(FireBellSound, 1.0, 1.0, true);
+            }
+        }
         internal void ToggleAWS()
         {
             //If we are the locomotive is ready to start, then switch the AWS to online

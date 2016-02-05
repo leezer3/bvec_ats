@@ -21,10 +21,13 @@
             DSDAcknowledged = 5,
             /// <summary>Neutral reverser has been selected. The numerical value of this constant is 6.</summary>
             NeutralSelected = 6,
-            /// <summary>The locomotive is now ready to start. The numerical value of this constant is 6.</summary>
+            /// <summary>The locomotive is now ready to start. The numerical value of this constant is 7.</summary>
             ReadyToStart = 7,
-            /// <summary>The locomotive's AWS system has been energized.</summary>
-            AWSOnline = 8
+            /// <summary>The locomotive's AWS system has been energized. The numerical value of this constant is 8.</summary>
+            AWSOnline = 8,
+            /// <summary>The master key has been removed. The numerical value of this constant is 9.</summary>
+            MasterKeyRemoved = 9
+
         }
     }
 }

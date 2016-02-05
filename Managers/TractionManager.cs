@@ -150,6 +150,8 @@ namespace Plugin
         internal string WesternTransmissionResetButton;
         internal string WesternEngineSwitchKey;
         internal string WesternAWSIsolationKey;
+        internal string WesternFireBellKey;
+        internal string WesternEngineOnlyKey;
 
         //KEYS ADDED BY OS_SZ_ATS
 
@@ -1378,22 +1380,24 @@ namespace Plugin
                 }
                 if (keypressed == WesternBatterySwitch)
                 {
-                    if (Train.WesternDiesel.BatteryIsolated == true)
-                    {
-                        Train.WesternDiesel.BatteryIsolated = false;
-                    }
+                    Train.WesternDiesel.BatterySwitch();
                 }
                 if (keypressed == WesternMasterKey)
                 {
-                    if (Train.WesternDiesel.StartupManager.StartupState == WesternStartupManager.SequenceStates.BatteryEnergized)
-                    {
-                        Train.WesternDiesel.StartupManager.StartupState = WesternStartupManager.SequenceStates.MasterKeyInserted;
-                    }
+                    Train.WesternDiesel.MasterKey();
                 }
                 
                 if (keypressed == WesternAWSIsolationKey)
                 {
                     Train.WesternDiesel.ToggleAWS();
+                }
+                if (keypressed == WesternFireBellKey)
+                {
+                    Train.WesternDiesel.FireBellTest();
+                }
+                if (keypressed == WesternEngineOnlyKey)
+                {
+                    Train.WesternDiesel.EngineOnly = !Train.WesternDiesel.EngineOnly;
                 }
                 if (keypressed == WesternEngineSwitchKey)
                 {
