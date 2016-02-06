@@ -906,6 +906,9 @@ namespace Plugin {
                                         case "engine2button":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Button, key);
                                             break;
+                                        case "fuelpumpswitch":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.FuelPumpSwitchIndex, key);
+                                            break;
                                         case "rpmchangerate":
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.RPMChange, key);
                                             break;

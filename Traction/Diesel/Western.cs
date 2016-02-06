@@ -42,6 +42,8 @@ namespace Plugin
         internal int ILCluster2 = -1;
         /// <summary>The panel variable for the master key.</summary>
         internal int MasterKeyIndex = -1;
+        /// <summary>The panel variable for the fuel pump isolation switch.</summary>
+        internal int FuelPumpSwitchIndex = -1;
         /// <summary>The panel variable for the battery volts gauge.</summary>
         internal int BatteryVoltsGauge = -1;
         /// <summary>The panel variable for the battery charge gauge.</summary>
@@ -918,6 +920,17 @@ namespace Plugin
                     else
                     {
                         this.Train.Panel[Engine2Button] = 0;
+                    }
+                }
+                if (FuelPumpSwitchIndex != -1)
+                {
+                    if (FuelPumpIsolated == true)
+                    {
+                        this.Train.Panel[FuelPumpSwitchIndex] = 1;
+                    }
+                    else
+                    {
+                        this.Train.Panel[FuelPumpSwitchIndex] = 0;
                     }
                 }
             }
