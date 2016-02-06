@@ -868,6 +868,9 @@ namespace Plugin {
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Starter.EngineStallSound, key);
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Starter.EngineStallSound, key);
                                             break;
+                                        case "enginestopsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.EngineStopSound, key);
+                                            break;
                                         case "starterloopsound":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Starter.StarterLoopSound, key);
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Starter.StarterLoopSound, key);
@@ -1598,6 +1601,9 @@ namespace Plugin {
                                         case "enginestartkey":
 			                                this.tractionmanager.EngineStartKey = value;
 			                                break;
+                                        case "enginestopkey":
+                                            this.tractionmanager.EngineStopKey = value;
+                                            break;
 			                            case "wiperspeedup":
 			                                this.tractionmanager.wiperspeedup = value;
 			                                break;
@@ -1742,6 +1748,9 @@ namespace Plugin {
                                         //Keys added for BR Class 52 'Western' Diesel Locomotive
                                         case "westernbatteryswitch":
                                             this.tractionmanager.WesternBatterySwitch = value;
+                                            break;
+                                        case "westernfuelpumpswitch":
+                                            this.tractionmanager.WesternFuelPumpSwitch = value;
                                             break;
                                         case "westernmasterkey":
 			                                this.tractionmanager.WesternMasterKey = value;

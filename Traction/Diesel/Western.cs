@@ -29,6 +29,8 @@ namespace Plugin
         internal bool StopKeyPressed;
         /// <summary>Stores whether the battery is currently isolated.</summary>
         internal bool BatteryIsolated = true;
+        /// <summary>Stores whether the fuel pump is currently isolated.</summary>
+        internal bool FuelPumpIsolated = true;
         /// <summary>Stores whether the fire bell is currently ringing.</summary>
         internal bool FireBell = false;
         /// <summary>Stores whether we are currently in engine-only mode.</summary>
@@ -75,6 +77,9 @@ namespace Plugin
         internal int EngineFadeUpSound1 = -1;
         internal int EngineFadeUpSound2 = -1;
         internal int EngineFadeUpSound3 = -1;
+
+        /// <summary>The sound index played when the engine is stopped.</summary>
+        internal int EngineStopSound = -1;
 
         internal bool EngineLoop = false;
         /*
@@ -141,7 +146,7 @@ namespace Plugin
                 if (EngineSelector == 1 && StartupManager.StartupState == WesternStartupManager.SequenceStates.ReadyToStart)
                 {
                     //If this method returns true, then our engine is now running
-                    if (Engine1Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed))
+                    if (Engine1Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed, !FuelPumpIsolated))
                     {
                         Engine1Running = true;
                         //Reset the power cutoff
@@ -174,7 +179,7 @@ namespace Plugin
                 //Check whether we can start the engine
                 if (EngineSelector == 2 && StartupManager.StartupState == WesternStartupManager.SequenceStates.ReadyToStart)
                 {
-                    if (Engine2Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed))
+                    if (Engine2Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed, !FuelPumpIsolated))
                     {
                         Engine2Running = true;
                         //Reset the power cutoff
@@ -732,50 +737,60 @@ namespace Plugin
                     }
                     else
                     {
-                        if (Engine1Running == false && Engine2Running == false)
+                        if (FuelPumpIsolated)
                         {
-                            //We have started the self-test routine, but no engines are running
-                            //Both engine ILs red, all other ILs blue
-                            this.Train.Panel[ILCluster1] = 1;
-                        }
-                        else if (Engine1Running == true && Engine2Running == false)
-                        {
-                            //Engine 1 IL lit blue
-                            //If the torque convertor fill sequence is active, or we have overheated the general alarm light should be lit
-                            if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress || Engine1Overheated)
-                            {
-                                this.Train.Panel[ILCluster1] = 5;
-                            }
-                            else
-                            {
-                                this.Train.Panel[ILCluster1] = 2;    
-                            }
-                            
-                        }
-                        else if (Engine1Running == false && Engine2Running == true)
-                        {
-                            //Engine 2 IL lit blue
-                            //If the torque convertor fill sequence is active, or we have overheated the general alarm light should be lit
-                            if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress || Engine2Overheated)
-                            {
-                                this.Train.Panel[ILCluster1] = 6;
-                            }
-                            else
-                            {
-                                this.Train.Panel[ILCluster1] = 3;
-                            }
+                            this.Train.Panel[ILCluster1] = 8;
                         }
                         else
                         {
-                            //Both engine ILs blue
-                            //If the torque convertor fill sequence is active, or we have overheated the general alarm light should be lit
-                            if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress || (Engine1Overheated || Engine2Overheated))
+                            if (Engine1Running == false && Engine2Running == false)
                             {
-                                this.Train.Panel[ILCluster1] = 7;
+                                //We have started the self-test routine, but no engines are running
+                                //Both engine ILs red, all other ILs blue
+                                this.Train.Panel[ILCluster1] = 1;
+                            }
+                            else if (Engine1Running == true && Engine2Running == false)
+                            {
+                                //Engine 1 IL lit blue
+                                //If the torque convertor fill sequence is active, or we have overheated the general alarm light should be lit
+                                if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress ||
+                                    Engine1Overheated)
+                                {
+                                    this.Train.Panel[ILCluster1] = 5;
+                                }
+                                else
+                                {
+                                    this.Train.Panel[ILCluster1] = 2;
+                                }
+
+                            }
+                            else if (Engine1Running == false && Engine2Running == true)
+                            {
+                                //Engine 2 IL lit blue
+                                //If the torque convertor fill sequence is active, or we have overheated the general alarm light should be lit
+                                if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress ||
+                                    Engine2Overheated)
+                                {
+                                    this.Train.Panel[ILCluster1] = 6;
+                                }
+                                else
+                                {
+                                    this.Train.Panel[ILCluster1] = 3;
+                                }
                             }
                             else
                             {
-                                this.Train.Panel[ILCluster1] = 4;
+                                //Both engine ILs blue
+                                //If the torque convertor fill sequence is active, or we have overheated the general alarm light should be lit
+                                if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress ||
+                                    (Engine1Overheated || Engine2Overheated))
+                                {
+                                    this.Train.Panel[ILCluster1] = 7;
+                                }
+                                else
+                                {
+                                    this.Train.Panel[ILCluster1] = 4;
+                                }
                             }
                         }
                     }
@@ -1034,6 +1049,73 @@ namespace Plugin
             }
         }
 
+        /// <summary>This method should be called to isolate or enable the fuel pump</summary>
+        internal void FuelPumpSwitch()
+        {
+            SoundManager.Play(SwitchSound, 1.0, 1.0, false);
+            if (FuelPumpIsolated == true)
+            {
+                FuelPumpIsolated = false;
+            }
+            else
+            {
+                FuelPumpIsolated = true;
+                EngineStop(0);
+            }
+        }
+
+        /// <summary>This method should be called to attempt to stop one or more engines</summary>
+        internal void EngineStop(int type)
+        {
+            switch (type)
+            {
+                case 0:
+                    //Stop all running engines
+                    SoundManager.Stop(EngineLoopSound);
+                    switch (NumberOfEnginesRunning)
+                    {
+                        case 1:
+                            SoundManager.Play(EngineStopSound, 0.5, 1.0, false);
+                            break;
+                        case 2:
+                            SoundManager.Play(EngineStopSound, 1.0, 1.0, false);
+                            break;
+                    }
+                    break;
+                case 1:
+                    //Stop near engine
+                    switch (NumberOfEnginesRunning)
+                    {
+                        case 1:
+                            SoundManager.Stop(EngineLoopSound);
+                            SoundManager.Play(EngineStopSound, 0.5, 1.0, false);
+                            break;
+                        case 2:
+                            SoundManager.Play(EngineLoopSound, 0.5, 1.0, false);
+                            SoundManager.Play(EngineStopSound, 1.0, 1.0, false);
+                            break;
+                    }
+                    Engine1Running = false;
+                    break;
+                case 2:
+                    //Stop far engine
+                    switch (NumberOfEnginesRunning)
+                    {
+                        case 1:
+                            SoundManager.Stop(EngineLoopSound);
+                            SoundManager.Play(EngineStopSound, 0.5, 1.0, false);
+                            break;
+                        case 2:
+                            SoundManager.Play(EngineLoopSound, 0.5, 1.0, false);
+                            SoundManager.Play(EngineStopSound, 1.0, 1.0, false);
+                            break;
+                    }
+                    Engine2Running = false;
+                    break;
+            }
+        }
+
+        /// <summary>This method should be called to attempt to initialise or cancel a fire-bell test</summary>
         internal void FireBellTest()
         {
             if (StartupManager.StartupState == WesternStartupManager.SequenceStates.Pending || FireBell == true)

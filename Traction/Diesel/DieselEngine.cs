@@ -40,7 +40,7 @@ namespace Plugin.Traction.Diesel
                     if (ComplexStarterModel)
                     {
                         //If this method returns true, then our engine is now running
-                        if (Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed))
+                        if (Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed, true))
                         {
                             EngineRunning = true;
                         }

@@ -54,7 +54,7 @@ namespace Plugin
         internal StarterMotorStates StarterMotorState { get; set; }
 
         /// <summary>Runs the complex starter model. If this method returns true, the engine has started.</summary>
-        internal bool RunComplexStarter(double ElapsedTime, bool StarterKeyPresed)
+        internal bool RunComplexStarter(double ElapsedTime, bool StarterKeyPresed, bool FuelAvailable)
         {
             if (!StarterKeyPresed && StarterMotorState == StarterMotorStates.Active)
             {
@@ -89,20 +89,24 @@ namespace Plugin
                 case StarterMotor.StarterMotorStates.Active:
                     //Start the starter loop sound
                     SoundManager.Play(StarterLoopSound, 1.0, 1.0, true);
-                    //Generate our probabilities
-                    var StartChance = RandomNumber.Next(0, MaximumFireProbability);
-                    var StallChance = RandomNumber.Next(0, MaximumStallProbability);
-                    //We've hit the firing trigger, so start the engine
-                    if (StartChance > FireProbability)
+                    //If fuel is not available, simply crank until the key is released
+                    if (FuelAvailable)
                     {
-                        StarterMotorState = StarterMotor.StarterMotorStates.EngineFire;
-                        return false;
-                    }
-                    //We've missed the firing trigger, but have hit the stall trigger- Stall
-                    if (StallChance > StallProbability)
-                    {
-                        StarterMotorState = StarterMotor.StarterMotorStates.EngineStall;
-                        return false;
+                        //Generate our probabilities
+                        var StartChance = RandomNumber.Next(0, MaximumFireProbability);
+                        var StallChance = RandomNumber.Next(0, MaximumStallProbability);
+                        //We've hit the firing trigger, so start the engine
+                        if (StartChance > FireProbability)
+                        {
+                            StarterMotorState = StarterMotor.StarterMotorStates.EngineFire;
+                            return false;
+                        }
+                        //We've missed the firing trigger, but have hit the stall trigger- Stall
+                        if (StallChance > StallProbability)
+                        {
+                            StarterMotorState = StarterMotor.StarterMotorStates.EngineStall;
+                            return false;
+                        }
                     }
                     return false;
                 case StarterMotor.StarterMotorStates.EngineFire:

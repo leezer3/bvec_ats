@@ -142,6 +142,7 @@ namespace Plugin
         internal string cylindercockskey;
         //Diesel locomotive functions
         internal string EngineStartKey;
+        internal string EngineStopKey;
 
         //These keys are for the Western locomotive
         //This has it's own manager type
@@ -152,6 +153,7 @@ namespace Plugin
         internal string WesternAWSIsolationKey;
         internal string WesternFireBellKey;
         internal string WesternEngineOnlyKey;
+        internal string WesternFuelPumpSwitch;
 
         //KEYS ADDED BY OS_SZ_ATS
 
@@ -1409,6 +1411,21 @@ namespace Plugin
                     {
                         Train.WesternDiesel.EngineSelector = 1;
                     }
+                }
+                if (keypressed == EngineStopKey)
+                {
+                    if (Train.WesternDiesel.EngineSelector == 1)
+                    {
+                        Train.WesternDiesel.EngineStop(1);
+                    }
+                    else
+                    {
+                        Train.WesternDiesel.EngineStop(2);
+                    }
+                }
+                if (keypressed == WesternFuelPumpSwitch)
+                {
+                    Train.WesternDiesel.FuelPumpSwitch();
                 }
             }
         }
