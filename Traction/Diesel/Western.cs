@@ -145,7 +145,7 @@ namespace Plugin
             {
                 //The engine is *not* running
                 //Check whether we can start the engine
-                if (EngineSelector == 1 && StartupManager.StartupState == WesternStartupManager.SequenceStates.ReadyToStart)
+                if (EngineSelector == 1 && StartupManager.StartupState >= WesternStartupManager.SequenceStates.ReadyToStart)
                 {
                     //If this method returns true, then our engine is now running
                     if (Engine1Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed, !FuelPumpIsolated))
@@ -179,7 +179,7 @@ namespace Plugin
             {
                 //The engine is *not* running
                 //Check whether we can start the engine
-                if (EngineSelector == 2 && StartupManager.StartupState == WesternStartupManager.SequenceStates.ReadyToStart)
+                if (EngineSelector == 2 && StartupManager.StartupState >= WesternStartupManager.SequenceStates.ReadyToStart)
                 {
                     if (Engine2Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed, !FuelPumpIsolated))
                     {
@@ -360,7 +360,7 @@ namespace Plugin
             {
                 //An engine may be running but not providing power
                 var EnginesProvidingPower = NumberOfEnginesRunning;
-                if (EngineOnly == true)
+                if (EngineOnly != true)
                 {
                     switch (NumberOfEnginesRunning)
                     {
@@ -696,7 +696,6 @@ namespace Plugin
                                     //The radiator shutters are open, so the high oil temp light should be lit
                                     if (!TransmissionOverheated)
                                     {
-                                        
                                         this.Train.Panel[ILCluster2] = 3;
                                     }
                                     else
@@ -722,10 +721,18 @@ namespace Plugin
                                 //Just the transmission
                                 this.Train.Panel[ILCluster2] = 7;
                             }
-                            //Otherwise all lights blue
                             else
                             {
-                                this.Train.Panel[ILCluster2] = 2;
+                                if (Engine1Overheated || Engine2Overheated)
+                                {
+                                    //High water temp light lit
+                                    this.Train.Panel[ILCluster2] = 8;
+                                }
+                                else
+                                {
+                                    //All blue
+                                    this.Train.Panel[ILCluster2] = 2;
+                                }
                             }
                         }
                     }
@@ -1094,6 +1101,8 @@ namespace Plugin
                             SoundManager.Play(EngineStopSound, 1.0, 1.0, false);
                             break;
                     }
+                    Engine1Running = false;
+                    Engine2Running = false;
                     break;
                 case 1:
                     //Stop near engine
@@ -1125,6 +1134,10 @@ namespace Plugin
                     }
                     Engine2Running = false;
                     break;
+            }
+            if (!Engine1Running && !Engine2Running)
+            {
+                EngineLoop = false;
             }
         }
 
