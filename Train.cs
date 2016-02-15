@@ -929,7 +929,56 @@ namespace Plugin {
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.MaximumStallProbability, key);
                                             break;
                                         case "temperaturechangerate":
-                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.TemperatureChangeRate, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Temperature.HeatingRate, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Temperature.HeatingRate, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.TransmissionTemperature.HeatingRate, key);
+                                            break;
+                                        case "enginetemperature":
+                                            try
+                                            {
+                                                string[] temperaturesplit = value.Split(',');
+                                                for (int k = 0; k < temperaturesplit.Length; k++)
+                                                {
+                                                    if (k == 0)
+                                                    {
+                                                        InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.MaximumTemperature, key);
+                                                        InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.MaximumTemperature, key);
+                                                    }
+                                                    else
+                                                    {
+                                                        InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.OverheatTemperature, key);
+                                                        InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.OverheatTemperature, key);
+                                                    }
+                                                }
+                                                WesternDiesel.Engine1Temperature.FloorTemperature = 500;
+                                                WesternDiesel.Engine2Temperature.FloorTemperature = 500;
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("enginetemperature", 0);
+                                            }
+                                            break;
+                                        case "transmissiontemperature":
+                                            try
+                                            {
+                                                string[] transmissionsplit = value.Split(',');
+                                                for (int k = 0; k < transmissionsplit.Length; k++)
+                                                {
+                                                    if (k == 0)
+                                                    {
+                                                        InternalFunctions.ParseNumber(transmissionsplit[k], ref WesternDiesel.TransmissionTemperature.MaximumTemperature, key);
+                                                    }
+                                                    else
+                                                    {
+                                                        InternalFunctions.ParseNumber(transmissionsplit[k], ref WesternDiesel.TransmissionTemperature.OverheatTemperature, key);
+                                                    }
+                                                }
+                                                WesternDiesel.TransmissionTemperature.FloorTemperature = 500;
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("transmissiontemperature", 0);
+                                            }
                                             break;
                                     }
                                     break;

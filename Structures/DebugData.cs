@@ -58,6 +58,11 @@
             public string FrontEngineState;
             public string RearEngineState;
             public string CurrentRPM;
+            public string Engine1Temperature;
+            public string Engine2Temperature;
+            public string TransmissionTemperature;
+            public string TorqueConverterState;
+            public string TurbochargerState;
         }
     }
 }

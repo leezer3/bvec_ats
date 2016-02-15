@@ -1,4 +1,5 @@
-﻿using OpenBveApi.Runtime;
+﻿using System;
+using OpenBveApi.Runtime;
 
 namespace Plugin
 {
@@ -101,20 +102,6 @@ namespace Plugin
         /// <summary>The sound index for the fire bell test.</summary>
         internal int FireBellSound = -1;
 
-        /// <summary>Stores the current temperature value for engine 1</summary>
-        internal double Engine1Temperature = 0;
-        /// <summary>Stores whether engine 1 has overheated</summary>
-        internal bool Engine1Overheated;
-        /// <summary>Stores the current temperature value for engine 2</summary>
-        internal double Engine2Temperature = 0;
-        /// <summary>Stores whether engine 2 has overheated</summary>
-        internal bool Engine2Overheated;
-        /// <summary>The basic rate at which engine temperature changes</summary>
-        internal double TemperatureChangeRate = 1;
-        /// <summary>Stores the current transmission temperature</summary>
-        internal double TransmissionTemperature = 0;
-        /// <summary>Stores whether the transmission has overheated</summary>
-        internal bool TransmissionOverheated;
         /// <summary>Whether the radiator shutters are open</summary>
         internal bool RadiatorShuttersOpen = true;
         /// <summary>The panel index for the radiator shutters</summary>
@@ -127,6 +114,9 @@ namespace Plugin
         internal readonly WesternStartupManager StartupManager = new WesternStartupManager();
         internal readonly WesternGearBox GearBox = new WesternGearBox();
         internal readonly Turbocharger Turbocharger = new Turbocharger();
+        internal readonly Temperature Engine1Temperature = new Temperature();
+        internal readonly Temperature Engine2Temperature = new Temperature();
+        internal readonly Temperature TransmissionTemperature = new Temperature();
 
         internal override void Initialize(InitializationModes mode)
         {
@@ -356,6 +346,7 @@ namespace Plugin
              * Power notches 1-5 represent increases of 20% power with one engine running
              * Power notches 6-10 represent increases of 20% power with two engines running
              */
+            bool TurboBoost = Turbocharger.RunTurbocharger(data.ElapsedTime.Milliseconds, (int) CurrentRPM);
             if (Train.Handles.PowerNotch != 0 && Train.tractionmanager.powercutoffdemanded == false)
             {
                 //An engine may be running but not providing power
@@ -365,17 +356,17 @@ namespace Plugin
                     switch (NumberOfEnginesRunning)
                     {
                         case 1:
-                            if (Engine1Running && Engine1Overheated || Engine2Running && Engine2Overheated)
+                            if (Engine1Running && Engine1Temperature.Overheated || Engine2Running && Engine2Temperature.Overheated)
                             {
                                 EnginesProvidingPower = 0;
                             }
                             break;
                         case 2:
-                            if (Engine1Overheated)
+                            if (Engine1Temperature.Overheated)
                             {
                                 EnginesProvidingPower -= 1;
                             }
-                            if (Engine2Overheated)
+                            if (Engine2Temperature.Overheated)
                             {
                                 EnginesProvidingPower -= 1;
                             }
@@ -387,231 +378,223 @@ namespace Plugin
                     //If in engine only mode, no engines are providing power, but we still want the nice sound effects!
                     EnginesProvidingPower = 0;
                 }
-                data.Handles.PowerNotch = Train.WesternDiesel.GearBox.PowerNotch((int)CurrentRPM,EnginesProvidingPower,Turbocharger.RunTurbocharger(data.ElapsedTime.Milliseconds, (int)CurrentRPM));
+                data.Handles.PowerNotch = Train.WesternDiesel.GearBox.PowerNotch((int)CurrentRPM,EnginesProvidingPower,TurboBoost);
             }
             //This section of code handles engine & transmission temperatures
             {
                 if (Engine1Running)
                 {
+                    //Increase rates:
+                    // 0x - Shutters open & speed above 20kph
+                    // 1x - Shutters open, speed above 20kph, turbo
+                    // 2x - Shutters closed, speed above 20kph & turbo OR speed below 20mph
+                    //Decrease rates:
+                    // 1x- RPM below 1000, speed below 20kph or shutters closed
+                    // 2x- RPM below 1000, speed above 20kph & shutters open
                     //Only increase temperature if it's less than 500 or the current RPM is greater than 1000
-                    if (Engine1Temperature < 500 || CurrentRPM > 1000)
+                    var Multiplier = 2;
+                    if (Train.trainspeed > 20 || Train.trainspeed == 0)
                     {
-                        //If the turbocharger is running, then temperature increases twice as fast
-                        if (Turbocharger.TurbochargerState != Turbocharger.TurbochargerStates.None)
-                        {
-                            //If the radiator shutters are closed or we are travelling at under 20km/h, temperature increases twice as fast
-                            if (RadiatorShuttersOpen || Train.trainspeed < 20)
-                            {
-                                Engine1Temperature += ((TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds)*2;
-                            }
-                            else
-                            {
-                                Engine1Temperature += (((TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds)*2)* 2;
-                            }
-                        }
-                        else
-                        {
-                            //If the radiator shutters are closed, temperature increases twice as fast
-                            if (RadiatorShuttersOpen || Train.trainspeed < 20)
-                            {
-                                Engine1Temperature += (TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds;
-                            }
-                            else
-                            {
-                                Engine1Temperature += ((TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds)*2;
-                            }
-                        }
+                        Multiplier -= 1;
                     }
                     else
                     {
-                        //If the radiator shutters are closed, temperature decreases half as fast
-                        if (RadiatorShuttersOpen || Train.trainspeed < 20)
-                        {
-                            Engine1Temperature -= (TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds;
-                        }
-                        else
-                        {
-                            Engine1Temperature -= ((TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds)/2;
-                        }
+                        Multiplier += 1;
+                    }
+                    if (RadiatorShuttersOpen)
+                    {
+                        Multiplier -= 1;
+                    }
+                    else
+                    {
+                        Multiplier -= 1;
+                    }
+                    if (Turbocharger.TurbochargerState != Turbocharger.TurbochargerStates.None)
+                    {
+                        Multiplier += 1;
+                    }
+                    else
+                    {
+                        Multiplier -= 1;
+                    }
+                    if (CurrentRPM > 1000)
+                    {
+                        Multiplier += 1;
+                    }
+                    else
+                    {
+                        Multiplier -= 1;
                     }
 
+                    var Increase = Multiplier > 0;
+                    Engine1Temperature.Update(data.ElapsedTime.Milliseconds,Math.Abs(Multiplier),Increase,true);
                 }
                 else
                 {
-                    if (Engine1Temperature > 0)
+                    var Multiplier = 1;
+                    if (Train.trainspeed > 20)
                     {
-                        //If the radiator shutters are open and we are travelling at over 20km/h, then temperature decreases twice as fast
-                        if (RadiatorShuttersOpen && Train.trainspeed > 20)
-                        {
-                            Engine1Temperature -= (TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds;
-                        }
-                        else
-                        {
-                            Engine1Temperature -= ((TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds) /2;
-                        }
+                        Multiplier += 1;
                     }
+                    if (RadiatorShuttersOpen)
+                    {
+                        Multiplier += 1;
+                    }
+                    Engine1Temperature.Update(data.ElapsedTime.Milliseconds,Multiplier, false, false);
                 }
                 if (Engine2Running)
                 {
-                    if (Engine2Temperature < 500 || CurrentRPM > 1000)
+                    //Increase rates:
+                    // 0x - Shutters open & speed above 20kph
+                    // 1x - Shutters open, speed above 20kph, turbo
+                    // 2x - Shutters closed, speed above 20kph & turbo OR speed below 20mph
+                    //Decrease rates:
+                    // 1x- RPM below 1000, speed below 20kph or shutters closed
+                    // 2x- RPM below 1000, speed above 20kph & shutters open
+                    //Only increase temperature if it's less than 500 or the current RPM is greater than 1000
+                    var Multiplier = 2;
+                    if (Train.trainspeed > 20 || Train.trainspeed == 0)
                     {
-                        //If the turbocharger is running, then temperature increases twice as fast
-                        if (Turbocharger.TurbochargerState != Turbocharger.TurbochargerStates.None)
-                        {
-                            //If the radiator shutters are closed, temperature increases twice as fast
-                            if (RadiatorShuttersOpen && Train.trainspeed < 20)
-                            {
-                                Engine2Temperature += ((TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds)*2;
-                            }
-                            else
-                            {
-                                Engine2Temperature += (((TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds)*2)* 2;
-                            }
-                        }
-                        else
-                        {
-                            //If the radiator shutters are closed, temperature increases twice as fast
-                            if (RadiatorShuttersOpen && Train.trainspeed < 20)
-                            {
-                                Engine2Temperature += (TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds;
-                            }
-                            else
-                            {
-                                Engine2Temperature += ((TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds)*2;
-                            }
-                        }
+                        Multiplier -= 1;
                     }
                     else
                     {
-                        //If the radiator shutters are closed, temperature decreases half as fast
-                        if (RadiatorShuttersOpen || Train.trainspeed < 20)
-                        {
-                            Engine2Temperature -= (TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds;
-                        }
-                        else
-                        {
-                            Engine2Temperature -= ((TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds) / 2;
-                        }
+                        Multiplier += 1;
                     }
+                    if (RadiatorShuttersOpen)
+                    {
+                        Multiplier -= 1;
+                    }
+                    else
+                    {
+                        Multiplier -= 1;
+                    }
+                    if (Turbocharger.TurbochargerState != Turbocharger.TurbochargerStates.None)
+                    {
+                        Multiplier += 1;
+                    }
+                    else
+                    {
+                        Multiplier -= 1;
+                    }
+                    if (CurrentRPM > 1000)
+                    {
+                        Multiplier += 1;
+                    }
+                    else
+                    {
+                        Multiplier -= 1;
+                    }
+
+                    var Increase = Multiplier > 0;
+                    Engine2Temperature.Update(data.ElapsedTime.Milliseconds, Math.Abs(Multiplier), Increase, true);
                 }
                 else
                 {
-                    if (Engine2Temperature > 0)
+                    var Multiplier = 1;
+                    if (Train.trainspeed > 20)
                     {
-                        //If the radiator shutters are open, then temperature decreases twice as fast
-                        if (RadiatorShuttersOpen && Train.trainspeed > 20)
-                        {
-                            Engine2Temperature -= (TemperatureChangeRate/1000.0)*data.ElapsedTime.Milliseconds;
-                        }
-                        else
-                        {
-                            Engine2Temperature -= ((TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds) /2;
-                        }
+                        Multiplier += 1;
                     }
+                    if (RadiatorShuttersOpen)
+                    {
+                        Multiplier += 1;
+                    }
+                    Engine1Temperature.Update(data.ElapsedTime.Milliseconds, Multiplier, false, false);
                 }
-                //Transmission temperatures
-                switch (NumberOfEnginesRunning)
+                var TransmissionMultiplier = 0;
+                if (CurrentRPM < 1000)
                 {
-                    case 0:
-                        //No engines running- Decrease at full rate
-                        if (TransmissionTemperature > 0)
-                        {
-                            TransmissionTemperature -= (TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds;
-                        }
-                        break;
-                    case 1:
-                        //Less than 1k RPM- Decrease at full rate
-                        if (CurrentRPM < 1000 && TransmissionTemperature > 0)
-                        {
-                            TransmissionTemperature -= (TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds;
-                        }
-                        //Increase at half rate
-                        else if (CurrentRPM > 1200)
-                        {
-                            TransmissionTemperature += ((TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds) /2;
-                        }
-                        break;
-                    case 2:
-                        //Less than 1k RPM- Decrease at full rate
-                        if (CurrentRPM > 1000 && TransmissionTemperature > 0)
-                        {
-                            TransmissionTemperature -= (TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds;
-                        }
-                        //Increase at full rate
-                        else if (CurrentRPM > 1300)
-                        {
-                            TransmissionTemperature += (TemperatureChangeRate / 1000.0) * data.ElapsedTime.Milliseconds;
-                        }
-                        break;
+                    TransmissionMultiplier -= 1;
                 }
+                else if (NumberOfEnginesRunning == 1 && CurrentRPM > 1300)
+                {
+                    TransmissionMultiplier += 1;
+                }
+                else if (NumberOfEnginesRunning == 2 && CurrentRPM > 1200)
+                {
+                    TransmissionMultiplier += 1;
+                }
+                var TransmissionIncrease = TransmissionMultiplier > 0;
+                //Last paramater for transmission temp is always false, as it does not have a floor temperature
+                TransmissionTemperature.Update(data.ElapsedTime.Milliseconds, Math.Abs(TransmissionMultiplier),TransmissionIncrease, false);
                 //Consequences
-                if (Engine1Temperature > 600)
+                /*
+                 *  Engine 1
+                 */
+                if (Engine1Temperature.Overheated == true)
                 {
-                    if (Engine1Overheated == false)
+                    if (Engine1Temperature.Logged == false)
                     {
                         Train.DebugLogger.LogMessage("Western Diesel- Engine 1 overheated");
-                        Engine1Overheated = true;
                         if (Engine2Running == false)
                         {
                             Train.tractionmanager.demandpowercutoff();
                             Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to engine 1 overheating, and engine 2 being stopped");
                         }
+                        else if (Engine2Temperature.Overheated)
+                        {
+                            Train.tractionmanager.demandpowercutoff();
+                            Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to both engines overheating");
+                        }
+                        Engine1Temperature.Logged = true;
                     }
                 }
-                else if(Engine1Temperature < 400)
+                else if(Engine1Temperature.Logged == true && Engine1Temperature.Overheated == false)
                 {
-                    if (Engine1Overheated)
-                    {
-                        Engine1Overheated = false;
-                        Train.tractionmanager.resetpowercutoff();
-                        Train.DebugLogger.LogMessage("Western Diesel- Engine 1 returned to normal operating temperature");
-                    }
+                    Train.DebugLogger.LogMessage("Western Diesel- Engine 1 returned to normal operating temperature");
+                    Train.tractionmanager.resetpowercutoff();
+                    Engine1Temperature.Logged = false;
                 }
-                if (Engine2Temperature > 600)
+                /*
+                 *  Engine 2
+                 */
+                if (Engine2Temperature.Overheated == true)
                 {
-                    if (Engine2Overheated == false)
+                    if (Engine2Temperature.Logged == false)
                     {
                         Train.DebugLogger.LogMessage("Western Diesel- Engine 2 overheated");
-                        Engine2Overheated = true;
                         if (Engine1Running == false)
                         {
                             Train.tractionmanager.demandpowercutoff();
                             Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to engine 2 overheating, and engine 1 being stopped");
                         }
-                    }
-                }
-                else if (Engine2Temperature < 400)
-                {
-                    if (Engine2Overheated)
-                    {
-                        Engine2Overheated = false;
-                        Train.tractionmanager.resetpowercutoff();
-                        Train.DebugLogger.LogMessage("Western Diesel- Engine 2 returned to normal operating temperature");
-                    }
-                }
-                if (TransmissionTemperature > 600)
-                {
-                    if (TransmissionOverheated == false)
-                    {
-                        TransmissionOverheated = true;
-                        Train.tractionmanager.demandpowercutoff();
-                        Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to the transmission overheating");
-                    }
-
-                }
-                else if (TransmissionTemperature < 400)
-                {
-                    if (TransmissionOverheated)
-                    {
-                        TransmissionOverheated = false;
-                        if ((Engine1Running && !Engine1Overheated) || (Engine2Running && !Engine2Overheated))
+                        else if (Engine1Temperature.Overheated)
                         {
-                            Train.tractionmanager.resetpowercutoff();
+                            Train.tractionmanager.demandpowercutoff();
+                            Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to both engines overheating");
                         }
-                        Train.DebugLogger.LogMessage("Western Diesel- Transmission returned to normal operating temperature");
+                        Engine2Temperature.Logged = true;
                     }
-
                 }
+                else if(Engine2Temperature.Logged == true)
+                {
+                    Train.DebugLogger.LogMessage("Western Diesel- Engine 2 returned to normal operating temperature");
+                    Train.tractionmanager.resetpowercutoff();
+                    Engine2Temperature.Logged = false;
+                }
+                /*
+                 *  Transmission
+                 */
+                if (TransmissionTemperature.Overheated == true)
+                {
+                    if (TransmissionTemperature.Logged == false)
+                    {
+                        Train.DebugLogger.LogMessage("Western Diesel- Transmission overheated");
+                        Train.tractionmanager.demandpowercutoff();
+                        TransmissionTemperature.Logged = true;
+                    }
+                }
+                else if (TransmissionTemperature.Logged == true && TransmissionTemperature.Overheated == false)
+                {
+                    if ((Engine1Running && !Engine1Temperature.Overheated) || (Engine2Running && !Engine2Temperature.Overheated))
+                    {
+                        Train.tractionmanager.resetpowercutoff();
+                    }
+                    Train.DebugLogger.LogMessage("Western Diesel- Transmission returned to normal operating temperature");
+                    TransmissionTemperature.Logged = false;
+                }
+                
             }
             //This section of code handles the startup self-test routine
             if (StartupManager.StartupState != WesternStartupManager.SequenceStates.ReadyToStart || StartupManager.StartupState != WesternStartupManager.SequenceStates.AWSOnline)
@@ -681,6 +664,7 @@ namespace Plugin
                     {
                         //If we are not in the pending state, but our torque convertor is not yet on service
                         //All lights should be blue, other than torque convertor (Red)
+                        //Minor hack- Torque convertor cannot come off service....
                         if (GearBox.TorqueConvertorState != WesternGearBox.TorqueConvertorStates.OnService)
                         {
                             this.Train.Panel[ILCluster2] = 1;
@@ -688,53 +672,43 @@ namespace Plugin
                         else
                         {
                             //Something has overheated
-                            if (Engine1Overheated || Engine2Overheated && TransmissionOverheated)
+                            if ((Engine1Running && Engine1Temperature.Overheated) || (Engine2Running && Engine2Temperature.Overheated) && TransmissionTemperature.Overheated)
                             {
-
                                 if (RadiatorShuttersOpen)
                                 {
                                     //The radiator shutters are open, so the high oil temp light should be lit
-                                    if (!TransmissionOverheated)
-                                    {
-                                        this.Train.Panel[ILCluster2] = 3;
-                                    }
-                                    else
-                                    {
-                                        this.Train.Panel[ILCluster2] = 6;
-                                    }
+                                    this.Train.Panel[ILCluster2] = 6;
                                 }
                                 else
                                 {
                                     //The radiator shutters are closed, so the high oil and water temp lights should be lit
-                                    if (!TransmissionOverheated)
-                                    {
-                                        this.Train.Panel[ILCluster2] = 4;
-                                    }
-                                    else
-                                    {
-                                        this.Train.Panel[ILCluster2] = 5;
-                                    }
+                                    this.Train.Panel[ILCluster2] = 5;
                                 }
                             }
-                            else if (TransmissionOverheated)
+                            else if ((Engine1Running && Engine1Temperature.Overheated) || (Engine2Running && Engine2Temperature.Overheated) && !TransmissionTemperature.Overheated)
+                            {
+                                //High water temp light lit
+                                if (RadiatorShuttersOpen)
+                                {
+                                    this.Train.Panel[ILCluster2] = 3;
+                                }
+                                else
+                                {
+                                    this.Train.Panel[ILCluster2] = 4;
+                                }
+                            }
+                            else if (TransmissionTemperature.Overheated)
                             {
                                 //Just the transmission
                                 this.Train.Panel[ILCluster2] = 7;
                             }
                             else
                             {
-                                if (Engine1Overheated || Engine2Overheated)
-                                {
-                                    //High water temp light lit
-                                    this.Train.Panel[ILCluster2] = 8;
-                                }
-                                else
-                                {
-                                    //All blue
-                                    this.Train.Panel[ILCluster2] = 2;
-                                }
+                                //All blue
+                                this.Train.Panel[ILCluster2] = 2;
                             }
                         }
+                        
                     }
                 }
                 if (ILCluster1 != -1)
@@ -763,7 +737,7 @@ namespace Plugin
                                 //Engine 1 IL lit blue
                                 //If the torque convertor fill sequence is active, or we have overheated the general alarm light should be lit
                                 if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress ||
-                                    Engine1Overheated)
+                                    Engine1Temperature.Overheated)
                                 {
                                     this.Train.Panel[ILCluster1] = 5;
                                 }
@@ -778,7 +752,7 @@ namespace Plugin
                                 //Engine 2 IL lit blue
                                 //If the torque convertor fill sequence is active, or we have overheated the general alarm light should be lit
                                 if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress ||
-                                    Engine2Overheated)
+                                    Engine2Temperature.Overheated)
                                 {
                                     this.Train.Panel[ILCluster1] = 6;
                                 }
@@ -792,7 +766,7 @@ namespace Plugin
                                 //Both engine ILs blue
                                 //If the torque convertor fill sequence is active, or we have overheated the general alarm light should be lit
                                 if (GearBox.TorqueConvertorState == WesternGearBox.TorqueConvertorStates.FillInProgress ||
-                                    (Engine1Overheated || Engine2Overheated))
+                                    (Engine1Temperature.Overheated || Engine2Temperature.Overheated))
                                 {
                                     this.Train.Panel[ILCluster1] = 7;
                                 }
@@ -1025,7 +999,6 @@ namespace Plugin
                 else
                 {
                     this.Train.tractionmanager.DebugWindowData.WesternEngine.RearEngineState = Engine2Starter.StarterMotorState.ToString();
-                        //"Stopped";
                 }
                 if (Engine2Running)
                 {
@@ -1033,9 +1006,13 @@ namespace Plugin
                 }
                 else
                 {
-                    this.Train.tractionmanager.DebugWindowData.WesternEngine.FrontEngineState = "Stopped";
+                    this.Train.tractionmanager.DebugWindowData.WesternEngine.RearEngineState = Engine1Starter.StarterMotorState.ToString();
                 }
-
+                this.Train.tractionmanager.DebugWindowData.WesternEngine.TorqueConverterState = GearBox.TorqueConvertorState.ToString();
+                this.Train.tractionmanager.DebugWindowData.WesternEngine.Engine1Temperature = (int)Engine1Temperature.InternalTemperature + " of " + Engine1Temperature.MaximumTemperature;
+                this.Train.tractionmanager.DebugWindowData.WesternEngine.Engine2Temperature = (int)Engine2Temperature.InternalTemperature + " of " + Engine2Temperature.MaximumTemperature;
+                this.Train.tractionmanager.DebugWindowData.WesternEngine.TransmissionTemperature = (int)TransmissionTemperature.InternalTemperature + " of " + TransmissionTemperature.MaximumTemperature;
+                this.Train.tractionmanager.DebugWindowData.WesternEngine.TurbochargerState = Turbocharger.TurbochargerState.ToString();
             }
         }
 

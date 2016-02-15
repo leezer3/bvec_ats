@@ -795,7 +795,7 @@ namespace Plugin
                 Train.DebugLogger.LogMessage("Traction power was not restored due to the Western Diesel torque convertor being out of service");
                 return;
             }
-            if (Train.WesternDiesel != null && Train.WesternDiesel.TransmissionOverheated)
+            if (Train.WesternDiesel != null && Train.WesternDiesel.TransmissionTemperature.Overheated)
             {
                 Train.DebugLogger.LogMessage("Traction power was not restored due to the Western Diesel transmission being overheated");
                 return;

@@ -2,7 +2,7 @@
 {
     class Turbocharger
     {
-        /// <summary>Gets the state of the startup self-test sequence.</summary>
+        /// <summary>The current state of the turbocharger.</summary>
         internal TurbochargerStates TurbochargerState { get; set; }
         /// <summary>Stores the timer used for the turbocharger running up/ down.</summary>
         internal double TurbochargerTimer;
