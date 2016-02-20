@@ -909,6 +909,48 @@ namespace Plugin {
                                         case "fuelpumpswitch":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.FuelPumpSwitchIndex, key);
                                             break;
+                                        case "exhaust1":
+                                            try
+                                            {
+                                                string[] exhaustsplit = value.Split(',');
+                                                for (int k = 0; k < exhaustsplit.Length; k++)
+                                                {
+                                                    if (k == 0)
+                                                    {
+                                                        InternalFunctions.ValidateIndex(exhaustsplit[k], ref WesternDiesel.Engine1Smoke, key);
+                                                    }
+                                                    else
+                                                    {
+                                                        InternalFunctions.ParseNumber(exhaustsplit[k], ref WesternDiesel.Engine1Sparks, key);
+                                                    }
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("exhaust1", 0);
+                                            }
+                                            break;
+                                        case "exhaust2":
+                                            try
+                                            {
+                                                string[] exhaustsplit2 = value.Split(',');
+                                                for (int k = 0; k < exhaustsplit2.Length; k++)
+                                                {
+                                                    if (k == 0)
+                                                    {
+                                                        InternalFunctions.ValidateIndex(exhaustsplit2[k], ref WesternDiesel.Engine2Smoke, key);
+                                                    }
+                                                    else
+                                                    {
+                                                        InternalFunctions.ParseNumber(exhaustsplit2[k], ref WesternDiesel.Engine2Sparks, key);
+                                                    }
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("exhaust2", 0);
+                                            }
+                                            break;
                                         case "rpmchangerate":
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.RPMChange, key);
                                             break;

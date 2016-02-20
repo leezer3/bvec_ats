@@ -4,117 +4,97 @@ namespace Plugin
 {
     partial class DieselExhaust
     {
-        /// <summary>The underlying train.</summary>
-        private readonly Train Train;
-
-        /// <summary>The panel index for exhaust smoke</summary>
-        internal int SmokeIndex = -1;
-        /// <summary>The panel index for exhaust sparks</summary>
-        internal int SparksIndex = -1;
-
+        internal SmokeType currentSmoke { get; set; }
         /*
          * Internal variables
          */
-        internal double Timer;
-        internal bool Startup;
-        internal bool Startup2;
+        private double Timer;
+        private bool StartupComplete;
+        internal bool Sparks;
 
-        internal Random randomGenerator = new Random();
+        private readonly Random randomGenerator = new Random();
         
-        internal void Update(double ElapsedTime, int CurrentRPM, int PreviousRPM, bool StarterActive, bool EngineRunning, bool TurbochargerActive)
+        internal void Update(double ElapsedTime, double CurrentRPM, bool StarterActive, bool EngineRunning, Turbocharger.TurbochargerStates TurbochargerState = Turbocharger.TurbochargerStates.None)
         {
-            if (SmokeIndex == -1 && SparksIndex == -1)
+            Sparks = false;
+            Timer += ElapsedTime;
+            if (!EngineRunning && !StarterActive)
             {
-                //Don't bother running any calculations if no panel indices set
-                return;
+                currentSmoke = SmokeType.None;
             }
-            SmokeType currentSmoke = SmokeType.None;
-            if (SmokeIndex != -1)
+            else if (!EngineRunning)
             {
-                if (!EngineRunning && !StarterActive)
+                //Starter is cranking, generate a random smoke between medium and full white
+                if (currentSmoke == SmokeType.None)
                 {
-                    //Nothing happening- No smoke
-                    currentSmoke = SmokeType.None;
+                    //Generate a random smoke type
+                    currentSmoke = (SmokeType) randomGenerator.Next(1, 3);
                 }
-                else if (!EngineRunning)
+                
+                if (Timer > 300)
                 {
-                    //Starter is cranking, generate a random smoke between medium and full white
-                    if (currentSmoke == SmokeType.None)
+                    //Reset timer and generate another random type
+                    Timer = 0;
+                    currentSmoke = (SmokeType) randomGenerator.Next(1, 3);
+                }
+
+            }
+            else
+            {
+                //Engine has fired
+                if (!StartupComplete)
+                {
+                    if (Timer < 2500)
                     {
-                        //Generate a random smoke type
-                        currentSmoke = (SmokeType) randomGenerator.Next(1,2);
+                        currentSmoke = SmokeType.ThickBlack;
+                        Sparks = true;
+                    }
+                    else if (Timer > 2500 && Timer < 5000)
+                    {
+                        currentSmoke = SmokeType.MediumBlack;
                     }
                     else
                     {
-                        Timer += ElapsedTime;
-                        if (Timer > 1500)
-                        {
-                            //Reset timer and generate another random type
-                            Timer = 0;
-                            currentSmoke = (SmokeType)randomGenerator.Next(1, 2);
-                        }
+                        //Startup phase complete
+                        StartupComplete = true;
+                        Timer = 0;
                     }
                 }
+                //Startup smoke burst complete
                 else
                 {
-                    //Engine has fired
-                    if (!Startup)
+                    if (CurrentRPM < 800)
                     {
-                        //In the startup phase
-                        if (!Startup2)
-                        {
-                            Timer = 0;
-                            Startup2 = true;
-                        }
+                        //Current RPM is less than 800
+                        currentSmoke = SmokeType.ThinBlack;
+                        Timer = 0;
+                    }
+                    else if (CurrentRPM < 1100 && TurbochargerState != Turbocharger.TurbochargerStates.Running && TurbochargerState != Turbocharger.TurbochargerStates.RunDown)
+                    {
+                        //Current RPM is less than 1100, turbo is not active/ spooling down
                         currentSmoke = SmokeType.MediumBlack;
-                        Timer += ElapsedTime;
-                        if (Timer > 2500 && Timer < 10000)
-                        {
-                            currentSmoke = SmokeType.ThickBlack;
-                        }
-                        else if (Timer > 10000 && Timer < 12500)
-                        {
-                            currentSmoke = SmokeType.MediumBlack;
-                        }
-                        else
-                        {
-                            //Startup phase complete
-                            Startup = true;
-                            Timer = 0;
-                        }
+                        Timer = 0;
                     }
                     else
                     {
-                        if (CurrentRPM - PreviousRPM > 10 && !TurbochargerActive)
+                        switch (TurbochargerState)
                         {
-                            //RPM is currently changing
-                            currentSmoke = SmokeType.MediumBlack;
-                        }
-                        else if (CurrentRPM == PreviousRPM && !TurbochargerActive)
-                        {
-                            //Steady RPM, no turbo
-                            currentSmoke = SmokeType.ThinBlack;
-                        }
-                        else
-                        {
-                            //Turbo is in run-up phase
-                            Timer += ElapsedTime;
-                            if (Timer > 2000)
-                            {
-                                currentSmoke = SmokeType.ThickBlack;
-                            }
-                            else
-                            {
-                                currentSmoke = SmokeType.ThinBlack;
-                            }
+                                case Turbocharger.TurbochargerStates.None:
+                                    currentSmoke = SmokeType.MediumBlack;
+                                break;
+                                case Turbocharger.TurbochargerStates.RunUp:
+                                    currentSmoke = SmokeType.ThickBlack;
+                                Sparks = true;
+                                break;
+                                case Turbocharger.TurbochargerStates.Running:
+                                    currentSmoke = SmokeType.ThinBlack;
+                                break;
+                                case Turbocharger.TurbochargerStates.RunDown:
+                                    currentSmoke = SmokeType.MediumBlack;
+                                break;
                         }
                     }
                 }
-                this.Train.Panel[SmokeIndex] = (int)currentSmoke;
-            }
-            if (SparksIndex != -1)
-            {
-                this.Train.Panel[SmokeIndex] = 0;
             }
         }
     }

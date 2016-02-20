@@ -107,8 +107,20 @@ namespace Plugin
         /// <summary>The panel index for the radiator shutters</summary>
         internal int RadiatorShutters = -1;
 
+        internal int Engine1Smoke = -1;
+
+        internal int Engine1Sparks = -1;
+
+        internal int Engine2Smoke = -1;
+
+        internal int Engine2Sparks = -1;
 
 
+        /*
+         * 
+         * Internal engine classes
+         * 
+         */
         internal readonly StarterMotor Engine1Starter = new StarterMotor();
         internal readonly StarterMotor Engine2Starter = new StarterMotor();
         internal readonly WesternStartupManager StartupManager = new WesternStartupManager();
@@ -117,6 +129,8 @@ namespace Plugin
         internal readonly Temperature Engine1Temperature = new Temperature();
         internal readonly Temperature Engine2Temperature = new Temperature();
         internal readonly Temperature TransmissionTemperature = new Temperature();
+        internal readonly DieselExhaust Engine1Exhaust = new DieselExhaust();
+        internal readonly DieselExhaust Engine2Exhaust = new DieselExhaust();
 
         internal override void Initialize(InitializationModes mode)
         {
@@ -379,6 +393,13 @@ namespace Plugin
                     EnginesProvidingPower = 0;
                 }
                 data.Handles.PowerNotch = Train.WesternDiesel.GearBox.PowerNotch((int)CurrentRPM,EnginesProvidingPower,TurboBoost);
+            }
+            //Update exhaust smoke
+            {
+                bool Starter1 = EngineSelector == 1 && StarterKeyPressed == true;
+                Engine1Exhaust.Update(data.ElapsedTime.Milliseconds,CurrentRPM,Starter1,Engine1Running,Turbocharger.TurbochargerState);
+                bool Starter2 = EngineSelector == 2 && StarterKeyPressed == true;
+                Engine2Exhaust.Update(data.ElapsedTime.Milliseconds, CurrentRPM, Starter2, Engine2Running,Turbocharger.TurbochargerState);
             }
             //This section of code handles engine & transmission temperatures
             {
@@ -914,6 +935,36 @@ namespace Plugin
                         this.Train.Panel[FuelPumpSwitchIndex] = 0;
                     }
                 }
+                if (Engine1Smoke != -1)
+                {
+                    this.Train.Panel[Engine1Smoke] = (int) Engine1Exhaust.currentSmoke;
+                }
+                if (Engine1Sparks != -1)
+                {
+                    if (Engine1Exhaust.Sparks)
+                    {
+                        this.Train.Panel[Engine1Sparks] = 1;
+                    }
+                    else
+                    {
+                        this.Train.Panel[Engine1Sparks] = 0;
+                    }
+                }
+                if (Engine2Smoke != -1)
+                {
+                    this.Train.Panel[Engine2Smoke] = (int)Engine2Exhaust.currentSmoke;
+                }
+                if (Engine2Sparks != -1)
+                {
+                    if (Engine2Exhaust.Sparks)
+                    {
+                        this.Train.Panel[Engine2Sparks] = 1;
+                    }
+                    else
+                    {
+                        this.Train.Panel[Engine2Sparks] = 0;
+                    }
+                }
             }
             //This section of code handles the power sounds
             //These are not being run by OpenBVE as they are RPM dependant
@@ -966,6 +1017,7 @@ namespace Plugin
             }
             PreviousRPM = CurrentRPM;
             //Pass out the debug data
+            /*
             if (StartupManager.StartupState != WesternStartupManager.SequenceStates.ReadyToStart)
             {
                 data.DebugMessage = StartupManager.StartupState.ToString();
@@ -988,7 +1040,8 @@ namespace Plugin
                     data.DebugMessage = StartupManager.StartupState.ToString();
                 }
             }
-
+            */
+            data.DebugMessage = Engine1Exhaust.currentSmoke.ToString();
             if (AdvancedDriving.CheckInst != null)
             {
                 this.Train.tractionmanager.DebugWindowData.WesternEngine.CurrentRPM = ((int)CurrentRPM).ToString();

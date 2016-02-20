@@ -15,7 +15,7 @@
             /// <summary>Medium black- Engine RPM going up or down</summary>
             MediumBlack = 4,
             /// <summary>Thick black- Engine firing or turbo activating</summary>
-            ThickBlack = 2,
+            ThickBlack = 5,
         }
     }
 }
