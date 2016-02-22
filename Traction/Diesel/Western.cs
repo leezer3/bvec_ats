@@ -31,7 +31,7 @@ namespace Plugin
         /// <summary>Stores whether the battery is currently isolated.</summary>
         internal bool BatteryIsolated = true;
         /// <summary>Stores whether the fuel pump is currently isolated.</summary>
-        internal bool FuelPumpIsolated = true;
+        internal bool FuelPumpIsolated = false;
         /// <summary>Stores whether the fire bell is currently ringing.</summary>
         internal bool FireBell = false;
         /// <summary>Stores whether we are currently in engine-only mode.</summary>
@@ -88,6 +88,8 @@ namespace Plugin
         /*
          * This bool should be toggled when an engine starts-
          * It allows us to hold-on the brakes until the air compressors prototypically start
+         * 
+         * NOTE: This hack also means that it is not possible to coast with no engines running.
          */
         internal bool CompressorsRunning = false;
         internal double RPMTimer;
@@ -941,14 +943,7 @@ namespace Plugin
                 }
                 if (Engine1Sparks != -1)
                 {
-                    if (Engine1Exhaust.Sparks)
-                    {
-                        this.Train.Panel[Engine1Sparks] = 1;
-                    }
-                    else
-                    {
-                        this.Train.Panel[Engine1Sparks] = 0;
-                    }
+                    this.Train.Panel[Engine1Sparks] = Engine1Exhaust.Sparks;
                 }
                 if (Engine2Smoke != -1)
                 {
@@ -956,14 +951,7 @@ namespace Plugin
                 }
                 if (Engine2Sparks != -1)
                 {
-                    if (Engine2Exhaust.Sparks)
-                    {
-                        this.Train.Panel[Engine2Sparks] = 1;
-                    }
-                    else
-                    {
-                        this.Train.Panel[Engine2Sparks] = 0;
-                    }
+                    this.Train.Panel[Engine2Sparks] = Engine2Exhaust.Sparks;
                 }
             }
             //This section of code handles the power sounds
@@ -1016,32 +1004,6 @@ namespace Plugin
                 }
             }
             PreviousRPM = CurrentRPM;
-            //Pass out the debug data
-            /*
-            if (StartupManager.StartupState != WesternStartupManager.SequenceStates.ReadyToStart)
-            {
-                data.DebugMessage = StartupManager.StartupState.ToString();
-            }
-            else
-            {
-                if (StarterKeyPressed)
-                {
-                    if (EngineSelector == 1)
-                    {
-                        data.DebugMessage = Engine1Starter.StarterMotorState.ToString();
-                    }
-                    else
-                    {
-                        data.DebugMessage = Engine1Starter.StarterMotorState.ToString();
-                    }
-                }
-                else
-                {
-                    data.DebugMessage = StartupManager.StartupState.ToString();
-                }
-            }
-            */
-            data.DebugMessage = Engine1Exhaust.currentSmoke.ToString();
             if (AdvancedDriving.CheckInst != null)
             {
                 this.Train.tractionmanager.DebugWindowData.WesternEngine.CurrentRPM = ((int)CurrentRPM).ToString();
@@ -1133,6 +1095,9 @@ namespace Plugin
                     }
                     Engine1Running = false;
                     Engine2Running = false;
+                    //We have stopped the engine, so the starter motor state must be reset to none, otherwise we can't restart.....
+                    Engine1Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
+                    Engine2Starter.StarterMotorState = StarterMotor.StarterMotorStates.None;
                     break;
                 case 1:
                     //Stop near engine

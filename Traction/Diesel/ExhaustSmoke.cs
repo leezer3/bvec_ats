@@ -10,11 +10,11 @@ namespace Plugin
          */
         private double Timer;
         private bool StartupComplete;
-        internal bool Sparks;
+        internal int Sparks;
       
         internal void Update(double ElapsedTime, double CurrentRPM, bool StarterActive, bool EngineRunning, Turbocharger.TurbochargerStates TurbochargerState = Turbocharger.TurbochargerStates.None)
         {
-            Sparks = false;
+            Sparks = 0;
             Timer += ElapsedTime;
             if (!EngineRunning && !StarterActive)
             {
@@ -45,7 +45,7 @@ namespace Plugin
                     if (Timer < 2500)
                     {
                         currentSmoke = SmokeType.ThickBlack;
-                        Sparks = true;
+                        Sparks = Plugin.Random.Next(0,4);
                     }
                     else if (Timer > 2500 && Timer < 5000)
                     {
@@ -82,7 +82,7 @@ namespace Plugin
                                 break;
                                 case Turbocharger.TurbochargerStates.RunUp:
                                     currentSmoke = SmokeType.ThickBlack;
-                                Sparks = true;
+                                Sparks = Plugin.Random.Next(0,4);
                                 break;
                                 case Turbocharger.TurbochargerStates.Running:
                                     currentSmoke = SmokeType.ThinBlack;
