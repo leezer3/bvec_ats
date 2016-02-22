@@ -11,9 +11,7 @@ namespace Plugin
         private double Timer;
         private bool StartupComplete;
         internal bool Sparks;
-
-        private readonly Random randomGenerator = new Random();
-        
+      
         internal void Update(double ElapsedTime, double CurrentRPM, bool StarterActive, bool EngineRunning, Turbocharger.TurbochargerStates TurbochargerState = Turbocharger.TurbochargerStates.None)
         {
             Sparks = false;
@@ -28,14 +26,14 @@ namespace Plugin
                 if (currentSmoke == SmokeType.None)
                 {
                     //Generate a random smoke type
-                    currentSmoke = (SmokeType) randomGenerator.Next(1, 3);
+                    currentSmoke = (SmokeType) Plugin.Random.Next(1, 3);
                 }
                 
                 if (Timer > 300)
                 {
                     //Reset timer and generate another random type
                     Timer = 0;
-                    currentSmoke = (SmokeType) randomGenerator.Next(1, 3);
+                    currentSmoke = (SmokeType) Plugin.Random.Next(1, 3);
                 }
 
             }

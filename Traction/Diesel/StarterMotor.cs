@@ -48,8 +48,6 @@ namespace Plugin
         internal double StarterMotorTimer;
         internal bool SimpleStarterPlayer;
 
-        readonly Random RandomNumber = new Random();
-
         /// <summary>Gets the state of the starter motor.</summary>
         internal StarterMotorStates StarterMotorState { get; set; }
 
@@ -93,8 +91,8 @@ namespace Plugin
                     if (FuelAvailable)
                     {
                         //Generate our probabilities
-                        var StartChance = RandomNumber.Next(0, MaximumFireProbability);
-                        var StallChance = RandomNumber.Next(0, MaximumStallProbability);
+                        var StartChance = Plugin.Random.Next(0, MaximumFireProbability);
+                        var StallChance = Plugin.Random.Next(0, MaximumStallProbability);
                         //We've hit the firing trigger, so start the engine
                         if (StartChance > FireProbability)
                         {

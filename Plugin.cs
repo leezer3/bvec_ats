@@ -13,6 +13,9 @@ namespace Plugin {
         /// <summary>The train that is simulated by this plugin.</summary>
         private Train Train = null;
 
+        /// <summary>The random number generator used by the plugin.</summary>
+        public static Random Random = new Random();
+
 	    public static string TrainFolder;
   
 		/// <summary>Is called when the plugin is loaded.</summary>
