@@ -14,10 +14,9 @@
         internal struct Indicator
         {
             public int PanelIndex;
-            public double FlashInterval;
-            public double TimeElapsed;
-            public bool Lit;
-            public IndicatorStates IndicatorState;
+            public Timer Timer;
+            public int Value;
+            public bool Active;
 
         }
 

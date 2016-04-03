@@ -212,6 +212,9 @@ namespace Plugin {
         /// <summary>The ATO device, or a null reference if not installed.</summary>
         internal Ato Ato;
 
+		/// <summary>The F92 device, or a null reference if not installed.</summary>
+		internal F92 F92;
+
 	    internal LEDLights LedLights;
 
 	    internal WesternDiesel WesternDiesel;
@@ -2694,6 +2697,10 @@ namespace Plugin {
                         break;
                 }
             }
+	        if (this.F92 != null)
+	        {
+		        F92.Trigger(beacon.Type, beacon.Optional, beacon.Signal.Aspect);
+	        }
             //Japanese Safety System Beacons
             if (this.Atc != null | this.Ato != null | this.AtsP != null | this.AtsPs != null | this.AtsSx != null |
                 this.Calling != null | this.Tasc != null)

@@ -91,6 +91,7 @@
       <DependentUpon>WesternControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Functions\BlinkStick.cs" />
+    <Compile Include="SafetySystems\DE\F92.cs" />
     <Compile Include="SafetySystems\JA\Atc.cs" />
     <Compile Include="SafetySystems\JA\Ato.cs" />
     <Compile Include="SafetySystems\JA\AtsP.cs" />

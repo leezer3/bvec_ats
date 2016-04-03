@@ -911,6 +911,18 @@ namespace Plugin
                     Train.DebugLogger.LogMessage("The current brake application was not reset due to a ATS-S intervention.");
                     return;
                 }
+				//Do not reset brake application if F92 is currently overspeed
+				if (Train.F92 != null && (Train.trainspeed > 70))
+				{
+					Train.DebugLogger.LogMessage("The current brake application was not reset due to the F92's overspeed device.");
+					return;
+				}
+				//Do not reset brake application if F92 has passed a red signal
+				if (Train.F92 != null && Train.F92.PassedRedSignal == true)
+				{
+					Train.DebugLogger.LogMessage("The current brake application was not reset due to the F92 having passed a red signal.");
+					return;
+				}
             }
             Train.DebugLogger.LogMessage("The current brake application was reset.");
             currentbrakenotch = 0;
