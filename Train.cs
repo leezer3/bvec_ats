@@ -2282,12 +2282,25 @@ namespace Plugin {
                 this.Panel[i] = 0;
             }
 		}
-		
+
+		internal bool MessageAdded;
+		internal double timer = 0;
+
 		/// <summary>Is called every frame.</summary>
 		/// <param name="data">The data.</param>
 		internal void Elapse(ElapseData data)
 		{
-		    
+			if (!MessageAdded)
+			{
+				timer += data.ElapsedTime.Milliseconds;
+				if (timer > 10000)
+				{
+					MessageBox.Show("TEST");
+					MessageManager.PrintMessage("Test Message", OpenBveApi.Colors.MessageColor.Magenta, 2000.0);
+					MessageAdded = true;
+				}
+				
+			}
 			this.PluginInitializing = false;
 			if (data.ElapsedTime.Seconds > 0.0 & data.ElapsedTime.Seconds < 1.0) {
 				//Odakyufan's code requires clearing the array each time

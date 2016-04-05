@@ -25,6 +25,7 @@ namespace Plugin {
         {
             properties.Panel = new int[512];
             SoundManager.Initialise(properties.PlaySound, 512);
+			MessageManager.Initialise(properties.AddMessage);
             properties.AISupport = AISupport.Basic;
             this.Train = new Train(properties.Panel);
             //No AI Support

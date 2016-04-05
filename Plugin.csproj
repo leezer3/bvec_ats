@@ -69,9 +69,9 @@
     <Reference Include="BlinkStickDotNet">
       <HintPath>..\..\BlinkStickDotNet-master\BlinkStickDotNet\bin\Release\BlinkStickDotNet.dll</HintPath>
     </Reference>
-    <Reference Include="OpenBveApi, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="OpenBveApi, Version=1.3.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\OBVE\OpenBveApi.dll</HintPath>
+      <HintPath>D:\OBVE\SourceCode\openBVE\OpenBve\bin\Debug\OpenBveApi.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -91,6 +91,7 @@
       <DependentUpon>WesternControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Functions\BlinkStick.cs" />
+    <Compile Include="Functions\Messages.cs" />
     <Compile Include="SafetySystems\DE\F92.cs" />
     <Compile Include="SafetySystems\JA\Atc.cs" />
     <Compile Include="SafetySystems\JA\Ato.cs" />

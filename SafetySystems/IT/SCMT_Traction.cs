@@ -5,6 +5,7 @@
 using System;
 using OpenBveApi.Runtime;
 using System.Globalization;
+using System.Windows.Markup.Localizer;
 
 namespace Plugin
 {
@@ -170,6 +171,8 @@ namespace Plugin
         internal static Indicator ImpvelSu;
         internal static Indicator ImpvelGiu;
 
+	    internal static double elapsedTime;
+
         //Three timers triggered by the SCMT self-test sequence
         //Self-test timer??
         internal static Timer SCMTtesttimer;
@@ -310,27 +313,7 @@ namespace Plugin
                 fuel = (int) fuelstartamount;
                 reverserposition = Train.Handles.Reverser;
                 //Initialise Indicators
-                Abbanco.IndicatorState = IndicatorStates.Off;
-                Abbanco.Lit = false;
-                Abbanco.FlashInterval = 1000;
-                ConsAvviam.IndicatorState = IndicatorStates.Off;
-                ConsAvviam.Lit = false;
-                ConsAvviam.FlashInterval = 1000;
-                AvariaGen.IndicatorState = IndicatorStates.Solid;
-                AvariaGen.Lit = false;
-                AvariaGen.FlashInterval = 1000;
-                Avviam.IndicatorState = IndicatorStates.Off;
-                Avviam.Lit = false;
-                Avviam.FlashInterval = 1000;
-                Arresto.IndicatorState = IndicatorStates.Off;
-                Arresto.Lit = false;
-                Arresto.FlashInterval = 1000;
-                ImpvelSu.IndicatorState = IndicatorStates.Off;
-                ImpvelSu.Lit = false;
-                ImpvelSu.FlashInterval = 1000;
-                ImpvelGiu.IndicatorState = IndicatorStates.Off;
-                ImpvelGiu.Lit = false;
-                ImpvelGiu.FlashInterval = 1000;
+
                 //Functions
                 seqScarico = 0;
                 setpointspeed = 0;
@@ -338,7 +321,9 @@ namespace Plugin
                 v2 = 0;
                 dynometer = 0;
             }
-        }
+	        SCMT.BlinkIndicator(ref AvariaGen, 1);
+	        BatteryVoltage = 23;
+			}
 
 
 
@@ -347,6 +332,7 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
+	        elapsedTime = data.ElapsedTime.Milliseconds;
             if (enabled == true)
             {
                 reverserposition = Train.Handles.Reverser;
@@ -718,7 +704,9 @@ namespace Plugin
 
                             BatteryTimer.TimerActive = true;
                             BatteryTimer.TimeElapsed = 0.0;
-                            AvariaGen.IndicatorState = IndicatorStates.Off;
+							SCMT.BlinkIndicator(ref AvariaGen, 1);
+							SCMT.ShowIndicator(ref AvariaGen, data.ElapsedTime.Milliseconds);
+                            
                         }
 
                         if (Avv == true && (SCMT.testscmt == 4 || SCMT.testscmt == 0))
@@ -1195,268 +1183,6 @@ namespace Plugin
                         }
                     }
                 }
-                {
-                    //Indicators
-                    if (Abbanco.PanelIndex != -1)
-                    {
-                        if (Abbanco.IndicatorState == IndicatorStates.Solid)
-                        {
-                            Abbanco.Lit = true;
-                        }
-                        else if (Abbanco.IndicatorState == IndicatorStates.Flashing)
-                        {
-                            Abbanco.TimeElapsed += data.ElapsedTime.Milliseconds;
-                            if (Abbanco.TimeElapsed > 1000)
-                            {
-                                if (Abbanco.Lit == true)
-                                {
-                                    Abbanco.Lit = false;
-                                }
-                                else
-                                {
-                                    Abbanco.Lit = true;
-                                }
-                                Abbanco.TimeElapsed = 0.0;
-                            }
-                        }
-                        else
-                        {
-                            Abbanco.Lit = false;
-                        }
-
-                        if (Abbanco.Lit == true)
-                        {
-                            this.Train.Panel[Abbanco.PanelIndex] = 1;
-                        }
-                        else
-                        {
-                            this.Train.Panel[Abbanco.PanelIndex] = 0;
-                        }
-
-                    }
-                    if (ConsAvviam.PanelIndex != -1)
-                    {
-                        if (ConsAvviam.IndicatorState == IndicatorStates.Solid)
-                        {
-                            ConsAvviam.Lit = true;
-                        }
-                        else if (ConsAvviam.IndicatorState == IndicatorStates.Flashing)
-                        {
-                            ConsAvviam.TimeElapsed += data.ElapsedTime.Milliseconds;
-                            if (ConsAvviam.TimeElapsed > 1000)
-                            {
-                                if (ConsAvviam.Lit == true)
-                                {
-                                    ConsAvviam.Lit = false;
-                                }
-                                else
-                                {
-                                    ConsAvviam.Lit = true;
-                                }
-                                ConsAvviam.TimeElapsed = 0.0;
-                            }
-                        }
-                        else
-                        {
-                            ConsAvviam.Lit = false;
-                        }
-
-                        if (ConsAvviam.Lit == true)
-                        {
-                            this.Train.Panel[ConsAvviam.PanelIndex] = 1;
-                        }
-                        else
-                        {
-                            this.Train.Panel[ConsAvviam.PanelIndex] = 0;
-                        }
-
-                    }
-                    if (AvariaGen.PanelIndex != -1)
-                    {
-                        if (AvariaGen.IndicatorState == IndicatorStates.Solid)
-                        {
-                            AvariaGen.Lit = true;
-                        }
-                        else if (AvariaGen.IndicatorState == IndicatorStates.Flashing)
-                        {
-                            AvariaGen.TimeElapsed += data.ElapsedTime.Milliseconds;
-                            if (AvariaGen.TimeElapsed > 1000)
-                            {
-                                if (AvariaGen.Lit == true)
-                                {
-                                    AvariaGen.Lit = false;
-                                }
-                                else
-                                {
-                                    AvariaGen.Lit = true;
-                                }
-                                AvariaGen.TimeElapsed = 0.0;
-                            }
-                        }
-                        else
-                        {
-                            AvariaGen.Lit = false;
-                        }
-
-                        if (AvariaGen.Lit == true)
-                        {
-                            this.Train.Panel[AvariaGen.PanelIndex] = 1;
-                        }
-                        else
-                        {
-                            this.Train.Panel[AvariaGen.PanelIndex] = 0;
-                        }
-
-                    }
-                    if (Avviam.PanelIndex != -1)
-                    {
-                        if (Avviam.IndicatorState == IndicatorStates.Solid)
-                        {
-                            Avviam.Lit = true;
-                        }
-                        else if (Avviam.IndicatorState == IndicatorStates.Flashing)
-                        {
-                            Avviam.TimeElapsed += data.ElapsedTime.Milliseconds;
-                            if (Avviam.TimeElapsed > 1000)
-                            {
-                                if (Avviam.Lit == true)
-                                {
-                                    Avviam.Lit = false;
-                                }
-                                else
-                                {
-                                    Avviam.Lit = true;
-                                }
-                                Avviam.TimeElapsed = 0.0;
-                            }
-                        }
-                        else
-                        {
-                            Avviam.Lit = false;
-                        }
-
-                        if (Avviam.Lit == true)
-                        {
-                            this.Train.Panel[Avviam.PanelIndex] = 1;
-                        }
-                        else
-                        {
-                            this.Train.Panel[Avviam.PanelIndex] = 0;
-                        }
-
-                    }
-                    if (Arresto.PanelIndex != -1)
-                    {
-                        if (Arresto.IndicatorState == IndicatorStates.Solid)
-                        {
-                            Arresto.Lit = true;
-                        }
-                        else if (Arresto.IndicatorState == IndicatorStates.Flashing)
-                        {
-                            Arresto.TimeElapsed += data.ElapsedTime.Milliseconds;
-                            if (Arresto.TimeElapsed > 1000)
-                            {
-                                if (Arresto.Lit == true)
-                                {
-                                    Arresto.Lit = false;
-                                }
-                                else
-                                {
-                                    Arresto.Lit = true;
-                                }
-                                Arresto.TimeElapsed = 0.0;
-                            }
-                        }
-                        else
-                        {
-                            Arresto.Lit = false;
-                        }
-
-                        if (Arresto.Lit == true)
-                        {
-                            this.Train.Panel[Arresto.PanelIndex] = 1;
-                        }
-                        else
-                        {
-                            this.Train.Panel[Arresto.PanelIndex] = 0;
-                        }
-
-                    }
-                    if (ImpvelSu.PanelIndex != -1)
-                    {
-                        if (ImpvelSu.IndicatorState == IndicatorStates.Solid)
-                        {
-                            ImpvelSu.Lit = true;
-                        }
-                        else if (ImpvelSu.IndicatorState == IndicatorStates.Flashing)
-                        {
-                            ImpvelSu.TimeElapsed += data.ElapsedTime.Milliseconds;
-                            if (ImpvelSu.TimeElapsed > 1000)
-                            {
-                                if (ImpvelSu.Lit == true)
-                                {
-                                    ImpvelSu.Lit = false;
-                                }
-                                else
-                                {
-                                    ImpvelSu.Lit = true;
-                                }
-                                ImpvelSu.TimeElapsed = 0.0;
-                            }
-                        }
-                        else
-                        {
-                            ImpvelSu.Lit = false;
-                        }
-
-                        if (ImpvelSu.Lit == true)
-                        {
-                            this.Train.Panel[ImpvelSu.PanelIndex] = 1;
-                        }
-                        else
-                        {
-                            this.Train.Panel[ImpvelSu.PanelIndex] = 0;
-                        }
-
-                    }
-                    if (ImpvelGiu.PanelIndex != -1)
-                    {
-                        if (ImpvelGiu.IndicatorState == IndicatorStates.Solid)
-                        {
-                            ImpvelGiu.Lit = true;
-                        }
-                        else if (ImpvelGiu.IndicatorState == IndicatorStates.Flashing)
-                        {
-                            ImpvelGiu.TimeElapsed += data.ElapsedTime.Milliseconds;
-                            if (ImpvelGiu.TimeElapsed > 1000)
-                            {
-                                if (ImpvelGiu.Lit == true)
-                                {
-                                    ImpvelGiu.Lit = false;
-                                }
-                                else
-                                {
-                                    ImpvelGiu.Lit = true;
-                                }
-                                ImpvelGiu.TimeElapsed = 0.0;
-                            }
-                        }
-                        else
-                        {
-                            ImpvelGiu.Lit = false;
-                        }
-
-                        if (ImpvelGiu.Lit == true)
-                        {
-                            this.Train.Panel[ImpvelGiu.PanelIndex] = 1;
-                        }
-                        else
-                        {
-                            this.Train.Panel[ImpvelGiu.PanelIndex] = 0;
-                        }
-
-                    }
-                }
             }
         }
 
@@ -1476,6 +1202,8 @@ namespace Plugin
         {
             if (SCMT_Traction.setpointspeed < SCMT_Traction.maxsetpointspeed)
             {
+				SCMT.BlinkIndicator(ref ImpvelSu, 1);
+				SCMT.ShowIndicator(ref ImpvelSu, elapsedTime);
                 SCMT_Traction.setpointspeed += 5;
                 setpointspeedstate += 1;
                 if (setpointspeed_sound != -1)
@@ -1483,7 +1211,7 @@ namespace Plugin
                     SoundManager.Play(setpointspeed_sound, 1.0, 1.0, false);
                 }
                 SCMT_Traction.setspeedincrease_pressed = true;
-                ImpvelSu.IndicatorState = IndicatorStates.Solid;
+                
             }
         }
 
@@ -1492,6 +1220,8 @@ namespace Plugin
         {
             if (SCMT_Traction.setpointspeed > 0)
             {
+				SCMT.BlinkIndicator(ref ImpvelGiu, 1);
+				SCMT.ShowIndicator(ref ImpvelGiu, elapsedTime);
                 SCMT_Traction.setpointspeed -= 5;
                 setpointspeedstate -= 1;
                 if (setpointspeed_sound != -1)
@@ -1499,7 +1229,7 @@ namespace Plugin
                     SoundManager.Play(setpointspeed_sound, 1.0, 1.0, false);
                 }
                 SCMT_Traction.setspeeddecrease_pressed = true;
-                ImpvelGiu.IndicatorState = IndicatorStates.Solid;
+                
             }
         }
 
@@ -1510,10 +1240,11 @@ namespace Plugin
             {
                 SoundManager.Play(setpointspeed_sound, 1.0, 1.0, false);
             }
+			SCMT.BlinkIndicator(ref ImpvelGiu, 0);
+			SCMT.BlinkIndicator(ref ImpvelGiu, 0);
             SCMT_Traction.setspeedincrease_pressed = false;
             SCMT_Traction.setspeeddecrease_pressed = false;
-            ImpvelSu.IndicatorState = IndicatorStates.Off;
-            ImpvelGiu.IndicatorState = IndicatorStates.Off;
+            
         }
 
         /// <summary>Call from the traction manager when the key counter key is pressed</summary>
@@ -1524,15 +1255,16 @@ namespace Plugin
             {
                 if (ChiaveBanco == false)
                 {
-                    //Something odd with indicator states...
-                    Abbanco.IndicatorState = IndicatorStates.Solid;
+                    SCMT.BlinkIndicator(ref Abbanco, 1);
+					SCMT.ShowIndicator(ref Abbanco, elapsedTime);
                     indattesa = 1;
                     AttessaTimer.TimeElapsed = 0;
                     AttessaTimer.TimerActive = true;
                 }
                 else
                 {
-                    Abbanco.IndicatorState = IndicatorStates.Off;
+					SCMT.BlinkIndicator(ref Abbanco, 0);
+					SCMT.ShowIndicator(ref Abbanco, elapsedTime);
                     SCMT.testscmt = 0;
                 }
 
@@ -1551,8 +1283,10 @@ namespace Plugin
         {
             if (ConsAvv == false && ChiaveBanco == true)
             {
+				SCMT.BlinkIndicator(ref ConsAvviam, 1);
+				SCMT.ShowIndicator(ref ConsAvviam, elapsedTime);
                 ConsAvv = true;
-                ConsAvviam.IndicatorState = IndicatorStates.Solid;
+                
                 //Play key turned to bench and start permission sound
                 if (sunoconsavv != -1)
                 {
@@ -1561,8 +1295,10 @@ namespace Plugin
             }
             else if (ConsAvv == true && ChiaveBanco == true)
             {
+				SCMT.BlinkIndicator(ref ConsAvviam, 0);
+				SCMT.ShowIndicator(ref ConsAvviam, elapsedTime);
                 ConsAvv = false;
-                ConsAvviam.IndicatorState = IndicatorStates.Off;
+                
                 //Play key turned to bench and start permission sound
                 if (sunoconsavv != -1)
                 {
@@ -1573,7 +1309,7 @@ namespace Plugin
             if (ConsAvv == false && Avv == true)
             {
                 Avv = false;
-                AvariaGen.IndicatorState = IndicatorStates.Solid;
+                
                 SCMT_Traction.gear = 0;
                 if (sunosottofondo != -1)
                 {
@@ -1583,6 +1319,8 @@ namespace Plugin
                 {
                     SoundManager.Play(sunoarr, 1.0, 1.0, false);
                 }
+				SCMT.BlinkIndicator(ref AvariaGen, 1);
+				SCMT.ShowIndicator(ref AvariaGen, elapsedTime);
                 BatteryVoltage = 23;
                 indcontgiri = -50;
                 indgas = -50;
@@ -1596,8 +1334,8 @@ namespace Plugin
         /// <summary>Call from the traction manager when the engine start key is pressed</summary>
         internal static void Avviamento()
         {
-            Avviam.IndicatorState = IndicatorStates.Solid;
-
+			SCMT.BlinkIndicator(ref Avviam, 1);
+			SCMT.ShowIndicator(ref Avviam, elapsedTime);
             if (ConsAvv == true && Avv == false && reverserposition == 0 && indlcm == 0 && indattesa == 0)
             {
                 flagavv = true;
@@ -1612,7 +1350,8 @@ namespace Plugin
         /// <summary>Call from the traction manager when the engine start key is released</summary>
         internal static void AvviamentoReleased()
         {
-            Avviam.IndicatorState = IndicatorStates.Off;
+			SCMT.BlinkIndicator(ref Avviam, 0);
+			SCMT.ShowIndicator(ref Avviam, elapsedTime);
             flagavv = false;
             StarterTimer.TimerActive = false;
         }
@@ -1621,7 +1360,8 @@ namespace Plugin
         internal static void Spegnimento()
         {
             //Blink indicator Arresto
-            Arresto.IndicatorState = IndicatorStates.Flashing;
+			SCMT.BlinkIndicator(ref Arresto, 1);
+			SCMT.ShowIndicator(ref Arresto, elapsedTime);
             if (Avv == true)
             {
                 if (sunosottofondo != -1)
@@ -1638,7 +1378,8 @@ namespace Plugin
                 BatteryVoltage = 23;
                 indcontgiri = -50;
                 indgas = -50;
-                AvariaGen.IndicatorState = IndicatorStates.Flashing;
+				SCMT.BlinkIndicator(ref AvariaGen, 0);
+				SCMT.ShowIndicator(ref AvariaGen, elapsedTime);
                 indattesa = 1;
                 AttessaTimer.TimerActive = true;
                 AttessaTimer.TimeElapsed = 0;
@@ -1648,7 +1389,8 @@ namespace Plugin
         /// <summary>Call from the traction manager when the engine shutdown key is released</summary>
         internal static void SpegnimentoReleased()
         {
-            Arresto.IndicatorState = IndicatorStates.Off;
+			SCMT.BlinkIndicator(ref Arresto, 0);
+			SCMT.ShowIndicator(ref Arresto, elapsedTime);
         }
 
         /// <summary>Call from the traction manager when the LCM Up key is pressed</summary>
