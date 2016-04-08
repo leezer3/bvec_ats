@@ -1146,6 +1146,9 @@ namespace Plugin {
                                         case "customindicatorsounds":
                                             this.tractionmanager.customindicatorsounds = value;
 			                                break;
+										case "customindicatorbehaviour":
+					                        this.tractionmanager.customindicatorbehaviour = value;
+					                        break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }

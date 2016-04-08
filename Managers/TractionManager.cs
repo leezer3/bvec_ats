@@ -98,6 +98,7 @@ namespace Plugin
         internal string klaxonindicator = "-1";
         internal string customindicators = "-1";
         internal string customindicatorsounds = "-1";
+	    internal string customindicatorbehaviour = "-1";
 
         //Default Key Assignments
         //Keys Down
@@ -279,6 +280,15 @@ namespace Plugin
                         CustomIndicatorsArray[i].SoundIndex = Int32.Parse(splitcustomindicatorsounds[i]);
                     }
                 }
+				string[] SplitCustomIndicatorType = customindicatorbehaviour.Split(',');
+				for (int i = 0; i < CustomIndicatorsArray.Length; i++)
+				{
+					//Parse the sound index value if the array value is not empty
+					if (i < splitcustomindicators.Length && !String.IsNullOrEmpty(SplitCustomIndicatorType[i]))
+					{
+						 InternalFunctions.ParseBool(SplitCustomIndicatorType[i], ref CustomIndicatorsArray[i].PushToMake,"CustomIndicatorBehaviour" + i);
+					}
+				}
 
             }
             catch
@@ -1522,6 +1532,14 @@ namespace Plugin
                     }
                 }
             }
+			foreach (CustomIndicator Indicator in CustomIndicatorsArray)
+			{
+				//Reset any push-to-make indicators
+				if (keypressed == Indicator.Key && Indicator.PushToMake == true)
+				{
+					Indicator.Active = !Indicator.Active;
+				}
+			}
             if (Train.SCMT_Traction != null)
             {
                 if (keypressed == SCMTincreasespeed || keypressed == SCMTdecreasespeed)
