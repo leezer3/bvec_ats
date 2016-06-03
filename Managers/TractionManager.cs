@@ -443,6 +443,21 @@ namespace Plugin
                 {
                     data.DebugMessage = "Power cutoff demanded by open doors";
                 }
+				else if (Train.WesternDiesel != null && (Train.WesternDiesel.Engine1Temperature.Overheated == true || Train.WesternDiesel.Engine2Temperature.Overheated == true))
+				{
+					if (Train.WesternDiesel.Engine1Temperature.Overheated && Train.WesternDiesel.Engine2Temperature.Overheated)
+					{
+						data.DebugMessage = "Power cutoff demanded by the Western Diesel engines 1 and 2 overheating";
+					}
+					else if (Train.WesternDiesel.Engine1Temperature.Overheated)
+					{
+						data.DebugMessage = "Power cutoff demanded by the Western Diesel engine 1 overheating";
+					}
+					else
+					{
+						data.DebugMessage = "Power cutoff demanded by the Western Diesel engine 2 overheating";
+					}
+				}
                 else
                 {
                     data.DebugMessage = "Power cutoff demanded by AWS";
@@ -1135,6 +1150,7 @@ namespace Plugin
                         Train.AWS.Reset();
                         resetpowercutoff();
                     }
+	                this.Train.AWS.CancelButtonPressed = true;
                 }
                 if (Train.TPWS != null)
                 {
@@ -1584,6 +1600,13 @@ namespace Plugin
                     Train.WesternDiesel.StarterKeyPressed = false;
                 }
             }
+	        if (Train.AWS != null)
+	        {
+		        if (keypressed == safetykey)
+		        {
+			        this.Train.AWS.CancelButtonPressed = false;
+		        }
+	        }
         }
 
         /// <summary>Is called when the driver changes the reverser.</summary>

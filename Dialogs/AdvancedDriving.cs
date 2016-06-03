@@ -87,8 +87,11 @@ namespace Plugin
                 if (SteamPanel == null)
                 {
                     SteamPanel = new SteamControl();
-                    Controls.Add(SteamPanel);
-                    SteamPanel.Location = new Point(5,5);
+	                if (SteamPanel.InvokeRequired)
+	                {
+		                Controls.Add(SteamPanel);
+	                }
+	                SteamPanel.Location = new Point(5,5);
                     mask.Size = this.Size;
                 }
                 SteamPanel.debuglabel.Text = debuginformation[0];

@@ -103,7 +103,8 @@ namespace Plugin
         internal int MasterKeySound = -1;
         /// <summary>The sound index for the fire bell test.</summary>
         internal int FireBellSound = -1;
-
+		/// <summary>The panel index for the fire bell test.</summary>
+	    internal int FireBellIndex = -1;
         /// <summary>Whether the radiator shutters are open</summary>
         internal bool RadiatorShuttersOpen = true;
         /// <summary>The panel index for the radiator shutters</summary>
@@ -415,41 +416,56 @@ namespace Plugin
                     // 1x- RPM below 1000, speed below 20kph or shutters closed
                     // 2x- RPM below 1000, speed above 20kph & shutters open
                     //Only increase temperature if it's less than 500 or the current RPM is greater than 1000
-                    var Multiplier = 2;
-                    if (Train.trainspeed > 20 || Train.trainspeed == 0)
-                    {
-                        Multiplier -= 1;
-                    }
-                    else
-                    {
-                        Multiplier += 1;
-                    }
-                    if (RadiatorShuttersOpen)
-                    {
-                        Multiplier -= 1;
-                    }
-                    else
-                    {
-                        Multiplier -= 1;
-                    }
-                    if (Turbocharger.TurbochargerState != Turbocharger.TurbochargerStates.None)
-                    {
-                        Multiplier += 1;
-                    }
-                    else
-                    {
-                        Multiplier -= 1;
-                    }
-                    if (CurrentRPM > 1000)
-                    {
-                        Multiplier += 1;
-                    }
-                    else
-                    {
-                        Multiplier -= 1;
-                    }
-
+                    
+	                var Multiplier = 0;
+	                if (Train.trainspeed > 20)
+	                {
+						//Greater than 20kph one notch on the cooling
+		                Multiplier -= 1;
+	                }
+	                else
+	                {
+		                Multiplier += 1;
+	                }
+	                if (RadiatorShuttersOpen)
+	                {
+						//Radiator shutters are open, therefore cool faster
+		                Multiplier -= 1;
+	                }
+	                else
+	                {
+						//Closed, so cool slower
+		                Multiplier += 1;
+	                }
+	                if (Turbocharger.TurbochargerState == Turbocharger.TurbochargerStates.None)
+	                {
+		                Multiplier -= 1;
+	                }
+	                else
+	                {
+		                Multiplier += 1;
+	                }
+					//Current RPM is less than 650
+					if (CurrentRPM < 650)
+					{
+						Multiplier -= 1;
+					}
+					//Above 1000, therefore we must be heating
+					if (CurrentRPM > 1000)
+					{
+						Multiplier += 1;
+					}
                     var Increase = Multiplier > 0;
+	                if (Increase && Engine1Temperature.InternalTemperature < Engine1Temperature.FloorTemperature)
+	                {
+						//Increase faster upto the floor temperature
+		                Multiplier *= 2;
+	                }
+					else if (!Increase &&Engine1Temperature.InternalTemperature > Engine1Temperature.MaximumTemperature - Engine1Temperature.FloorTemperature)
+					{
+						//Faster decrease when we've overheated
+						Multiplier *= 2;
+					}
                     Engine1Temperature.Update(data.ElapsedTime.Milliseconds,Math.Abs(Multiplier),Increase,true);
                 }
                 else
@@ -475,42 +491,56 @@ namespace Plugin
                     // 1x- RPM below 1000, speed below 20kph or shutters closed
                     // 2x- RPM below 1000, speed above 20kph & shutters open
                     //Only increase temperature if it's less than 500 or the current RPM is greater than 1000
-                    var Multiplier = 2;
-                    if (Train.trainspeed > 20 || Train.trainspeed == 0)
-                    {
-                        Multiplier -= 1;
-                    }
-                    else
-                    {
-                        Multiplier += 1;
-                    }
-                    if (RadiatorShuttersOpen)
-                    {
-                        Multiplier -= 1;
-                    }
-                    else
-                    {
-                        Multiplier -= 1;
-                    }
-                    if (Turbocharger.TurbochargerState != Turbocharger.TurbochargerStates.None)
-                    {
-                        Multiplier += 1;
-                    }
-                    else
-                    {
-                        Multiplier -= 1;
-                    }
-                    if (CurrentRPM > 1000)
-                    {
-                        Multiplier += 1;
-                    }
-                    else
-                    {
-                        Multiplier -= 1;
-                    }
-
-                    var Increase = Multiplier > 0;
-                    Engine2Temperature.Update(data.ElapsedTime.Milliseconds, Math.Abs(Multiplier), Increase, true);
+					var Multiplier = 0;
+					if (Train.trainspeed > 20)
+					{
+						//Greater than 20kph one notch on the cooling
+						Multiplier -= 1;
+					}
+					else
+					{
+						Multiplier += 1;
+					}
+					if (RadiatorShuttersOpen)
+					{
+						//Radiator shutters are open, therefore cool faster
+						Multiplier -= 1;
+					}
+					else
+					{
+						//Closed, so cool slower
+						Multiplier += 1;
+					}
+					if (Turbocharger.TurbochargerState == Turbocharger.TurbochargerStates.None)
+					{
+						Multiplier -= 1;
+					}
+					else
+					{
+						Multiplier += 1;
+					}
+					//Current RPM is less than 650
+					if (CurrentRPM < 650)
+					{
+						Multiplier -= 1;
+					}
+					//Above 1000, therefore we must be heating
+					if (CurrentRPM > 1000)
+					{
+						Multiplier += 1;
+					}
+					var Increase = Multiplier > 0;
+					if (Increase && Engine2Temperature.InternalTemperature < Engine2Temperature.FloorTemperature)
+					{
+						//Increase faster upto the floor temperature
+						Multiplier *= 2;
+					}
+					else if (!Increase && Engine2Temperature.InternalTemperature > Engine2Temperature.MaximumTemperature - Engine2Temperature.FloorTemperature)
+					{
+						//Faster decrease when we've overheated
+						Multiplier *= 2;
+					}
+					Engine2Temperature.Update(data.ElapsedTime.Milliseconds, Math.Abs(Multiplier), Increase, true);
                 }
                 else
                 {
@@ -953,6 +983,17 @@ namespace Plugin
                 {
                     this.Train.Panel[Engine2Sparks] = Engine2Exhaust.Sparks;
                 }
+	            if (FireBellIndex != -1)
+	            {
+		            if (FireBell)
+		            {
+			            this.Train.Panel[FireBellIndex] = 1;
+		            }
+		            else
+		            {
+						this.Train.Panel[FireBellIndex] = 0;
+		            }
+	            }
             }
             //This section of code handles the power sounds
             //These are not being run by OpenBVE as they are RPM dependant

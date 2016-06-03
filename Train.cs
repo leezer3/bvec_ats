@@ -287,7 +287,7 @@ namespace Plugin {
 		            {
                         DebugLogger.DebugDate = DateTime.Now.ToString("dd-MM-yyyy");
                         DebugLogger.DebugLogEnabled = true;
-                        string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+						string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
                         DebugLogger.LogMessage("BVEC_ATS " + version + " loaded");
 		            }
 		        }
@@ -891,6 +891,9 @@ namespace Plugin {
                                         case "firebellsound":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.FireBellSound, key);
                                             break;
+										case "firebellindex":
+											InternalFunctions.ValidateIndex(value, ref WesternDiesel.FireBellIndex, key);
+											break;
                                         case "voltsgauge":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.BatteryVoltsGauge, key);
                                             break;
@@ -982,21 +985,41 @@ namespace Plugin {
                                             try
                                             {
                                                 string[] temperaturesplit = value.Split(',');
+	                                            if (temperaturesplit.Length != 4)
+	                                            {
+		                                            WesternDiesel.Engine1Temperature.MaximumTemperature = 1500;
+		                                            WesternDiesel.Engine1Temperature.OverheatTemperature = 1200;
+		                                            WesternDiesel.Engine1Temperature.FloorTemperature = 500;
+		                                            WesternDiesel.Engine1Temperature.ResetTemperature = 1000;
+													WesternDiesel.Engine2Temperature.MaximumTemperature = 1500;
+													WesternDiesel.Engine2Temperature.OverheatTemperature = 1200;
+													WesternDiesel.Engine2Temperature.FloorTemperature = 500;
+													WesternDiesel.Engine2Temperature.ResetTemperature = 1000;
+													InternalFunctions.LogError("enginetemperature", 0);
+	                                            }
                                                 for (int k = 0; k < temperaturesplit.Length; k++)
                                                 {
-                                                    if (k == 0)
-                                                    {
-                                                        InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.MaximumTemperature, key);
-                                                        InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.MaximumTemperature, key);
-                                                    }
-                                                    else
-                                                    {
-                                                        InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.OverheatTemperature, key);
-                                                        InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.OverheatTemperature, key);
-                                                    }
+	                                                switch (k)
+	                                                {
+		                                                case 0:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.MaximumTemperature, key);
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.MaximumTemperature, key);
+			                                                break;
+														case 1:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.OverheatTemperature, key);
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.OverheatTemperature, key);
+			                                                break;
+														case 2:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.FloorTemperature, key);
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.FloorTemperature, key);
+			                                                break;
+														case 3:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.ResetTemperature, key);
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.ResetTemperature, key);
+			                                                break;
+	                                                }
                                                 }
-                                                WesternDiesel.Engine1Temperature.FloorTemperature = 500;
-                                                WesternDiesel.Engine2Temperature.FloorTemperature = 500;
+
                                             }
                                             catch
                                             {
@@ -1004,22 +1027,37 @@ namespace Plugin {
                                             }
                                             break;
                                         case "transmissiontemperature":
-                                            try
-                                            {
-                                                string[] transmissionsplit = value.Split(',');
-                                                for (int k = 0; k < transmissionsplit.Length; k++)
-                                                {
-                                                    if (k == 0)
-                                                    {
-                                                        InternalFunctions.ParseNumber(transmissionsplit[k], ref WesternDiesel.TransmissionTemperature.MaximumTemperature, key);
-                                                    }
-                                                    else
-                                                    {
-                                                        InternalFunctions.ParseNumber(transmissionsplit[k], ref WesternDiesel.TransmissionTemperature.OverheatTemperature, key);
-                                                    }
-                                                }
-                                                WesternDiesel.TransmissionTemperature.FloorTemperature = 500;
-                                            }
+											try
+											{
+												string[] temperaturesplit = value.Split(',');
+												if (temperaturesplit.Length != 4)
+												{
+													WesternDiesel.TransmissionTemperature.MaximumTemperature = 1500;
+													WesternDiesel.TransmissionTemperature.OverheatTemperature = 1200;
+													WesternDiesel.TransmissionTemperature.FloorTemperature = 500;
+													WesternDiesel.TransmissionTemperature.ResetTemperature = 1000;
+													InternalFunctions.LogError("enginetemperature", 0);
+												}
+												for (int k = 0; k < temperaturesplit.Length; k++)
+												{
+													switch (k)
+													{
+														case 0:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.TransmissionTemperature.MaximumTemperature, key);
+															break;
+														case 1:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.TransmissionTemperature.OverheatTemperature, key);
+															break;
+														case 2:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.TransmissionTemperature.FloorTemperature, key);
+															break;
+														case 3:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.TransmissionTemperature.ResetTemperature, key);
+															break;
+													}
+												}
+
+											}
                                             catch
                                             {
                                                 InternalFunctions.LogError("transmissiontemperature", 0);
@@ -1321,6 +1359,9 @@ namespace Plugin {
 			                            case "tpwswarningsound":
 			                                InternalFunctions.ValidateIndex(value, ref AWS.tpwswarningsound, key);
 			                                break;
+										case "cancelbuttonindex":
+											InternalFunctions.ValidateIndex(value, ref AWS.CancelButtonIndex, key);
+					                        break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
@@ -2286,24 +2327,10 @@ namespace Plugin {
             }
 		}
 
-		internal bool MessageAdded;
-		internal double timer = 0;
-
 		/// <summary>Is called every frame.</summary>
 		/// <param name="data">The data.</param>
 		internal void Elapse(ElapseData data)
 		{
-			if (!MessageAdded)
-			{
-				timer += data.ElapsedTime.Milliseconds;
-				if (timer > 10000)
-				{
-					MessageBox.Show("TEST");
-					MessageManager.PrintMessage("Test Message", OpenBveApi.Colors.MessageColor.Magenta, 2000.0);
-					MessageAdded = true;
-				}
-				
-			}
 			this.PluginInitializing = false;
 			if (data.ElapsedTime.Seconds > 0.0 & data.ElapsedTime.Seconds < 1.0) {
 				//Odakyufan's code requires clearing the array each time
