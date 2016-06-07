@@ -1075,7 +1075,7 @@ namespace Plugin
                     debugwindowshowing = false;
                 }
             }
-            if (keypressed == injectorkey)
+            if (key == VirtualKeys.LiveSteamInjector || key == VirtualKeys.ExhaustSteamInjector)
             {
                 //Injectors
                 if (Train.steam != null)
@@ -1166,7 +1166,7 @@ namespace Plugin
                     Train.StartupSelfTestManager.driveracknowledge();
                 }
             }
-            if (keypressed == fuelkey)
+            if (key == VirtualKeys.FillFuel)
             {
                 //Toggle Fuel fill
                 if (Train.canfuel == true && Train.trainspeed == 0)
@@ -1186,7 +1186,7 @@ namespace Plugin
                     Train.electric.breakertrip();
                 }
             }
-            if (keypressed == wiperspeeddown)
+            if (key == VirtualKeys.WiperSpeedDown)
             {
                 //Wipers Speed Down
                 if (Train.Windscreen.enabled == true)
@@ -1194,7 +1194,7 @@ namespace Plugin
                     Train.Windscreen.windscreenwipers(1);
                 }
             }
-            if (keypressed == wiperspeedup)
+            if (key == VirtualKeys.WiperSpeedUp)
             {
                 //Wipers Speed Up
                 if (Train.Windscreen.enabled == true)
@@ -1251,7 +1251,7 @@ namespace Plugin
             //Advanced steam locomotive functions
             if (Train.steam != null)
             {
-                if (keypressed == cutoffdownkey)
+                if (key == VirtualKeys.IncreaseCutoff)
                 {
                     //Cutoff Up
                     if (Train.steam != null)
@@ -1259,7 +1259,7 @@ namespace Plugin
                         Train.steam.cutoffstate = 1;
                     }
                 }
-                if (keypressed == cutoffupkey)
+                if (key == VirtualKeys.DecreaseCutoff)
                 {
                     //Cutoff Down
                     if (Train.steam != null)
@@ -1268,7 +1268,7 @@ namespace Plugin
                     }
                 }
                 //Blowers
-                if (keypressed == blowerskey)
+                if (key == VirtualKeys.Blowers)
                 {
                     if (Train.steam.blowers == false)
                     {
@@ -1414,7 +1414,7 @@ namespace Plugin
                         Train.WesternDiesel.StartupManager.StartupState = WesternStartupManager.SequenceStates.DSDAcknowledged;
                     }
                 }
-                if (keypressed == EngineStartKey)
+                if (key == VirtualKeys.EngineStart)
                 {
                     Train.WesternDiesel.StarterKeyPressed = true;
                 }
@@ -1450,7 +1450,7 @@ namespace Plugin
                         Train.WesternDiesel.EngineSelector = 1;
                     }
                 }
-                if (keypressed == EngineStopKey)
+                if (key == VirtualKeys.EngineStop)
                 {
                     if (Train.WesternDiesel.EngineSelector == 1)
                     {
@@ -1472,7 +1472,7 @@ namespace Plugin
         {
             //Convert keypress to string for comparison
             string keypressed = Convert.ToString(key);
-            if (keypressed == gearupkey)
+            if (key == VirtualKeys.GearUp)
             {
                 //Gear Up
                 if (Train.diesel != null)
@@ -1486,7 +1486,7 @@ namespace Plugin
                     }
                 }
             }
-            if (keypressed == geardownkey)
+            if (key == VirtualKeys.GearDown)
             {
                 //Gear Down
                 if (Train.diesel != null)
@@ -1500,7 +1500,7 @@ namespace Plugin
                     }
                 }
             }
-            if (keypressed == cutoffupkey)
+            if (key == VirtualKeys.IncreaseCutoff)
             {
                 //Cutoff Up
                 if (Train.steam != null)
@@ -1508,7 +1508,7 @@ namespace Plugin
                     Train.steam.cutoffstate = 0;
                 }
             }
-            if (keypressed == cutoffdownkey)
+            if (key == VirtualKeys.DecreaseCutoff)
             {
                 //Cutoff Down
                 if (Train.steam != null)
@@ -1516,7 +1516,7 @@ namespace Plugin
                     Train.steam.cutoffstate = 0;
                 }
             }
-            if (keypressed == fuelkey)
+            if (key == VirtualKeys.FillFuel)
             {
                 //Toggle Fuel fill
                 if (Train.steam != null)
@@ -1595,7 +1595,7 @@ namespace Plugin
             //Western Diesel Locomotive
             if (Train.WesternDiesel != null)
             {
-                if (keypressed == EngineStartKey)
+                if (key == VirtualKeys.EngineStart)
                 {
                     Train.WesternDiesel.StarterKeyPressed = false;
                 }
