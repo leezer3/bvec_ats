@@ -32,11 +32,11 @@ namespace Plugin
         internal int EngineStallSound = -1;
 
         /// <summary>The minimum & maximum fire probabilities</summary>
-        internal int MinimumFireProbability = 1000;
+        internal int FireProbability = 1000;
         internal int MaximumFireProbability = 1000;
 
         /// <summary>The minimum & maximum stall probabilities</summary>
-        internal int MinimumStallProbability = 0;
+        internal int StallProbability = 0;
         internal int MaximumStallProbability = 0;
 
         /// <summary>Stores whether the current start attempt is blocked (e.g. by a stall in progress)</summary>
@@ -48,13 +48,11 @@ namespace Plugin
         internal double StarterMotorTimer;
         internal bool SimpleStarterPlayer;
 
-        readonly Random RandomNumber = new Random();
-
         /// <summary>Gets the state of the starter motor.</summary>
         internal StarterMotorStates StarterMotorState { get; set; }
 
         /// <summary>Runs the complex starter model. If this method returns true, the engine has started.</summary>
-        internal bool RunComplexStarter(double ElapsedTime, bool StarterKeyPresed)
+        internal bool RunComplexStarter(double ElapsedTime, bool StarterKeyPresed, bool FuelAvailable)
         {
             if (!StarterKeyPresed && StarterMotorState == StarterMotorStates.Active)
             {
@@ -89,24 +87,27 @@ namespace Plugin
                 case StarterMotor.StarterMotorStates.Active:
                     //Start the starter loop sound
                     SoundManager.Play(StarterLoopSound, 1.0, 1.0, true);
-                    //Generate our probabilities
-                    var StartProbability = RandomNumber.Next(MinimumFireProbability, MaximumFireProbability);
-                    var StallProbability = RandomNumber.Next(MinimumStallProbability, MaximumStallProbability);
-                    //We've hit the firing trigger, so start the engine
-                    if (StartProbability == MaximumFireProbability)
+                    //If fuel is not available, simply crank until the key is released
+                    if (FuelAvailable)
                     {
-                        StarterMotorState = StarterMotor.StarterMotorStates.EngineFire;
-                        return false;
-                    }
-                    //We've missed the firing trigger, but have hit the stall trigger- Stall
-                    if (StallProbability == MaximumStallProbability)
-                    {
-                        StarterMotorState = StarterMotor.StarterMotorStates.EngineStall;
-                        return false;
+                        //Generate our probabilities
+                        var StartChance = Plugin.Random.Next(0, MaximumFireProbability);
+                        var StallChance = Plugin.Random.Next(0, MaximumStallProbability);
+                        //We've hit the firing trigger, so start the engine
+                        if (StartChance > FireProbability)
+                        {
+                            StarterMotorState = StarterMotor.StarterMotorStates.EngineFire;
+                            return false;
+                        }
+                        //We've missed the firing trigger, but have hit the stall trigger- Stall
+                        if (StallChance > StallProbability)
+                        {
+                            StarterMotorState = StarterMotor.StarterMotorStates.EngineStall;
+                            return false;
+                        }
                     }
                     return false;
                 case StarterMotor.StarterMotorStates.EngineFire:
-                    SoundManager.Stop(StarterLoopSound);
                     if (!SoundManager.IsPlaying(EngineFireSound))
                     {
                         SoundManager.Play(EngineFireSound, 1.0, 1.0, false);
@@ -122,7 +123,6 @@ namespace Plugin
                     }
                     return false;
                 case StarterMotor.StarterMotorStates.EngineStall:
-                    SoundManager.Stop(StarterLoopSound);
                     SoundManager.Play(EngineStallSound, 1.0, 1.0, false);
                     //Elapse the timer
                     StarterMotorTimer += ElapsedTime;
@@ -136,6 +136,7 @@ namespace Plugin
                     }
                     return false;
                 case StarterMotor.StarterMotorStates.RunDown:
+                    SoundManager.Stop(StarterLoopSound);
                     SoundManager.Play(StarterRunDownSound, 1.0, 1.0, false);
                     //Elapse the timer
                     StarterMotorTimer += ElapsedTime;
@@ -147,6 +148,7 @@ namespace Plugin
                     }
                     return false;
                 default:
+                    SoundManager.Stop(StarterLoopSound);
                     return false;
             }
         }

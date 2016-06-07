@@ -87,8 +87,11 @@ namespace Plugin
                 if (SteamPanel == null)
                 {
                     SteamPanel = new SteamControl();
-                    Controls.Add(SteamPanel);
-                    SteamPanel.Location = new Point(5,5);
+	                if (SteamPanel.InvokeRequired)
+	                {
+		                Controls.Add(SteamPanel);
+	                }
+	                SteamPanel.Location = new Point(5,5);
                     mask.Size = this.Size;
                 }
                 SteamPanel.debuglabel.Text = debuginformation[0];
@@ -151,10 +154,16 @@ namespace Plugin
                     WesternPanel.Location = new Point(5, 5);
                     mask.Size = this.Size;
                 }
+                WesternPanel.trainspeed.Text = debuginformation[13];
                 WesternPanel.debuglabel.Text = debuginformation[0];
                 WesternPanel.RPM.Text = DebugData.WesternEngine.CurrentRPM;
                 WesternPanel.Engine1Status.Text = DebugData.WesternEngine.RearEngineState;
                 WesternPanel.Engine2Status.Text = DebugData.WesternEngine.FrontEngineState;
+                WesternPanel.TorqueStatus.Text = DebugData.WesternEngine.TorqueConverterState;
+                WesternPanel.Engine1Temp.Text = DebugData.WesternEngine.Engine1Temperature;
+                WesternPanel.Engine2Temp.Text = DebugData.WesternEngine.Engine2Temperature;
+                WesternPanel.TransmissionTemp.Text = DebugData.WesternEngine.TransmissionTemperature;
+                WesternPanel.TurboState.Text = DebugData.WesternEngine.TurbochargerState;
 
             }
             else

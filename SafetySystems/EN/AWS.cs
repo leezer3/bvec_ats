@@ -26,7 +26,7 @@ namespace Plugin
         internal int awswarningsound = -1;
         internal int awsclearsound = -1;
         internal int tpwswarningsound = -1;
-
+	    internal int CancelButtonIndex = -1;
 
         /// <summary>Gets the current warning state of the Automatic Warning System.</summary>
         internal SafetyStates SafetyState
@@ -34,9 +34,10 @@ namespace Plugin
             get { return this.MySafetyState; }
         }
 
-        
+	    internal bool CancelButtonPressed;
 
-        internal AWS(Train train)
+
+	    internal AWS(Train train)
         {
             this.Train = train;
         }
@@ -244,6 +245,20 @@ namespace Plugin
                     }
                 }
             }
+			//Set the state of the cancel button panel index
+			//As this is a physical button, it can be pressed at any time
+			if (CancelButtonIndex != -1)
+			{
+				if (CancelButtonPressed)
+				{
+					this.Train.Panel[CancelButtonIndex] = 1;
+				}
+				else
+				{
+					this.Train.Panel[CancelButtonIndex] = 0;
+				}
+			}
+
         }
 
         /// <summary>Call this function to prime the AWS as a result of passing the south pole of an AWS permanent magnet. This should be done only via the SetBeacon() method.</summary>

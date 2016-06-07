@@ -81,6 +81,7 @@ namespace Plugin
         internal SCMT_Traction.Timer SrTimer;
         internal SCMT_Traction.Timer OverrideTimer;
         internal SCMT_Traction.Timer AlarmTimer;
+        internal SCMT_Traction.Timer campionamentoTimer;
 
         internal SCMT_Traction.Indicator BrakeDemandIndicator;
         internal SCMT_Traction.Indicator TrainstopOverrideIndicator;
@@ -90,6 +91,7 @@ namespace Plugin
         internal bool awsStop;
         internal bool awsRelease;
         internal bool tpwsRelease;
+        internal bool flagtgtraz;
         internal double tpwstopdelay;
         internal double tpwsoverridelifetime;
         internal static int tpwswarningsound = -1;
@@ -115,18 +117,7 @@ namespace Plugin
         internal override void Initialize(InitializationModes mode)
         {
             //Load indicators default values
-            BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
-            BrakeDemandIndicator.Lit = false;
-            BrakeDemandIndicator.FlashInterval = 1000;
-            TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
-            TrainstopOverrideIndicator.Lit = false;
-            TrainstopOverrideIndicator.FlashInterval = 1000;
-            TraintripIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
-            TraintripIndicator.Lit = false;
-            TraintripIndicator.FlashInterval = 1000;
-            srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
-            srIndicator.Lit = false;
-            srIndicator.FlashInterval = 1000;
+
             //Initialise Default Paramaters
             beacon_speed = 500;
             speed = 500;
@@ -136,6 +127,9 @@ namespace Plugin
             beacon_44005 = 4;
             beacon_distance = 0;
             SCMT_Alert = true;
+            flagbrake = false;
+            tgtraz_active = false;
+
         }
 
         internal void Reinitialise(InitializationModes mode)
@@ -155,6 +149,21 @@ namespace Plugin
                 if (beacon_distance > 0)
                 {
                     beacon_distance -= (Train.trainlocation - Train.previouslocation);
+                }
+
+                //Update the beacon distance values with those calculated from the current speed
+                if (beacon_distance > 0)
+                {
+                    if (campionamentoTimer.TimerActive == false)
+                    {
+                        campionamentoTimer.TimerActive = true;
+                    }
+                    campionamentoTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
+                    if (campionamentoTimer.TimeElapsed > 2000)
+                    {
+                        beacon_distance = beacon_distance - speed * 2;
+                        campionamentoTimer.TimerActive = false;
+                    }
                 }
 
                 //If we're in the alert phase
@@ -232,15 +241,12 @@ namespace Plugin
                             {
                                 if (brakeNotchDemanded == 0)
                                 {
-                                    //Start brake demand indicator blinking?
-                                    //Or does it want the indicator state toggled?
-                                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                                    BlinkIndicator(ref BrakeDemandIndicator, 1);
 
                                 }
                                 else
                                 {
-                                    //Stop brake demand indicator blinking?
-                                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+                                    BlinkIndicator(ref BrakeDemandIndicator, 0);
                                 }
                                 riarmoTimer.TimeElapsed = 0;
                             }
@@ -251,8 +257,7 @@ namespace Plugin
                                 trainstop == true)
                             {
                                 riarmoTimer.TimerActive = false;
-                                //Start brake demand indicator blinking?
-                                BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Flashing;
+                                BlinkIndicator(ref BrakeDemandIndicator, 1);
                                 flagriarmo = true;
                             }
                         }
@@ -262,23 +267,22 @@ namespace Plugin
                             if (SrTimer.TimeElapsed > 5000)
                             {
                                 SrTimer.TimerActive = false;
-                                srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
-                                srIndicator.Lit = false;
+	                            SrTimer.TimeElapsed = 0;
+                                SetIndicator(ref srIndicator, 0);
+								ShowIndicator(ref srIndicator, data.ElapsedTime.Milliseconds);
                             }
                             if (OverrideTimer.TimerActive == true)
                             {
                                 if (beacon_type == 44003)
                                 {
                                     OverrideTimer.TimerActive = false;
-                                    TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
-                                    TrainstopOverrideIndicator.Lit = false;
-                                    srIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
-                                    srIndicator.Lit = true;
-                                    TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                                    SetIndicator(ref TrainstopOverrideIndicator, 0);
+                                    SetIndicator(ref srIndicator, 1);
                                     beacon_type = 44002;
                                     beacon_speed = 30;
                                     maxspeed = beacon_speed;
                                     SrTimer.TimeElapsed = 0;
+									ShowIndicator(ref srIndicator, data.ElapsedTime.Milliseconds);
                                 }
                             }
                             else if ((beacon_type == 4402 && Train.trainspeed > alertspeed) ||
@@ -331,8 +335,7 @@ namespace Plugin
 
                                 else
                                 {
-                                    //Blink traintrip indicator
-                                    TraintripIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Flashing;
+                                    BlinkIndicator(ref TraintripIndicator, 1);
                                     if (tpwswarningsound != -1)
                                     {
                                         SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
@@ -357,7 +360,9 @@ namespace Plugin
                     }
                 }
             }
-
+			ShowIndicator(ref BrakeDemandIndicator, data.ElapsedTime.Milliseconds);
+			ShowIndicator(ref TraintripIndicator, data.ElapsedTime.Milliseconds);
+			ShowIndicator(ref TrainstopOverrideIndicator, data.ElapsedTime.Milliseconds);
             if (Train.trainspeed == 0)
             {
                 if (StopTimer.TimerActive == false)
@@ -386,8 +391,7 @@ namespace Plugin
                     {
                         EBDemanded = false;
                         Train.tractionmanager.resetbrakeapplication();
-                        BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
-                        BrakeDemandIndicator.Lit = false;
+                        SetIndicator(ref BrakeDemandIndicator, 0);
                         tpwsRelease = false;
                         trainstop = false;
                     }
@@ -399,8 +403,7 @@ namespace Plugin
                 OverrideTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
                 if (OverrideTimer.TimeElapsed > tpwsoverridelifetime*1000)
                 {
-                    TrainstopOverrideIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
-                    TrainstopOverrideIndicator.Lit = false;
+                    SetIndicator(ref TrainstopOverrideIndicator, 0);
                 }
             }
 
@@ -445,138 +448,22 @@ namespace Plugin
             //Brake Demand Indicator
             if (BrakeDemandIndicator.PanelIndex != -1)
             {
-                if (BrakeDemandIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
-                {
-                    BrakeDemandIndicator.Lit = true;
-                }
-                else if (BrakeDemandIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
-                {
-                    BrakeDemandIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
-                    if (BrakeDemandIndicator.TimeElapsed > 500)
-                    {
-                        if (BrakeDemandIndicator.Lit == true)
-                        {
-                            BrakeDemandIndicator.Lit = false;
-                        }
-                        else
-                        {
-                            BrakeDemandIndicator.Lit = true;
-                        }
-                        BrakeDemandIndicator.TimeElapsed = 0.0;
-                    }
-                }
+                
             }
 
             //Trainstop Override Indicator
             //Repurposed by SCMT
             if (TrainstopOverrideIndicator.PanelIndex != -1)
             {
-                //Calculate state
-                if (TrainstopOverrideIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
-                {
-                    TrainstopOverrideIndicator.Lit = true;
-                }
-                else if (TrainstopOverrideIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
-                {
-                    TrainstopOverrideIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
-                    if (TrainstopOverrideIndicator.TimeElapsed > 500)
-                    {
-                        if (TrainstopOverrideIndicator.Lit == true)
-                        {
-                            TrainstopOverrideIndicator.Lit = false;
-                        }
-                        else
-                        {
-                            TrainstopOverrideIndicator.Lit = true;
-                        }
-                        TrainstopOverrideIndicator.TimeElapsed = 0.0;
-                    }
-                }
-                else
-                {
-                    TrainstopOverrideIndicator.Lit = false;
-                }
-
-                if (TrainstopOverrideIndicator.Lit == true)
-                {
-                    this.Train.Panel[TrainstopOverrideIndicator.PanelIndex] = 1;
-                }
-                else
-                {
-                    this.Train.Panel[TrainstopOverrideIndicator.PanelIndex] = 0;
-                }
+                
             }
             if (TraintripIndicator.PanelIndex != -1)
             {
-                if (TraintripIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
-                {
-                    TraintripIndicator.Lit = true;
-                }
-                else if (TraintripIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
-                {
-                    TraintripIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
-                    if (TraintripIndicator.TimeElapsed > 500)
-                    {
-                        if (TraintripIndicator.Lit == true)
-                        {
-                            TraintripIndicator.Lit = false;
-                        }
-                        else
-                        {
-                            TraintripIndicator.Lit = true;
-                        }
-                        TraintripIndicator.TimeElapsed = 0.0;
-                    }
-                }
-                else
-                {
-                    TraintripIndicator.Lit = false;
-                }
-
-                if (TraintripIndicator.Lit == true)
-                {
-                    this.Train.Panel[TraintripIndicator.PanelIndex] = 1;
-                }
-                else
-                {
-                    this.Train.Panel[TraintripIndicator.PanelIndex] = 0;
-                }
+                
             }
             if (srIndicator.PanelIndex != -1)
             {
-                if (srIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Solid)
-                {
-                    srIndicator.Lit = true;
-                }
-                else if (srIndicator.IndicatorState == SCMT_Traction.IndicatorStates.Flashing)
-                {
-                    srIndicator.TimeElapsed += data.ElapsedTime.Milliseconds;
-                    if (srIndicator.TimeElapsed > 500)
-                    {
-                        if (srIndicator.Lit == true)
-                        {
-                            srIndicator.Lit = false;
-                        }
-                        else
-                        {
-                            srIndicator.Lit = true;
-                        }
-                        srIndicator.TimeElapsed = 0.0;
-                    }
-                }
-                else
-                {
-                    srIndicator.Lit = false;
-                }
-
-                if (srIndicator.Lit == true)
-                {
-                    this.Train.Panel[srIndicator.PanelIndex] = 1;
-                }
-                else
-                {
-                    this.Train.Panel[srIndicator.PanelIndex] = 0;
-                }
+                
             }
 
         }
@@ -603,11 +490,14 @@ namespace Plugin
             {
                 if (flagbrake == true)
                 {
-                    TraintripIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
-                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                    SetIndicator(ref TraintripIndicator, 1);
+                    SetIndicator(ref BrakeDemandIndicator, 1);
                     Train.tractionmanager.resetbrakeapplication();
-                    TraintripIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
-                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+
+                    //Something is a little funnny here
+                    //This would appear to reset the lights instantly?
+                    SetIndicator(ref TraintripIndicator, 0);
+                    SetIndicator(ref BrakeDemandIndicator, 0);
                     if (beacon_type == 44003)
                     {
                         beacon_type = 44004;
@@ -624,12 +514,12 @@ namespace Plugin
                 }
                 else
                 {
-                    BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Solid;
+                    SetIndicator(ref BrakeDemandIndicator, 1);
                     if (flagriarmo == true)
                     {
                         flagriarmo = false;
                         Train.tractionmanager.resetbrakeapplication();
-                        BrakeDemandIndicator.IndicatorState = SCMT_Traction.IndicatorStates.Off;
+                        SetIndicator(ref BrakeDemandIndicator, 0);
                         trainstop = false;
                         if (beacon_type == 44003)
                         {
@@ -642,6 +532,23 @@ namespace Plugin
                         SpiaRossiTimer.TimerActive = false;
                         spiarossi_act = false;
                     }
+                }
+            }
+        }
+
+        /// <summary>This function is called from the traction manager when the TPWS override key is pressed.</summary>
+        internal void TPWSOverrideKey()
+        {
+            if (OverrideTimer.TimerActive == false && Train.trainspeed <= 30)
+            {
+                OverrideTimer.TimeElapsed = 0;
+                //BlinkIndicator(TrainstopOverrideIndicator,1,Plugin.data);
+            }
+            else
+            {
+                if (Train.trainspeed <= 30)
+                {
+                    OverrideTimer.TimeElapsed = 0;
                 }
             }
         }
@@ -747,5 +654,31 @@ namespace Plugin
                 }
             }
         }
+
+        internal static void BlinkIndicator(ref SCMT_Traction.Indicator i, int x)
+        {
+            i.Value = x;
+            i.Timer.TimeElapsed = 0;
+            i.Active = true;
+        }
+
+        internal void SetIndicator(ref SCMT_Traction.Indicator i, int x)
+        {
+            i.Value = x;
+            i.Timer.TimerActive = false;
+            i.Timer.TimeElapsed = 0;
+        }
+
+	    internal static void ShowIndicator(ref SCMT_Traction.Indicator i, double elapsedTime)
+	    {
+		    if (i.Timer.TimerActive == true)
+		    {
+			    i.Timer.TimeElapsed += elapsedTime;
+			    if (i.Timer.TimeElapsed > i.Value*1000)
+			    {
+				    i.Active = !i.Active;
+			    }
+		    }
+	    }
     }
 }

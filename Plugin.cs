@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.IO;
 using OpenBveApi.Runtime;
-
+using Path = OpenBveApi.Path;
 namespace Plugin {
 	/// <summary>The interface to be implemented by the plugin.</summary>
 	public class Plugin : IRuntime {
@@ -12,6 +12,9 @@ namespace Plugin {
 
         /// <summary>The train that is simulated by this plugin.</summary>
         private Train Train = null;
+
+        /// <summary>The random number generator used by the plugin.</summary>
+        public static Random Random = new Random();
 
 	    public static string TrainFolder;
   
@@ -22,25 +25,26 @@ namespace Plugin {
         {
             properties.Panel = new int[512];
             SoundManager.Initialise(properties.PlaySound, 512);
+			MessageManager.Initialise(properties.AddMessage);
             properties.AISupport = AISupport.Basic;
             this.Train = new Train(properties.Panel);
             //No AI Support
             //properties.AISupport = AISupport.None;
 
             this.Train = new Train(properties.Panel);
-            string configFile = Path.Combine(properties.TrainFolder, "BVEC_Ats.cfg");
-            string OS_ATSDLL = Path.Combine(properties.TrainFolder, "OS_ATS1.dll");
-            string SZ_ATSDLL = Path.Combine(properties.TrainFolder, "OS_SZ_ATS1.dll");
-            string SZ_ATSDLL_2 = Path.Combine(properties.TrainFolder, "OS_SZ_Ats2_0.dll");
-            string OS_ATSconfigFile = Path.Combine(properties.TrainFolder, "OS_ATS1.cfg");
-            string SZ_ATSconfigFile = Path.Combine(properties.TrainFolder, "OS_SZ_ATS1.cfg");
-            string SZ_ATS_2configFile = Path.Combine(properties.TrainFolder, "OS_SZ_Ats2_0.cfg");
-            string ODF_ATSconfigFile = Path.Combine(properties.TrainFolder, "OdakyufanAts.cfg");
+            string configFile = Path.CombineFile(properties.TrainFolder, "BVEC_Ats.cfg");
+            string OS_ATSDLL = Path.CombineFile(properties.TrainFolder, "OS_ATS1.dll");
+            string SZ_ATSDLL = Path.CombineFile(properties.TrainFolder, "OS_SZ_ATS1.dll");
+            string SZ_ATSDLL_2 = Path.CombineFile(properties.TrainFolder, "OS_SZ_Ats2_0.dll");
+            string OS_ATSconfigFile = Path.CombineFile(properties.TrainFolder, "OS_ATS1.cfg");
+            string SZ_ATSconfigFile = Path.CombineFile(properties.TrainFolder, "OS_SZ_ATS1.cfg");
+            string SZ_ATS_2configFile = Path.CombineFile(properties.TrainFolder, "OS_SZ_Ats2_0.cfg");
+            string ODF_ATSconfigFile = Path.CombineFile(properties.TrainFolder, "OdakyufanAts.cfg");
             TrainFolder = properties.TrainFolder;
             //Delete error.log from previous run
-            if (File.Exists(Path.Combine(properties.TrainFolder, "error.log")))
+            if (File.Exists(Path.CombineFile(properties.TrainFolder, "error.log")))
             {
-                File.Delete(Path.Combine(properties.TrainFolder, "error.log"));
+                File.Delete(Path.CombineFile(properties.TrainFolder, "error.log"));
             }
             if (File.Exists(configFile))
             {
@@ -102,7 +106,7 @@ namespace Plugin {
                 if (Regex.IsMatch(properties.TrainFolder, @"\\F92_en(\\)?", RegexOptions.IgnoreCase))
                 {
                     properties.FailureReason = "The F92_en is not currently a supported train.";
-                    using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                    using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
                     {
                         sw.WriteLine("The F92_en is not currently a supported train");
                     }
@@ -119,7 +123,7 @@ namespace Plugin {
                     catch (Exception)
                     {
                         properties.FailureReason = "Error upgrading the existing OS_ATS configuration.";
-                        using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                        using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
                         {
                             sw.WriteLine("An existing OS_ATS configuration was found.");
                             sw.WriteLine("However, an error occurred upgrading the existing OS_ATS configuration.");
@@ -150,7 +154,7 @@ namespace Plugin {
                 catch (Exception)
                 {
                     properties.FailureReason = "Error upgrading the existing OS_SZ_ATS configuration.";
-                    using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                    using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
                     {
                         sw.WriteLine("An existing OS_SZ_ATS configuration was found.");
                         sw.WriteLine("However, an error occurred upgrading the existing OS_SZ_ATS configuration.");
@@ -180,7 +184,7 @@ namespace Plugin {
                 catch (Exception)
                 {
                     properties.FailureReason = "Error upgrading the existing OS_SZ_ATS configuration.";
-                    using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                    using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
                     {
                         sw.WriteLine("An existing OS_SZ_ATS configuration was found.");
                         sw.WriteLine("However, an error occurred upgrading the existing OS_SZ_ATS configuration.");
@@ -219,7 +223,7 @@ namespace Plugin {
             {
                 properties.FailureReason = "No supported configuration files exist.";
                 //Write out error.log with details of what it thinks was found and missing
-                using (StreamWriter sw = File.CreateText(Path.Combine(properties.TrainFolder, "error.log")))
+                using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
                 {
                     sw.WriteLine("Plugin location " + Convert.ToString(properties.TrainFolder));
                     if (File.Exists(OS_ATSDLL))

@@ -80,7 +80,6 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
-            var rnd = new Random();
             //Is rain and windscreen wipers enabled?
             if (this.enabled)
             {
@@ -107,7 +106,7 @@ namespace Plugin
                 else
                 {
                     //Pick a random drop from the unused drops
-                    nextdrop = unuseddrops[rnd.Next(0, unusedlength - 1)];
+                    nextdrop = unuseddrops[Plugin.Random.Next(0, unusedlength - 1)];
                 }
 
                 //If we're raining, 
@@ -115,7 +114,7 @@ namespace Plugin
                 {
                     //Generate a random drop interval
                     var dev = (int)(0.4 * 2000 / rainintensity);
-                    int dropinterval = (2000 / rainintensity) + (rnd.Next(dev, dev * 2));
+                    int dropinterval = (2000 / rainintensity) + (Plugin.Random.Next(dev, dev * 2));
 
                     droptimer += (int)data.ElapsedTime.Milliseconds;
                     //If we're past the drop interval, try to add a drop
@@ -126,7 +125,7 @@ namespace Plugin
                         //Play random drop sound
                         if (dropsound1 != -1)
                         {
-                            SoundManager.Play((dropsound1 + rnd.Next(0, dropsound2)), 1.0, 1.0, false);
+                            SoundManager.Play((dropsound1 + Plugin.Random.Next(0, dropsound2)), 1.0, 1.0, false);
                         }
                     }
                     else if (droptimer > dropinterval && nextdrop == -1)
@@ -135,7 +134,7 @@ namespace Plugin
                         droptimer = 0;
                         if (dropsound1 != -1)
                         {
-                            SoundManager.Play((dropsound1 + rnd.Next(0, dropsound2)), 1.0, 1.0, false);
+                            SoundManager.Play((dropsound1 + Plugin.Random.Next(0, dropsound2)), 1.0, 1.0, false);
                         }
                     }
 

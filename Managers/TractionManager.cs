@@ -69,7 +69,6 @@ namespace Plugin
         //These will probably be renumbered at some stage....
 
         internal AdvancedDrivingData DebugWindowData = new AdvancedDrivingData();
-        
 
         public static string[] debuginformation = new string[30];
         public static int tractiontype;
@@ -99,6 +98,7 @@ namespace Plugin
         internal string klaxonindicator = "-1";
         internal string customindicators = "-1";
         internal string customindicatorsounds = "-1";
+	    internal string customindicatorbehaviour = "-1";
 
         //Default Key Assignments
         //Keys Down
@@ -143,6 +143,7 @@ namespace Plugin
         internal string cylindercockskey;
         //Diesel locomotive functions
         internal string EngineStartKey;
+        internal string EngineStopKey;
 
         //These keys are for the Western locomotive
         //This has it's own manager type
@@ -151,6 +152,9 @@ namespace Plugin
         internal string WesternTransmissionResetButton;
         internal string WesternEngineSwitchKey;
         internal string WesternAWSIsolationKey;
+        internal string WesternFireBellKey;
+        internal string WesternEngineOnlyKey;
+        internal string WesternFuelPumpSwitch;
 
         //KEYS ADDED BY OS_SZ_ATS
 
@@ -276,6 +280,15 @@ namespace Plugin
                         CustomIndicatorsArray[i].SoundIndex = Int32.Parse(splitcustomindicatorsounds[i]);
                     }
                 }
+				string[] SplitCustomIndicatorType = customindicatorbehaviour.Split(',');
+				for (int i = 0; i < CustomIndicatorsArray.Length; i++)
+				{
+					//Parse the sound index value if the array value is not empty
+					if (i < splitcustomindicators.Length && !String.IsNullOrEmpty(SplitCustomIndicatorType[i]))
+					{
+						 InternalFunctions.ParseBool(SplitCustomIndicatorType[i], ref CustomIndicatorsArray[i].PushToMake,"CustomIndicatorBehaviour" + i);
+					}
+				}
 
             }
             catch
@@ -430,6 +443,21 @@ namespace Plugin
                 {
                     data.DebugMessage = "Power cutoff demanded by open doors";
                 }
+				else if (Train.WesternDiesel != null && (Train.WesternDiesel.Engine1Temperature.Overheated == true || Train.WesternDiesel.Engine2Temperature.Overheated == true))
+				{
+					if (Train.WesternDiesel.Engine1Temperature.Overheated && Train.WesternDiesel.Engine2Temperature.Overheated)
+					{
+						data.DebugMessage = "Power cutoff demanded by the Western Diesel engines 1 and 2 overheating";
+					}
+					else if (Train.WesternDiesel.Engine1Temperature.Overheated)
+					{
+						data.DebugMessage = "Power cutoff demanded by the Western Diesel engine 1 overheating";
+					}
+					else
+					{
+						data.DebugMessage = "Power cutoff demanded by the Western Diesel engine 2 overheating";
+					}
+				}
                 else
                 {
                     data.DebugMessage = "Power cutoff demanded by AWS";
@@ -671,14 +699,14 @@ namespace Plugin
             {
                 if (AdvancedDriving.CheckInst == null)
                 {
-                    AdvancedDriving.CreateInst.Show();  // This creates and displays Form2
-                    
+                    AdvancedDriving.CreateInst.Show(); // This creates and displays Form2
+
                     using (var key = Registry.CurrentUser.OpenSubKey(@"Software\BVEC_ATS", true))
                     {
                         if (key != null)
                         {
-                            AdvancedDriving.CreateInst.Left = (int)key.GetValue("Left");
-                            AdvancedDriving.CreateInst.Top = (int)key.GetValue("Top");
+                            AdvancedDriving.CreateInst.Left = (int) key.GetValue("Left");
+                            AdvancedDriving.CreateInst.Top = (int) key.GetValue("Top");
                         }
                         else
                         {
@@ -692,6 +720,8 @@ namespace Plugin
                     debuginformation[13] = Convert.ToString(Train.trainspeed) + " km/h";
                     AdvancedDriving.CreateInst.Elapse(debuginformation, tractiontype, DebugWindowData);
                 }
+
+
             }
             else
             {
@@ -699,6 +729,7 @@ namespace Plugin
                 {
                     AdvancedDriving.CreateInst.Close();
                 }
+
             }
             
         }
@@ -787,6 +818,11 @@ namespace Plugin
             if (Train.WesternDiesel != null && Train.WesternDiesel.GearBox.TorqueConvertorState != WesternGearBox.TorqueConvertorStates.OnService)
             {
                 Train.DebugLogger.LogMessage("Traction power was not restored due to the Western Diesel torque convertor being out of service");
+                return;
+            }
+            if (Train.WesternDiesel != null && Train.WesternDiesel.TransmissionTemperature.Overheated)
+            {
+                Train.DebugLogger.LogMessage("Traction power was not restored due to the Western Diesel transmission being overheated");
                 return;
             }
             Train.tractionmanager.powercutoffdemanded = false;
@@ -900,6 +936,18 @@ namespace Plugin
                     Train.DebugLogger.LogMessage("The current brake application was not reset due to a ATS-S intervention.");
                     return;
                 }
+				//Do not reset brake application if F92 is currently overspeed
+				if (Train.F92 != null && (Train.trainspeed > 70))
+				{
+					Train.DebugLogger.LogMessage("The current brake application was not reset due to the F92's overspeed device.");
+					return;
+				}
+				//Do not reset brake application if F92 has passed a red signal
+				if (Train.F92 != null && Train.F92.PassedRedSignal == true)
+				{
+					Train.DebugLogger.LogMessage("The current brake application was not reset due to the F92 having passed a red signal.");
+					return;
+				}
             }
             Train.DebugLogger.LogMessage("The current brake application was reset.");
             currentbrakenotch = 0;
@@ -1027,7 +1075,7 @@ namespace Plugin
                     debugwindowshowing = false;
                 }
             }
-            if (keypressed == injectorkey)
+            if (key == VirtualKeys.LiveSteamInjector || key == VirtualKeys.ExhaustSteamInjector)
             {
                 //Injectors
                 if (Train.steam != null)
@@ -1102,6 +1150,7 @@ namespace Plugin
                         Train.AWS.Reset();
                         resetpowercutoff();
                     }
+	                this.Train.AWS.CancelButtonPressed = true;
                 }
                 if (Train.TPWS != null)
                 {
@@ -1117,7 +1166,7 @@ namespace Plugin
                     Train.StartupSelfTestManager.driveracknowledge();
                 }
             }
-            if (keypressed == fuelkey)
+            if (key == VirtualKeys.FillFuel)
             {
                 //Toggle Fuel fill
                 if (Train.canfuel == true && Train.trainspeed == 0)
@@ -1137,7 +1186,7 @@ namespace Plugin
                     Train.electric.breakertrip();
                 }
             }
-            if (keypressed == wiperspeeddown)
+            if (key == VirtualKeys.WiperSpeedDown)
             {
                 //Wipers Speed Down
                 if (Train.Windscreen.enabled == true)
@@ -1145,7 +1194,7 @@ namespace Plugin
                     Train.Windscreen.windscreenwipers(1);
                 }
             }
-            if (keypressed == wiperspeedup)
+            if (key == VirtualKeys.WiperSpeedUp)
             {
                 //Wipers Speed Up
                 if (Train.Windscreen.enabled == true)
@@ -1202,7 +1251,7 @@ namespace Plugin
             //Advanced steam locomotive functions
             if (Train.steam != null)
             {
-                if (keypressed == cutoffdownkey)
+                if (key == VirtualKeys.IncreaseCutoff)
                 {
                     //Cutoff Up
                     if (Train.steam != null)
@@ -1210,7 +1259,7 @@ namespace Plugin
                         Train.steam.cutoffstate = 1;
                     }
                 }
-                if (keypressed == cutoffupkey)
+                if (key == VirtualKeys.DecreaseCutoff)
                 {
                     //Cutoff Down
                     if (Train.steam != null)
@@ -1219,7 +1268,7 @@ namespace Plugin
                     }
                 }
                 //Blowers
-                if (keypressed == blowerskey)
+                if (key == VirtualKeys.Blowers)
                 {
                     if (Train.steam.blowers == false)
                     {
@@ -1365,28 +1414,30 @@ namespace Plugin
                         Train.WesternDiesel.StartupManager.StartupState = WesternStartupManager.SequenceStates.DSDAcknowledged;
                     }
                 }
-                if (keypressed == EngineStartKey)
+                if (key == VirtualKeys.EngineStart)
                 {
                     Train.WesternDiesel.StarterKeyPressed = true;
                 }
                 if (keypressed == WesternBatterySwitch)
                 {
-                    if (Train.WesternDiesel.BatteryIsolated == true)
-                    {
-                        Train.WesternDiesel.BatteryIsolated = false;
-                    }
+                    Train.WesternDiesel.BatterySwitch();
                 }
                 if (keypressed == WesternMasterKey)
                 {
-                    if (Train.WesternDiesel.StartupManager.StartupState == WesternStartupManager.SequenceStates.BatteryEnergized)
-                    {
-                        Train.WesternDiesel.StartupManager.StartupState = WesternStartupManager.SequenceStates.MasterKeyInserted;
-                    }
+                    Train.WesternDiesel.MasterKey();
                 }
                 
                 if (keypressed == WesternAWSIsolationKey)
                 {
                     Train.WesternDiesel.ToggleAWS();
+                }
+                if (keypressed == WesternFireBellKey)
+                {
+                    Train.WesternDiesel.FireBellTest();
+                }
+                if (keypressed == WesternEngineOnlyKey)
+                {
+                    Train.WesternDiesel.EngineOnly = !Train.WesternDiesel.EngineOnly;
                 }
                 if (keypressed == WesternEngineSwitchKey)
                 {
@@ -1399,6 +1450,21 @@ namespace Plugin
                         Train.WesternDiesel.EngineSelector = 1;
                     }
                 }
+                if (key == VirtualKeys.EngineStop)
+                {
+                    if (Train.WesternDiesel.EngineSelector == 1)
+                    {
+                        Train.WesternDiesel.EngineStop(1);
+                    }
+                    else
+                    {
+                        Train.WesternDiesel.EngineStop(2);
+                    }
+                }
+                if (keypressed == WesternFuelPumpSwitch)
+                {
+                    Train.WesternDiesel.FuelPumpSwitch();
+                }
             }
         }
 
@@ -1406,7 +1472,7 @@ namespace Plugin
         {
             //Convert keypress to string for comparison
             string keypressed = Convert.ToString(key);
-            if (keypressed == gearupkey)
+            if (key == VirtualKeys.GearUp)
             {
                 //Gear Up
                 if (Train.diesel != null)
@@ -1420,7 +1486,7 @@ namespace Plugin
                     }
                 }
             }
-            if (keypressed == geardownkey)
+            if (key == VirtualKeys.GearDown)
             {
                 //Gear Down
                 if (Train.diesel != null)
@@ -1434,7 +1500,7 @@ namespace Plugin
                     }
                 }
             }
-            if (keypressed == cutoffupkey)
+            if (key == VirtualKeys.IncreaseCutoff)
             {
                 //Cutoff Up
                 if (Train.steam != null)
@@ -1442,7 +1508,7 @@ namespace Plugin
                     Train.steam.cutoffstate = 0;
                 }
             }
-            if (keypressed == cutoffdownkey)
+            if (key == VirtualKeys.DecreaseCutoff)
             {
                 //Cutoff Down
                 if (Train.steam != null)
@@ -1450,7 +1516,7 @@ namespace Plugin
                     Train.steam.cutoffstate = 0;
                 }
             }
-            if (keypressed == fuelkey)
+            if (key == VirtualKeys.FillFuel)
             {
                 //Toggle Fuel fill
                 if (Train.steam != null)
@@ -1482,6 +1548,14 @@ namespace Plugin
                     }
                 }
             }
+			foreach (CustomIndicator Indicator in CustomIndicatorsArray)
+			{
+				//Reset any push-to-make indicators
+				if (keypressed == Indicator.Key && Indicator.PushToMake == true)
+				{
+					Indicator.Active = !Indicator.Active;
+				}
+			}
             if (Train.SCMT_Traction != null)
             {
                 if (keypressed == SCMTincreasespeed || keypressed == SCMTdecreasespeed)
@@ -1521,11 +1595,18 @@ namespace Plugin
             //Western Diesel Locomotive
             if (Train.WesternDiesel != null)
             {
-                if (keypressed == EngineStartKey)
+                if (key == VirtualKeys.EngineStart)
                 {
                     Train.WesternDiesel.StarterKeyPressed = false;
                 }
             }
+	        if (Train.AWS != null)
+	        {
+		        if (keypressed == safetykey)
+		        {
+			        this.Train.AWS.CancelButtonPressed = false;
+		        }
+	        }
         }
 
         /// <summary>Is called when the driver changes the reverser.</summary>

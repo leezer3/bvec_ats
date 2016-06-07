@@ -212,6 +212,11 @@ namespace Plugin {
         /// <summary>The ATO device, or a null reference if not installed.</summary>
         internal Ato Ato;
 
+		/// <summary>The F92 device, or a null reference if not installed.</summary>
+		internal F92 F92;
+
+	    internal LEDLights LedLights;
+
 	    internal WesternDiesel WesternDiesel;
 
 
@@ -282,7 +287,7 @@ namespace Plugin {
 		            {
                         DebugLogger.DebugDate = DateTime.Now.ToString("dd-MM-yyyy");
                         DebugLogger.DebugLogEnabled = true;
-                        string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+						string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
                         DebugLogger.LogMessage("BVEC_ATS " + version + " loaded");
 		            }
 		        }
@@ -353,6 +358,9 @@ namespace Plugin {
                             case "settings":
                                 //Twiddle
                                 break;
+                            case "ledlights":
+                                this.LedLights = new LEDLights(this);
+			                    break;
                             case "debug":
                                 //Twiddle
                                 //Although we've already parsed this, it needs to be marked as a supported section
@@ -823,7 +831,7 @@ namespace Plugin {
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.ILCluster2, key);
                                             break;
                                         case "masterkey":
-                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.MasterKey, key);
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.MasterKeyIndex, key);
                                             break;
                                         case "startdelay":
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.StartDelay, key);
@@ -863,9 +871,29 @@ namespace Plugin {
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Starter.EngineStallSound, key);
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Starter.EngineStallSound, key);
                                             break;
+                                        case "enginestopsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.EngineStopSound, key);
+                                            break;
+                                        case "starterloopsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Starter.StarterLoopSound, key);
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Starter.StarterLoopSound, key);
+                                            break;
+                                        case "starterrunupsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine1Starter.StarterRunUpSound, key);
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Starter.StarterRunUpSound, key);
+                                            break;
                                         case "switchsound":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.SwitchSound, key);
                                             break;
+                                        case "masterkeysound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.MasterKeySound, key);
+                                            break;
+                                        case "firebellsound":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.FireBellSound, key);
+                                            break;
+										case "firebellindex":
+											InternalFunctions.ValidateIndex(value, ref WesternDiesel.FireBellIndex, key);
+											break;
                                         case "voltsgauge":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.BatteryVoltsGauge, key);
                                             break;
@@ -884,24 +912,156 @@ namespace Plugin {
                                         case "engine2button":
                                             InternalFunctions.ValidateIndex(value, ref WesternDiesel.Engine2Button, key);
                                             break;
+                                        case "fuelpumpswitch":
+                                            InternalFunctions.ValidateIndex(value, ref WesternDiesel.FuelPumpSwitchIndex, key);
+                                            break;
+                                        case "exhaust1":
+                                            try
+                                            {
+                                                string[] exhaustsplit = value.Split(',');
+                                                for (int k = 0; k < exhaustsplit.Length; k++)
+                                                {
+                                                    if (k == 0)
+                                                    {
+                                                        InternalFunctions.ValidateIndex(exhaustsplit[k], ref WesternDiesel.Engine1Smoke, key);
+                                                    }
+                                                    else
+                                                    {
+                                                        InternalFunctions.ParseNumber(exhaustsplit[k], ref WesternDiesel.Engine1Sparks, key);
+                                                    }
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("exhaust1", 0);
+                                            }
+                                            break;
+                                        case "exhaust2":
+                                            try
+                                            {
+                                                string[] exhaustsplit2 = value.Split(',');
+                                                for (int k = 0; k < exhaustsplit2.Length; k++)
+                                                {
+                                                    if (k == 0)
+                                                    {
+                                                        InternalFunctions.ValidateIndex(exhaustsplit2[k], ref WesternDiesel.Engine2Smoke, key);
+                                                    }
+                                                    else
+                                                    {
+                                                        InternalFunctions.ParseNumber(exhaustsplit2[k], ref WesternDiesel.Engine2Sparks, key);
+                                                    }
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("exhaust2", 0);
+                                            }
+                                            break;
                                         case "rpmchangerate":
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.RPMChange, key);
                                             break;
-                                        case "minimumfireprobability":
-                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.MinimumFireProbability, key);
-                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.MinimumFireProbability, key);
+                                        case "fireprobability":
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.FireProbability, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.FireProbability, key);
                                             break;
-                                        case "maximumfireproability":
+                                        case "maximumfireprobability":
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.MaximumFireProbability, key);
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.MaximumFireProbability, key);
                                             break;
-                                        case "minimumstallprobability":
-                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.MinimumStallProbability, key);
-                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.MinimumStallProbability, key);
+                                        case "stallprobability":
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.StallProbability, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.StallProbability, key);
                                             break;
                                         case "maximumstallprobability":
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Starter.MaximumStallProbability, key);
                                             InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Starter.MaximumStallProbability, key);
+                                            break;
+                                        case "temperaturechangerate":
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine1Temperature.HeatingRate, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.Engine2Temperature.HeatingRate, key);
+                                            InternalFunctions.ParseNumber(value, ref WesternDiesel.TransmissionTemperature.HeatingRate, key);
+                                            break;
+                                        case "enginetemperature":
+                                            try
+                                            {
+                                                string[] temperaturesplit = value.Split(',');
+	                                            if (temperaturesplit.Length != 4)
+	                                            {
+		                                            WesternDiesel.Engine1Temperature.MaximumTemperature = 1500;
+		                                            WesternDiesel.Engine1Temperature.OverheatTemperature = 1200;
+		                                            WesternDiesel.Engine1Temperature.FloorTemperature = 500;
+		                                            WesternDiesel.Engine1Temperature.ResetTemperature = 1000;
+													WesternDiesel.Engine2Temperature.MaximumTemperature = 1500;
+													WesternDiesel.Engine2Temperature.OverheatTemperature = 1200;
+													WesternDiesel.Engine2Temperature.FloorTemperature = 500;
+													WesternDiesel.Engine2Temperature.ResetTemperature = 1000;
+													InternalFunctions.LogError("enginetemperature", 0);
+	                                            }
+                                                for (int k = 0; k < temperaturesplit.Length; k++)
+                                                {
+	                                                switch (k)
+	                                                {
+		                                                case 0:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.MaximumTemperature, key);
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.MaximumTemperature, key);
+			                                                break;
+														case 1:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.OverheatTemperature, key);
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.OverheatTemperature, key);
+			                                                break;
+														case 2:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.FloorTemperature, key);
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.FloorTemperature, key);
+			                                                break;
+														case 3:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine1Temperature.ResetTemperature, key);
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.Engine2Temperature.ResetTemperature, key);
+			                                                break;
+	                                                }
+                                                }
+
+                                            }
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("enginetemperature", 0);
+                                            }
+                                            break;
+                                        case "transmissiontemperature":
+											try
+											{
+												string[] temperaturesplit = value.Split(',');
+												if (temperaturesplit.Length != 4)
+												{
+													WesternDiesel.TransmissionTemperature.MaximumTemperature = 1500;
+													WesternDiesel.TransmissionTemperature.OverheatTemperature = 1200;
+													WesternDiesel.TransmissionTemperature.FloorTemperature = 500;
+													WesternDiesel.TransmissionTemperature.ResetTemperature = 1000;
+													InternalFunctions.LogError("enginetemperature", 0);
+												}
+												for (int k = 0; k < temperaturesplit.Length; k++)
+												{
+													switch (k)
+													{
+														case 0:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.TransmissionTemperature.MaximumTemperature, key);
+															break;
+														case 1:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.TransmissionTemperature.OverheatTemperature, key);
+															break;
+														case 2:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.TransmissionTemperature.FloorTemperature, key);
+															break;
+														case 3:
+															InternalFunctions.ParseNumber(temperaturesplit[k], ref WesternDiesel.TransmissionTemperature.ResetTemperature, key);
+															break;
+													}
+												}
+
+											}
+                                            catch
+                                            {
+                                                InternalFunctions.LogError("transmissiontemperature", 0);
+                                            }
                                             break;
                                     }
                                     break;
@@ -1024,6 +1184,9 @@ namespace Plugin {
                                         case "customindicatorsounds":
                                             this.tractionmanager.customindicatorsounds = value;
 			                                break;
+										case "customindicatorbehaviour":
+					                        this.tractionmanager.customindicatorbehaviour = value;
+					                        break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
@@ -1196,6 +1359,9 @@ namespace Plugin {
 			                            case "tpwswarningsound":
 			                                InternalFunctions.ValidateIndex(value, ref AWS.tpwswarningsound, key);
 			                                break;
+										case "cancelbuttonindex":
+											InternalFunctions.ValidateIndex(value, ref AWS.CancelButtonIndex, key);
+					                        break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
@@ -1576,6 +1742,9 @@ namespace Plugin {
                                         case "enginestartkey":
 			                                this.tractionmanager.EngineStartKey = value;
 			                                break;
+                                        case "enginestopkey":
+                                            this.tractionmanager.EngineStopKey = value;
+                                            break;
 			                            case "wiperspeedup":
 			                                this.tractionmanager.wiperspeedup = value;
 			                                break;
@@ -1583,7 +1752,14 @@ namespace Plugin {
 			                                this.tractionmanager.wiperspeeddown = value;
 			                                break;
 			                            case "isolatesafetykey":
-			                                this.tractionmanager.isolatesafetykey = value;
+			                                if (WesternDiesel == null)
+			                                {
+			                                    this.tractionmanager.isolatesafetykey = value;
+			                                }
+			                                else
+			                                {
+			                                    this.tractionmanager.WesternAWSIsolationKey = value;
+			                                }
 			                                break;
 			                            case "gearupkey":
 			                                this.tractionmanager.gearupkey = value;
@@ -1714,6 +1890,9 @@ namespace Plugin {
                                         case "westernbatteryswitch":
                                             this.tractionmanager.WesternBatterySwitch = value;
                                             break;
+                                        case "westernfuelpumpswitch":
+                                            this.tractionmanager.WesternFuelPumpSwitch = value;
+                                            break;
                                         case "westernmasterkey":
 			                                this.tractionmanager.WesternMasterKey = value;
                                             break;
@@ -1723,6 +1902,9 @@ namespace Plugin {
                                         case "westernengineswitchkey":
 			                                this.tractionmanager.WesternEngineSwitchKey = value;
 			                                break;
+                                        case "westernfirebellkey":
+                                            this.tractionmanager.WesternFireBellKey = value;
+                                            break;
 			                            default:
 			                                throw new InvalidDataException("The parameter " + key + " is not supported.");
 			                        }
@@ -1839,6 +2021,10 @@ namespace Plugin {
             {
                 devices.Add(this.WesternDiesel);
             }
+		    if (this.LedLights != null)
+		    {
+		        devices.Add(this.LedLights);
+		    }
 			this.Devices = devices.ToArray();
 		}
 
@@ -2140,7 +2326,7 @@ namespace Plugin {
                 this.Panel[i] = 0;
             }
 		}
-		
+
 		/// <summary>Is called every frame.</summary>
 		/// <param name="data">The data.</param>
 		internal void Elapse(ElapseData data)
@@ -2554,6 +2740,10 @@ namespace Plugin {
                         break;
                 }
             }
+	        if (this.F92 != null)
+	        {
+		        F92.Trigger(beacon.Type, beacon.Optional, beacon.Signal.Aspect);
+	        }
             //Japanese Safety System Beacons
             if (this.Atc != null | this.Ato != null | this.AtsP != null | this.AtsPs != null | this.AtsSx != null |
                 this.Calling != null | this.Tasc != null)
