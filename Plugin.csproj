@@ -69,9 +69,10 @@
     <Reference Include="BlinkStickDotNet">
       <HintPath>..\..\BlinkStickDotNet-master\BlinkStickDotNet\bin\Release\BlinkStickDotNet.dll</HintPath>
     </Reference>
-    <Reference Include="OpenBveApi, Version=1.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="OpenBveApi, Version=1.4.4.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\OBVE\SourceCode\openBVE\OpenBve\bin\Debug\OpenBveApi.dll</HintPath>
+      <HintPath>..\..\..\..\..\SourceCode\openBVE\OpenBve\bin\Debug\OpenBveApi.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
