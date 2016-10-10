@@ -54,6 +54,26 @@ namespace Plugin
 
         private double ServiceBrakesTimer;
 
+	    private double KakuninCheckSpeed = -1;
+
+	    internal int KakuninDelay = 5000;
+
+	    private double KakuninTimer = 0;
+
+	    internal bool KakuninPrimed = false;
+
+	    internal bool KakuninActive = false;
+
+	    private bool KakuninCheck = false;
+
+	    private bool KakuninCanReset = false;
+
+	    internal int KakuninPrimedIndicator = -1;
+
+	    internal int KakuninTimerActiveIndicator = -1;
+
+	    internal int KakuninBrakeApplicationIndicator = -1;
+
         /// <summary>Represents the signal that indicates that ATC is not available.</summary>
         private readonly Atc.Signal NoSignal = Atc.Signal.CreateNoSignal(-1);
 
@@ -144,6 +164,70 @@ namespace Plugin
             }
             if (!blocking)
             {
+				//Kankunin
+				if(KakuninPrimed == true)
+				{
+					if (KakuninActive)
+					{
+						this.State = Atc.States.Kakunin;
+					}
+					if (KakuninActive == true && KakuninCheck == false)
+					{
+
+						if (data.Vehicle.Speed.KilometersPerHour > KakuninCheckSpeed && KakuninCheck == false && KakuninTimer < KakuninDelay)
+						{
+							KakuninTimer += data.ElapsedTime.Milliseconds;
+						}
+						else
+						{
+							//One of the conditions has failed, so set the ATC state to full service
+							KakuninCheck = true;
+							KakuninTimer = 0;
+						}
+					}
+
+					if (KakuninCheck == true)
+					{
+						if (Train.tractionmanager.brakedemanded == false)
+						{
+							Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
+						}
+						if (data.Vehicle.Speed.KilometersPerHour == 0)
+						{
+							KakuninTimer += data.ElapsedTime.Milliseconds;
+							if (KakuninTimer > 5000)
+							{
+								//We're only worried about the driver's inputs, not the plugin input
+								if (Train.Handles.Reverser == 0 && Train.Handles.BrakeNotch == Train.Specs.BrakeNotches + 1)
+								{
+									KakuninCanReset = true;
+								}
+								else
+								{
+									KakuninCanReset = false;
+								}
+							}
+						}
+						else
+						{
+							KakuninTimer = 0;
+						}
+					}
+
+				}
+				//Kankuin panel variables
+	            if (KakuninPrimedIndicator != -1)
+	            {
+		            this.Train.Panel[KakuninPrimedIndicator] = KakuninPrimed ? 1 : 0;
+	            }
+				if (KakuninTimerActiveIndicator != -1)
+				{
+					this.Train.Panel[KakuninTimerActiveIndicator] = KakuninActive ? 1 : 0;
+				}
+				if (KakuninBrakeApplicationIndicator != -1)
+				{
+					this.Train.Panel[KakuninBrakeApplicationIndicator] = KakuninCheck ? 1 : 0;
+				}
                 Atc.Signal currentSignal = this.GetCurrentSignal();
                 Atc.SignalPattern pattern = this.Pattern;
                 Atc.SignalPattern signalPattern = new Atc.SignalPattern(currentSignal, this);
@@ -368,12 +452,13 @@ namespace Plugin
                     }
                     else if (this.State == Atc.States.ServiceFull)
                     {
-                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
+		                data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
                     }
                     else if (this.State == Atc.States.Emergency)
                     {
                         data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
                     }
+
                     blocking = true;
                 }
                 /*
@@ -822,6 +907,21 @@ namespace Plugin
                         return;
                     }
                 case VirtualKeys.D:
+		            if (KakuninActive == true && KakuninCheck == false)
+		            {
+			            KakuninActive = false;
+			            KakuninTimer = 0;
+		            }
+		            if (KakuninCheck == true && KakuninCanReset == true)
+		            {
+			            KakuninCheck = false;
+			            KakuninCanReset = false;
+						KakuninActive = false;
+						KakuninTimer = 0;
+						Train.tractionmanager.resetbrakeapplication();
+			            this.State = Atc.States.Normal;
+		            }
+		            break;
                 case VirtualKeys.E:
                 case VirtualKeys.F:
                     {
@@ -830,6 +930,7 @@ namespace Plugin
                 case VirtualKeys.G:
                     //Activates or de-activates the system
                     {
+
                         if (this.State == Atc.States.Disabled)
                         {
                             this.State = Atc.States.Suppressed;
@@ -881,6 +982,12 @@ namespace Plugin
                         this.CompatibilityLimits.Add(compatibilityLimit);
                         break;
                     }
+				case 5000:
+					{
+						KakuninCheckSpeed = beacon.Optional;
+						KakuninPrimed = true;
+						break;
+					}
                 default:
                     {
                         if (type != 31)
@@ -899,6 +1006,10 @@ namespace Plugin
 
         internal override void SetSignal(SignalData[] signal)
         {
+	        if (KakuninPrimed == true)
+	        {
+		        KakuninActive = true;
+	        }
             this.BlockLocation = this.Train.State.Location + signal[0].Distance;
             this.Aspect = signal[0].Aspect;
             if ((int)signal.Length < 2)
@@ -1215,7 +1326,8 @@ namespace Plugin
             Normal,
             ServiceHalf,
             ServiceFull,
-            Emergency
+            Emergency,
+			Kakunin
         }
     }
 }

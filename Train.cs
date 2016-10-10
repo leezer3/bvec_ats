@@ -1658,6 +1658,18 @@ namespace Plugin {
                                                 }
                                             }
                                             break;
+										case "kakuninprimedindicator":
+											InternalFunctions.ValidateIndex(value, ref this.Atc.KakuninPrimedIndicator, key);
+											break;
+										case "kakunintimerindicator":
+											InternalFunctions.ValidateIndex(value, ref this.Atc.KakuninTimerActiveIndicator, key);
+		                                    break;
+										case "kakuninbrakeindicator":
+											InternalFunctions.ValidateIndex(value, ref this.Atc.KakuninBrakeApplicationIndicator, key);
+											break;
+										case "kakunintimeout":
+											InternalFunctions.ParseNumber(value, ref this.Atc.KakuninDelay, key);
+		                                    break;
                                         default:
                                             int aspect;
                                             if (int.TryParse(key, NumberStyles.Integer, CultureInfo.InvariantCulture, out aspect))
