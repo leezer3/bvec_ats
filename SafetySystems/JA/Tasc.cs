@@ -83,28 +83,6 @@ namespace Plugin {
 				this.Distance -= data.Vehicle.Speed.MetersPerSecond * data.ElapsedTime.Seconds;
 			}
 			if (this.State == States.Pattern) {
-				
-//					double pattern = Math.Sqrt(2.0 * this.DesignDeceleration * this.Distance);
-//					double overspeed = data.Vehicle.Speed.MetersPerSecond - pattern;
-//					int mediumNotch = this.Train.Specs.B67Notch;
-//					int notch;
-//					if (overspeed < 0.0) {
-//						const double factor = 20.0;
-//						notch = mediumNotch + (int)Math.Floor(factor * overspeed);
-//					} else {
-//						const double factor = 20.0;
-//						notch = mediumNotch + (int)Math.Floor(factor * overspeed);
-//					}
-//					if (notch < this.Train.Specs.AtsNotch) {
-//						notch = 0;
-//					} else if (notch > this.Train.Specs.BrakeNotches) {
-//						notch = this.Train.Specs.BrakeNotches;
-//					}
-//					if (data.Handles.BrakeNotch < notch) {
-//						data.Handles.BrakeNotch = notch;
-//					}
-//					this.BrakeNotch = notch;
-				
 				if (this.Train.Doors == DoorStates.None) {
 					// --- doors closed ---
 					const double maximumDeceleration = 4.2 / 3.6;

@@ -53,7 +53,10 @@ namespace Plugin
                 else if (this.Train.AtsSx == null || this.Train.AtsSx.State == AtsSx.States.Disabled)
                 {
                     SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+	                if (!Train.tractionmanager.brakedemanded)
+	                {
+		                Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches +1);
+	                }
                 }
                 else if (this.Train.AtsSx.State != AtsSx.States.Disabled)
                 {

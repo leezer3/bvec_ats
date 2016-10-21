@@ -287,9 +287,9 @@ namespace Plugin
                             SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
                         }
                     }
-                    if (this.State == AtsP.States.Brake && data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches)
+                    if (this.State == AtsP.States.Brake)
                     {
-                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
+	                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
                     }
                     if (this.Position > this.SwitchToAtsSxPosition & this.State != AtsP.States.Brake & this.State != AtsP.States.Service & this.State != AtsP.States.Emergency)
                     {
@@ -298,27 +298,16 @@ namespace Plugin
                 }
                 else if (this.State == AtsP.States.Service)
                 {
-                    if (data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches)
-                    {
-                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches;
-                    }
+					Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
                 }
                 else if (this.State == AtsP.States.Emergency)
                 {
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+					Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
                 }
                 if (!this.AtsSxPMode & (this.State == AtsP.States.Normal | this.State == AtsP.States.Pattern | this.State == AtsP.States.Brake | this.State == AtsP.States.Service | this.State == AtsP.States.Emergency))
                 {
                     blocking = true;
                 }
-                /*
-                 * Now handled in the Traction Manager
-                 * 
-                if (this.State != AtsP.States.Disabled & this.Train.Doors != DoorStates.None)
-                {
-                    data.Handles.PowerNotch = 0;
-                }
-                 */
             }
             else if (this.State != AtsP.States.Disabled & this.State != AtsP.States.Suppressed)
             {
@@ -431,6 +420,7 @@ namespace Plugin
                             }
                         }
                         this.State = AtsP.States.Normal;
+						Train.tractionmanager.resetbrakeapplication();
                         if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
                         {
                             SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);

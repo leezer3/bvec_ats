@@ -7,6 +7,7 @@
 using OpenBveApi.Runtime;
 using System;
 using System.Text;
+using System.Windows;
 
 namespace Plugin
 {
@@ -183,10 +184,15 @@ namespace Plugin
                         {
                             SoundManager.Play(CommonSounds.ATSBell, 1.0, 1.0, false);
                         }
-                        data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+	                    if (!this.Train.tractionmanager.brakedemanded)
+	                    {
+							Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);   
+	                    }
                     }
                 }
             }
+
+			
             if (!(this.State != AtsPs.States.Disabled & this.State != AtsPs.States.Suppressed & this.State != AtsPs.States.Standby))
             {
                 this.Train.Panel[41] = 60;
@@ -364,6 +370,7 @@ namespace Plugin
             else if (this.State == AtsPs.States.Emergency & this.Train.Handles.Reverser == 0 & this.Train.Handles.PowerNotch == 0 & this.Train.Handles.BrakeNotch == this.Train.Specs.BrakeNotches + 1)
             {
                 this.State = AtsPs.States.Normal;
+				Train.tractionmanager.resetbrakeapplication();
                 this.Selector.Clear();
                 if (this.SignalAPattern.SpeedPattern <= 0 & this.SignalAPattern.Distance <= 0)
                 {

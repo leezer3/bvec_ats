@@ -92,7 +92,10 @@ namespace Plugin
                     {
                         SoundManager.Play(CommonSounds.ATSBell, 1.0, 1.0, false);
                     }
-                    data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+	                if (!Train.tractionmanager.brakedemanded)
+	                {
+		                Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
+	                }
                 }
                 if (this.SpeedCheckCountdown > 0 & data.ElapsedTime.Seconds > 0)
                 {
@@ -108,13 +111,6 @@ namespace Plugin
                         this.CompatibilityDistanceAccumulator = 0;
                     }
                 }
-                /*
-                 * Now handled in the Traction Manager
-                if (this.State != AtsSx.States.Disabled & this.Train.Doors != 0)
-                {
-                    data.Handles.PowerNotch = 0;
-                }
-                 */
             }
             else if (this.State != AtsSx.States.Disabled & this.State != AtsSx.States.Suppressed)
             {
@@ -183,6 +179,7 @@ namespace Plugin
                             return;
                         }
                         this.State = AtsSx.States.Chime;
+						Train.tractionmanager.resetbrakeapplication();
                         return;
                     }
                 default:

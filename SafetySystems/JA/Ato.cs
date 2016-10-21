@@ -33,6 +33,7 @@ namespace Plugin
 
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
+	        int BrakeNotch = 0;
             if (this.Train.Doors != DoorStates.None & this.AutomaticallyDeactivates)
             {
                 this.State = Ato.States.Disabled;
@@ -44,14 +45,14 @@ namespace Plugin
             else if (this.Train.Atc == null || !(this.Train.Atc.State == Atc.States.Normal | this.Train.Atc.State == Atc.States.ServiceHalf | this.Train.Atc.State == Atc.States.ServiceFull | this.Train.Atc.State == Atc.States.Emergency))
             {
                 this.Notch = 0;
-                data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
+	            BrakeNotch = Train.Specs.BrakeNotches + 1;
             }
             else if (!(this.Train.Atc.State == Atc.States.Normal & data.Handles.Reverser == 1 & data.Handles.BrakeNotch == 0))
             {
                 this.Notch = 0;
                 //Set maximum power notch to zero via the Traction Manager
                 Train.tractionmanager.SetMaxPowerNotch(0, true);
-                //data.Handles.PowerNotch = 0;
+
             }
             else
             {
@@ -76,7 +77,6 @@ namespace Plugin
                     this.Notch = 0;
                     //Set maximum power notch to zero via the Traction Manager
                     Train.tractionmanager.SetMaxPowerNotch(0, true);
-                    //data.Handles.PowerNotch = 0;
                 }
                 else
                 {
@@ -101,7 +101,6 @@ namespace Plugin
                     }
                     //Pass the calculated maximum power notch to the traction manager
                     Train.tractionmanager.SetMaxPowerNotch(this.Notch, true);
-                    //data.Handles.PowerNotch = this.Notch;
                 }
             }
             if (this.Countdown > 0)
@@ -109,6 +108,7 @@ namespace Plugin
                 Ato countdown = this;
                 countdown.Countdown = countdown.Countdown - data.ElapsedTime.Seconds;
             }
+	        Train.tractionmanager.SetBrakeNotch(BrakeNotch);
             if (this.State != Ato.States.Disabled)
             {
                 this.Train.Panel[91] = 1;
