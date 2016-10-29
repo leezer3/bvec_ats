@@ -47,7 +47,7 @@ namespace Plugin
                 this.Notch = 0;
 	            BrakeNotch = Train.Specs.BrakeNotches + 1;
             }
-            else if (!(this.Train.Atc.State == Atc.States.Normal & data.Handles.Reverser == 1 & data.Handles.BrakeNotch == 0))
+            else if (!(this.Train.Atc.State == Atc.States.Normal & data.Handles.Reverser == 1 & this.Train.tractionmanager.currentbrakenotch == 0))
             {
                 this.Notch = 0;
                 //Set maximum power notch to zero via the Traction Manager

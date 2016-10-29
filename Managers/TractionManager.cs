@@ -1,8 +1,7 @@
 ﻿using System;
 using OpenBveApi.Runtime;
-using System.Drawing;
-using System.Windows.Input;
 using Microsoft.Win32;
+using Point = System.Drawing.Point;
 
 namespace Plugin
 {
@@ -970,9 +969,16 @@ namespace Plugin
 			{
 				return;
 			}
-			if (Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+			if (Train.vigilance != null)
 			{
-				return;
+				if (Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+				{
+					return;
+				}
+				if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.EbApplied)
+				{
+					return;
+				}
 			}
 			if (Train.TPWS != null && (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand ||
 											Train.TPWS.SafetyState == TPWS.SafetyStates.BrakeDemandAcknowledged ||
@@ -992,10 +998,7 @@ namespace Plugin
 			{
 				return;
 			}
-			if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.EbApplied)
-			{
-				return;
-			}
+			
 			if (Train.CAWS != null && Train.CAWS.enabled == true && Train.CAWS.EmergencyBrakeCountdown < 0.0)
 			{
 				return;
@@ -1010,22 +1013,8 @@ namespace Plugin
 				currentbrakenotch = 1;
 				return;
 			}
-			if (Train.Atc != null && (Train.Atc.State == Atc.States.ServiceHalf || Train.Atc.State == Atc.States.ServiceFull || Train.Atc.State == Atc.States.Emergency))
-			{
-				return;
-			}
-			if (Train.AtsP != null && (Train.AtsP.State == AtsP.States.Brake || Train.AtsP.State == AtsP.States.Service || Train.AtsP.State == AtsP.States.Emergency))
-			{
-				return;
-			}
-			if (Train.AtsPs != null && (Train.AtsPs.State == AtsPs.States.Emergency))
-			{
-				return;
-			}
-			if (Train.AtsSx != null && (Train.AtsSx.State == AtsSx.States.Emergency))
-			{
-				return;
-			}
+			
+			
 			if (Train.F92 != null && (Train.trainspeed > 70))
 			{
 				return;
@@ -1035,10 +1024,7 @@ namespace Plugin
 				return;
 			}
 			currentbrakenotch = Notch;
-			if (currentbrakenotch == 0)
-			{
-				brakedemanded = false;
-			}
+			brakedemanded = currentbrakenotch != 0;
 		}
 
 		//Call this function to attempt to isolate or re-enable the TPWS & AWS Systems

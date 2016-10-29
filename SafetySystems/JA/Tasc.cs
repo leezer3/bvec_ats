@@ -119,11 +119,12 @@ namespace Plugin {
 						}
 						if (!this.Override) {
 							if (this.BrakeNotch > maximumBrakeNotch) {
-								if (data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches) {
+								if (this.Train.tractionmanager.currentbrakenotch < this.Train.Specs.BrakeNotches) {
 									Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
 								}
 							} else if (this.BrakeNotch > 0) {
-								if (data.Handles.BrakeNotch < this.BrakeNotch + this.Train.Specs.AtsNotch - 1) {
+								if (this.Train.tractionmanager.currentbrakenotch < this.BrakeNotch + this.Train.Specs.AtsNotch - 1)
+								{
 									Train.tractionmanager.demandbrakeapplication(this.BrakeNotch + this.Train.Specs.AtsNotch - 1);
 								}
 							} else if (requiredBrakeNotch > 0.0) {
@@ -133,14 +134,16 @@ namespace Plugin {
 						data.DebugMessage = "TASC -- " + requiredBrakeNotch.ToString("0.0") + " @ " + this.Distance.ToString("0.00");
 					} else if (!this.Override) {
 						// --- after the stop point ---
-						if (data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches) {
+						if (this.Train.tractionmanager.currentbrakenotch < this.Train.Specs.BrakeNotches)
+						{
                             Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
 						}
 						data.DebugMessage = "TASC -- OVERRUN";
 					}
 				} else if (!this.Override) {
 					// --- doors opened ---
-					if (data.Handles.BrakeNotch < this.Train.Specs.BrakeNotches) {
+					if (this.Train.tractionmanager.currentbrakenotch < this.Train.Specs.BrakeNotches)
+					{
                         Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
 					}
 					data.DebugMessage = "TASC -- DOORBLOCK";

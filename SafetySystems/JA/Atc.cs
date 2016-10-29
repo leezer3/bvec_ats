@@ -148,7 +148,16 @@ namespace Plugin
 
 		internal override void Elapse(ElapseData data, ref bool blocking)
 		{
-			int currentBrakeNotchRequest = 0;
+			int currentBrakeNotchRequest;
+			if (this.Train.Handles.BrakeNotch != 0)
+			{
+				currentBrakeNotchRequest = this.Train.Handles.BrakeNotch;
+			}
+			else
+			{
+				currentBrakeNotchRequest = this.State == States.Ats ? 0 : this.Train.tractionmanager.currentbrakenotch;
+				
+			}
 			double acceleration;
 			object str;
 			object obj;
@@ -167,7 +176,7 @@ namespace Plugin
 				this.State = Atc.States.Normal;
 				this.SwitchToAtcOnce = false;
 			}
-			if (this.State == Atc.States.Suppressed && data.Handles.BrakeNotch <= this.Train.Specs.BrakeNotches)
+			if (this.State == Atc.States.Suppressed && this.Train.tractionmanager.currentbrakenotch <= this.Train.Specs.BrakeNotches)
 			{
 				this.State = Atc.States.Ats;
 			}
@@ -454,7 +463,7 @@ namespace Plugin
 						{
 							atsNotch = this.Train.Specs.BrakeNotches;
 						}
-						if (data.Handles.BrakeNotch < atsNotch)
+						if (this.Train.tractionmanager.currentbrakenotch < atsNotch)
 						{
 
 							currentBrakeNotchRequest = atsNotch;
@@ -469,6 +478,10 @@ namespace Plugin
 					{
 						//Demand EB
 						currentBrakeNotchRequest = this.Train.Specs.BrakeNotches + 1;
+					}
+					else
+					{
+						currentBrakeNotchRequest = 0;
 					}
 					blocking = true;
 				}

@@ -136,7 +136,7 @@ namespace Plugin
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
             this.Blocked = blocking;
-            if (this.State == AtsP.States.Suppressed && data.Handles.BrakeNotch <= this.Train.Specs.BrakeNotches)
+            if (this.State == AtsP.States.Suppressed && this.Train.tractionmanager.currentbrakenotch <= this.Train.Specs.BrakeNotches)
             {
                 this.InitializationCountdown = this.DurationOfInitialization;
                 this.State = AtsP.States.Initializing;
