@@ -67,7 +67,7 @@ namespace Plugin
 
 		internal bool KakuninActive = false;
 
-		private bool KakuninCheck = false;
+		internal bool KakuninCheck = false;
 
 		private bool KakuninCanReset = false;
 

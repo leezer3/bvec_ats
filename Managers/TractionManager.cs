@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using OpenBveApi.Runtime;
 using Microsoft.Win32;
 using Point = System.Drawing.Point;
@@ -912,10 +913,18 @@ namespace Plugin
 					return;
 				}
 				//Handle ATC brake reset
-				if (Train.Atc != null && (Train.Atc.State == Atc.States.ServiceHalf || Train.Atc.State == Atc.States.ServiceFull || Train.Atc.State == Atc.States.Emergency))
+				if (Train.Atc != null)
 				{
-					Train.DebugLogger.LogMessage("The current brake application was not reset due to a ATC intervention.");
-					return;
+					if(Train.Atc.State == Atc.States.ServiceHalf || Train.Atc.State == Atc.States.ServiceFull || Train.Atc.State == Atc.States.Emergency)
+					{
+						Train.DebugLogger.LogMessage("The current brake application was not reset due to a ATC intervention.");
+						return;
+					}
+					if (Train.Atc.KakuninCheck == true)
+					{
+						Train.DebugLogger.LogMessage("The current brake application was not reset due to a ATC (Kakunin) intervention.");
+						return;
+					}
 				}
 				//Do not reset brake application if ATS-P is currently demanding one
 				if (Train.AtsP != null && (Train.AtsP.State == AtsP.States.Brake || Train.AtsP.State == AtsP.States.Service || Train.AtsP.State == AtsP.States.Emergency))
@@ -1020,6 +1029,10 @@ namespace Plugin
 				return;
 			}
 			if (Train.F92 != null && Train.F92.PassedRedSignal == true)
+			{
+				return;
+			}
+			if (Train.Atc != null && Train.Atc.KakuninCheck == true)
 			{
 				return;
 			}
