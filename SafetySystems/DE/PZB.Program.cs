@@ -1,6 +1,6 @@
 ﻿namespace Plugin
 {
-    internal partial class PZB: Device
+    internal partial class PZB
     {
         internal class Program
         {

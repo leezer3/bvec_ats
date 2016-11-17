@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows;
 using OpenBveApi.Runtime;
 using Microsoft.Win32;
 using Point = System.Drawing.Point;
@@ -7,31 +6,26 @@ using Point = System.Drawing.Point;
 namespace Plugin
 {
 	//The traction manager operates panel variables common to all traction types, and handles power & brake requests
-	internal class tractionmanager : Device
+	internal partial class TractionManager
 	{
 		// --- members ---
 		/// <summary>Power cutoff has been demaned</summary>
-		internal bool powercutoffdemanded;
+		internal bool PowerCutoffDemanded;
 		/// <summary>A safety system has triggered a brake intervention</summary>
-		internal bool brakedemanded;
+		internal bool BrakeInterventionDemanded;
 		/// <summary>The current safety system brake notch demanded</summary>
-		internal int currentbrakenotch;
-		internal bool neutralrvrtripped;
+		internal int CurrentInterventionBrakeNotch;
+		/// <summary>The current direction of travel</summary>
+		internal DirectionOfTravel CurrentDirectionOfTravel;
+
+		internal ReverserManager CurrentReverserManager;
+
 		/// <summary>The engine has overheated</summary>
-		internal bool overheated;
-		internal bool safetyisolated;
-		/// <summary>The total distance travelled</summary>
-		internal double travelled;
-		/// <summary>The 100km digit of the travel meter</summary>
-		internal int travel100;
-		/// <summary>The 10km digit of the travel meter</summary>
-		internal int travel10;
-		/// <summary>The 100m digit of the travel meter</summary>
-		internal int travel1;
-		/// <summary>The 10m digit of the travel meter</summary>
-		internal int travel01;
-		/// <summary>The 1m digit of the travel meter</summary>
-		internal int travel001;
+		internal bool EngineOverheated;
+		/// <summary>Whether the safety systems are currently isolated by the driver</summary>
+		internal bool SafetySystemsIsolated;
+
+		internal TravelMeter CurrentTravelMeter;
 		/// <summary>Stores whether the primary klaxon is playing</summary>
 		internal bool primaryklaxonplaying;
 		/// <summary>Stores whether the secondary klaxon is playing</summary>
@@ -43,6 +37,8 @@ namespace Plugin
 		internal bool doorlock;
 
 		internal bool independantreset;
+		/// <summary>Whether advanced functions are automatically handled (e.g. gears & cutoff)</summary>
+		internal bool AutomaticAdvancedFunctions;
 		//Debug/ Advanced Driving Window Functions
 		//
 		//Is it currently visible?
@@ -71,7 +67,9 @@ namespace Plugin
 		internal AdvancedDrivingData DebugWindowData = new AdvancedDrivingData();
 
 		public static string[] debuginformation = new string[30];
-		public static int tractiontype;
+
+		/// <summary>Stores the type of the current locomotive</summary>
+		public static TractionType CurrentLocomotiveType;
 
 		/// <summary>The underlying train.</summary>
 		private readonly Train Train;
@@ -81,8 +79,7 @@ namespace Plugin
 		internal int doorpowerlock = 0;
 		/// <summary>The panel index lit when the door state is applying a brake intervention</summary>
 		internal int doorapplybrake = 0;
-		internal int neutralrvrbrake = 0;
-		internal int neutralrvrbrakereset = 0;
+
 		/// <summary>The panel index of the direction indicator</summary>
 		internal int directionindicator = -1;
 		/// <summary>The panel index of the reverser handle</summary>
@@ -190,9 +187,10 @@ namespace Plugin
 		//Custom Indicators
 		internal CustomIndicator[] CustomIndicatorsArray = new CustomIndicator[10];
 		
-		internal tractionmanager(Train train) {
+		internal TractionManager(Train train) {
 			this.Train = train;
-					   
+			this.CurrentTravelMeter = new TravelMeter();
+			this.CurrentReverserManager = new ReverserManager(train);
 		}
 		
 		//<param name="mode">The initialization mode.</param>
@@ -298,26 +296,26 @@ namespace Plugin
 			//Set traction type to pass to debug window
 			//TODO:
 			//This should be able to be moved to when the traction type is loaded
-			if (Train.steam != null)
+			if (Train.SteamEngine != null)
 			{
-				tractiontype = 0;
+				CurrentLocomotiveType = TractionType.Steam;
 			}
-			else if (Train.diesel != null)
+			else if (Train.DieselEngine != null)
 			{
-				tractiontype = 1;
+				CurrentLocomotiveType = TractionType.Diesel;
 			}
-			else if (Train.electric != null)
+			else if (Train.ElectricEngine != null)
 			{
-				tractiontype = 2;
+				CurrentLocomotiveType = TractionType.Electric;
 			}
 			else if (Train.WesternDiesel != null)
 			{
-				tractiontype = 3;
+				CurrentLocomotiveType = TractionType.WesternDiesel;
 			}
 			else
 			{
 				//Set traction type to 99 (Unknown)
-				tractiontype = 99;
+				CurrentLocomotiveType = TractionType.Unknown;
 			}
 			
 			MaximumPowerNotch = this.Train.Specs.PowerNotches;
@@ -329,6 +327,19 @@ namespace Plugin
 		/// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
 		internal override void Elapse(ElapseData data, ref bool blocking)
 		{
+			//Calculate direction
+			if (Train.TrainLocation > Train.PreviousLocation)
+			{
+				CurrentDirectionOfTravel = DirectionOfTravel.Forwards;
+			}
+			else if (Train.TrainLocation == Train.PreviousLocation)
+			{
+				CurrentDirectionOfTravel = DirectionOfTravel.Stationary;
+			}
+			else
+			{
+				CurrentDirectionOfTravel = DirectionOfTravel.Reverse;
+			}
 			//Cuts the power if required
 			if (MaximumPowerNotch < this.Train.Handles.PowerNotch)
 			{
@@ -337,16 +348,16 @@ namespace Plugin
 			//Door interlocks; Fitted to all trains
 			if (this.Train.Doors > 0)
 			{
-				if (doorpowerlock == 1 && Train.tractionmanager.powercutoffdemanded == false)
+				if (doorpowerlock == 1 && Train.TractionManager.PowerCutoffDemanded == false)
 				{
-					Train.tractionmanager.demandpowercutoff();
+					Train.TractionManager.DemandPowerCutoff();
 					data.DebugMessage = "Power cutoff demanded by open doors";
 					doorlock = true;
 				}
 
-				if (doorapplybrake == 1 && brakedemanded == false)
+				if (doorapplybrake == 1 && BrakeInterventionDemanded == false)
 				{
-					Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
+					Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
 					data.DebugMessage = "Brakes demanded by open doors";
 					doorlock = true;
 				}
@@ -354,72 +365,32 @@ namespace Plugin
 			}
 			else
 			{
-				if ((Train.tractionmanager.powercutoffdemanded == true || brakedemanded == true) && doorlock == true)
+				if ((Train.TractionManager.PowerCutoffDemanded == true || BrakeInterventionDemanded == true) && doorlock == true)
 				{
-					Train.tractionmanager.resetpowercutoff();
-					Train.tractionmanager.resetbrakeapplication();
+					Train.TractionManager.ResetPowerCutoff();
+					Train.TractionManager.ResetBrakeApplication();
 					doorlock = false;
 				}
 
 			}
 			//Reverser change brake behaviour
-			if (neutralrvrbrake != 0)
-			{
-				if (neutralrvrbrake == 1)
-				{
-					if (Train.Handles.Reverser == 0)
-					{
-						Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
-						Train.tractionmanager.neutralrvrtripped = true;
-					}
-				}
-				else if (neutralrvrbrake == 2)
-				{
-					if (Train.Handles.Reverser == 0)
-					{
-						Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
-						Train.tractionmanager.neutralrvrtripped = true;
-					}
-				}
-
-				if (neutralrvrtripped == true)
-				{
-					//OS_ATS Default behaviour
-					if (neutralrvrbrakereset == 0 && Train.Handles.Reverser != 0)
-					{
-						Train.tractionmanager.resetbrakeapplication();
-						Train.tractionmanager.neutralrvrtripped = false;
-					}
-					//Behaviour 1- Train must come to a full stand before brakes are reset
-					if (neutralrvrbrakereset == 1 && Train.trainspeed == 0)
-					{
-						Train.tractionmanager.resetbrakeapplication();
-						Train.tractionmanager.neutralrvrtripped = false;
-					}
-					//Behaviour 2- Train must come to a full stand and driver applies full service brakes before reset
-					if (neutralrvrbrakereset == 2 && Train.Handles.BrakeNotch == this.Train.Specs.BrakeNotches && Train.trainspeed == 0)
-					{
-						Train.tractionmanager.resetbrakeapplication();
-						Train.tractionmanager.neutralrvrtripped = false;
-					}
-				}
-			}
+			CurrentReverserManager.Update();
 			//Insufficient steam boiler pressure
 			//Debug messages need to be called via the traction manager to be passed to the debug window correctly
-			if (Train.steam != null && Train.steam.stm_power == 0 && Train.steam.stm_boilerpressure < Train.steam.boilerminpressure)
+			if (Train.SteamEngine != null && Train.SteamEngine.stm_power == 0 && Train.SteamEngine.stm_boilerpressure < Train.SteamEngine.boilerminpressure)
 			{
 				data.DebugMessage = "Power cutoff due to boiler pressure below minimum";
 			}
 
-			if (Train.tractionmanager.powercutoffdemanded == true)
+			if (Train.TractionManager.PowerCutoffDemanded == true)
 			{
 				if (Train.drastate == true)
 				{
 					data.DebugMessage = "Power cutoff demanded by DRA Appliance";
 				}
-				else if (Train.electric != null && Train.electric.powergap == true)
+				else if (Train.ElectricEngine != null && Train.ElectricEngine.powergap == true)
 				{
-					if (Train.electric.FrontPantographState != electric.PantographStates.OnService && Train.electric.RearPantographState != electric.PantographStates.OnService)
+					if (Train.ElectricEngine.FrontPantograph.State != PantographStates.OnService && Train.ElectricEngine.RearPantograph.State != PantographStates.OnService)
 					{
 						data.DebugMessage = "Power cutoff due to no available pantographs";
 					}
@@ -428,9 +399,9 @@ namespace Plugin
 						data.DebugMessage = "Power cutoff demanded by electric conductor power gap";
 					}
 				}
-				else if (Train.electric != null && Train.electric.breakertripped == true)
+				else if (Train.ElectricEngine != null && Train.ElectricEngine.breakertripped == true)
 				{
-					if (Train.electric.FrontPantographState != electric.PantographStates.OnService && Train.electric.RearPantographState != electric.PantographStates.OnService)
+					if (Train.ElectricEngine.FrontPantograph.State != PantographStates.OnService && Train.ElectricEngine.RearPantograph.State != PantographStates.OnService)
 					{
 						data.DebugMessage = "Power cutoff demanded by ACB/VCB not turned on";
 					}
@@ -465,26 +436,26 @@ namespace Plugin
 				data.Handles.PowerNotch = 0;
 			}
 
-			if (brakedemanded == true)
+			if (BrakeInterventionDemanded == true)
 			{
 				//Set brake notch demanded
-				data.Handles.BrakeNotch = currentbrakenotch;
+				data.Handles.BrakeNotch = CurrentInterventionBrakeNotch;
 				//Update debug messages
 				if (Train.AWS != null && Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
 				{
 					data.DebugMessage = "EB Brakes demanded by AWS System";
 				}
-				else if (Train.overspeedtripped == true)
+				else if (Train.Vigilance.OverspeedDevice.Tripped == true && Train.Vigilance.OverspeedDevice.CurrentBehaviour != OverspeedMonitor.OverspeedBehaviour.CutoffPower)
 				{
 					data.DebugMessage = "Service Brakes demanded by overspeed device";
 				}
-				else if (Train.vigilance != null)
+				else if (Train.Vigilance != null)
 				{
-					if (Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+					if (Train.Vigilance.DeadmansHandleState == Vigilance.DeadmanStates.BrakesApplied)
 					{
 						data.DebugMessage = "EB Brakes demanded by deadman's handle";
 					}
-					else if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.EbApplied)
+					else if (Train.Vigilance.VigilanteState == Vigilance.VigilanteStates.EbApplied)
 					{
 						data.DebugMessage = "EB Brakes demanded by Vigilante Device";
 					}
@@ -499,13 +470,13 @@ namespace Plugin
 				{
 					data.DebugMessage = "Service Brakes demanded by open doors";
 				}
-				else if (Train.tractionmanager.neutralrvrtripped)
+				else if (Train.TractionManager.CurrentReverserManager.Tripped)
 				{
-					if (neutralrvrbrake == 1)
+					if (Train.TractionManager.CurrentReverserManager.CurrentBehaviour == ReverserManager.NeutralBehaviour.ServiceBrakes)
 					{
 						data.DebugMessage = "Service Brakes demanded by neutral reverser";
 					}
-					else if (neutralrvrbrake == 2)
+					if (Train.TractionManager.CurrentReverserManager.CurrentBehaviour == ReverserManager.NeutralBehaviour.EmergencyBrakes)
 					{
 						data.DebugMessage = "EB Brakes demanded by neutral reverser";
 					}
@@ -536,7 +507,7 @@ namespace Plugin
 			if (directionindicator != -1)
 			{
 				//Direction Indicator
-				this.Train.Panel[directionindicator] = this.Train.direction;
+				this.Train.Panel[directionindicator] = (int)CurrentDirectionOfTravel;
 			}
 			if (reverserindex != -1)
 			{
@@ -555,69 +526,35 @@ namespace Plugin
 				}
 			}
 			{
-				//Travel Meter
-				if (travelmetermode == 0)
-				{
-					travelled += (Train.trainlocation - Train.previouslocation);
-				}
-				else
-				{
-					travelled += ((Train.trainlocation - Train.previouslocation) / 0.621);
-				}
-				if (travelled > 1)
-				{
-					travel001++;
-					travelled = 0.0;
-				}
-				if (travel001 > 9)
-				{
-					travel01++;
-					travel001 = 0;
-				}
-				if (travel01 > 9)
-				{
-					travel1++;
-					travel01 = 0;
-				}
-				if (travel1 > 9)
-				{
-					travel10++;
-					travel1 = 0;
-				}
-				if (travel10 > 9)
-				{
-					travel100++;
-					travel10 = 0;
-				}
-
+				CurrentTravelMeter.Update(this.Train.TrainLocation - this.Train.PreviousLocation);
 				//100km
 				if (travelmeter100 != -1)
 				{
-					this.Train.Panel[travelmeter100] = travel100;
+					this.Train.Panel[travelmeter100] = CurrentTravelMeter.Digit100;
 
 				}
 				//10km
 				if (travelmeter10 != -1)
 				{
-					this.Train.Panel[travelmeter10] = travel10;
+					this.Train.Panel[travelmeter10] = CurrentTravelMeter.Digit10;
 
 				}
 				//1km
 				if (travelmeter1 != -1)
 				{
-					this.Train.Panel[travelmeter1] = travel1;
+					this.Train.Panel[travelmeter1] = CurrentTravelMeter.Digit1;
 
 				}
 				//100m
 				if (travelmeter01 != -1)
 				{
-					this.Train.Panel[travelmeter01] = travel01;
+					this.Train.Panel[travelmeter01] = CurrentTravelMeter.Decimal10;
 
 				}
 				//1m
 				if (travelmeter001 != -1)
 				{
-					this.Train.Panel[travelmeter001] = travel001;
+					this.Train.Panel[travelmeter001] = CurrentTravelMeter.Decimal1;
 
 				}
 			}
@@ -717,8 +654,8 @@ namespace Plugin
 				else
 				{
 					debuginformation[0] = data.DebugMessage;
-					debuginformation[13] = Convert.ToString(Train.trainspeed) + " km/h";
-					AdvancedDriving.CreateInst.Elapse(debuginformation, tractiontype, DebugWindowData);
+					debuginformation[13] = Convert.ToString(Train.CurrentSpeed) + " km/h";
+					AdvancedDriving.CreateInst.Elapse(debuginformation, (int)CurrentLocomotiveType, DebugWindowData);
 				}
 
 
@@ -761,18 +698,18 @@ namespace Plugin
 		//Call this function from a safety system to demand power cutoff
 		/// <summary>Deamnds traction power cutoff.</summary>
 		/// <remarks>This call will always succeed.</remarks>
-		internal void demandpowercutoff()
+		internal void DemandPowerCutoff()
 		{
-			Train.tractionmanager.powercutoffdemanded = true;
+			Train.TractionManager.PowerCutoffDemanded = true;
 		}
 
 		//Call this function to attempt to reset the power cutoff
 		/// <summary>Attempts to reset the power cutoff state.</summary>
 		/// <remarks>The default OS_ATS behaviour is to reset all cutoffs at once.</remarks>
-		internal void resetpowercutoff()
+		internal void ResetPowerCutoff()
 		{
 			//Do not reset power cutoff if still overheated
-			if (overheated == true)
+			if (EngineOverheated == true)
 			{
 				Train.DebugLogger.LogMessage("Traction power was not restored due to an overheated engine");
 				return;
@@ -825,7 +762,7 @@ namespace Plugin
 				Train.DebugLogger.LogMessage("Traction power was not restored due to the Western Diesel transmission being overheated");
 				return;
 			}
-			Train.tractionmanager.powercutoffdemanded = false;
+			Train.TractionManager.PowerCutoffDemanded = false;
 			Train.DebugLogger.LogMessage("Traction power restored");
 
 		}
@@ -833,12 +770,12 @@ namespace Plugin
 		//Call this function from a safety system to demand a brake application
 		/// <summary>Demands a brake application from the traction manager.</summary>
 		/// <remarks>Takes the notch demanded as the paramater. If this notch is less than the current notch, do not change notch.</remarks>
-		internal void demandbrakeapplication(int notchdemanded)
+		internal void DemandBrakeApplication(int notchdemanded)
 		{
-			brakedemanded = true;
-			if (notchdemanded > currentbrakenotch)
+			BrakeInterventionDemanded = true;
+			if (notchdemanded > CurrentInterventionBrakeNotch)
 			{
-				currentbrakenotch = notchdemanded;
+				CurrentInterventionBrakeNotch = notchdemanded;
 			}
 		}
 
@@ -846,7 +783,7 @@ namespace Plugin
 		/// <remarks>If independantreset is enabled, then the conditions for reseting all safety systems must be met to release
 		/// a brake application.
 		/// The default OS_ATS behaviour is to reset all applications at once.</remarks>
-		internal void resetbrakeapplication(bool Silent = false)
+		internal void ResetBrakeApplication(bool Silent = false)
 		{
 			if (independantreset == true)
 			{
@@ -855,12 +792,12 @@ namespace Plugin
 					Train.DebugLogger.LogMessage("The current brake application was not reset due to a AWS/ TPWS intervention.");
 					return;
 				}
-				if (Train.overspeedtripped == true)
+				if (Train.Vigilance.OverspeedDevice.Tripped == true && Train.Vigilance.OverspeedDevice.CurrentBehaviour != OverspeedMonitor.OverspeedBehaviour.CutoffPower)
 				{
 					Train.DebugLogger.LogMessage("The current brake application was not reset due to the overspeed device being active.");
 					return;
 				}
-				if (Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+				if (Train.Vigilance.DeadmansHandleState == Vigilance.DeadmanStates.BrakesApplied)
 				{
 					Train.DebugLogger.LogMessage("The current brake application was not reset due to the deadman's handle being active.");
 					return;
@@ -877,9 +814,13 @@ namespace Plugin
 					Train.DebugLogger.LogMessage("The current brake application was not reset due to the doors power lock being active.");
 					return;
 				}
-				if (Train.tractionmanager.neutralrvrtripped && neutralrvrbrake == 2)
+				if (Train.TractionManager.CurrentReverserManager.Tripped)
 				{
 					Train.DebugLogger.LogMessage("The current brake application was not reset due to the neutral reverser safety device.");
+					if (Train.TractionManager.CurrentReverserManager.CurrentBehaviour == ReverserManager.NeutralBehaviour.ServiceBrakes)
+					{
+						CurrentInterventionBrakeNotch = Train.Specs.BrakeNotches;
+					}
 					return;
 				}
 				if (Train.SCMT.enabled == true && SCMT.EBDemanded == true)
@@ -887,7 +828,7 @@ namespace Plugin
 					Train.DebugLogger.LogMessage("The current brake application was not reset due to a SCMT intervention.");
 					return;
 				}
-				if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.EbApplied)
+				if (Train.Vigilance.VigilanteState == Vigilance.VigilanteStates.EbApplied)
 				{
 					Train.DebugLogger.LogMessage("The current brake application was not reset due to a SCMT Vigilante intervention.");
 					return;
@@ -898,18 +839,12 @@ namespace Plugin
 					return;
 				}
 				//These conditions set a different brake notch to EB
-				//
-				//Set service brakes as reverser is in neutral
-				if (Train.tractionmanager.neutralrvrtripped && neutralrvrbrake == 1)
-				{
-					currentbrakenotch = Train.Specs.BrakeNotches;
-					return;
-				}
+
 				//Set brake notch 1 for SCMT constant speed device
 				if (Train.SCMT.enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
 				{
 					Train.DebugLogger.LogMessage("The currently demanded brake notch was changed to 1 due to the SCMT constant-speed brake.");
-					currentbrakenotch = 1;
+					CurrentInterventionBrakeNotch = 1;
 					return;
 				}
 				//Handle ATC brake reset
@@ -945,7 +880,7 @@ namespace Plugin
 					return;
 				}
 				//Do not reset brake application if F92 is currently overspeed
-				if (Train.F92 != null && (Train.trainspeed > 70))
+				if (Train.F92 != null && (Train.CurrentSpeed > 70))
 				{
 					Train.DebugLogger.LogMessage("The current brake application was not reset due to the F92's overspeed device.");
 					return;
@@ -961,8 +896,8 @@ namespace Plugin
 			{
 				Train.DebugLogger.LogMessage("The current brake application was reset.");
 			}
-			currentbrakenotch = 0;
-			brakedemanded = false;
+			CurrentInterventionBrakeNotch = 0;
+			BrakeInterventionDemanded = false;
 		}
 
 		/// <summary>Attempts to set a new brake notch</summary>
@@ -974,17 +909,17 @@ namespace Plugin
 			{
 				return;
 			}
-			if (Train.overspeedtripped == true)
+			if (Train.Vigilance.OverspeedDevice.Tripped == true && Train.Vigilance.OverspeedDevice.CurrentBehaviour != OverspeedMonitor.OverspeedBehaviour.CutoffPower)
 			{
 				return;
 			}
-			if (Train.vigilance != null)
+			if (Train.Vigilance != null)
 			{
-				if (Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+				if (Train.Vigilance.DeadmansHandleState == Vigilance.DeadmanStates.BrakesApplied)
 				{
 					return;
 				}
-				if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.EbApplied)
+				if (Train.Vigilance.VigilanteState == Vigilance.VigilanteStates.EbApplied)
 				{
 					return;
 				}
@@ -999,8 +934,12 @@ namespace Plugin
 			{
 				return;
 			}
-			if (Train.tractionmanager.neutralrvrtripped && neutralrvrbrake == 2)
+			if (Train.TractionManager.CurrentReverserManager.Tripped)
 			{
+				if (Train.TractionManager.CurrentReverserManager.CurrentBehaviour == ReverserManager.NeutralBehaviour.ServiceBrakes)
+				{
+					CurrentInterventionBrakeNotch = Train.Specs.BrakeNotches;
+				}
 				return;
 			}
 			if (Train.SCMT.enabled == true && SCMT.EBDemanded == true)
@@ -1012,19 +951,15 @@ namespace Plugin
 			{
 				return;
 			}
-			if (Train.tractionmanager.neutralrvrtripped && neutralrvrbrake == 1)
-			{
-				currentbrakenotch = Train.Specs.BrakeNotches;
-				return;
-			}
+
 			if (Train.SCMT.enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
 			{
-				currentbrakenotch = 1;
+				CurrentInterventionBrakeNotch = 1;
 				return;
 			}
 			
 			
-			if (Train.F92 != null && (Train.trainspeed > 70))
+			if (Train.F92 != null && (Train.CurrentSpeed > 70))
 			{
 				return;
 			}
@@ -1036,8 +971,8 @@ namespace Plugin
 			{
 				return;
 			}
-			currentbrakenotch = Notch;
-			brakedemanded = currentbrakenotch != 0;
+			CurrentInterventionBrakeNotch = Notch;
+			BrakeInterventionDemanded = CurrentInterventionBrakeNotch != 0;
 		}
 
 		//Call this function to attempt to isolate or re-enable the TPWS & AWS Systems
@@ -1049,7 +984,7 @@ namespace Plugin
 				return;
 			}
 			bool CanIsolate = false;
-			if (safetyisolated == false)
+			if (SafetySystemsIsolated == false)
 			{
 				//First check if TPWS is enabled in this train [AWS must therefore be enabled]
 				if (Train.TPWS.enabled == true)
@@ -1077,7 +1012,7 @@ namespace Plugin
 					{
 						Train.AWS.Isolate();
 					}
-					safetyisolated = true;
+					SafetySystemsIsolated = true;
 				}
 			}
 		}
@@ -1089,17 +1024,17 @@ namespace Plugin
 			{
 				return;
 			}
-			if (safetyisolated == true)
+			if (SafetySystemsIsolated == true)
 			{
 				if (Train.AWS.enabled == true)
 				{
 					Train.AWS.Reset();
-					safetyisolated = false;
+					SafetySystemsIsolated = false;
 				}
 				if (Train.TPWS.enabled == true)
 				{
 					Train.TPWS.Reset();
-					safetyisolated = false;
+					SafetySystemsIsolated = false;
 				}
 			}
 		}
@@ -1111,15 +1046,15 @@ namespace Plugin
 			//Convert keypress to string for comparison
 			string keypressed = Convert.ToString(key);
 			{
-				if (Train.vigilance != null)
+				if (Train.Vigilance != null)
 				{
-					if (Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied &&
-						Train.vigilance.independantvigilance == 0)
+					if (Train.Vigilance.DeadmansHandleState != Vigilance.DeadmanStates.BrakesApplied &&
+						Train.Vigilance.independantvigilance == 0)
 					{
 						//Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
-						Train.vigilance.deadmanstimer = 0.0;
-						SoundManager.Stop(Train.vigilance.vigilancealarm);
-						Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
+						Train.Vigilance.deadmanstimer = 0.0;
+						SoundManager.Stop(Train.Vigilance.vigilancealarm);
+						Train.Vigilance.DeadmansHandleState = Vigilance.DeadmanStates.OnTimer;
 					}
 				}
 			}
@@ -1127,28 +1062,7 @@ namespace Plugin
 			if (keypressed == automatickey)
 			{
 				//Toggle Automatic Cutoff/ Gears
-				if (Train.steam != null)
-				{
-					if (Train.steam.automatic == true)
-					{
-						Train.steam.automatic = false;
-					}
-					else
-					{
-						Train.steam.automatic = true;
-					}
-				}
-				else if (Train.diesel != null)
-				{
-					if (Train.diesel.automatic == true)
-					{
-						Train.diesel.automatic = false;
-					}
-					else
-					{
-						Train.diesel.automatic = false;
-					}
-				}
+				AutomaticAdvancedFunctions = !AutomaticAdvancedFunctions;
 			}
 			if (keypressed == advancedrivingkey)
 			{
@@ -1164,57 +1078,65 @@ namespace Plugin
 			if (key == VirtualKeys.LiveSteamInjector || key == VirtualKeys.ExhaustSteamInjector)
 			{
 				//Injectors
-				if (Train.steam != null)
+				if (Train.SteamEngine != null)
 				{
-					if (Train.steam.stm_injector == true)
+					if (Train.SteamEngine.stm_injector == true)
 					{
-						Train.steam.stm_injector = false;
+						Train.SteamEngine.stm_injector = false;
 					}
 					else
 					{
-						Train.steam.stm_injector = true;
+						Train.SteamEngine.stm_injector = true;
 					}
 				}
 			}
 
 			if (keypressed == safetykey)
 			{
-				if (Train.vigilance != null)
+				if (Train.Vigilance != null)
 				{
 					//Reset Overspeed Trip
-					if ((Train.trainspeed == 0 || Train.vigilance.vigilancecancellable != 0) &&
-						Train.overspeedtripped == true)
+					if ((Train.CurrentSpeed == 0 || Train.Vigilance.vigilancecancellable != 0) &&
+						Train.Vigilance.OverspeedDevice.Tripped == true)
 					{
-						Train.overspeedtripped = false;
-						resetbrakeapplication();
+						Train.Vigilance.OverspeedDevice.Tripped = false;
+						if (Train.Vigilance.OverspeedDevice.CurrentBehaviour == OverspeedMonitor.OverspeedBehaviour.CutoffPower)
+						{
+							ResetPowerCutoff();
+						}
+						else
+						{
+							ResetBrakeApplication();
+						}
+
 					}
 
 
 					//Reset deadman's handle if independant vigilance is selected & brakes have not been applied
-					if (Train.vigilance.independantvigilance != 0 &&
-						Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied)
+					if (Train.Vigilance.independantvigilance != 0 &&
+						Train.Vigilance.DeadmansHandleState != Vigilance.DeadmanStates.BrakesApplied)
 					{
-						Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
-						Train.vigilance.deadmanstimer = 0.0;
-						SoundManager.Stop(Train.vigilance.vigilancealarm);
-						resetbrakeapplication();
+						Train.Vigilance.DeadmansHandleState = Vigilance.DeadmanStates.OnTimer;
+						Train.Vigilance.deadmanstimer = 0.0;
+						SoundManager.Stop(Train.Vigilance.vigilancealarm);
+						ResetBrakeApplication();
 					}
 						//Reset brakes if allowed
-					else if (Train.vigilance.vigilancecancellable != 0 &&
-							 Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+					else if (Train.Vigilance.vigilancecancellable != 0 &&
+							 Train.Vigilance.DeadmansHandleState == Vigilance.DeadmanStates.BrakesApplied)
 					{
-						Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
-						Train.vigilance.deadmanstimer = 0.0;
-						SoundManager.Stop(Train.vigilance.vigilancealarm);
+						Train.Vigilance.DeadmansHandleState = Vigilance.DeadmanStates.OnTimer;
+						Train.Vigilance.deadmanstimer = 0.0;
+						SoundManager.Stop(Train.Vigilance.vigilancealarm);
 					}
 						//If brakes cannot be cancelled and we've stopped
-					else if (Train.vigilance.vigilancecancellable == 0 && Train.trainspeed == 0 &&
-							 Train.vigilance.DeadmansHandleState == vigilance.DeadmanStates.BrakesApplied)
+					else if (Train.Vigilance.vigilancecancellable == 0 && Train.CurrentSpeed == 0 &&
+							 Train.Vigilance.DeadmansHandleState == Vigilance.DeadmanStates.BrakesApplied)
 					{
-						Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
-						Train.vigilance.deadmanstimer = 0.0;
-						SoundManager.Stop(Train.vigilance.vigilancealarm);
-						resetbrakeapplication();
+						Train.Vigilance.DeadmansHandleState = Vigilance.DeadmanStates.OnTimer;
+						Train.Vigilance.deadmanstimer = 0.0;
+						SoundManager.Stop(Train.Vigilance.vigilancealarm);
+						ResetBrakeApplication();
 					}
 				}
 
@@ -1226,7 +1148,7 @@ namespace Plugin
 						Train.AWS.Acknowlege();
 					}
 					//Reset AWS
-					else if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired && Train.trainspeed == 0 &&
+					else if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired && Train.CurrentSpeed == 0 &&
 						Train.Handles.Reverser == 0)
 					{
 						if (SoundManager.IsPlaying(Train.AWS.awswarningsound))
@@ -1234,7 +1156,7 @@ namespace Plugin
 							SoundManager.Stop(Train.AWS.awswarningsound);
 						}
 						Train.AWS.Reset();
-						resetpowercutoff();
+						ResetPowerCutoff();
 					}
 					this.Train.AWS.CancelButtonPressed = true;
 				}
@@ -1255,21 +1177,21 @@ namespace Plugin
 			if (key == VirtualKeys.FillFuel)
 			{
 				//Toggle Fuel fill
-				if (Train.canfuel == true && Train.trainspeed == 0)
+				if (Train.canfuel == true && Train.CurrentSpeed == 0)
 				{
-					if (Train.steam != null)
+					if (Train.SteamEngine != null)
 					{
-						Train.steam.fuelling = true;
+						Train.SteamEngine.fuelling = true;
 					}
-					if (Train.diesel != null)
+					if (Train.DieselEngine != null)
 					{
-						Train.diesel.fuelling = true;
+						Train.DieselEngine.fuelling = true;
 					}
 				}
 				//ACB/ VCB toggle
-				if (Train.electric != null)
+				if (Train.ElectricEngine != null)
 				{
-					Train.electric.breakertrip();
+					Train.ElectricEngine.breakertrip();
 				}
 			}
 			if (key == VirtualKeys.WiperSpeedDown)
@@ -1297,7 +1219,7 @@ namespace Plugin
 				else
 				{
 					//Isolate Safety Systems
-					if (safetyisolated == false)
+					if (SafetySystemsIsolated == false)
 					{
 						isolatetpwsaws();
 					}
@@ -1310,11 +1232,11 @@ namespace Plugin
 			//Toggle Pantographs
 			if (keypressed == frontpantographkey)
 			{
-				Train.electric.pantographtoggle(0);
+				Train.ElectricEngine.pantographtoggle(0);
 			}
 			if (keypressed == rearpantographkey)
 			{
-				Train.electric.pantographtoggle(1);
+				Train.ElectricEngine.pantographtoggle(1);
 			}
 
 			foreach (CustomIndicator Indicator in CustomIndicatorsArray)
@@ -1335,71 +1257,58 @@ namespace Plugin
 				Animations.headcodetoggle();
 			}
 			//Advanced steam locomotive functions
-			if (Train.steam != null)
+			if (Train.SteamEngine != null)
 			{
 				if (key == VirtualKeys.IncreaseCutoff)
 				{
 					//Cutoff Up
-					if (Train.steam != null)
+					if (Train.SteamEngine != null)
 					{
-						Train.steam.cutoffstate = 1;
+						Train.SteamEngine.cutoffstate = 1;
 					}
 				}
 				if (key == VirtualKeys.DecreaseCutoff)
 				{
 					//Cutoff Down
-					if (Train.steam != null)
+					if (Train.SteamEngine != null)
 					{
-						Train.steam.cutoffstate = -1;
+						Train.SteamEngine.cutoffstate = -1;
 					}
 				}
 				//Blowers
 				if (key == VirtualKeys.Blowers)
 				{
-					if (Train.steam.blowers == false)
-					{
-						Train.steam.blowers = true;
-					}
-					else
-					{
-						Train.steam.blowers = false;
-					}
+					Train.SteamEngine.blowers = !Train.SteamEngine.blowers;
 				}
 				//Shovel Coal
 				if (keypressed == shovellingkey)
 				{
-					if (Train.steam.shovelling == false)
-					{
-						Train.steam.shovelling = true;
-					}
-					else
-					{
-						Train.steam.shovelling = false;
-					}
+					Train.SteamEngine.shovelling = !Train.SteamEngine.shovelling;
+					
 				}
 				if (keypressed == steamheatincreasekey)
 				{
-					if (Train.steam.steamheatlevel < 5)
+					if (Train.SteamEngine.steamheatlevel < 5)
 					{
-						Train.steam.steamheatlevel++;
+						Train.SteamEngine.steamheatlevel++;
 					}
 				}
 				if (keypressed == steamheatdecreasekey)
 				{
-					if (Train.steam.steamheatlevel > 0)
+					if (Train.SteamEngine.steamheatlevel > 0)
 					{
-						Train.steam.steamheatlevel--;
+						Train.SteamEngine.steamheatlevel--;
 					}
 				}
 				if (keypressed == cylindercockskey)
 				{
-					if (Train.steam.cylindercocks == false)
+					if (Train.SteamEngine.cylindercocks == false)
 					{
-						Train.steam.cylindercocks = true;
+						Train.SteamEngine.cylindercocks = true;
 					}
 					else
 					{
-						Train.steam.cylindercocks = false;
+						Train.SteamEngine.cylindercocks = false;
 					}
 				}
 			}
@@ -1454,18 +1363,18 @@ namespace Plugin
 				}
 			}
 			//Italian SCMT vigilante system
-			if (Train.vigilance != null && Train.vigilance.vigilante == true)
+			if (Train.Vigilance != null && Train.Vigilance.vigilante == true)
 			{
 				if (keypressed == vigilantekey)
 				{
-					if (Train.vigilance.VigilanteState == vigilance.VigilanteStates.AlarmSounding)
+					if (Train.Vigilance.VigilanteState == Vigilance.VigilanteStates.AlarmSounding)
 					{
-						Train.vigilance.VigilanteState = vigilance.VigilanteStates.OnService;
+						Train.Vigilance.VigilanteState = Vigilance.VigilanteStates.OnService;
 					}
 				}
 				else if (keypressed == vigilanteresetkey)
 				{
-					Train.vigilance.VigilanteReset();
+					Train.Vigilance.VigilanteReset();
 				}
 			}
 			if (Train.PZB != null)
@@ -1561,75 +1470,75 @@ namespace Plugin
 			if (key == VirtualKeys.GearUp)
 			{
 				//Gear Up
-				if (Train.diesel != null)
+				if (Train.DieselEngine != null)
 				{
-					if (Train.diesel.gear >= 0 && Train.diesel.gear < Train.diesel.totalgears - 1 && Train.Handles.PowerNotch == 0)
+					if (Train.DieselEngine.gear >= 0 && Train.DieselEngine.gear < Train.DieselEngine.totalgears - 1 && Train.Handles.PowerNotch == 0)
 					{
-						Train.diesel.gear++;
-						Train.diesel.gearloop = false;
-						Train.diesel.gearlooptimer = 0.0;
-						Train.diesel.gearchange();
+						Train.DieselEngine.gear++;
+						Train.DieselEngine.gearloop = false;
+						Train.DieselEngine.gearlooptimer = 0.0;
+						Train.DieselEngine.gearchange();
 					}
 				}
 			}
 			if (key == VirtualKeys.GearDown)
 			{
 				//Gear Down
-				if (Train.diesel != null)
+				if (Train.DieselEngine != null)
 				{
-					if (Train.diesel.gear <= Train.diesel.totalgears && Train.diesel.gear > 0 && Train.Handles.PowerNotch == 0)
+					if (Train.DieselEngine.gear <= Train.DieselEngine.totalgears && Train.DieselEngine.gear > 0 && Train.Handles.PowerNotch == 0)
 					{
-						Train.diesel.gear--;
-						Train.diesel.gearloop = false;
-						Train.diesel.gearlooptimer = 0.0;
-						Train.diesel.gearchange();
+						Train.DieselEngine.gear--;
+						Train.DieselEngine.gearloop = false;
+						Train.DieselEngine.gearlooptimer = 0.0;
+						Train.DieselEngine.gearchange();
 					}
 				}
 			}
 			if (key == VirtualKeys.IncreaseCutoff)
 			{
 				//Cutoff Up
-				if (Train.steam != null)
+				if (Train.SteamEngine != null)
 				{
-					Train.steam.cutoffstate = 0;
+					Train.SteamEngine.cutoffstate = 0;
 				}
 			}
 			if (key == VirtualKeys.DecreaseCutoff)
 			{
 				//Cutoff Down
-				if (Train.steam != null)
+				if (Train.SteamEngine != null)
 				{
-					Train.steam.cutoffstate = 0;
+					Train.SteamEngine.cutoffstate = 0;
 				}
 			}
 			if (key == VirtualKeys.FillFuel)
 			{
 				//Toggle Fuel fill
-				if (Train.steam != null)
+				if (Train.SteamEngine != null)
 				{
-					Train.steam.fuelling = false;
+					Train.SteamEngine.fuelling = false;
 				}
-				if (Train.diesel != null)
+				if (Train.DieselEngine != null)
 				{
-					Train.diesel.fuelling = false;
+					Train.DieselEngine.fuelling = false;
 				}
 			}
-			if (Train.vigilance != null)
+			if (Train.Vigilance != null)
 			{
 				if (keypressed == DRAkey)
 				{
-					if (Train.vigilance.draenabled != -1)
+					if (Train.Vigilance.draenabled != -1)
 					{
 						//Operate DRA
 						if (Train.drastate == false)
 						{
 							Train.drastate = true;
-							demandpowercutoff();
+							DemandPowerCutoff();
 						}
 						else
 						{
 							Train.drastate = false;
-							resetpowercutoff();
+							ResetPowerCutoff();
 						}
 					}
 				}
@@ -1699,15 +1608,15 @@ namespace Plugin
 		/// <param name="reverser">The new reverser position.</param>
 		internal override void SetReverser(int reverser)
 		{
-			if (Train.vigilance != null)
+			if (Train.Vigilance != null)
 			{
-				if (Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied &&
-					Train.vigilance.independantvigilance == 0)
+				if (Train.Vigilance.DeadmansHandleState != Vigilance.DeadmanStates.BrakesApplied &&
+					Train.Vigilance.independantvigilance == 0)
 				{
 					//Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
-					Train.vigilance.deadmanstimer = 0.0;
-					SoundManager.Stop(Train.vigilance.vigilancealarm);
-					Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
+					Train.Vigilance.deadmanstimer = 0.0;
+					SoundManager.Stop(Train.Vigilance.vigilancealarm);
+					Train.Vigilance.DeadmansHandleState = Vigilance.DeadmanStates.OnTimer;
 				}
 			}
 
@@ -1717,22 +1626,22 @@ namespace Plugin
 		/// <param name="powerNotch">The new power notch.</param>
 		internal override void SetPower(int powerNotch)
 		{
-			if (Train.vigilance != null)
+			if (Train.Vigilance != null)
 			{
-				if (Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied &&
-					Train.vigilance.independantvigilance == 0)
+				if (Train.Vigilance.DeadmansHandleState != Vigilance.DeadmanStates.BrakesApplied &&
+					Train.Vigilance.independantvigilance == 0)
 				{
 					//Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
-					Train.vigilance.deadmanstimer = 0.0;
-					SoundManager.Stop(Train.vigilance.vigilancealarm);
-					Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
+					Train.Vigilance.deadmanstimer = 0.0;
+					SoundManager.Stop(Train.Vigilance.vigilancealarm);
+					Train.Vigilance.DeadmansHandleState = Vigilance.DeadmanStates.OnTimer;
 				}
 			}
 			//Trigger electric powerloop sound timer
-			if (Train.electric != null)
+			if (Train.ElectricEngine != null)
 			{
-				Train.electric.powerloop = false;
-				Train.electric.powerlooptimer = 0.0;
+				Train.ElectricEngine.powerloop = false;
+				Train.ElectricEngine.powerlooptimer = 0.0;
 			}
 		}
 
@@ -1740,30 +1649,30 @@ namespace Plugin
 		/// <param name="brakeNotch">The new brake notch.</param>
 		internal override void SetBrake(int brakeNotch)
 		{
-			if (Train.vigilance != null)
+			if (Train.Vigilance != null)
 			{
-				if (Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied &&
-					Train.vigilance.independantvigilance == 0)
+				if (Train.Vigilance.DeadmansHandleState != Vigilance.DeadmanStates.BrakesApplied &&
+					Train.Vigilance.independantvigilance == 0)
 				{
 					//Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
-					Train.vigilance.deadmanstimer = 0.0;
-					SoundManager.Stop(Train.vigilance.vigilancealarm);
-					Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
+					Train.Vigilance.deadmanstimer = 0.0;
+					SoundManager.Stop(Train.Vigilance.vigilancealarm);
+					Train.Vigilance.DeadmansHandleState = Vigilance.DeadmanStates.OnTimer;
 				}
 			}
 		}
 
 		internal override void HornBlow(HornTypes type)
 		{
-			if (Train.vigilance != null)
+			if (Train.Vigilance != null)
 			{
-				if (Train.vigilance.DeadmansHandleState != vigilance.DeadmanStates.BrakesApplied &&
-					Train.vigilance.independantvigilance == 0)
+				if (Train.Vigilance.DeadmansHandleState != Vigilance.DeadmanStates.BrakesApplied &&
+					Train.Vigilance.independantvigilance == 0)
 				{
 					//Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
-					Train.vigilance.deadmanstimer = 0.0;
-					SoundManager.Stop(Train.vigilance.vigilancealarm);
-					Train.vigilance.DeadmansHandleState = vigilance.DeadmanStates.OnTimer;
+					Train.Vigilance.deadmanstimer = 0.0;
+					SoundManager.Stop(Train.Vigilance.vigilancealarm);
+					Train.Vigilance.DeadmansHandleState = Vigilance.DeadmanStates.OnTimer;
 				}
 			}
 			//Set the horn type that is playing

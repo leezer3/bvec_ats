@@ -344,9 +344,9 @@ namespace Plugin
                     setpointspeedstate = 0;
                 }
                 //If reverser is put into neutral when moving, block the gears
-                if (reversercontrol != 0 && Train.trainspeed > 0 && Train.Handles.Reverser == 0)
+                if (reversercontrol != 0 && Train.CurrentSpeed > 0 && Train.Handles.Reverser == 0)
                 {
-                    Train.diesel.gearsblocked = true;
+                    Train.DieselEngine.gearsblocked = true;
                 }
 
                 if (!nogears)
@@ -403,7 +403,7 @@ namespace Plugin
                     }
 
                     //Set current revolutions per minute
-                    currentrevs = Math.Max(0, Math.Min(1000, Train.trainspeed*gearratio));
+                    currentrevs = Math.Max(0, Math.Min(1000, Train.CurrentSpeed*gearratio));
 
                     //Now calculate the maximumum power notch
                     int power_limit;
@@ -434,7 +434,7 @@ namespace Plugin
                         {
                             power_limit = 0;
                             //Stop, drop to N with no power applied and the gears will unblock
-                            if (Train.trainspeed == 0 && Train.Handles.Reverser == 0 && Train.Handles.PowerNotch == 0)
+                            if (Train.CurrentSpeed == 0 && Train.Handles.Reverser == 0 && Train.Handles.PowerNotch == 0)
                             {
                                 SCMT_Traction.gearsblocked = false;
                             }
@@ -450,24 +450,24 @@ namespace Plugin
                             {
                                 gear = 1;
                                 gearchange();
-                                Train.diesel.gearloop = false;
-                                Train.diesel.gearlooptimer = 0.0;
+                                Train.DieselEngine.gearloop = false;
+                                Train.DieselEngine.gearlooptimer = 0.0;
                             }
 
                             if (currentrevs > Math.Min((2000 - fadeoutratio)/2, 800) && gear < totalgears - 1)
                             {
                                 gear++;
                                 gearchange();
-                                Train.diesel.gearloop = false;
-                                Train.diesel.gearlooptimer = 0.0;
+                                Train.DieselEngine.gearloop = false;
+                                Train.DieselEngine.gearlooptimer = 0.0;
                             }
                                 //Change down
                             else if (currentrevs < Math.Max(fadeinratio/2, 200) && gear > 1)
                             {
                                 gear--;
                                 gearchange();
-                                Train.diesel.gearloop = false;
-                                Train.diesel.gearlooptimer = 0.0;
+                                Train.DieselEngine.gearloop = false;
+                                Train.DieselEngine.gearlooptimer = 0.0;
                             }
 
 
@@ -555,14 +555,14 @@ namespace Plugin
                             temperature = overheat;
                             if (overheatresult == 1)
                             {
-                                Train.tractionmanager.demandpowercutoff();
-                                Train.tractionmanager.overheated = true;
+                                Train.TractionManager.DemandPowerCutoff();
+                                Train.TractionManager.EngineOverheated = true;
                             }
                         }
                         else if (temperature < overheat && temperature > 0)
                         {
-                            Train.tractionmanager.resetpowercutoff();
-                            Train.tractionmanager.overheated = false;
+                            Train.TractionManager.ResetPowerCutoff();
+                            Train.TractionManager.EngineOverheated = false;
                         }
                         else if (temperature < 0)
                         {
@@ -654,31 +654,31 @@ namespace Plugin
                     {
                         data.Handles.PowerNotch = 0;
                     }
-                    if (Train.trainspeed > setpointspeed && flag == 0 && setpointspeed > 0 && lca == true &&
+                    if (Train.CurrentSpeed > setpointspeed && flag == 0 && setpointspeed > 0 && lca == true &&
                         data.Handles.PowerNotch > 0)
                     {
                         //If we've exceeded the set point speed cut power
                         flag = 1;
-                        Train.tractionmanager.demandpowercutoff();
+                        Train.TractionManager.DemandPowerCutoff();
                     }
-                    if (Train.trainspeed > setpointspeed + 1 && flag == 1 && lca == true && Train.Handles.PowerNotch > 0)
+                    if (Train.CurrentSpeed > setpointspeed + 1 && flag == 1 && lca == true && Train.Handles.PowerNotch > 0)
                     {
                         //If we're continuing to accelerate, demand a brake application
                         ConstantSpeedBrake = true;
-                        Train.tractionmanager.demandbrakeapplication(1);
+                        Train.TractionManager.DemandBrakeApplication(1);
                         flag = 2;
                     }
-                    if ((Train.trainspeed < setpointspeed && flag == 2 && lca == true) ||
+                    if ((Train.CurrentSpeed < setpointspeed && flag == 2 && lca == true) ||
                         (lca == true && flag == 2 && Train.Handles.PowerNotch == 0) || (lcm == true && flag == 2))
                     {
                         ConstantSpeedBrake = false;
-                        Train.tractionmanager.resetbrakeapplication();
+                        Train.TractionManager.ResetBrakeApplication();
                         flag = 1;
                     }
-                    if ((Train.trainspeed < setpointspeed - 2 && flag == 1 && lca == true) ||
+                    if ((Train.CurrentSpeed < setpointspeed - 2 && flag == 1 && lca == true) ||
                         (lca == true && flag == 2 && Train.Handles.PowerNotch == 0) || (lcm == true && flag == 1))
                     {
-                        Train.tractionmanager.resetpowercutoff();
+                        Train.TractionManager.ResetPowerCutoff();
                         flag = 0;
                     }
                 }
@@ -735,11 +735,11 @@ namespace Plugin
                     if (dynometertimer > 200)
                     {
                         v1 = v2;
-                        v2 = Train.trainspeed;
+                        v2 = Train.CurrentSpeed;
                         if ((v1 != 0 && v2 != 0 && Train.Handles.BrakeNotch < 1 &&
                              (Train.Handles.PowerNotch > 0 || Train.Handles.PowerNotch > 0)) ||
                             (v1 != 0 && v2 != 0 && Train.Handles.BrakeNotch >= 1) && Train.Handles.Reverser != 0 &&
-                            Train.trainspeed > 10)
+                            Train.CurrentSpeed > 10)
                         {
                             dynometer = (((v2 - v1)/3.6))/0.2*100;
                             if (dynometer < -100)
@@ -777,7 +777,7 @@ namespace Plugin
                 }
                 //Handles the diagnostic display at under 4km/h
                 {
-                    if (Train.trainspeed > 4)
+                    if (Train.CurrentSpeed > 4)
                     {
                         flagmonitor = true;
                     }
@@ -793,7 +793,7 @@ namespace Plugin
                     {
                         if (data.Handles.BrakeNotch == 0)
                         {
-                            if (Train.trainspeed < 40)
+                            if (Train.CurrentSpeed < 40)
                             {
                                 indcontgiri = (int) dynometer + 10;
                                 indgas = (int) dynometer + 110;
@@ -822,16 +822,16 @@ namespace Plugin
                 //Literal translation appears to be faith/ belief?
                 //Stops brake notch #1 intervening at certain speeds
                 {
-                    if (Train.Handles.BrakeNotch == 1 && Train.trainspeed < 40 && flagfe == false)
+                    if (Train.Handles.BrakeNotch == 1 && Train.CurrentSpeed < 40 && flagfe == false)
                     {
                         data.Handles.BrakeNotch = 0;
                     }
-                    else if (Train.Handles.BrakeNotch == 1 && Train.trainspeed >= 40)
+                    else if (Train.Handles.BrakeNotch == 1 && Train.CurrentSpeed >= 40)
                     {
                         data.Handles.BrakeNotch = 1;
                         flagfe = true;
                     }
-                    else if (Train.Handles.BrakeNotch == 1 && Train.trainspeed <= 35 && flagfe == true)
+                    else if (Train.Handles.BrakeNotch == 1 && Train.CurrentSpeed <= 35 && flagfe == true)
                     {
                         data.Handles.BrakeNotch = 0;
                         flagfe = false;
@@ -1438,7 +1438,7 @@ namespace Plugin
         /// <summary>Call from the traction manager when the SCMT Test key is pressed</summary>
         internal void TestSCMT()
         {
-            if (SCMT.testscmt == 0 && ChiaveBanco == true && Train.trainspeed == 0)
+            if (SCMT.testscmt == 0 && ChiaveBanco == true && Train.CurrentSpeed == 0)
             {
                 SCMT.testscmt = 1;
                 SCMTtesttimer.TimeElapsed = 0;
@@ -1456,7 +1456,7 @@ namespace Plugin
                     SoundManager.Play(sunoscmton, 1.0, 1.0, false);
                 }
             }
-            else if (SCMT.testscmt == 2 && Train.trainspeed == 0)
+            else if (SCMT.testscmt == 2 && Train.CurrentSpeed == 0)
             {
                 SCMT.testscmt = 3;
                 if (sunoconfdati != -1)
@@ -1464,7 +1464,7 @@ namespace Plugin
                     SoundManager.Play(sunoconfdati, 1.0, 1.0, false);
                 }
             }
-            else if (SCMT.testscmt == 3 && Train.trainspeed == 0)
+            else if (SCMT.testscmt == 3 && Train.CurrentSpeed == 0)
             {
                 SCMT.testscmt = 4;
                 if (sunoconfdati != -1)
@@ -1473,7 +1473,7 @@ namespace Plugin
                 }
                 timerRitSpegscmt.TimeElapsed = 0;
             }
-            else if (SCMT.testscmt == 4 && Train.trainspeed == 0)
+            else if (SCMT.testscmt == 4 && Train.CurrentSpeed == 0)
             {
                 if (timerRitSpegscmt.TimeElapsed > 5000 || timerRitSpegscmt.TimerActive == false)
                 {

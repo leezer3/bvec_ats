@@ -16,7 +16,7 @@ namespace Plugin
         //Intended to show things such as the current steam production rate versus usage (WIP)
         protected override void OnClosed(EventArgs e)
         {
-            tractionmanager.debugwindowshowing = false;
+            TractionManager.debugwindowshowing = false;
             mInst = null;
             base.OnClosed(e);   // Always call the base of OnClose !
         }

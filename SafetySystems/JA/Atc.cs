@@ -14,7 +14,7 @@ namespace Plugin
 		private const double CompatibilitySuppressDistance = 50;
 
 		/// <summary>The underlying train.</summary>
-		private Train Train;
+		private readonly Train Train;
 
 		/// <summary>The current state of the system.</summary>
 		internal Atc.States State;
@@ -155,7 +155,7 @@ namespace Plugin
 			}
 			else
 			{
-				currentBrakeNotchRequest = this.State == States.Ats ? 0 : this.Train.tractionmanager.currentbrakenotch;
+				currentBrakeNotchRequest = this.State == States.Ats ? 0 : this.Train.TractionManager.CurrentInterventionBrakeNotch;
 				
 			}
 			double acceleration;
@@ -176,7 +176,7 @@ namespace Plugin
 				this.State = Atc.States.Normal;
 				this.SwitchToAtcOnce = false;
 			}
-			if (this.State == Atc.States.Suppressed && this.Train.tractionmanager.currentbrakenotch <= this.Train.Specs.BrakeNotches)
+			if (this.State == Atc.States.Suppressed && this.Train.TractionManager.CurrentInterventionBrakeNotch <= this.Train.Specs.BrakeNotches)
 			{
 				this.State = Atc.States.Ats;
 			}
@@ -202,10 +202,10 @@ namespace Plugin
 					//The Kakunin check has failed
 					if (KakuninCheck == true)
 					{
-						if (Train.tractionmanager.brakedemanded == false)
+						if (Train.TractionManager.BrakeInterventionDemanded == false)
 						{
 							//Apply brakes via the TractionManager
-							Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
+							Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
 						}
 						if (data.Vehicle.Speed.KilometersPerHour == 0)
 						{
@@ -463,7 +463,7 @@ namespace Plugin
 						{
 							atsNotch = this.Train.Specs.BrakeNotches;
 						}
-						if (this.Train.tractionmanager.currentbrakenotch < atsNotch)
+						if (this.Train.TractionManager.CurrentInterventionBrakeNotch < atsNotch)
 						{
 
 							currentBrakeNotchRequest = atsNotch;
@@ -496,7 +496,7 @@ namespace Plugin
 				this.Pattern.Update(this);
 				this.ServiceBrakesTimer = 0;
 			}
-			Train.tractionmanager.SetBrakeNotch(currentBrakeNotchRequest);
+			Train.TractionManager.SetBrakeNotch(currentBrakeNotchRequest);
 			
 			//Panel Indicators Start Here
 
@@ -805,6 +805,10 @@ namespace Plugin
 				while (enumerator.MoveNext())
 				{
 					Atc.Signal current = enumerator.Current;
+					if (current == null)
+					{
+						return this.NoSignal;
+					}
 					if (current.Aspect != this.Aspect)
 					{
 						continue;
@@ -835,7 +839,6 @@ namespace Plugin
 			{
 				((IDisposable)enumerator).Dispose();
 			}
-			return signal;
 		}
 
 		private Atc.Signal GetUpcomingSignal()
@@ -851,6 +854,10 @@ namespace Plugin
 				while (enumerator.MoveNext())
 				{
 					Atc.Signal current = enumerator.Current;
+					if (current == null)
+					{
+						return this.NoSignal;
+					}
 					if (current.Aspect != this.RealTimeAdvanceWarningUpcomingSignalAspect)
 					{
 						continue;
@@ -864,7 +871,6 @@ namespace Plugin
 			{
 				((IDisposable)enumerator).Dispose();
 			}
-			return signal;
 		}
 
 		internal override void Initialize(InitializationModes mode)
@@ -980,7 +986,7 @@ namespace Plugin
 				KakuninActive = false;
 				KakuninTimer = 0;
 				KakuninNewSection = false;
-				Train.tractionmanager.resetbrakeapplication();
+				Train.TractionManager.ResetBrakeApplication();
 				this.State = Atc.States.Normal;
 				return;
 			}
@@ -1059,7 +1065,7 @@ namespace Plugin
 				else
 				{
 					//ATC brakes are not active
-					if (Train.trainspeed < KakuninCheckSpeed && KakuninCheckSpeed != -1)
+					if (Train.CurrentSpeed < KakuninCheckSpeed && KakuninCheckSpeed != -1)
 					{
 						//Speed is less than KakuninCheckSpeed, therefore initiate check
 						//Otherwise do nothing...

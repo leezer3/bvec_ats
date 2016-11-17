@@ -2,7 +2,6 @@
  * Relicenced under BSD 2-Clause with permission
  */
 
-using System.IO;
 using OpenBveApi.Runtime;
 
 namespace Plugin
@@ -148,7 +147,7 @@ namespace Plugin
                 //Assume that below zero values won't cause issues just for the moment
                 if (beacon_distance > 0)
                 {
-                    beacon_distance -= (Train.trainlocation - Train.previouslocation);
+                    beacon_distance -= (Train.TrainLocation - Train.PreviousLocation);
                 }
 
                 //Update the beacon distance values with those calculated from the current speed
@@ -180,7 +179,7 @@ namespace Plugin
                     if (testscmt != 0 && SCMT_Alert == true)
                     {
                         //First check the trainspeed and reset the overspeed trip if applicable
-                        if (Train.trainspeed < alertspeed + 1)
+                        if (Train.CurrentSpeed < alertspeed + 1)
                         {
                             //If we're no longer over the alert speed, reset the overspeed device
                             Train.overspeedtripped = false;
@@ -252,8 +251,8 @@ namespace Plugin
                             }
                             StopTimer.TimerActive = true;
                             StopTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
-                            if ((Train.trainspeed < beacon_speed + 2 && beacon_speed > 30 && flagbrake == false) ||
-                                (Train.trainspeed == 0 && StopTimer.TimeElapsed > (tpwsstopdelay*1000)) &&
+                            if ((Train.CurrentSpeed < beacon_speed + 2 && beacon_speed > 30 && flagbrake == false) ||
+                                (Train.CurrentSpeed == 0 && StopTimer.TimeElapsed > (tpwsstopdelay*1000)) &&
                                 trainstop == true)
                             {
                                 riarmoTimer.TimerActive = false;
@@ -285,10 +284,10 @@ namespace Plugin
 									ShowIndicator(ref srIndicator, data.ElapsedTime.Milliseconds);
                                 }
                             }
-                            else if ((beacon_type == 4402 && Train.trainspeed > alertspeed) ||
+                            else if ((beacon_type == 4402 && Train.CurrentSpeed > alertspeed) ||
                                      (beacon_type == 4403 && beacon_signal.Aspect == 0))
                             {
-                                if (Train.trainspeed > alertspeed && beacon_type == 44003)
+                                if (Train.CurrentSpeed > alertspeed && beacon_type == 44003)
                                 {
                                     if (AlarmTimer.TimerActive == false)
                                     {
@@ -307,14 +306,14 @@ namespace Plugin
                                         brakeNotchDemanded = 1;
                                         tgtraz_active = true;
                                     }
-                                    if (Train.trainspeed > maxspeed + 4)
+                                    if (Train.CurrentSpeed > maxspeed + 4)
                                     {
                                         if (tpwswarningsound != -1)
                                         {
                                             SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
                                         }
                                         EBDemanded = true;
-                                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                                        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
                                         trainstop = true;
                                         StopTimer.TimerActive = false;
                                         tpwsRelease = false;
@@ -363,7 +362,7 @@ namespace Plugin
 			ShowIndicator(ref BrakeDemandIndicator, data.ElapsedTime.Milliseconds);
 			ShowIndicator(ref TraintripIndicator, data.ElapsedTime.Milliseconds);
 			ShowIndicator(ref TrainstopOverrideIndicator, data.ElapsedTime.Milliseconds);
-            if (Train.trainspeed == 0)
+            if (Train.CurrentSpeed == 0)
             {
                 if (StopTimer.TimerActive == false)
                 {
@@ -390,7 +389,7 @@ namespace Plugin
                     if (tpwsRelease == true && StopTimer.TimeElapsed > tpwstopdelay*1000)
                     {
                         EBDemanded = false;
-                        Train.tractionmanager.resetbrakeapplication();
+                        Train.TractionManager.ResetBrakeApplication();
                         SetIndicator(ref BrakeDemandIndicator, 0);
                         tpwsRelease = false;
                         trainstop = false;
@@ -492,7 +491,7 @@ namespace Plugin
                 {
                     SetIndicator(ref TraintripIndicator, 1);
                     SetIndicator(ref BrakeDemandIndicator, 1);
-                    Train.tractionmanager.resetbrakeapplication();
+                    Train.TractionManager.ResetBrakeApplication();
 
                     //Something is a little funnny here
                     //This would appear to reset the lights instantly?
@@ -518,7 +517,7 @@ namespace Plugin
                     if (flagriarmo == true)
                     {
                         flagriarmo = false;
-                        Train.tractionmanager.resetbrakeapplication();
+                        Train.TractionManager.ResetBrakeApplication();
                         SetIndicator(ref BrakeDemandIndicator, 0);
                         trainstop = false;
                         if (beacon_type == 44003)
@@ -539,14 +538,14 @@ namespace Plugin
         /// <summary>This function is called from the traction manager when the TPWS override key is pressed.</summary>
         internal void TPWSOverrideKey()
         {
-            if (OverrideTimer.TimerActive == false && Train.trainspeed <= 30)
+            if (OverrideTimer.TimerActive == false && Train.CurrentSpeed <= 30)
             {
                 OverrideTimer.TimeElapsed = 0;
                 //BlinkIndicator(TrainstopOverrideIndicator,1,Plugin.data);
             }
             else
             {
-                if (Train.trainspeed <= 30)
+                if (Train.CurrentSpeed <= 30)
                 {
                     OverrideTimer.TimeElapsed = 0;
                 }

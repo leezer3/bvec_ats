@@ -129,7 +129,7 @@ namespace Plugin
                 /* We are currently in a gear-
                  * First calculate the current RPM
                  * Then check the fade in/ out ranges & return the max power notch */
-                CurrentRPM = Math.Max(0, Math.Min(1000, Train.trainspeed * Gear[CurrentGear].GearRatio));
+                CurrentRPM = Math.Max(0, Math.Min(1000, Train.CurrentSpeed * Gear[CurrentGear].GearRatio));
                 if (CurrentRPM < Gear[CurrentGear].FadeInRange)
                 {
                     CalculatedPowerNotch = (int)((float)CurrentRPM / Gear[CurrentGear].FadeInRange * this.Train.Specs.PowerNotches);

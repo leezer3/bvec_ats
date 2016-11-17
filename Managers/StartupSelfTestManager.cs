@@ -153,7 +153,7 @@ namespace Plugin {
                 /* Hold the brakes on until the AWS button is depressed */
                 if (MySequenceState == SequenceStates.AwaitingDriverInteraction)
                 {
-                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
+                    Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
                 }
                 else if (MySequenceState == SequenceStates.Finalising)
                 {
@@ -165,7 +165,7 @@ namespace Plugin {
                         }
                     }
                     MySequenceState = SequenceStates.Initialised;
-                    Train.tractionmanager.resetbrakeapplication();
+                    Train.TractionManager.ResetBrakeApplication();
                 }
                 /* Lastly, decrement the timer */
                 if (MySequenceState == SequenceStates.Initialising)

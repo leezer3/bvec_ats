@@ -64,6 +64,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugNBS|x86'">
+    <OutputPath>bin\x86\DebugNBS\</OutputPath>
+    <DefineConstants>DebugNBS</DefineConstants>
+  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="BlinkStickDotNet">
@@ -91,6 +95,10 @@
     </Compile>
     <Compile Include="Functions\BlinkStick.cs" />
     <Compile Include="Functions\Messages.cs" />
+    <Compile Include="Managers\TractionManager.Direction.cs" />
+    <Compile Include="Managers\ReverserManager.cs" />
+    <Compile Include="Managers\TractionManager.TractionType.cs" />
+    <Compile Include="Managers\TractionManager.TravelMeter.cs" />
     <Compile Include="SafetySystems\DE\F92.cs" />
     <Compile Include="SafetySystems\JA\Atc.cs" />
     <Compile Include="SafetySystems\JA\Ato.cs" />
@@ -156,7 +164,7 @@
     <Compile Include="Dialogs\SteamControl.Designer.cs">
       <DependentUpon>SteamControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="SafetySystems\JA\IndicatorLights.cs" />
+    <Compile Include="SafetySystems\Vigilance.Overspeed.cs" />
     <Compile Include="Structures\Component.cs" />
     <Compile Include="Structures\CustomIndicator.cs" />
     <Compile Include="Structures\DebugData.cs" />
@@ -169,13 +177,13 @@
     <Compile Include="Traction\Diesel\DieselEngine.cs" />
     <Compile Include="Traction\Diesel\Gearbox.cs" />
     <Compile Include="Traction\Diesel\StarterMotor.cs" />
-    <Compile Include="SafetySystems\vigilance.DeadmanStates.cs" />
+    <Compile Include="SafetySystems\Vigilance.DeadmanStates.cs" />
     <Compile Include="Traction\diesel.cs" />
     <Compile Include="Traction\Diesel\WesternGearBox.cs" />
     <Compile Include="Traction\Diesel\WesternStartup.cs" />
     <Compile Include="Traction\Diesel\WesternStartup.States.cs" />
-    <Compile Include="Traction\Electric\electric.cs" />
-    <Compile Include="Traction\Electric\Electric.PantographStates.cs" />
+    <Compile Include="Traction\Electric\Electric.cs" />
+    <Compile Include="Traction\Electric\Electric.Pantograph.cs" />
     <Compile Include="Managers\StartupSelfTestManager.cs" />
     <Compile Include="Managers\StartupSelfTestManager.SequenceStates.cs" />
     <Compile Include="Functions\UpgradeConfig.cs" />
@@ -193,7 +201,7 @@
     <Compile Include="Traction\Steam\Blowoff.cs" />
     <Compile Include="Train.cs" />
     <Compile Include="SafetySystems\EN\TPWS.SafetyStates.cs" />
-    <Compile Include="SafetySystems\vigilance.cs" />
+    <Compile Include="SafetySystems\Vigilance.cs" />
     <Compile Include="Animation\Windscreen.cs" />
   </ItemGroup>
   <ItemGroup>

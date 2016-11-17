@@ -93,8 +93,8 @@ namespace Plugin
         {
             /* Unconditionally resets the Train Protection and Warning System, cancelling any warnings which are already in effect */
             this.Reinitialise(InitializationModes.OnService);
-            Train.tractionmanager.resetbrakeapplication();
-            Train.tractionmanager.resetpowercutoff();
+            Train.TractionManager.ResetBrakeApplication();
+            Train.TractionManager.ResetPowerCutoff();
         }
 
         /// <summary>Call this method from the Traction Manager to isolate the TPWS.</summary>
@@ -123,12 +123,12 @@ namespace Plugin
                     if (this.MySafetyState == SafetyStates.LegacyOssArmed)
                     {
                         /* TPWS OSS is enabled with legacy behaviour, so check the train's current speed, and issue a Brake Demand if travelling too fast */
-                        if (Train.trainspeed > this.osslastspeed)
+                        if (Train.CurrentSpeed > this.osslastspeed)
                         {
-                            if (Train.tractionmanager.currentbrakenotch != this.Train.Specs.BrakeNotches + 1)
+                            if (Train.TractionManager.CurrentInterventionBrakeNotch != this.Train.Specs.BrakeNotches + 1)
                             {
                                 Train.DebugLogger.LogMessage("Emergency brakes were demanded by the TPWS Overspeed system");
-                                Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                                Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
                             }
                             this.MySafetyState = SafetyStates.TssBrakeDemand;
                             this.osslastspeed = 0;
@@ -175,7 +175,7 @@ namespace Plugin
                         /* Check whether the maximum allowable distance between a TSS arming and trigger loop has been exceeded, and if so, reset the TSS */
                         if (this.tssndactive)
                         {
-                            if (Train.trainlocation >= this.tssndlastlocation + this.loopmaxspacing || Train.trainlocation < this.tssndlastlocation - this.loopmaxspacing)
+                            if (Train.TrainLocation >= this.tssndlastlocation + this.loopmaxspacing || Train.TrainLocation < this.tssndlastlocation - this.loopmaxspacing)
                             {
                                 /* The TSS ND timer has expired and no matching trigger loop has been detected, so the train has not encountered a valid TSS */
                                 this.tssndactive = false;
@@ -184,7 +184,7 @@ namespace Plugin
                         }
                         if (this.tssodactive)
                         {
-                            if (Train.trainlocation >= this.tssodlastlocation + this.loopmaxspacing || Train.trainlocation < this.tssodlastlocation - this.loopmaxspacing)
+                            if (Train.TrainLocation >= this.tssodlastlocation + this.loopmaxspacing || Train.TrainLocation < this.tssodlastlocation - this.loopmaxspacing)
                             {
                                 /* The TSS OD timer has expired and no matching trigger loop has been detected, so the train has not encountered a valid TSS */
                                 this.tssodactive = false;
@@ -231,10 +231,10 @@ namespace Plugin
                     {
                         /* A TPWS Brake Demand has been issued.
                          * Increment the blink timer to enable the Brake Demand indicator to flash */
-                        if (Train.tractionmanager.currentbrakenotch != this.Train.Specs.BrakeNotches + 1)
+                        if (Train.TractionManager.CurrentInterventionBrakeNotch != this.Train.Specs.BrakeNotches + 1)
                         {
                             Train.DebugLogger.LogMessage("Emergency brakes were demanded by the TPWS Trainstop system");
-                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                            Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
                         }
                         this.indicatorblinktimer = this.indicatorblinktimer + (int)data.ElapsedTime.Milliseconds;
                         if (this.indicatorblinktimer >= 0 && indicatorblinktimer < this.brakeindicatorblinkrate)
@@ -263,7 +263,7 @@ namespace Plugin
                         {
                             this.Train.Panel[brakedemandindicator] = 1;
                         }
-                        if (Train.trainspeed == 0)
+                        if (Train.CurrentSpeed == 0)
                         {
                             this.MySafetyState = SafetyStates.BrakesAppliedCountingDown;
                         }
@@ -289,7 +289,7 @@ namespace Plugin
                         {
                             this.brakesappliedtimer = (int)this.brakesappliedtimeout;
                             this.MySafetyState = SafetyStates.None;
-                            Train.tractionmanager.resetbrakeapplication();
+                            Train.TractionManager.ResetBrakeApplication();
                             //InterlockManager.RequestTractionPowerReset();
                         }
                     }
@@ -343,7 +343,7 @@ namespace Plugin
                         this.Reinitialise(InitializationModes.OnService);
                         /* Issue the brake demand */
                         this.MySafetyState = SafetyStates.TssBrakeDemand;
-                        Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
 
 
                         /* Raise an event signalling that a TPWS Brake Demand has been made, for event subscribers (such as the AWS). */
@@ -469,7 +469,7 @@ namespace Plugin
                     if (frequency == 65250)
                     {
                         /* New prototypical TSS trigger behaviour - f2 normal direction frequency */
-                        if (this.tssndactive && Train.trainlocation <= (this.tssndlastlocation + this.loopmaxspacing))
+                        if (this.tssndactive && Train.TrainLocation <= (this.tssndlastlocation + this.loopmaxspacing))
                         {
                             /* The TSS ND detection is still active, so this is a valid TSS - reset the state and issue a TSS brake demand */
                             this.tssndactive = false;
@@ -480,7 +480,7 @@ namespace Plugin
                     else if (frequency == 65750)
                     {
                         /* New prototypical TSS trigger behaviour - f5 opposite direction frequency */
-                        if (this.tssodactive && Train.trainlocation <= (this.tssodlastlocation + this.loopmaxspacing))
+                        if (this.tssodactive && Train.TrainLocation <= (this.tssodlastlocation + this.loopmaxspacing))
                         {
                             /* The TSS OD detection is still active, so this is a valid TSS - reset the state and issue a TSS brake demand */
                             this.tssodactive = false;

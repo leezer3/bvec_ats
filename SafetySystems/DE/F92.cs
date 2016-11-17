@@ -102,7 +102,7 @@ namespace Plugin
 						{
 							case SelectorSpeeds.B25:
 								data.Handles.Reverser = -1;
-								if (Train.trainspeed < 25 && Train.tractionmanager.powercutoffdemanded == false)
+								if (Train.CurrentSpeed < 25 && Train.TractionManager.PowerCutoffDemanded == false)
 								{
 									data.Handles.PowerNotch = Train.Specs.PowerNotches;
 								}
@@ -113,7 +113,7 @@ namespace Plugin
 								break;
 							case SelectorSpeeds.B15:
 								data.Handles.Reverser = -1;
-								if (Train.trainspeed < 15 && Train.tractionmanager.powercutoffdemanded == false)
+								if (Train.CurrentSpeed < 15 && Train.TractionManager.PowerCutoffDemanded == false)
 								{
 									data.Handles.PowerNotch = Train.Specs.PowerNotches;
 								}
@@ -128,7 +128,7 @@ namespace Plugin
 								break;
 							case SelectorSpeeds.F15:
 								data.Handles.Reverser = 1;
-								if (Train.trainspeed < 15 && Train.tractionmanager.powercutoffdemanded == false)
+								if (Train.CurrentSpeed < 15 && Train.TractionManager.PowerCutoffDemanded == false)
 								{
 									data.Handles.PowerNotch = Train.Specs.PowerNotches;
 								}
@@ -139,7 +139,7 @@ namespace Plugin
 								break;
 							case SelectorSpeeds.F25:
 								data.Handles.Reverser = 1;
-								if (Train.trainspeed < 25 && Train.tractionmanager.powercutoffdemanded == false)
+								if (Train.CurrentSpeed < 25 && Train.TractionManager.PowerCutoffDemanded == false)
 								{
 									data.Handles.PowerNotch = Train.Specs.PowerNotches;
 								}
@@ -150,7 +150,7 @@ namespace Plugin
 								break;
 							case SelectorSpeeds.F50:
 								data.Handles.Reverser = 1;
-								if (Train.trainspeed < 50 && Train.tractionmanager.powercutoffdemanded == false)
+								if (Train.CurrentSpeed < 50 && Train.TractionManager.PowerCutoffDemanded == false)
 								{
 									data.Handles.PowerNotch = Train.Specs.PowerNotches;
 								}
@@ -161,7 +161,7 @@ namespace Plugin
 								break;
 							case SelectorSpeeds.F60:
 								data.Handles.Reverser = 1;
-								if (Train.trainspeed < 60 && Train.tractionmanager.powercutoffdemanded == false)
+								if (Train.CurrentSpeed < 60 && Train.TractionManager.PowerCutoffDemanded == false)
 								{
 									data.Handles.PowerNotch = Train.Specs.PowerNotches;
 								}
@@ -172,7 +172,7 @@ namespace Plugin
 								break;
 							case SelectorSpeeds.F70:
 								data.Handles.Reverser = 1;
-								if (Train.trainspeed < 70 && Train.tractionmanager.powercutoffdemanded == false)
+								if (Train.CurrentSpeed < 70 && Train.TractionManager.PowerCutoffDemanded == false)
 								{
 									data.Handles.PowerNotch = Train.Specs.PowerNotches;
 								}
@@ -188,26 +188,26 @@ namespace Plugin
 					else
 					{
 						//The F92 has a counter for unwanted EB applications
-						if (Train.tractionmanager.brakedemanded == false)
+						if (Train.TractionManager.BrakeInterventionDemanded == false)
 						{
 							EmergencyBrakeCounter++;
 						}
 						//If deadman's device is inactive, apply EB
-						Train.tractionmanager.demandbrakeapplication(Train.Specs.BrakeNotches + 1);
+						Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1);
 						
 					}
 				}
 				else
 				{
 					//If our tripcock is not currently turned on, then power must be cut off
-					Train.tractionmanager.demandpowercutoff();
+					Train.TractionManager.DemandPowerCutoff();
 				}
 				//Max speed device
-				if (Train.trainspeed > 70 && Overspeed == false)
+				if (Train.CurrentSpeed > 70 && Overspeed == false)
 				{
 					//I'm presuming that the overspeed device will also up the EB counter, need to check this....
 					EmergencyBrakeCounter++;
-					Train.tractionmanager.demandbrakeapplication(Train.Specs.BrakeNotches);
+					Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches);
 					SoundManager.Play(OverspeedSound, 1.0, 1.0, true);
 					Overspeed = true;
 				}
@@ -216,7 +216,7 @@ namespace Plugin
 					if (Overspeed == true)
 					{
 						//Only attempt to reset the brake application once, else this causes log spam
-						Train.tractionmanager.resetbrakeapplication();
+						Train.TractionManager.ResetBrakeApplication();
 						SoundManager.Stop(OverspeedSound);
 						Overspeed = false;
 					}
@@ -225,7 +225,7 @@ namespace Plugin
 			//Sounds
 			{
 				//If our trainspeed is greater than 50km/h then we should play the curve flange sound
-				if (Train.trainspeed > 50 && CurveFlangeNoise == true)
+				if (Train.CurrentSpeed > 50 && CurveFlangeNoise == true)
 				{
 					//Requires fade-in sound
 					SoundManager.Play(CurveFlangeSound, 1.0, 1.0, true);
@@ -237,7 +237,7 @@ namespace Plugin
 					//Requires fade-out sound
 				}
 				//This sound is played whilst in tight curves (Rumbling noise) whilst the speed is above 25km/h
-				if (Train.trainspeed > 25 && TightCurveNoise == true)
+				if (Train.CurrentSpeed > 25 && TightCurveNoise == true)
 				{
 					//Requires fade-in sound
 					SoundManager.Play(TightCurveSound, 1.0, 1.0, true);
@@ -254,7 +254,7 @@ namespace Plugin
 		internal void Tripcock()
 		{
 			//Tripcock can only be activated below 7 km/h
-			if (Train.trainspeed < 7 && TripcockActive == false)
+			if (Train.CurrentSpeed < 7 && TripcockActive == false)
 			{
 				TripcockActive = true;
 			}
@@ -319,24 +319,24 @@ namespace Plugin
 						if (SignalAspect == 0)
 						{
 							PassedRedSignal = true;
-							Train.tractionmanager.demandbrakeapplication(Train.Specs.BrakeNotches + 1);
+							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1);
 						}
 					}
 					else
 					{
-						if (Train.trainspeed > data)
+						if (Train.CurrentSpeed > data)
 						{
 							SpeedTrapActivated = true;
-							Train.tractionmanager.demandbrakeapplication(Train.Specs.BrakeNotches + 1);
+							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1);
 						}
 					}
 					break;
 				case 44004:
 					//Speed monitor only beacon, data parameter defines the speed in km/h
-					if (Train.trainspeed > data)
+					if (Train.CurrentSpeed > data)
 					{
 						SpeedTrapActivated = true;
-						Train.tractionmanager.demandbrakeapplication(Train.Specs.BrakeNotches + 1);
+						Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1);
 					}
 					break;
 			}

@@ -11,7 +11,7 @@ namespace Plugin
 {
     internal class Ato : Device
     {
-        private Train Train;
+        private readonly Train Train;
 
         private Ato.States State;
 
@@ -47,11 +47,11 @@ namespace Plugin
                 this.Notch = 0;
 	            BrakeNotch = Train.Specs.BrakeNotches + 1;
             }
-            else if (!(this.Train.Atc.State == Atc.States.Normal & data.Handles.Reverser == 1 & this.Train.tractionmanager.currentbrakenotch == 0))
+            else if (!(this.Train.Atc.State == Atc.States.Normal & data.Handles.Reverser == 1 & this.Train.TractionManager.CurrentInterventionBrakeNotch == 0))
             {
                 this.Notch = 0;
                 //Set maximum power notch to zero via the Traction Manager
-                Train.tractionmanager.SetMaxPowerNotch(0, true);
+                Train.TractionManager.SetMaxPowerNotch(0, true);
 
             }
             else
@@ -76,7 +76,7 @@ namespace Plugin
                 {
                     this.Notch = 0;
                     //Set maximum power notch to zero via the Traction Manager
-                    Train.tractionmanager.SetMaxPowerNotch(0, true);
+                    Train.TractionManager.SetMaxPowerNotch(0, true);
                 }
                 else
                 {
@@ -100,7 +100,7 @@ namespace Plugin
                         this.Countdown = this.PowerApplicationTime / (double)this.Train.Specs.PowerNotches;
                     }
                     //Pass the calculated maximum power notch to the traction manager
-                    Train.tractionmanager.SetMaxPowerNotch(this.Notch, true);
+                    Train.TractionManager.SetMaxPowerNotch(this.Notch, true);
                 }
             }
             if (this.Countdown > 0)
@@ -108,7 +108,7 @@ namespace Plugin
                 Ato countdown = this;
                 countdown.Countdown = countdown.Countdown - data.ElapsedTime.Seconds;
             }
-	        Train.tractionmanager.SetBrakeNotch(BrakeNotch);
+	        Train.TractionManager.SetBrakeNotch(BrakeNotch);
             if (this.State != Ato.States.Disabled)
             {
                 this.Train.Panel[91] = 1;

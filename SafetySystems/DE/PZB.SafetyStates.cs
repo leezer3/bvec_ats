@@ -1,8 +1,6 @@
-﻿using OpenBveApi.Runtime;
-
-namespace Plugin
+﻿namespace Plugin
 {
-    internal partial class PZB : Device
+    internal partial class PZB
     {
         internal enum PZBProgramStates
         {

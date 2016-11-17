@@ -81,9 +81,9 @@ namespace Plugin
                     if (this.suppressionactive)
                     {
                         /* Cancel any suppression which is in effect, if the train is not within range of the last suppression magnet location */
-                        if (Train.trainspeed > 0)
+                        if (Train.CurrentSpeed > 0)
                         {
-                            if (Train.trainlocation > this.suppressionlocation + 2)
+                            if (Train.TrainLocation > this.suppressionlocation + 2)
                             {
                                 this.suppressionlocation = 0;
                                 this.suppressionactive = false;
@@ -91,7 +91,7 @@ namespace Plugin
                         }
                         else
                         {
-                            if (Train.trainlocation < this.suppressionlocation - 2)
+                            if (Train.TrainLocation < this.suppressionlocation - 2)
                             {
                                 this.suppressionlocation = 0;
                                 this.suppressionactive = false;
@@ -163,15 +163,15 @@ namespace Plugin
                         }
                         else
                         {
-                            if (Train.tractionmanager.powercutoffdemanded == false)
+                            if (Train.TractionManager.PowerCutoffDemanded == false)
                             {
                                 Train.DebugLogger.LogMessage("Power cutoff was demanded by the AWS due to a warning not being acknowledged in time");
-                                Train.tractionmanager.demandpowercutoff();
+                                Train.TractionManager.DemandPowerCutoff();
                             }
-                            if (Train.tractionmanager.currentbrakenotch != this.Train.Specs.BrakeNotches +1)
+                            if (Train.TractionManager.CurrentInterventionBrakeNotch != this.Train.Specs.BrakeNotches +1)
                             {
                                 Train.DebugLogger.LogMessage("Emergency brakes were demanded by the AWS due to a warning not being acknowledged in time");
-                                Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                                Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
                             }
                         }
                     }
@@ -321,13 +321,13 @@ namespace Plugin
             this.suppressionlocation = 0;
             this.MySafetyState = SafetyStates.None;
             this.SunflowerState = SunflowerStates.Warn;
-            if (Train.tractionmanager.brakedemanded == true)
+            if (Train.TractionManager.BrakeInterventionDemanded == true)
             {
-                Train.tractionmanager.resetbrakeapplication();
+                Train.TractionManager.ResetBrakeApplication();
             }
-            if (Train.tractionmanager.powercutoffdemanded == true)
+            if (Train.TractionManager.PowerCutoffDemanded == true)
             {
-                Train.tractionmanager.resetpowercutoff();
+                Train.TractionManager.ResetPowerCutoff();
             }
         }
 

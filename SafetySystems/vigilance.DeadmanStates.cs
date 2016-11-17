@@ -2,7 +2,7 @@
 {
 
     /// <summary>Represents a deadman's handle.</summary>
-    internal partial class vigilance : Device
+    internal partial class Vigilance : Device
     {
         /// <summary>Possible non-visual states of the deadman's handle.</summary>
         internal enum DeadmanStates

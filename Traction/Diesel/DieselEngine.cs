@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using OpenBveApi.Runtime;
+﻿using OpenBveApi.Runtime;
 
 namespace Plugin.Traction.Diesel
 {
@@ -56,13 +55,13 @@ namespace Plugin.Traction.Diesel
                 }
                 //Stop the engine loop sound from playing & demand power cutoff
                 SoundManager.Stop(EngineLoopSound);
-                Train.tractionmanager.demandpowercutoff();
+                Train.TractionManager.DemandPowerCutoff();
             }
             else
             {
                 //Play the engine loop sound & reset power cutoff
                 SoundManager.Play(EngineLoopSound, 1.0, 1.0, false);
-                Train.tractionmanager.resetpowercutoff();
+                Train.TractionManager.ResetPowerCutoff();
             }
 
             if (HasGears)

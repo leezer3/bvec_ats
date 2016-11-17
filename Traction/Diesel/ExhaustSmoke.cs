@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Plugin
+﻿namespace Plugin
 {
     partial class DieselExhaust
     {

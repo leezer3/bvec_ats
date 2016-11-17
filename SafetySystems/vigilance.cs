@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Data.Odbc;
 using OpenBveApi.Runtime;
-using OpenBveApi.Sounds;
 
 
 namespace Plugin
 {
     /// <summary>Represents the overspeed, deadman's handle and DRA vigilance devices.</summary>
-    internal partial class vigilance : Device
+    internal partial class Vigilance : Device
     {
 
         // --- members ---
@@ -21,26 +19,14 @@ namespace Plugin
         internal DeadmanStates DeadmansHandleState;
         internal VigilanteStates VigilanteState;
 
+	    internal OverspeedMonitor OverspeedDevice;
+
         /// <summary>Default paramaters</summary>
         /// Used if no value is loaded from the config file
-        /// <summary>Stores the current type of overspeed control in use</summary>
-        internal int overspeedcontrol = 0;
-        /// <summary>The speed at which an overspeed warning will be triggered in km/h</summary>
-        internal double warningspeed = -1;
-        /// <summary>The speed at which an overspeed intervention will be triggered in km/h</summary>
-        internal double overspeed = 1000;
-        /// <summary>The speed at which an overspeed intervention will automatically be cancelled in km/h</summary>
-        internal double safespeed = 0;
-        /// <summary>The panel index of the overspeed indicator</summary>
-        internal int overspeedindicator = -1;
-        /// <summary>The sound index of the audible overspeed alarm</summary>
-        internal int overspeedalarm = -1;
-        /// <summary>The time for which you may be overspeed before an intervention is triggered</summary>
-        internal double overspeedtime = 0;
         /// <summary>Stores the vigilance times for each power notch</summary>
         internal string vigilancetimes = "60000";
         /// <summary>Defines whether a vigilance intervention may be automatically released</summary>
-        internal int vigilanceautorelease = 0;
+        internal bool AutoRelease = false;
         /// <summary>Defines whether a vigilance intervention is cancellable</summary>
         internal int vigilancecancellable = 0;
         internal double vigilancedelay1 = 3000;
@@ -94,11 +80,10 @@ namespace Plugin
 
         /// <summary>Creates a new instance of this system.</summary>
         /// <param name="train">The train.</param>
-        internal vigilance(Train train)
+        internal Vigilance(Train train)
         {
             this.Train = train;
-
-
+			OverspeedDevice = new OverspeedMonitor(train);
         }
 
         //<param name="mode">The initialization mode.</param>
@@ -123,11 +108,6 @@ namespace Plugin
             {
                 InternalFunctions.LogError("vigilancetimes",0);
             }
-            //Set warning to max speed if not selected
-            if (warningspeed == -1)
-            {
-                warningspeed = overspeed;
-            }
             //
             if (draenabled == -1 || drastartstate == -1)
             {
@@ -136,9 +116,8 @@ namespace Plugin
             else
             {
                 Train.drastate = true;
-                Train.tractionmanager.demandpowercutoff();
+                Train.TractionManager.DemandPowerCutoff();
             }
-            Train.overspeedtripped = false;
             DeadmansHandleState = DeadmanStates.None;
         }
 
@@ -149,300 +128,225 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
-            trainspeed = (int)data.Vehicle.Speed.KilometersPerHour;
-            {
-                //Vigilance Devices
-                {
-                    //Overspeed Device
-                    if (overspeedcontrol != 0)
-                    {
-                        if (Math.Abs(data.Vehicle.Speed.KilometersPerHour) > overspeed || overspeedtimer > (int)overspeedtime)
-                        {
+			OverspeedDevice.Update(data.ElapsedTime.Milliseconds);
+	        {
+		        //Deadman's Handle
+		        if (deadmanshandle != 0)
+		        {
+			        //Initialise and set the start state
+			        if (Train.StartupSelfTestManager != null &&
+			            Train.StartupSelfTestManager.SequenceState != StartupSelfTestManager.SequenceStates.Initialised)
+			        {
+				        //Startup self-test has not been performed, no systems active
+				        DeadmansHandleState = DeadmanStates.None;
+			        }
+			        else if (Train.ElectricEngine != null && Train.ElectricEngine.FrontPantograph.State != PantographStates.OnService &&
+			                 Train.ElectricEngine.RearPantograph.State != PantographStates.OnService && trainspeed == 0)
+			        {
+				        //Stationary with no available pantographs
+				        DeadmansHandleState = DeadmanStates.None;
+			        }
+			        else if (vigilanceinactivespeed == -2 && Train.Handles.Reverser == 0)
+			        {
+				        //Set to no action if inactive speed is -2 & in neutral
+				        DeadmansHandleState = DeadmanStates.None;
+			        }
+			        else if (vigilanceinactivespeed == -2 && Train.Handles.Reverser != 0)
+			        {
+				        //Otherwise set to the timer state
+				        DeadmansHandleState = DeadmanStates.OnTimer;
+			        }
+			        else if (vigilanceinactivespeed == -1)
+			        {
+				        //If inactive speed is -1 always set to the timer state
+				        DeadmansHandleState = DeadmanStates.OnTimer;
+			        }
+			        else if (trainspeed < vigilanceinactivespeed && DeadmansHandleState == DeadmanStates.OnTimer)
+			        {
+				        //If train speed is than the inactive speed and we're in the timer mode
+				        //Set to no action
+				        DeadmansHandleState = DeadmanStates.None;
+			        }
+			        else if (trainspeed > vigilanceinactivespeed && DeadmansHandleState == DeadmanStates.None)
+			        {
+				        //Set to the timer state
+				        DeadmansHandleState = DeadmanStates.OnTimer;
+			        }
 
-                            this.overspeedtimer += data.ElapsedTime.Seconds;
-                            if (this.overspeedtimer >= (int)overspeedtime && Train.overspeedtripped == false)
-                            {
-                                //Apply max brake notches
-                                Train.overspeedtripped = true;
-                            }
-                            else if (Train.overspeedtripped == true)
-                            {
-                                if (data.Vehicle.Speed.KilometersPerHour <= safespeed)
-                                {
-                                    this.overspeedtimer = 0.0;
-                                    if (vigilanceautorelease != 0)
-                                    {
-                                        Train.overspeedtripped = false;
-                                        Train.tractionmanager.resetbrakeapplication();
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (Train.overspeedtripped == false)
-                            {
-                                //We aren't overspeed, reset the timeer
-                                this.overspeedtimer = 0.0;
-                            }
-
-                        }
-                    }
-                    else
-                    {
-                        //Overspeeed disabled, reset the timer
-                        this.overspeedtimer = 0.0;
-                        Train.overspeedtripped = false;
-                    }
-                }
-
-
-                {
-                    //Deadman's Handle
-                    if (deadmanshandle != 0)
-                    {
-                        //Initialise and set the start state
-                        if (Train.StartupSelfTestManager != null && Train.StartupSelfTestManager.SequenceState != StartupSelfTestManager.SequenceStates.Initialised)
-                        {
-                            //Startup self-test has not been performed, no systems active
-                            DeadmansHandleState = DeadmanStates.None;
-                        }
-                        else if (Train.electric != null && Train.electric.FrontPantographState != electric.PantographStates.OnService && Train.electric.RearPantographState != electric.PantographStates.OnService && trainspeed == 0)
-                        {
-                            //Stationary with no available pantographs
-                            DeadmansHandleState = DeadmanStates.None;
-                        }
-                        else if (vigilanceinactivespeed == -2 && Train.Handles.Reverser == 0)
-                        {
-                            //Set to no action if inactive speed is -2 & in neutral
-                            DeadmansHandleState = DeadmanStates.None;
-                        }
-                        else if (vigilanceinactivespeed == -2 && Train.Handles.Reverser != 0)
-                        {
-                            //Otherwise set to the timer state
-                            DeadmansHandleState = DeadmanStates.OnTimer;
-                        }
-                        else if (vigilanceinactivespeed == -1)
-                        {
-                            //If inactive speed is -1 always set to the timer state
-                            DeadmansHandleState = DeadmanStates.OnTimer;
-                        }
-                        else if (trainspeed < vigilanceinactivespeed && DeadmansHandleState == DeadmanStates.OnTimer)
-                        {
-                            //If train speed is than the inactive speed and we're in the timer mode
-                            //Set to no action
-                            DeadmansHandleState = DeadmanStates.None;
-                        }
-                        else if (trainspeed > vigilanceinactivespeed && DeadmansHandleState == DeadmanStates.None)
-                        {
-                            //Set to the timer state
-                            DeadmansHandleState = DeadmanStates.OnTimer;
-                        }
-
-                        //Calculate vigilance time from the array
-                        int vigilancelength = vigilancearray.Length;
-                        if (Train.Handles.PowerNotch == 0)
-                        {
-                            vigilancetime = vigilancearray[0];
-                        }
-                        else if (Train.Handles.PowerNotch <= vigilancelength)
-                        {
-                            vigilancetime = vigilancearray[(Train.Handles.PowerNotch - 1)];
-                        }
-                        else
-                        {
-                            vigilancetime = vigilancearray[(vigilancelength - 1)];
-                        }
+			        //Calculate vigilance time from the array
+			        int vigilancelength = vigilancearray.Length;
+			        if (Train.Handles.PowerNotch == 0)
+			        {
+				        vigilancetime = vigilancearray[0];
+			        }
+			        else if (Train.Handles.PowerNotch <= vigilancelength)
+			        {
+				        vigilancetime = vigilancearray[(Train.Handles.PowerNotch - 1)];
+			        }
+			        else
+			        {
+				        vigilancetime = vigilancearray[(vigilancelength - 1)];
+			        }
 
 
 
-                        if (DeadmansHandleState == DeadmanStates.OnTimer)
-                        {
-                            //Reset other timers
-                            deadmansalarmtimer = 0.0;
-                            deadmansbraketimer = 0.0;
-                            //Elapse Timer
-                            this.deadmanstimer += data.ElapsedTime.Milliseconds;
-                            if (this.deadmanstimer > vigilancetime)
-                            {
-                                DeadmansHandleState = DeadmanStates.TimerExpired;
-                            }
-                        }
-                        else if (DeadmansHandleState == DeadmanStates.TimerExpired)
-                        {
-                            //Start the next timer
-                            deadmansalarmtimer += data.ElapsedTime.Milliseconds;
-                            if (deadmansalarmtimer > vigilancedelay1)
-                            {
-                                DeadmansHandleState = DeadmanStates.OnAlarm;
-                            }
-                        }
-                        else if (DeadmansHandleState == DeadmanStates.OnAlarm)
-                        {
-                            //Trigger the alarm sound and move on
-                            if (vigilancealarm != -1)
-                            {
-                                SoundManager.Play(vigilancealarm, 1.0, 1.0, true);
-                            }
-                            DeadmansHandleState = DeadmanStates.AlarmTimer;
-                        }
-                        else if (DeadmansHandleState == DeadmanStates.AlarmTimer)
-                        {
-                            //Start the next timer
-                            deadmansbraketimer += data.ElapsedTime.Milliseconds;
-                            if (deadmansbraketimer > vigilancedelay2)
-                            {
-                                DeadmansHandleState = DeadmanStates.BrakesApplied;
-                            }
-                        }
-                        else if (DeadmansHandleState == DeadmanStates.BrakesApplied)
-                        {
-                            //Demand brake application
-                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
-                            //If we auto-release on coming to a full-stop
-                            if (vigilanceautorelease != 0 && Train.trainspeed == 0)
-                            {
-                                Train.tractionmanager.resetbrakeapplication();
-                                deadmansalarmtimer = 0.0;
-                                deadmansbraketimer = 0.0;
-                                deadmanstimer = 0.0;
-                            }
-                        }
+			        if (DeadmansHandleState == DeadmanStates.OnTimer)
+			        {
+				        //Reset other timers
+				        deadmansalarmtimer = 0.0;
+				        deadmansbraketimer = 0.0;
+				        //Elapse Timer
+				        this.deadmanstimer += data.ElapsedTime.Milliseconds;
+				        if (this.deadmanstimer > vigilancetime)
+				        {
+					        DeadmansHandleState = DeadmanStates.TimerExpired;
+				        }
+			        }
+			        else if (DeadmansHandleState == DeadmanStates.TimerExpired)
+			        {
+				        //Start the next timer
+				        deadmansalarmtimer += data.ElapsedTime.Milliseconds;
+				        if (deadmansalarmtimer > vigilancedelay1)
+				        {
+					        DeadmansHandleState = DeadmanStates.OnAlarm;
+				        }
+			        }
+			        else if (DeadmansHandleState == DeadmanStates.OnAlarm)
+			        {
+				        //Trigger the alarm sound and move on
+				        if (vigilancealarm != -1)
+				        {
+					        SoundManager.Play(vigilancealarm, 1.0, 1.0, true);
+				        }
+				        DeadmansHandleState = DeadmanStates.AlarmTimer;
+			        }
+			        else if (DeadmansHandleState == DeadmanStates.AlarmTimer)
+			        {
+				        //Start the next timer
+				        deadmansbraketimer += data.ElapsedTime.Milliseconds;
+				        if (deadmansbraketimer > vigilancedelay2)
+				        {
+					        DeadmansHandleState = DeadmanStates.BrakesApplied;
+				        }
+			        }
+			        else if (DeadmansHandleState == DeadmanStates.BrakesApplied)
+			        {
+				        //Demand brake application
+				        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+				        //If we auto-release on coming to a full-stop
+				        if (AutoRelease == true && Train.CurrentSpeed == 0)
+				        {
+					        Train.TractionManager.ResetBrakeApplication();
+					        deadmansalarmtimer = 0.0;
+					        deadmansbraketimer = 0.0;
+					        deadmanstimer = 0.0;
+				        }
+			        }
 
 
 
-                    }
+		        }
 
-                }
-                if (Train.SCMT != null)
-                {
-                    if (vigilante == true && SCMT.testscmt == 4)
-                    {
-                        if (Train.trainspeed > 2 && VigilanteState == VigilanteStates.None)
-                        {
-                            VigilanteState = VigilanteStates.AlarmSounding;
-                        }
-                        else if (VigilanteState == VigilanteStates.AlarmSounding)
-                        {
-                            if (vigilancealarm != -1)
-                            {
-                                SoundManager.Play(vigilancealarm, 1.0, 1.0, true);
-                            }
-                            if (Train.trainspeed != 0)
-                            {
-                                vigilanteTimer += data.ElapsedTime.Milliseconds;
-                                if (vigilanteTimer > vigilancedelay1)
-                                {
-                                    VigilanteState = VigilanteStates.EbApplied;
-                                }
-                            }
-                        }
-                        else if (VigilanteState == VigilanteStates.EbApplied)
-                        {
-                            vigilanteTimer = 0.0;
-                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
-                            if (vigilancealarm != -1)
-                            {
-                                SoundManager.Stop(vigilancealarm);
-                            }
-                            if (SCMT.tpwswarningsound != -1)
-                            {
-                                SoundManager.Play(SCMT.tpwswarningsound, 1.0, 1.0, true);
-                            }
-                        }
-                        else if (VigilanteState == VigilanteStates.OnService)
-                        {
-                            vigilanteTimer = 0.0;
-                            if (Train.trainspeed == 0)
-                            {
-                                VigilanteState = VigilanteStates.None;
-                            }
-                        }
-                    }
-                
-                }
+	        }
+	        if (Train.SCMT != null)
+		        {
+			        if (vigilante == true && SCMT.testscmt == 4)
+			        {
+				        if (Train.CurrentSpeed > 2 && VigilanteState == VigilanteStates.None)
+				        {
+					        VigilanteState = VigilanteStates.AlarmSounding;
+				        }
+				        else if (VigilanteState == VigilanteStates.AlarmSounding)
+				        {
+					        if (vigilancealarm != -1)
+					        {
+						        SoundManager.Play(vigilancealarm, 1.0, 1.0, true);
+					        }
+					        if (Train.CurrentSpeed != 0)
+					        {
+						        vigilanteTimer += data.ElapsedTime.Milliseconds;
+						        if (vigilanteTimer > vigilancedelay1)
+						        {
+							        VigilanteState = VigilanteStates.EbApplied;
+						        }
+					        }
+				        }
+				        else if (VigilanteState == VigilanteStates.EbApplied)
+				        {
+					        vigilanteTimer = 0.0;
+					        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+					        if (vigilancealarm != -1)
+					        {
+						        SoundManager.Stop(vigilancealarm);
+					        }
+					        if (SCMT.tpwswarningsound != -1)
+					        {
+						        SoundManager.Play(SCMT.tpwswarningsound, 1.0, 1.0, true);
+					        }
+				        }
+				        else if (VigilanteState == VigilanteStates.OnService)
+				        {
+					        vigilanteTimer = 0.0;
+					        if (Train.CurrentSpeed == 0)
+					        {
+						        VigilanteState = VigilanteStates.None;
+					        }
+				        }
+			        }
 
-                //Consequences
-                if (Train.overspeedtripped == true)
-                {
-                    //Overspeed has tripped, apply service brakes
-                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
-                }
+		        }
 
-                {
-                    //Set Panel Variables
-                    if (draindicator != -1)
-                    {
-                        if (Train.drastate == true)
-                        {
-                            this.Train.Panel[(draindicator)] = 1;
-                        }
-                        else
-                        {
-                            this.Train.Panel[(draindicator)] = 0;
-                        }
-                    }
-                    if (overspeedindicator != -1)
-                    {
-                        if (Train.overspeedtripped == true || trainspeed > warningspeed)
-                        {
-                            this.Train.Panel[(overspeedindicator)] = 1;
-                        }
-                        else
-                        {
-                            this.Train.Panel[(overspeedindicator)] = 0;
-                        }
-                    }
-                    if (vigilancelamp != -1)
-                    {
-                        if (DeadmansHandleState == DeadmanStates.None || DeadmansHandleState == DeadmanStates.OnTimer)
-                        {
-                            this.Train.Panel[(vigilancelamp)] = 0;
-                        }
-                        else
-                        {
-                            this.Train.Panel[(vigilancelamp)] = 1;
-                        }
-                        if (vigilante == true)
-                        {
-                            if (VigilanteState == VigilanteStates.AlarmSounding || VigilanteState == VigilanteStates.EbApplied)
-                            {
-                                this.Train.Panel[(vigilancelamp)] = 1;
-                            }
-                            else
-                            {
-                                this.Train.Panel[(vigilancelamp)] = 0;
-                            }
-                        }
-                    }
-                    
-                }
-                if (overspeedalarm != -1)
-                {
-                    if (Train.overspeedtripped == true || trainspeed > warningspeed)
-                    {
-                        SoundManager.Play(overspeedalarm, 1.0, 1.0, true);
-                    }
-                    else
-                    {
-                        SoundManager.Stop(overspeedalarm);
-                    }
-                }
-                
-                    
-                }
+	        {
+		        //Set Panel Variables
+		        if (draindicator != -1)
+		        {
+			        if (Train.drastate == true)
+			        {
+				        this.Train.Panel[(draindicator)] = 1;
+			        }
+			        else
+			        {
+				        this.Train.Panel[(draindicator)] = 0;
+			        }
+		        }
+
+		        if (vigilancelamp != -1)
+		        {
+			        if (DeadmansHandleState == DeadmanStates.None || DeadmansHandleState == DeadmanStates.OnTimer)
+			        {
+				        this.Train.Panel[(vigilancelamp)] = 0;
+			        }
+			        else
+			        {
+				        this.Train.Panel[(vigilancelamp)] = 1;
+			        }
+			        if (vigilante == true)
+			        {
+				        if (VigilanteState == VigilanteStates.AlarmSounding || VigilanteState == VigilanteStates.EbApplied)
+				        {
+					        this.Train.Panel[(vigilancelamp)] = 1;
+				        }
+				        else
+				        {
+					        this.Train.Panel[(vigilancelamp)] = 0;
+				        }
+			        }
+		        }
+
+	        }
+
         }
 
         /// <summary>Call this function from the traction manager to attempt to reset a Vigilante intervention</summary>
         internal void VigilanteReset()
         {
-            if (Train.trainspeed == 0 && VigilanteState == VigilanteStates.EbApplied)
+            if (Train.CurrentSpeed == 0 && VigilanteState == VigilanteStates.EbApplied)
             {
                 if (SCMT.tpwswarningsound != -1)
                 {
                     SoundManager.Stop(SCMT.tpwswarningsound);
                 }
-                Train.tractionmanager.resetbrakeapplication();
+                Train.TractionManager.ResetBrakeApplication();
                 SCMT.spiarossi_act = false;
                 VigilanteState = VigilanteStates.None;
             }

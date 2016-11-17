@@ -160,7 +160,7 @@ namespace Plugin
                         Engine1Running = true;
                         //Reset the power cutoff
                         Train.DebugLogger.LogMessage("Western Diesel- Engine 1 started.");
-                        Train.tractionmanager.resetpowercutoff();
+                        Train.TractionManager.ResetPowerCutoff();
                         NumberOfEnginesRunning += 1;
                     }
                 }
@@ -193,7 +193,7 @@ namespace Plugin
                         Engine2Running = true;
                         //Reset the power cutoff
                         Train.DebugLogger.LogMessage("Western Diesel- Engine 2 started.");
-                        Train.tractionmanager.resetpowercutoff(); 
+                        Train.TractionManager.ResetPowerCutoff(); 
                         NumberOfEnginesRunning += 1;
                     }
                 }
@@ -221,15 +221,15 @@ namespace Plugin
             {
                 
                 SoundManager.Stop(EngineLoopSound);
-                if (Train.tractionmanager.powercutoffdemanded == false)
+                if (Train.TractionManager.PowerCutoffDemanded == false)
                 {
                     Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to no available engines.");
-                    Train.tractionmanager.demandpowercutoff();
+                    Train.TractionManager.DemandPowerCutoff();
                 }
-                if (Train.tractionmanager.brakedemanded == false)
+                if (Train.TractionManager.BrakeInterventionDemanded == false)
                 {
                     Train.DebugLogger.LogMessage("Western Diesel- Brakes applied due to no running compressors.");
-                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
+                    Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
                 }
             }
             else
@@ -237,19 +237,19 @@ namespace Plugin
                 if (CompressorsRunning == false)
                 {
                     CompressorsRunning = true;
-                    if (Train.tractionmanager.brakedemanded == true)
+                    if (Train.TractionManager.BrakeInterventionDemanded == true)
                     {
                         Train.DebugLogger.LogMessage("Western Diesel- An attempt was made to reset the current brake application due to the compressors starting.");
-                        Train.tractionmanager.resetbrakeapplication();
+                        Train.TractionManager.ResetBrakeApplication();
                     }
                 }
                 if (GearBox.TorqueConvertorState != WesternGearBox.TorqueConvertorStates.OnService)
                 {
                     //If the torque convertor is not on service, then cut power
-                    if (Train.tractionmanager.powercutoffdemanded == false)
+                    if (Train.TractionManager.PowerCutoffDemanded == false)
                     {
                         Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due the torque convertor being out of service.");
-                        Train.tractionmanager.demandpowercutoff();
+                        Train.TractionManager.DemandPowerCutoff();
                     }
                     //Now, run the startup sequence
                     if (Train.Handles.Reverser != 0 && Train.Handles.PowerNotch != 0)
@@ -264,7 +264,7 @@ namespace Plugin
                             GearBox.TorqueConvertorState = WesternGearBox.TorqueConvertorStates.OnService;
                             GearBox.TorqueConvertorTimer = 0.0;
                             Train.DebugLogger.LogMessage("Western Diesel- The gearbox fill cycle has completed sucessfully and the torque convertor is now on service");
-                            Train.tractionmanager.resetpowercutoff();
+                            Train.TractionManager.ResetPowerCutoff();
                         }
                     }
 
@@ -364,7 +364,7 @@ namespace Plugin
              * Power notches 6-10 represent increases of 20% power with two engines running
              */
             bool TurboBoost = Turbocharger.RunTurbocharger(data.ElapsedTime.Milliseconds, (int) CurrentRPM);
-            if (Train.Handles.PowerNotch != 0 && Train.tractionmanager.powercutoffdemanded == false)
+            if (Train.Handles.PowerNotch != 0 && Train.TractionManager.PowerCutoffDemanded == false)
             {
                 //An engine may be running but not providing power
                 var EnginesProvidingPower = NumberOfEnginesRunning;
@@ -418,7 +418,7 @@ namespace Plugin
                     //Only increase temperature if it's less than 500 or the current RPM is greater than 1000
                     
 	                var Multiplier = 0;
-	                if (Train.trainspeed > 20)
+	                if (Train.CurrentSpeed > 20)
 	                {
 						//Greater than 20kph one notch on the cooling
 		                Multiplier -= 1;
@@ -471,7 +471,7 @@ namespace Plugin
                 else
                 {
                     var Multiplier = 1;
-                    if (Train.trainspeed > 20)
+                    if (Train.CurrentSpeed > 20)
                     {
                         Multiplier += 1;
                     }
@@ -492,7 +492,7 @@ namespace Plugin
                     // 2x- RPM below 1000, speed above 20kph & shutters open
                     //Only increase temperature if it's less than 500 or the current RPM is greater than 1000
 					var Multiplier = 0;
-					if (Train.trainspeed > 20)
+					if (Train.CurrentSpeed > 20)
 					{
 						//Greater than 20kph one notch on the cooling
 						Multiplier -= 1;
@@ -545,7 +545,7 @@ namespace Plugin
                 else
                 {
                     var Multiplier = 1;
-                    if (Train.trainspeed > 20)
+                    if (Train.CurrentSpeed > 20)
                     {
                         Multiplier += 1;
                     }
@@ -582,12 +582,12 @@ namespace Plugin
                         Train.DebugLogger.LogMessage("Western Diesel- Engine 1 overheated");
                         if (Engine2Running == false)
                         {
-                            Train.tractionmanager.demandpowercutoff();
+                            Train.TractionManager.DemandPowerCutoff();
                             Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to engine 1 overheating, and engine 2 being stopped");
                         }
                         else if (Engine2Temperature.Overheated)
                         {
-                            Train.tractionmanager.demandpowercutoff();
+                            Train.TractionManager.DemandPowerCutoff();
                             Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to both engines overheating");
                         }
                         Engine1Temperature.Logged = true;
@@ -596,7 +596,7 @@ namespace Plugin
                 else if(Engine1Temperature.Logged == true && Engine1Temperature.Overheated == false)
                 {
                     Train.DebugLogger.LogMessage("Western Diesel- Engine 1 returned to normal operating temperature");
-                    Train.tractionmanager.resetpowercutoff();
+                    Train.TractionManager.ResetPowerCutoff();
                     Engine1Temperature.Logged = false;
                 }
                 /*
@@ -609,12 +609,12 @@ namespace Plugin
                         Train.DebugLogger.LogMessage("Western Diesel- Engine 2 overheated");
                         if (Engine1Running == false)
                         {
-                            Train.tractionmanager.demandpowercutoff();
+                            Train.TractionManager.DemandPowerCutoff();
                             Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to engine 2 overheating, and engine 1 being stopped");
                         }
                         else if (Engine1Temperature.Overheated)
                         {
-                            Train.tractionmanager.demandpowercutoff();
+                            Train.TractionManager.DemandPowerCutoff();
                             Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to both engines overheating");
                         }
                         Engine2Temperature.Logged = true;
@@ -623,7 +623,7 @@ namespace Plugin
                 else if(Engine2Temperature.Logged == true)
                 {
                     Train.DebugLogger.LogMessage("Western Diesel- Engine 2 returned to normal operating temperature");
-                    Train.tractionmanager.resetpowercutoff();
+                    Train.TractionManager.ResetPowerCutoff();
                     Engine2Temperature.Logged = false;
                 }
                 /*
@@ -634,7 +634,7 @@ namespace Plugin
                     if (TransmissionTemperature.Logged == false)
                     {
                         Train.DebugLogger.LogMessage("Western Diesel- Transmission overheated");
-                        Train.tractionmanager.demandpowercutoff();
+                        Train.TractionManager.DemandPowerCutoff();
                         TransmissionTemperature.Logged = true;
                     }
                 }
@@ -642,7 +642,7 @@ namespace Plugin
                 {
                     if ((Engine1Running && !Engine1Temperature.Overheated) || (Engine2Running && !Engine2Temperature.Overheated))
                     {
-                        Train.tractionmanager.resetpowercutoff();
+                        Train.TractionManager.ResetPowerCutoff();
                     }
                     Train.DebugLogger.LogMessage("Western Diesel- Transmission returned to normal operating temperature");
                     TransmissionTemperature.Logged = false;
@@ -1047,28 +1047,28 @@ namespace Plugin
             PreviousRPM = CurrentRPM;
             if (AdvancedDriving.CheckInst != null)
             {
-                this.Train.tractionmanager.DebugWindowData.WesternEngine.CurrentRPM = ((int)CurrentRPM).ToString();
+                this.Train.TractionManager.DebugWindowData.WesternEngine.CurrentRPM = ((int)CurrentRPM).ToString();
                 if (Engine1Running)
                 {
-                    this.Train.tractionmanager.DebugWindowData.WesternEngine.RearEngineState = "Running";
+                    this.Train.TractionManager.DebugWindowData.WesternEngine.RearEngineState = "Running";
                 }
                 else
                 {
-                    this.Train.tractionmanager.DebugWindowData.WesternEngine.RearEngineState = Engine2Starter.StarterMotorState.ToString();
+                    this.Train.TractionManager.DebugWindowData.WesternEngine.RearEngineState = Engine2Starter.StarterMotorState.ToString();
                 }
                 if (Engine2Running)
                 {
-                    this.Train.tractionmanager.DebugWindowData.WesternEngine.FrontEngineState = "Running";
+                    this.Train.TractionManager.DebugWindowData.WesternEngine.FrontEngineState = "Running";
                 }
                 else
                 {
-                    this.Train.tractionmanager.DebugWindowData.WesternEngine.RearEngineState = Engine1Starter.StarterMotorState.ToString();
+                    this.Train.TractionManager.DebugWindowData.WesternEngine.RearEngineState = Engine1Starter.StarterMotorState.ToString();
                 }
-                this.Train.tractionmanager.DebugWindowData.WesternEngine.TorqueConverterState = GearBox.TorqueConvertorState.ToString();
-                this.Train.tractionmanager.DebugWindowData.WesternEngine.Engine1Temperature = (int)Engine1Temperature.InternalTemperature + " of " + Engine1Temperature.MaximumTemperature;
-                this.Train.tractionmanager.DebugWindowData.WesternEngine.Engine2Temperature = (int)Engine2Temperature.InternalTemperature + " of " + Engine2Temperature.MaximumTemperature;
-                this.Train.tractionmanager.DebugWindowData.WesternEngine.TransmissionTemperature = (int)TransmissionTemperature.InternalTemperature + " of " + TransmissionTemperature.MaximumTemperature;
-                this.Train.tractionmanager.DebugWindowData.WesternEngine.TurbochargerState = Turbocharger.TurbochargerState.ToString();
+                this.Train.TractionManager.DebugWindowData.WesternEngine.TorqueConverterState = GearBox.TorqueConvertorState.ToString();
+                this.Train.TractionManager.DebugWindowData.WesternEngine.Engine1Temperature = (int)Engine1Temperature.InternalTemperature + " of " + Engine1Temperature.MaximumTemperature;
+                this.Train.TractionManager.DebugWindowData.WesternEngine.Engine2Temperature = (int)Engine2Temperature.InternalTemperature + " of " + Engine2Temperature.MaximumTemperature;
+                this.Train.TractionManager.DebugWindowData.WesternEngine.TransmissionTemperature = (int)TransmissionTemperature.InternalTemperature + " of " + TransmissionTemperature.MaximumTemperature;
+                this.Train.TractionManager.DebugWindowData.WesternEngine.TurbochargerState = Turbocharger.TurbochargerState.ToString();
             }
         }
 
@@ -1205,14 +1205,14 @@ namespace Plugin
             if (Train.AWS.SafetyState == AWS.SafetyStates.Clear || Train.AWS.SafetyState == AWS.SafetyStates.None)
             {
                 Train.DebugLogger.LogMessage("Western Diesel- AWS System Isolated.");
-                Train.tractionmanager.isolatetpwsaws();
+                Train.TractionManager.isolatetpwsaws();
                 return;
             }
             //If the AWS has been isolated by the driver, issue an unconditional reset
             if (Train.AWS.SafetyState == AWS.SafetyStates.Isolated)
             {
                 Train.DebugLogger.LogMessage("Western Diesel- AWS System reset.");
-                Train.tractionmanager.reenabletpwsaws();
+                Train.TractionManager.reenabletpwsaws();
             }
         }
     }

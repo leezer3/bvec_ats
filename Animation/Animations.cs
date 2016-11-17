@@ -150,7 +150,7 @@ namespace Plugin
         {
             
             //Steam Locomotive Valve Gear
-                distancetravelled = Train.trainlocation - Train.previouslocation;
+                distancetravelled = Train.TrainLocation - Train.PreviousLocation;
                 //Then divide the distance travelled by the circumference to get us the percentage around the wheel travelled in this turn
                 double percentage = ((distancetravelled * 1000) / wheelcircumference) * 35;
                 //Multiply by 1000 to get the distance travelled in millimeters
@@ -225,19 +225,19 @@ namespace Plugin
                 }
 
             //Cylinder cocks puff state is handled in the animations class, but pressure usage is handled in the steam traction class
-            if (this.Train.steam != null && cylinderpuff_L != -1)
+            if (this.Train.SteamEngine != null && cylinderpuff_L != -1)
             {
-                if (Train.steam.cylindercocks == true)
+                if (Train.SteamEngine.cylindercocks == true)
                 {
-                    if (Train.trainspeed == 0 && Train.Handles.PowerNotch == 0)
+                    if (Train.CurrentSpeed == 0 && Train.Handles.PowerNotch == 0)
                     {
                         CylinderPuffState_L = CylinderPuffStates.OpenStationary;
                     }
-                    else if (Train.trainspeed == 0 && Train.Handles.PowerNotch > 0)
+                    else if (Train.CurrentSpeed == 0 && Train.Handles.PowerNotch > 0)
                     {
                         CylinderPuffState_L = CylinderPuffStates.OpenStationaryPowered;
                     }
-                    else if (Train.trainspeed > 0 && Train.Handles.PowerNotch == 0)
+                    else if (Train.CurrentSpeed > 0 && Train.Handles.PowerNotch == 0)
                     {
                         if (wheelpercentage > 25 && wheelpercentage < 65)
                         {
@@ -266,19 +266,19 @@ namespace Plugin
                 }
                 this.Train.Panel[(cylinderpuff_L)] = (int)CylinderPuffState_L;
             }
-            if (this.Train.steam != null && cylinderpuff_R != -1)
+            if (this.Train.SteamEngine != null && cylinderpuff_R != -1)
             {
-                if (Train.steam.cylindercocks == true)
+                if (Train.SteamEngine.cylindercocks == true)
                 {
-                    if (Train.trainspeed == 0 && Train.Handles.PowerNotch == 0)
+                    if (Train.CurrentSpeed == 0 && Train.Handles.PowerNotch == 0)
                     {
                         CylinderPuffState_R = CylinderPuffStates.OpenStationary;
                     }
-                    else if (Train.trainspeed == 0 && Train.Handles.PowerNotch > 0)
+                    else if (Train.CurrentSpeed == 0 && Train.Handles.PowerNotch > 0)
                     {
                         CylinderPuffState_R = CylinderPuffStates.OpenStationaryPowered;
                     }
-                    else if (Train.trainspeed > 0 && Train.Handles.PowerNotch == 0)
+                    else if (Train.CurrentSpeed > 0 && Train.Handles.PowerNotch == 0)
                     {
                         if (wheelpercentage > 5 && wheelpercentage < 45)
                         {
@@ -316,7 +316,7 @@ namespace Plugin
                 }
                 else if (MyDoorLightState == DoorLightStates.Primed)
                 {
-                    if (Train.trainspeed == 0)
+                    if (Train.CurrentSpeed == 0)
                     {
                         if (Train.Doors != DoorStates.None)
                         {
@@ -369,7 +369,7 @@ namespace Plugin
                 }
                 else if (MyDoorLightState == DoorLightStates.DoorsClosed)
                 {
-                    if (Train.trainspeed > 0)
+                    if (Train.CurrentSpeed > 0)
                     {
                         MyDoorLightState = DoorLightStates.InMotion;
                     }

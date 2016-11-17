@@ -13,7 +13,7 @@ namespace Plugin
 {
     internal class AtsP : Device
     {
-        private Train Train;
+        private readonly Train Train;
 
         internal AtsP.States State;
 
@@ -136,7 +136,7 @@ namespace Plugin
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
             this.Blocked = blocking;
-            if (this.State == AtsP.States.Suppressed && this.Train.tractionmanager.currentbrakenotch <= this.Train.Specs.BrakeNotches)
+            if (this.State == AtsP.States.Suppressed && this.Train.TractionManager.CurrentInterventionBrakeNotch <= this.Train.Specs.BrakeNotches)
             {
                 this.InitializationCountdown = this.DurationOfInitialization;
                 this.State = AtsP.States.Initializing;
@@ -289,7 +289,7 @@ namespace Plugin
                     }
                     if (this.State == AtsP.States.Brake)
                     {
-	                    Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
+	                    Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
                     }
                     if (this.Position > this.SwitchToAtsSxPosition & this.State != AtsP.States.Brake & this.State != AtsP.States.Service & this.State != AtsP.States.Emergency)
                     {
@@ -298,11 +298,11 @@ namespace Plugin
                 }
                 else if (this.State == AtsP.States.Service)
                 {
-					Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches);
+					Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
                 }
                 else if (this.State == AtsP.States.Emergency)
                 {
-					Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+					Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
                 }
                 if (!this.AtsSxPMode & (this.State == AtsP.States.Normal | this.State == AtsP.States.Pattern | this.State == AtsP.States.Brake | this.State == AtsP.States.Service | this.State == AtsP.States.Emergency))
                 {
@@ -420,7 +420,7 @@ namespace Plugin
                             }
                         }
                         this.State = AtsP.States.Normal;
-						Train.tractionmanager.resetbrakeapplication();
+						Train.TractionManager.ResetBrakeApplication();
                         if (!SoundManager.IsPlaying(CommonSounds.ATSPBell))
                         {
                             SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);

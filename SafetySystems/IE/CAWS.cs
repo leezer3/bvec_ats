@@ -103,12 +103,12 @@ namespace Plugin
                             CurrentAspect = PendingAspect;
                             EmergencyBrakeCountdown = 0.0;
                             AcknowledgementCountdown = 0.0;
-                            Train.tractionmanager.resetbrakeapplication();
+                            Train.TractionManager.ResetBrakeApplication();
                         }
                         else
                         {
                             EBApplied = true;
-                            Train.tractionmanager.demandbrakeapplication(this.Train.Specs.BrakeNotches + 1);
+                            Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
                         }
                     }
                     else if (AcknowledgementCountdown > 0.0)
