@@ -395,9 +395,10 @@ namespace Plugin
                 /*Write out the generator version and warning
                  *      Version 1 files handle OS_ATS only
                  *      Version 2 files handle OS_SZ_ATS files
+				 *      Version 3 files twiddle with key assignments slightly
                  * TODO: Re-generate files if a version 1 file is detected with OS_SZ_ATS present
                 */
-                sw.WriteLine(";GenVersion=2");
+                sw.WriteLine(";GenVersion=3");
                 sw.WriteLine(";DELETE THE ABOVE LINE IF YOU MODIFY THIS FILE");
                 sw.WriteLine();
                 //Traction Type First

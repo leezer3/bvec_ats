@@ -97,6 +97,7 @@
     <Compile Include="Functions\Messages.cs" />
     <Compile Include="Managers\TractionManager.Direction.cs" />
     <Compile Include="Managers\ReverserManager.cs" />
+    <Compile Include="Managers\KeyAssignments.cs" />
     <Compile Include="Managers\TractionManager.TractionType.cs" />
     <Compile Include="Managers\TractionManager.TravelMeter.cs" />
     <Compile Include="SafetySystems\DE\F92.cs" />

@@ -79,6 +79,8 @@ namespace Plugin {
 		
 		/// <summary>The driver handles at the last Elapse call.</summary>
 		internal ReadOnlyHandles Handles;
+
+		internal KeyConfiguration CurrentKeyConfiguration = new KeyConfiguration();
 		
 		/// <summary>The current state of the doors.</summary>
 		internal DoorStates Doors;
@@ -1804,143 +1806,144 @@ namespace Plugin {
 											//No validation is necessary for key assignments
 											//Errors here simply mean they won't be matched
 										case "safetykey":
-											this.TractionManager.safetykey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.SafetyKey, key);
+											
 											break;
 										case "automatickey":
-											this.TractionManager.automatickey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.AutomaticGearsCutoff, key);
 											break;
 										case "injectorkey":
-											this.TractionManager.injectorkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.SteamInjector, key);
 											break;
 										case "blowerskey":
-											this.TractionManager.blowerskey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.Blowers, key);
 											break;
 										case "cutoffdownkey":
-											this.TractionManager.cutoffdownkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CutoffDecrease, key);
 											break;
 										case "cutoffupkey":
-											this.TractionManager.cutoffupkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CutoffIncrease, key);
 											break;
 										case "fuelkey":
-											this.TractionManager.fuelkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.FillFuel, key);
 											break;
 										case "enginestartkey":
-											this.TractionManager.EngineStartKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.EngineStartKey, key);
 											break;
 										case "enginestopkey":
-											this.TractionManager.EngineStopKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.EngineStopKey, key);
 											break;
 										case "wiperspeedup":
-											this.TractionManager.wiperspeedup = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.IncreaseWiperSpeed, key);
 											break;
 										case "wiperspeeddown":
-											this.TractionManager.wiperspeeddown = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.DecreaseWiperSpeed, key);
 											break;
 										case "isolatesafetykey":
 											if (WesternDiesel == null)
 											{
-												this.TractionManager.isolatesafetykey = value;
+												InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.IsolateSafetySystems, key);
 											}
 											else
 											{
-												this.TractionManager.WesternAWSIsolationKey = value;
+												InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.WesternAWSIsolationKey, key);
 											}
 											break;
 										case "gearupkey":
-											this.TractionManager.gearupkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.GearUp, key);
 											break;
 										case "geardownkey":
-											this.TractionManager.geardownkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.GearDown, key);
 											break;
 										case "drakey":
-											this.TractionManager.DRAkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.DRA, key);
 											break;
 										case "customindicatorkey1":
-											this.TractionManager.customindicatorkey1 = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey1, key);
 											break;
 										case "customindicatorkey2":
-											this.TractionManager.customindicatorkey2 = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey2, key);
 											break;
 										case "customindicatorkey3":
-											this.TractionManager.customindicatorkey3 = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey3, key);
 											break;
 										case "customindicatorkey4":
-											this.TractionManager.customindicatorkey4 = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey4, key);
 											break;
 										case "customindicatorkey5":
-											this.TractionManager.customindicatorkey5 = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey5, key);
 											break;
 										case "customindicatorkey6":
-											this.TractionManager.customindicatorkey6 = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey6, key);
 											break;
 										case "customindicatorkey7":
-											this.TractionManager.customindicatorkey7 = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey7, key);
 											break;
 										case "customindicatorkey8":
-											this.TractionManager.customindicatorkey8 = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey8, key);
 											break;
 										case "customindicatorkey9":
-											this.TractionManager.customindicatorkey9 = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey9, key);
 											break;
 										case "customindicatorkey10":
-											this.TractionManager.customindicatorkey10 = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey10, key);
 											break;
 										case "frontpantographkey":
-											this.TractionManager.frontpantographkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.FrontPantograph, key);
 											break;
 										case "rearpantographkey":
-											this.TractionManager.rearpantographkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.RearPantograph, key);
 											break;
 										case "advancedrivingkey":
-											this.TractionManager.advancedrivingkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.ShowAdvancedDrivingWindow, key);
 											break;
 										case "steamheatincreasekey":
-											this.TractionManager.steamheatincreasekey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.IncreaseSteamHeat, key);
 											break;
 										case "steamheatdecreasekey":
-											this.TractionManager.steamheatdecreasekey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.DecreaseSteamHeat, key);
 											break;
 										case "cylindercockskey":
-											this.TractionManager.cylindercockskey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CylinderCocks, key);
 											break;
 										case "headcodekey":
-											this.TractionManager.headcodekey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.HeadCode, key);
 											break;
 										case "cawskey":
-											this.TractionManager.CAWSKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CAWSKey, key);
 											break;
 										case "impvelsukey":
-											this.TractionManager.SCMTincreasespeed = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.SCMTincreasespeed, key);
 											break;
 										case "impvelgiukey":
-											this.TractionManager.SCMTdecreasespeed = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.SCMTdecreasespeed, key);
 											break;
 										case "scmtkey":
-											this.TractionManager.TestSCMTKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.TestSCMTKey, key);
 											break;
 										case "lcmupkey":
-											this.TractionManager.LCMupKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.LCMupKey, key);
 											break;
 										case "lcmdownkey":
-											this.TractionManager.LCMdownkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.LCMdownkey, key);
 											break;
 										case "abbancokey":
-											this.TractionManager.AbilitaBancoKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.AbilitaBancoKey, key);
 											break;
 										case "consavvkey":
-											this.TractionManager.ConsensoAvviamentoKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.ConsensoAvviamentoKey, key);
 											break;
 										case "avvkey":
-											this.TractionManager.AvviamentoKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.AvviamentoKey, key);
 											break;
 										case "spegnkey":
-											this.TractionManager.SpegnimentoKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.SpegnimentoKey, key);
 											break;
 										case "vigilantekey":
-											this.TractionManager.vigilantekey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.vigilantekey, key);
 											break;
 										case "vigilanteresetkey":
-											this.TractionManager.vigilanteresetkey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.vigilanteresetkey, key);
 											break;
 											/* TODO: Add from SCMT these values:
 											 * impvel++
@@ -1963,32 +1966,32 @@ namespace Plugin {
 											 * Functions should already be implemented, requires adding these to traction manager
 											 */
 										case "pzbkey":
-											this.TractionManager.PZBKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.PZBKey, key);
 											break;
 										case "pzbreleasekey":
-											this.TractionManager.PZBReleaseKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.PZBReleaseKey, key);
 											break;
 										case "pzbstopoverridekey":
-											this.TractionManager.PZBStopOverrideKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.PZBStopOverrideKey, key);
 											break;
 										//Keys added for BR Class 52 'Western' Diesel Locomotive
 										case "westernbatteryswitch":
-											this.TractionManager.WesternBatterySwitch = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.WesternBatterySwitch, key);
 											break;
 										case "westernfuelpumpswitch":
-											this.TractionManager.WesternFuelPumpSwitch = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.WesternFuelPumpSwitch, key);
 											break;
 										case "westernmasterkey":
-											this.TractionManager.WesternMasterKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.WesternMasterKey, key);
 											break;
 										case "westerntransmissionresetkey":
-											this.TractionManager.WesternTransmissionResetButton = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.WesternTransmissionResetButton, key);
 											break;
 										case "westernengineswitchkey":
-											this.TractionManager.WesternEngineSwitchKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.WesternEngineSwitchKey, key);
 											break;
 										case "westernfirebellkey":
-											this.TractionManager.WesternFireBellKey = value;
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.WesternFireBellKey, key);
 											break;
 										default:
 											throw new InvalidDataException("The parameter " + key + " is not supported.");

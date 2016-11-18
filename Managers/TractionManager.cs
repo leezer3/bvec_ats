@@ -20,6 +20,8 @@ namespace Plugin
 
 		internal ReverserManager CurrentReverserManager;
 
+		
+
 		/// <summary>The engine has overheated</summary>
 		internal bool EngineOverheated;
 		/// <summary>Whether the safety systems are currently isolated by the driver</summary>
@@ -99,83 +101,7 @@ namespace Plugin
 
 		//Default Key Assignments
 		//Keys Down
-		internal string safetykey = "A1";
-		internal string automatickey = "A2";
-		internal string injectorkey = "B2";
-		internal string cutoffdownkey = "C1";
-		internal string cutoffupkey = "C2";
-		internal string fuelkey = "I";
-		internal string wiperspeedup = "J";
-		internal string wiperspeeddown = "K";
-		internal string isolatesafetykey = "L";
 
-		//Keys Up
-		internal string gearupkey = "B1";
-		internal string geardownkey = "B2";
-		internal string DRAkey = "S";
-
-		//Custom Indicators
-		internal string customindicatorkey1 = "D";
-		internal string customindicatorkey2 = "E";
-		internal string customindicatorkey3 = "F";
-		internal string customindicatorkey4 = "G";
-		internal string customindicatorkey5 = "H";
-		internal string customindicatorkey6 = "";
-		internal string customindicatorkey7 = "";
-		internal string customindicatorkey8 = "";
-		internal string customindicatorkey9 = "";
-		internal string customindicatorkey10 = "";
-		internal string headcodekey = "";
-		//NEW KEYS ADDED FOR BVEC_ATS
-
-		//Front/ rear pantographs
-		internal string frontpantographkey;
-		internal string rearpantographkey;
-		//Steam locomotive functions
-		internal string shovellingkey;
-		internal string blowerskey;
-		internal string advancedrivingkey;
-		internal string steamheatincreasekey;
-		internal string steamheatdecreasekey;
-		internal string cylindercockskey;
-		//Diesel locomotive functions
-		internal string EngineStartKey;
-		internal string EngineStopKey;
-
-		//These keys are for the Western locomotive
-		//This has it's own manager type
-		internal string WesternBatterySwitch;
-		internal string WesternMasterKey;
-		internal string WesternTransmissionResetButton;
-		internal string WesternEngineSwitchKey;
-		internal string WesternAWSIsolationKey;
-		internal string WesternFireBellKey;
-		internal string WesternEngineOnlyKey;
-		internal string WesternFuelPumpSwitch;
-
-		//KEYS ADDED BY OS_SZ_ATS
-
-		internal string SCMTincreasespeed;
-		internal string SCMTdecreasespeed;
-		internal string AbilitaBancoKey;
-		internal string ConsensoAvviamentoKey;
-		internal string AvviamentoKey;
-		internal string SpegnimentoKey;
-		internal string LCMupKey;
-		internal string LCMdownkey;
-		internal string TestSCMTKey;
-		//These used to use safetykey && tpwsresetkey
-		//tpwsreset doesn't exist, so move to their own key assignments
-		internal string vigilantekey;
-		internal string vigilanteresetkey;
-
-		//CAWS Key
-		internal string CAWSKey = "S";
-
-		//PZB Keys
-		internal string PZBKey;
-		internal string PZBReleaseKey;
-		internal string PZBStopOverrideKey;
 
 		/// <summary>The maximum power notch allowed by the engine</summary>
 		internal int MaximumPowerNotch;
@@ -232,39 +158,39 @@ namespace Plugin
 						CustomIndicatorsArray[i].PanelIndex = Int32.Parse(splitcustomindicators[i]);
 					}
 					//Set the key assignments
-					if (String.IsNullOrEmpty(CustomIndicatorsArray[i].Key))
+					if (CustomIndicatorsArray[i].Key == null)
 					{
 						switch (i)
 						{
 							case 0:
-								CustomIndicatorsArray[i].Key = customindicatorkey1;
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey1;
 							break;
 							case 1:
-								CustomIndicatorsArray[i].Key = customindicatorkey2;
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey2;
 							break;
 							case 2:
-								CustomIndicatorsArray[i].Key = customindicatorkey3;
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey3;
 							break;
 							case 3:
-								CustomIndicatorsArray[i].Key = customindicatorkey4;
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey4;
 							break;
 							case 4:
-								CustomIndicatorsArray[i].Key = customindicatorkey5;
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey5;
 							break;
 							case 5:
-								CustomIndicatorsArray[i].Key = customindicatorkey6;
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey6;
 							break;
 							case 6:
-								CustomIndicatorsArray[i].Key = customindicatorkey7;
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey7;
 							break;
 							case 7:
-								CustomIndicatorsArray[i].Key = customindicatorkey8;
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey8;
 							break;
 							case 8:
-								CustomIndicatorsArray[i].Key = customindicatorkey9;
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey9;
 							break;
 							case 9:
-								CustomIndicatorsArray[i].Key = customindicatorkey10;
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey10;
 							break;
 						}
 					}
@@ -1043,28 +969,27 @@ namespace Plugin
 		/// <param name="key">The key.</param>
 		internal override void KeyDown(VirtualKeys key)
 		{
-			//Convert keypress to string for comparison
-			string keypressed = Convert.ToString(key);
+
+
+			if (Train.Vigilance != null)
 			{
-				if (Train.Vigilance != null)
+				if (Train.Vigilance.DeadmansHandleState != Vigilance.DeadmanStates.BrakesApplied &&
+				    Train.Vigilance.independantvigilance == 0)
 				{
-					if (Train.Vigilance.DeadmansHandleState != Vigilance.DeadmanStates.BrakesApplied &&
-						Train.Vigilance.independantvigilance == 0)
-					{
-						//Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
-						Train.Vigilance.deadmanstimer = 0.0;
-						SoundManager.Stop(Train.Vigilance.vigilancealarm);
-						Train.Vigilance.DeadmansHandleState = Vigilance.DeadmanStates.OnTimer;
-					}
+					//Only reset deadman's timer automatically for any key if it's not already tripped and independant vigilance is not set
+					Train.Vigilance.deadmanstimer = 0.0;
+					SoundManager.Stop(Train.Vigilance.vigilancealarm);
+					Train.Vigilance.DeadmansHandleState = Vigilance.DeadmanStates.OnTimer;
 				}
 			}
 
-			if (keypressed == automatickey)
+
+			if (key == Train.CurrentKeyConfiguration.AutomaticGearsCutoff)
 			{
 				//Toggle Automatic Cutoff/ Gears
 				AutomaticAdvancedFunctions = !AutomaticAdvancedFunctions;
 			}
-			if (keypressed == advancedrivingkey)
+			if (key == Train.CurrentKeyConfiguration.ShowAdvancedDrivingWindow)
 			{
 				if (debugwindowshowing == false)
 				{
@@ -1091,7 +1016,7 @@ namespace Plugin
 				}
 			}
 
-			if (keypressed == safetykey)
+			if (key == Train.CurrentKeyConfiguration.SafetyKey)
 			{
 				if (Train.Vigilance != null)
 				{
@@ -1210,7 +1135,7 @@ namespace Plugin
 					Train.Windscreen.windscreenwipers(0);
 				}
 			}
-			if (keypressed == isolatesafetykey)
+			if (key == Train.CurrentKeyConfiguration.IsolateSafetySystems)
 			{
 				if (Train.WesternDiesel != null)
 				{
@@ -1230,18 +1155,18 @@ namespace Plugin
 				}
 			}
 			//Toggle Pantographs
-			if (keypressed == frontpantographkey)
+			if (key == Train.CurrentKeyConfiguration.FrontPantograph)
 			{
 				Train.ElectricEngine.pantographtoggle(0);
 			}
-			if (keypressed == rearpantographkey)
+			if (key == Train.CurrentKeyConfiguration.RearPantograph)
 			{
 				Train.ElectricEngine.pantographtoggle(1);
 			}
 
 			foreach (CustomIndicator Indicator in CustomIndicatorsArray)
 			{
-				if (keypressed == Indicator.Key)
+				if (key == Indicator.Key)
 				{
 					Indicator.Active = !Indicator.Active;
 					//Play the toggle sound if this has been set
@@ -1252,7 +1177,7 @@ namespace Plugin
 				}
 			}
 
-			if (keypressed == headcodekey)
+			if (key == Train.CurrentKeyConfiguration.HeadCode)
 			{
 				Animations.headcodetoggle();
 			}
@@ -1281,26 +1206,26 @@ namespace Plugin
 					Train.SteamEngine.blowers = !Train.SteamEngine.blowers;
 				}
 				//Shovel Coal
-				if (keypressed == shovellingkey)
+				if (key == Train.CurrentKeyConfiguration.ShovelFuel)
 				{
 					Train.SteamEngine.shovelling = !Train.SteamEngine.shovelling;
 					
 				}
-				if (keypressed == steamheatincreasekey)
+				if (key == Train.CurrentKeyConfiguration.IncreaseSteamHeat)
 				{
 					if (Train.SteamEngine.steamheatlevel < 5)
 					{
 						Train.SteamEngine.steamheatlevel++;
 					}
 				}
-				if (keypressed == steamheatdecreasekey)
+				if (key == Train.CurrentKeyConfiguration.DecreaseSteamHeat)
 				{
 					if (Train.SteamEngine.steamheatlevel > 0)
 					{
 						Train.SteamEngine.steamheatlevel--;
 					}
 				}
-				if (keypressed == cylindercockskey)
+				if (key == Train.CurrentKeyConfiguration.CylinderCocks)
 				{
 					if (Train.SteamEngine.cylindercocks == false)
 					{
@@ -1314,46 +1239,46 @@ namespace Plugin
 			}
 			if (Train.SCMT_Traction.enabled == true)
 			{
-				if (keypressed == SCMTincreasespeed)
+				if (key == Train.CurrentKeyConfiguration.SCMTincreasespeed)
 				{
 					SCMT_Traction.increasesetspeed();
 				}
-				if (keypressed == SCMTdecreasespeed)
+				if (key == Train.CurrentKeyConfiguration.SCMTdecreasespeed)
 				{
 					SCMT_Traction.decreasesetspeed();
 				}
-				if (keypressed == AbilitaBancoKey)
+				if (key == Train.CurrentKeyConfiguration.AbilitaBancoKey)
 				{
 					SCMT_Traction.AbilitaBanco();
 				}
-				if (keypressed == ConsensoAvviamentoKey)
+				if (key == Train.CurrentKeyConfiguration.ConsensoAvviamentoKey)
 				{
 					SCMT_Traction.ConsensoAvviamento();
 				}
-				if (keypressed == AvviamentoKey)
+				if (key == Train.CurrentKeyConfiguration.AvviamentoKey)
 				{
 					SCMT_Traction.Avviamento();
 				}
-				if (keypressed == SpegnimentoKey)
+				if (key == Train.CurrentKeyConfiguration.SpegnimentoKey)
 				{
 					SCMT_Traction.Spegnimento();
 				}
-				if (keypressed == LCMupKey)
+				if (key == Train.CurrentKeyConfiguration.LCMupKey)
 				{
 					SCMT_Traction.LCMup();
 				}
-				if (keypressed == LCMdownkey)
+				if (key == Train.CurrentKeyConfiguration.LCMdownkey)
 				{
 					SCMT_Traction.LCMdown();
 				}
-				if (keypressed == TestSCMTKey)
+				if (key == Train.CurrentKeyConfiguration.TestSCMTKey)
 				{
 					Train.SCMT_Traction.TestSCMT();
 				}
 			}
 			if (Train.CAWS != null)
 			{
-				if (keypressed == CAWSKey)
+				if (key == Train.CurrentKeyConfiguration.CAWSKey)
 				{
 					if (CAWS.AcknowledgementCountdown > 0.0)
 					{
@@ -1365,31 +1290,31 @@ namespace Plugin
 			//Italian SCMT vigilante system
 			if (Train.Vigilance != null && Train.Vigilance.vigilante == true)
 			{
-				if (keypressed == vigilantekey)
+				if (key == Train.CurrentKeyConfiguration.vigilantekey)
 				{
 					if (Train.Vigilance.VigilanteState == Vigilance.VigilanteStates.AlarmSounding)
 					{
 						Train.Vigilance.VigilanteState = Vigilance.VigilanteStates.OnService;
 					}
 				}
-				else if (keypressed == vigilanteresetkey)
+				else if (key == Train.CurrentKeyConfiguration.vigilanteresetkey)
 				{
 					Train.Vigilance.VigilanteReset();
 				}
 			}
 			if (Train.PZB != null)
 			{
-				if (keypressed == PZBKey)
+				if (key == Train.CurrentKeyConfiguration.PZBKey)
 				{
 					Train.PZB.Acknowledge();
 					Train.PZB.WachamPressed = true;
 				}
-				if (keypressed == PZBReleaseKey)
+				if (key == Train.CurrentKeyConfiguration.PZBReleaseKey)
 				{
 					Train.PZB.Release();
 					Train.PZB.FreiPressed = true;
 				}
-				if (keypressed == PZBStopOverrideKey)
+				if (key == Train.CurrentKeyConfiguration.PZBStopOverrideKey)
 				{
 					if (Train.PZB.BefehlState == PZB.PZBBefehlStates.None)
 					{
@@ -1401,7 +1326,7 @@ namespace Plugin
 			//Western Diesel Locomotive
 			if (Train.WesternDiesel != null)
 			{
-				if (keypressed == safetykey)
+				if (key == Train.CurrentKeyConfiguration.SafetyKey)
 				{
 					if (Train.WesternDiesel.StartupManager.StartupState == WesternStartupManager.SequenceStates.DirectionSelected)
 					{
@@ -1417,24 +1342,24 @@ namespace Plugin
 				{
 					Train.WesternDiesel.BatterySwitch();
 				}
-				if (keypressed == WesternMasterKey)
+				if (key == Train.CurrentKeyConfiguration.WesternMasterKey)
 				{
 					Train.WesternDiesel.MasterKey();
 				}
-				
-				if (keypressed == WesternAWSIsolationKey)
+
+				if (key == Train.CurrentKeyConfiguration.WesternAWSIsolationKey)
 				{
 					Train.WesternDiesel.ToggleAWS();
 				}
-				if (keypressed == WesternFireBellKey)
+				if (key == Train.CurrentKeyConfiguration.WesternFireBellKey)
 				{
 					Train.WesternDiesel.FireBellTest();
 				}
-				if (keypressed == WesternEngineOnlyKey)
+				if (key == Train.CurrentKeyConfiguration.WesternEngineOnlyKey)
 				{
 					Train.WesternDiesel.EngineOnly = !Train.WesternDiesel.EngineOnly;
 				}
-				if (keypressed == WesternEngineSwitchKey)
+				if (key == Train.CurrentKeyConfiguration.WesternEngineSwitchKey)
 				{
 					if (Train.WesternDiesel.EngineSelector == 1)
 					{
@@ -1456,7 +1381,7 @@ namespace Plugin
 						Train.WesternDiesel.EngineStop(2);
 					}
 				}
-				if (keypressed == WesternFuelPumpSwitch)
+				if (key == Train.CurrentKeyConfiguration.WesternFuelPumpSwitch)
 				{
 					Train.WesternDiesel.FuelPumpSwitch();
 				}
@@ -1465,8 +1390,6 @@ namespace Plugin
 
 		internal override void KeyUp(VirtualKeys key)
 		{
-			//Convert keypress to string for comparison
-			string keypressed = Convert.ToString(key);
 			if (key == VirtualKeys.GearUp)
 			{
 				//Gear Up
@@ -1525,7 +1448,7 @@ namespace Plugin
 			}
 			if (Train.Vigilance != null)
 			{
-				if (keypressed == DRAkey)
+				if (key == Train.CurrentKeyConfiguration.DRA)
 				{
 					if (Train.Vigilance.draenabled != -1)
 					{
@@ -1546,39 +1469,39 @@ namespace Plugin
 			foreach (CustomIndicator Indicator in CustomIndicatorsArray)
 			{
 				//Reset any push-to-make indicators
-				if (keypressed == Indicator.Key && Indicator.PushToMake == true)
+				if (key == Indicator.Key && Indicator.PushToMake == true)
 				{
 					Indicator.Active = !Indicator.Active;
 				}
 			}
 			if (Train.SCMT_Traction != null)
 			{
-				if (keypressed == SCMTincreasespeed || keypressed == SCMTdecreasespeed)
+				if (key == Train.CurrentKeyConfiguration.SCMTincreasespeed || key == Train.CurrentKeyConfiguration.SCMTdecreasespeed)
 				{
 					SCMT_Traction.releasekey();
 				}
-				if (keypressed == AvviamentoKey)
+				if (key == Train.CurrentKeyConfiguration.AvviamentoKey)
 				{
 					SCMT_Traction.AvviamentoReleased();
 				}
-				if (keypressed == SpegnimentoKey)
+				if (key == Train.CurrentKeyConfiguration.SpegnimentoKey)
 				{
 					SCMT_Traction.SpegnimentoReleased();
 				}
 			}
 			if (Train.PZB != null)
 			{
-				if (keypressed == PZBKey)
+				if (key == Train.CurrentKeyConfiguration.PZBKey)
 				{
 					Train.PZB.WachamPressed = false;
 				}
-				if (keypressed == PZBReleaseKey)
+				if (key == Train.CurrentKeyConfiguration.PZBReleaseKey)
 				{
 					Train.PZB.Release();
 					Train.PZB.FreiPressed = false;
 				}
 
-				if (keypressed == PZBStopOverrideKey)
+				if (key == Train.CurrentKeyConfiguration.PZBStopOverrideKey)
 				{
 					Train.PZB.StopOverrideKeyPressed = false;
 					if (Train.PZB.PZBBefehlState != PZB.PZBBefehlStates.EBApplication)
@@ -1597,7 +1520,7 @@ namespace Plugin
 			}
 			if (Train.AWS != null)
 			{
-				if (keypressed == safetykey)
+				if (key == Train.CurrentKeyConfiguration.SafetyKey)
 				{
 					this.Train.AWS.CancelButtonPressed = false;
 				}

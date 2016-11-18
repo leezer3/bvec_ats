@@ -212,10 +212,10 @@ namespace Plugin.AI
 			if (Train.ElectricEngine.FrontPantograph.State != PantographStates.VCBReady || Train.ElectricEngine.RearPantograph.State != PantographStates.VCBReady)
 			{
 				//First check whether we have any pantographs
-				if (Train.TractionManager.frontpantographkey != null || Train.TractionManager.rearpantographkey != null)
+				if (Train.CurrentKeyConfiguration.FrontPantograph != null || Train.CurrentKeyConfiguration.RearPantograph != null)
 				{
 					//Test the front pantograph first
-					if (Train.TractionManager.frontpantographkey != null &&
+					if (Train.CurrentKeyConfiguration.FrontPantograph != null &&
 						Train.ElectricEngine.FrontPantograph.State == PantographStates.Lowered)
 					{
 						Train.ElectricEngine.pantographtoggle(0);
@@ -224,7 +224,7 @@ namespace Plugin.AI
 					}
 
 					//Then test the rear pantograph
-					if (Train.TractionManager.rearpantographkey != null &&
+					if (Train.CurrentKeyConfiguration.RearPantograph != null &&
 						Train.ElectricEngine.RearPantograph.State != PantographStates.Lowered)
 					{
 						Train.ElectricEngine.pantographtoggle(1);

@@ -489,7 +489,7 @@ namespace Plugin
                         //If automatic firing is on, only shovel coal if we are below 50% of max fire mass- Change???
                         //Use automatic behaviour if no shovelling key is set as obviously we can't shovel coal manually with no key
 						if (shovelling == true && firemass < maximumfiremass || this.Train.TractionManager.AutomaticAdvancedFunctions == true && firemass < (firemass / 2) && firemass < maximumfiremass
-                            || String.IsNullOrEmpty(Train.TractionManager.shovellingkey) && firemass < (firemass / 2) && firemass < maximumfiremass)
+                            || Train.CurrentKeyConfiguration.ShovelFuel == null && firemass < (firemass / 2) && firemass < maximumfiremass)
                         {
                             //Add the amount of coal shovelled per second to the fire mass & decrease it from the fire temperature
                             firemass += (int)shovellingrate;

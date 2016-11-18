@@ -127,7 +127,7 @@ namespace Plugin
 
 			//Set starting pantograph states
 			//If neither pantograph has a key assigned, set both to enabled
-			if (String.IsNullOrEmpty(Train.TractionManager.frontpantographkey) && String.IsNullOrEmpty(Train.TractionManager.rearpantographkey))
+			if (Train.CurrentKeyConfiguration.FrontPantograph == null && Train.CurrentKeyConfiguration.RearPantograph == null)
 				{
 					breakertripped = false;
 					FrontPantograph.Raised = true;
@@ -140,7 +140,7 @@ namespace Plugin
 			else if (mode == InitializationModes.OnService)
 			{
 				breakertripped = false;
-				if (String.IsNullOrEmpty(Train.TractionManager.frontpantographkey) && !String.IsNullOrEmpty(Train.TractionManager.rearpantographkey))
+				if (Train.CurrentKeyConfiguration.FrontPantograph == null && Train.CurrentKeyConfiguration.RearPantograph != null)
 				{
 					//Rear pantograph only is enabled
 					FrontPantograph.Raised = false;
@@ -162,7 +162,7 @@ namespace Plugin
 			else
 			{
 				breakertripped = true;
-				if (String.IsNullOrEmpty(Train.TractionManager.frontpantographkey) && !String.IsNullOrEmpty(Train.TractionManager.rearpantographkey))
+				if (Train.CurrentKeyConfiguration.FrontPantograph == null && Train.CurrentKeyConfiguration.RearPantograph != null)
 				{
 					//Rear pantograph only is enabled
 					FrontPantograph.Raised = false;

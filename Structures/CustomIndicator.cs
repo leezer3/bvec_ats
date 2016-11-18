@@ -1,4 +1,6 @@
-﻿namespace Plugin
+﻿using OpenBveApi.Runtime;
+
+namespace Plugin
 {
 	class CustomIndicator
 	{
@@ -9,7 +11,7 @@
 		/// <summary>Stores whether this custom indicator is active</summary>
 		internal bool Active = false;
 		/// <summary>The key to toggle this custom indicator</summary>
-		internal string Key = "";
+		internal VirtualKeys? Key;
 		/// <summary>Stores whether this is a push-to-make switch (Off by default)</summary>
 		internal bool PushToMake = false;
 	}
