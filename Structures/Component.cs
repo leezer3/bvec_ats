@@ -11,6 +11,8 @@
         public bool TogglePlayed = false;
         /// <summary>Stores the timer for this component</summary>
         public double Timer = 0.0;
-    }
+
+	    public bool Active;
+	}
     
 }

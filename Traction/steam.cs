@@ -29,14 +29,12 @@ namespace Plugin
         internal int pressureuse;
         internal int steamheatlevel;
         /// <summary>Stores the current boiler pressure</summary>
-        internal int stm_boilerpressure;
+        internal double stm_boilerpressure;
         /// <summary>Stores the current boiler water level</summary>
-        internal int stm_boilerwater;
+        internal double stm_boilerwater;
 
-        /// <summary>Stores whether the injectors are currently active</summary>
-        internal bool stm_injector;
         /// <summary>Stores the current water level in the tanks</summary>
-        internal int fuel;
+        internal double fuel;
         /// <summary>Stores the maximum possible ATS power notch [INTERNAL]</summary>
         internal int stm_power;
         /// <summary>Stores the current state of the cutoff</summary>
@@ -102,8 +100,6 @@ namespace Plugin
         internal double boilerwatertosteamrate = 1500;
         /// <summary>The starting amount of water in the water tanks</summary>
         internal double fuelstartamount = 20000;
-        /// <summary>The number of units moved from the water tanks to the boiler per second</summary>
-        internal double injectorrate = 100;
         /// <summary>The number of pressure units used per second at maximum regulator</summary>
         internal double regulatorpressureuse = 32;
         /// <summary>The time taken in milliseconds to increase the cutoff by one step</summary>
@@ -164,9 +160,10 @@ namespace Plugin
         //Internal Components
 
 
-        //Sound Indicies
-        /// <summary>Steam injectors- Adds water to the boiler</summary>
-        internal Component Injector = new Component();
+        
+	    internal Injector LiveSteamInjector;
+	    internal Injector ExhaustSteamInjector;
+
         /// <summary>Cylinder cocks- Removes water from the cylinders</summary>
         internal Component CylinderCocks = new Component();
         /// <summary>Overheat Alarm</summary>
@@ -196,8 +193,8 @@ namespace Plugin
             this.Train = train;
             this.cutofftimer = 0.0;
             this.maintimer = 0.0;
-
-
+			this.LiveSteamInjector = new Injector(train, InjectorType.LiveSteam);
+			this.ExhaustSteamInjector = new Injector(train, InjectorType.ExhaustSteam);
         }
 
         //<param name="mode">The initialization mode.</param>
@@ -448,7 +445,7 @@ namespace Plugin
 
             {
                 //This section of code operates the pressure power drop
-                int bp = Math.Max(stm_boilerpressure - (int)boilerminpressure, 0);
+                double bp = Math.Max(stm_boilerpressure - boilerminpressure, 0);
                 int bp_range = (int)boilermaxpressure - (int)boilerminpressure;
                 int pwr_limit = Math.Min(new_power, (int)((bp / (float)(bp_range) + (1.0 / this.Train.Specs.PowerNotches - 0.01)) * this.Train.Specs.PowerNotches));
 
@@ -610,9 +607,9 @@ namespace Plugin
                 //This section of code operates the automatic injectors
                 if (stm_boilerwater > boilermaxwaterlevel / 2 && stm_boilerpressure > boilermaxpressure / 4)
                 {
-                    if (stm_injector == true && blowerstimer > 10000)
+                    if (LiveSteamInjector.Active == true && blowerstimer > 10000)
                     {
-                        stm_injector = false;
+                        LiveSteamInjector.Active = false;
                         Train.DebugLogger.LogMessage("The automatic fireman de-activated the injectors");
                         blowerstimer = 0.0;
                     }
@@ -639,30 +636,17 @@ namespace Plugin
                 else
                 {
                     //Blowers shouldn't be on at the same time as the injectors
-                    if (stm_injector == false && blowerstimer > 10000)
+                    if (LiveSteamInjector.Active == false && blowerstimer > 10000)
                     {
                         Train.DebugLogger.LogMessage("The automatic fireman activated the injectors");
-                        stm_injector = true;
+                        LiveSteamInjector.Active = true;
                         blowerstimer = 0.0;
                     }
                     blowers = false;
                 }
             }
 
-            //This section of code operates the injectors
-            if (stm_injector == true && this.maintimer > 1)
-            {
-                if (stm_boilerpressure > 0 && stm_boilerwater < boilermaxwaterlevel)
-                {
-                    fuel = fuel - (int)injectorrate;
-                    if (fuel <= 0)
-                    {
-                        fuel = 0;
-                    }
-                    stm_boilerwater = stm_boilerwater + (int)injectorrate;
-                    stm_boilerpressure = stm_boilerpressure - ((int)injectorrate / 4);
-                }
-            }
+	        LiveSteamInjector.Update(data.ElapsedTime.Seconds, ref stm_boilerwater, ref stm_boilerpressure, ref fuel);
 
             //This section of code governs pressure usage
             if (stm_reverser != 0)
@@ -728,14 +712,14 @@ namespace Plugin
                 {
                     debugpressureuse += (int)(cylindercocks_basepressureuse + (cylindercocks_notchpressureuse * Train.Handles.PowerNotch));
                 }
-                this.Train.TractionManager.DebugWindowData.SteamEngine.BoilerPressure = stm_boilerpressure;
+                this.Train.TractionManager.DebugWindowData.SteamEngine.BoilerPressure = (int)stm_boilerpressure;
                 this.Train.TractionManager.DebugWindowData.SteamEngine.PressureGenerationRate = pressureup;
                 this.Train.TractionManager.DebugWindowData.SteamEngine.PressureUsageRate = debugpressureuse;
                 this.Train.TractionManager.DebugWindowData.SteamEngine.CurrentCutoff = (int)cutoff;
                 this.Train.TractionManager.DebugWindowData.SteamEngine.OptimalCutoff = (int)optimalcutoff;
                 this.Train.TractionManager.DebugWindowData.SteamEngine.FireMass = firemass;
                 this.Train.TractionManager.DebugWindowData.SteamEngine.FireTemperature = firetemp;
-                this.Train.TractionManager.DebugWindowData.SteamEngine.Injectors = stm_injector;
+                this.Train.TractionManager.DebugWindowData.SteamEngine.Injectors = LiveSteamInjector.Active;
                 this.Train.TractionManager.DebugWindowData.SteamEngine.Blowers = blowers;
                 this.Train.TractionManager.DebugWindowData.SteamEngine.BoilerWaterLevel = Convert.ToString(stm_boilerwater) + " of " + Convert.ToString(boilermaxwaterlevel, CultureInfo.InvariantCulture);
                 this.Train.TractionManager.DebugWindowData.SteamEngine.TanksWaterLevel = Convert.ToString(fuel) + " of " + Convert.ToString(fuelcapacity, CultureInfo.InvariantCulture);
@@ -758,39 +742,27 @@ namespace Plugin
                 }
                 if (boilerpressureindicator != -1)
                 {
-                    this.Train.Panel[(boilerpressureindicator)] = stm_boilerpressure;
+                    this.Train.Panel[boilerpressureindicator] = (int)stm_boilerpressure;
                 }
                 if (boilerwaterlevelindicator != -1)
                 {
-                    this.Train.Panel[(boilerwaterlevelindicator)] = stm_boilerwater;
+                    this.Train.Panel[boilerwaterlevelindicator] = (int)stm_boilerwater;
                 }
                 if (fuelindicator != -1)
                 {
-                    this.Train.Panel[(fuelindicator)] = fuel;
+                    this.Train.Panel[fuelindicator] = (int)fuel;
                 }
-                if (Injector.PanelIndex != -1)
-                {
-                    if (stm_injector == true)
-                    {
-                        this.Train.Panel[(Injector.PanelIndex)] = 1;
 
-                    }
-                    else
-                    {
-                        this.Train.Panel[(Injector.PanelIndex)] = 0;
-
-                    }
-                }
                 if (Blowers.PanelIndex != -1)
                 {
                     if (blowers == true)
                     {
-                        this.Train.Panel[(Blowers.PanelIndex)] = 1;
+                        this.Train.Panel[Blowers.PanelIndex] = 1;
 
                     }
                     else
                     {
-                        this.Train.Panel[(Blowers.PanelIndex)] = 0;
+                        this.Train.Panel[Blowers.PanelIndex] = 0;
 
                     }
                 }
@@ -798,12 +770,12 @@ namespace Plugin
                 {
                     if (cylindercocks == true)
                     {
-                        this.Train.Panel[(CylinderCocks.PanelIndex)] = 1;
+                        this.Train.Panel[CylinderCocks.PanelIndex] = 1;
 
                     }
                     else
                     {
-                        this.Train.Panel[(CylinderCocks.PanelIndex)] = 0;
+                        this.Train.Panel[CylinderCocks.PanelIndex] = 0;
 
                     }
                 }
@@ -811,33 +783,33 @@ namespace Plugin
                 {
 					if (this.Train.TractionManager.AutomaticAdvancedFunctions == false)
                     {
-                        this.Train.Panel[(automaticindicator)] = 0;
+                        this.Train.Panel[automaticindicator] = 0;
                     }
                     else
                     {
-                        this.Train.Panel[(automaticindicator)] = 1;
+                        this.Train.Panel[automaticindicator] = 1;
                     }
                 }
                 if (thermometer != -1)
                 {
-                    this.Train.Panel[(thermometer)] = (int)temperature;
+                    this.Train.Panel[thermometer] = (int)temperature;
                 }
                 if (overheatindicator != -1)
                 {
                     if (temperature > overheatwarn)
                     {
-                        this.Train.Panel[(overheatindicator)] = 1;
+                        this.Train.Panel[overheatindicator] = 1;
                     }
                     else
                     {
-                        this.Train.Panel[(overheatindicator)] = 0;
+                        this.Train.Panel[overheatindicator] = 0;
                     }
                 }
                 if (fuelfillindicator != -1)
                 {
                     if (fuelling == true)
                     {
-                        this.Train.Panel[(fuelfillindicator)] = 1;
+                        this.Train.Panel[fuelfillindicator] = 1;
                     }
                 }
                 if (Blowoff.PanelIndex != -1)
@@ -853,45 +825,12 @@ namespace Plugin
                 }
                 if (steamheatindicator != -1)
                 {
-                    this.Train.Panel[(steamheatindicator)] = steamheatlevel;
+                    this.Train.Panel[steamheatindicator] = steamheatlevel;
                 }
             }
             {
                 //Sounds
-                if (Injector.LoopSound != -1)
-                {
-                    if (stm_injector == true)
-                    {
-                        if (Injector.TogglePlayed == false)
-                        {
-                            if (Injector.PlayOnceSound != -1)
-                            {
-                                SoundManager.Play(Injector.PlayOnceSound, 2.0, 1.0, false);
-                            }
-                            Injector.TogglePlayed = true;
-                        }
-                        else
-                        {
-                            if (!SoundManager.IsPlaying(Injector.PlayOnceSound) || Injector.PlayOnceSound == -1)
-                            {
-                                SoundManager.Play(Injector.LoopSound, 2.0, 1.0, true);
-                            }
-                        }
-
-                    }
-                    else
-                    {
-                        Injector.TogglePlayed = false;
-                        if (SoundManager.IsPlaying(Injector.LoopSound))
-                        {
-                            SoundManager.Stop(Injector.LoopSound);
-                            if (Injector.PlayOnceSound != -1)
-                            {
-                                SoundManager.Play(Injector.PlayOnceSound, 2.0, 1.0, false);
-                            }
-                        }
-                    }
-                }
+                
                 if (CylinderCocks.LoopSound != -1)
                 {
                     if (cylindercocks == true)

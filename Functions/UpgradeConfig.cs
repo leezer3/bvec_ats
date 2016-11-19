@@ -806,9 +806,9 @@ namespace Plugin
                         }
                     }
                 }
+				sw.WriteLine("[KeyAssignmentsLegacy]");
                 if (keys.Count > 0)
                 {
-                    sw.WriteLine("[KeyAssignments]");
                     {
                         foreach (string item in keys)
                         {

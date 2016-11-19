@@ -1000,19 +1000,16 @@ namespace Plugin
 					debugwindowshowing = false;
 				}
 			}
-			if (key == VirtualKeys.LiveSteamInjector || key == VirtualKeys.ExhaustSteamInjector)
+			if (Train.SteamEngine != null)
 			{
 				//Injectors
-				if (Train.SteamEngine != null)
+				if (key == VirtualKeys.LiveSteamInjector)
 				{
-					if (Train.SteamEngine.stm_injector == true)
-					{
-						Train.SteamEngine.stm_injector = false;
-					}
-					else
-					{
-						Train.SteamEngine.stm_injector = true;
-					}
+					Train.SteamEngine.LiveSteamInjector.Active = !Train.SteamEngine.LiveSteamInjector.Active;
+				}
+				if (key == VirtualKeys.ExhaustSteamInjector)
+				{
+					Train.SteamEngine.ExhaustSteamInjector.Active = !Train.SteamEngine.LiveSteamInjector.Active;
 				}
 			}
 
@@ -1118,6 +1115,10 @@ namespace Plugin
 				{
 					Train.ElectricEngine.breakertrip();
 				}
+			}
+			if (key == VirtualKeys.MainBreaker)
+			{
+				Train.ElectricEngine.breakertrip();
 			}
 			if (key == VirtualKeys.WiperSpeedDown)
 			{

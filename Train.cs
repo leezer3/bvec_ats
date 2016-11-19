@@ -80,7 +80,7 @@ namespace Plugin {
 		/// <summary>The driver handles at the last Elapse call.</summary>
 		internal ReadOnlyHandles Handles;
 
-		internal KeyConfiguration CurrentKeyConfiguration = new KeyConfiguration();
+		internal KeyConfiguration CurrentKeyConfiguration = new KeyConfiguration(false);
 		
 		/// <summary>The current state of the doors.</summary>
 		internal DoorStates Doors;
@@ -406,6 +406,7 @@ namespace Plugin {
 						if (@equals >= 0) {
 							string key = line.Substring(0, @equals).Trim().ToLowerInvariant();
 							string value = line.Substring(@equals + 1).Trim();
+							string[] splitValue = value.Split(',');
 							switch (section) {
 								case "steam":
 									switch (key) {
@@ -494,32 +495,92 @@ namespace Plugin {
 											InternalFunctions.ValidateIndex(value, ref SteamEngine.fuelfillindicator, key);
 											break;
 										case "injectorrate":
-											InternalFunctions.ParseNumber(value, ref SteamEngine.injectorrate, key);
+										case "livesteaminjectorrate":
+											//By default, OS_ATS uses a single live-steam injector, which shares a common water and steam rate
+											for (int k = 0; k < splitValue.Length; k++)
+											{
+												switch (k)
+												{
+													case 0:
+														InternalFunctions.ParseNumber(splitValue[k], ref SteamEngine.LiveSteamInjector.WaterRate, key);
+														if (splitValue.Length == 1)
+														{
+															InternalFunctions.ParseNumber(splitValue[k], ref SteamEngine.LiveSteamInjector.SteamRate, key);
+														}
+														break;
+													case 1:
+														InternalFunctions.ParseNumber(splitValue[k], ref SteamEngine.LiveSteamInjector.SteamRate, key);
+														break;
+													default:
+														InternalFunctions.LogError("Unexpected extra paramaters were found in " + key + ". These have been ignored.", 6);
+														break;
+												}
+											}
+											InternalFunctions.ParseNumber(value, ref SteamEngine.LiveSteamInjector.WaterRate, key);
+											break;
+										case "exhauststeaminjectorrate":
+											for (int k = 0; k < splitValue.Length; k++)
+											{
+												switch (k)
+												{
+													case 0:
+														InternalFunctions.ParseNumber(splitValue[k], ref SteamEngine.LiveSteamInjector.WaterRate, key);
+														break;
+													case 1:
+														InternalFunctions.ParseNumber(splitValue[k], ref SteamEngine.LiveSteamInjector.MinimumPowerNotch, key);
+														break;
+													default:
+														InternalFunctions.LogError("Unexpected extra paramaters were found in " + key + ". These have been ignored.", 6);
+														break;
+												}
+											}
 											break;
 										case "injectorindicator":
-											InternalFunctions.ValidateIndex(value, ref SteamEngine.Injector.PanelIndex, key);
+										case "livesteaminjectorindicator":
+											InternalFunctions.ValidateIndex(value, ref SteamEngine.LiveSteamInjector.PanelIndex, key);
+											break;
+										case "exhauststeaminjectorindicator":
+											InternalFunctions.ValidateIndex(value, ref SteamEngine.ExhaustSteamInjector.PanelIndex, key);
 											break;
 										case "automaticindicator":
 											InternalFunctions.ValidateIndex(value, ref SteamEngine.automaticindicator, key);
 											break;
 										case "injectorsound":
-												string[] injectorsplit = value.Split(',');
-												for (int k = 0; k < injectorsplit.Length; k++)
+										case "livesteaminjectorsound":
+												splitValue = value.Split(',');
+												for (int k = 0; k < splitValue.Length; k++)
 												{
-													if (k == 0)
+													switch (k)
 													{
-														InternalFunctions.ValidateIndex(injectorsplit[0], ref SteamEngine.Injector.LoopSound, key);
-													}
-													else if(k == 1)
-													{
-														InternalFunctions.ValidateIndex(injectorsplit[1], ref SteamEngine.Injector.PlayOnceSound, key);
-													}
-													else
-													{
-														InternalFunctions.LogError("Unexpected extra paramaters were found in injectorsound. These have been ignored.",6);
-														break;
+														case 0:
+															InternalFunctions.ValidateIndex(splitValue[k], ref SteamEngine.LiveSteamInjector.LoopSound, key);
+															break;
+														case 1:
+															InternalFunctions.ValidateIndex(splitValue[k], ref SteamEngine.LiveSteamInjector.PlayOnceSound, key);
+															break;
+														default:
+															InternalFunctions.LogError("Unexpected extra paramaters were found in " + key + ". These have been ignored.", 6);
+															break;
 													}
 												}
+											break;
+										case "exhauststeaminjectorsound":
+											splitValue = value.Split(',');
+											for (int k = 0; k < splitValue.Length; k++)
+											{
+												switch (k)
+												{
+													case 0:
+														InternalFunctions.ValidateIndex(splitValue[k], ref SteamEngine.ExhaustSteamInjector.LoopSound, key);
+														break;
+													case 1:
+														InternalFunctions.ValidateIndex(splitValue[k], ref SteamEngine.ExhaustSteamInjector.PlayOnceSound, key);
+														break;
+													default:
+														InternalFunctions.LogError("Unexpected extra paramaters were found in " + key + ". These have been ignored.", 6);
+														break;
+												}
+											}
 											break;
 										case "cylindercocksound":
 											string[] cylindersplit = value.Split(',');
@@ -1801,10 +1862,13 @@ namespace Plugin {
 									break;
 
 								case "keyassignments":
+								case "keyassignmentslegacy":
+									if (section == "keyassignmentslegacy")
+									{
+										CurrentKeyConfiguration = new KeyConfiguration(true);
+									}
 									switch (key)
 									{
-											//No validation is necessary for key assignments
-											//Errors here simply mean they won't be matched
 										case "safetykey":
 											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.SafetyKey, key);
 											
@@ -1813,7 +1877,7 @@ namespace Plugin {
 											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.AutomaticGearsCutoff, key);
 											break;
 										case "injectorkey":
-											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.SteamInjector, key);
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.LiveSteamInjector, key);
 											break;
 										case "blowerskey":
 											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.Blowers, key);
