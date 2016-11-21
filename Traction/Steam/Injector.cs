@@ -2,13 +2,17 @@
 {
 	class Injector : Component
 	{
+		/// <summary>The type of injector</summary>
 		internal InjectorType Type;
-		internal Train Train;
+		/// <summary>The number of water units added per second</summary>
 		internal double WaterRate;
+		/// <summary>The number of steam units added per second</summary>
 		internal double SteamRate;
+		/// <summary>The minimum pressure required for the injector to function</summary>
 		internal double MinimumPressure;
+		/// <summary>The minimum power notch (If Exhaust Steam Injector)</summary>
 		internal int MinimumPowerNotch;
-		internal double FailureChance = 0;
+		
 
 		internal void Update(double TimeElapsed, ref double BoilerWaterLevel, ref double BoilerPressure, ref double TanksWaterLevel)
 		{

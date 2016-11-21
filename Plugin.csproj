@@ -170,6 +170,7 @@
     <Compile Include="Structures\CustomIndicator.cs" />
     <Compile Include="Structures\DebugData.cs" />
     <Compile Include="SafetySystems\JA\Tasc.cs" />
+    <Compile Include="Traction\Common\OverheatAlarm.cs" />
     <Compile Include="Traction\Diesel\ExhaustSmoke.cs" />
     <Compile Include="Traction\Diesel\ExhaustSmoke.States.cs" />
     <Compile Include="Traction\Diesel\Temperature.cs" />
@@ -198,8 +199,10 @@
     </Compile>
     <Compile Include="SafetySystems\EN\TPWS.cs" />
     <Compile Include="Managers\TractionManager.cs" />
+    <Compile Include="Traction\Steam\Blowers.cs" />
     <Compile Include="Traction\Steam\Blowoff.States.cs" />
     <Compile Include="Traction\Steam\Blowoff.cs" />
+    <Compile Include="Traction\Steam\CylinderCocks.cs" />
     <Compile Include="Traction\Steam\Injector.cs" />
     <Compile Include="Train.cs" />
     <Compile Include="SafetySystems\EN\TPWS.SafetyStates.cs" />

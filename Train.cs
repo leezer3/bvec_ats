@@ -617,10 +617,10 @@ namespace Plugin {
 											InternalFunctions.ParseNumber(value, ref SteamEngine.klaxonpressureuse, key);
 											break;
 										case "blowers_pressurefactor":
-											InternalFunctions.ParseNumber(value, ref SteamEngine.blowers_pressurefactor, key);
+											InternalFunctions.ParseNumber(value, ref SteamEngine.Blowers.PressureIncreaseFactor, key);
 											break;
 										case "blowers_firefactor":
-											InternalFunctions.ParseNumber(value, ref SteamEngine.blowers_firefactor, key);
+											InternalFunctions.ParseNumber(value, ref SteamEngine.Blowers.PressureIncreaseFactor, key);
 											break;
 										case "blowersound":
 											InternalFunctions.ValidateIndex(value, ref SteamEngine.Blowers.LoopSound, key);
