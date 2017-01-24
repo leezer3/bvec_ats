@@ -371,10 +371,6 @@ namespace Plugin
 				{
 					data.DebugMessage = "EB Brakes demanded by AWS System";
 				}
-				else if (Train.Vigilance.OverspeedDevice.Tripped == true && Train.Vigilance.OverspeedDevice.CurrentBehaviour != OverspeedMonitor.OverspeedBehaviour.CutoffPower)
-				{
-					data.DebugMessage = "Service Brakes demanded by overspeed device";
-				}
 				else if (Train.Vigilance != null)
 				{
 					if (Train.Vigilance.DeadmansHandleState == Vigilance.DeadmanStates.BrakesApplied)
@@ -384,6 +380,10 @@ namespace Plugin
 					else if (Train.Vigilance.VigilanteState == Vigilance.VigilanteStates.EbApplied)
 					{
 						data.DebugMessage = "EB Brakes demanded by Vigilante Device";
+					}
+					else if (Train.Vigilance.OverspeedDevice.Tripped == true && Train.Vigilance.OverspeedDevice.CurrentBehaviour != OverspeedMonitor.OverspeedBehaviour.CutoffPower)
+					{
+						data.DebugMessage = "Service Brakes demanded by overspeed device";
 					}
 				}
 				else if (Train.TPWS != null && (Train.TPWS.SafetyState == TPWS.SafetyStates.TssBrakeDemand ||
@@ -1204,7 +1204,7 @@ namespace Plugin
 				//Blowers
 				if (key == VirtualKeys.Blowers)
 				{
-					Train.SteamEngine.blowers = !Train.SteamEngine.blowers;
+					//Train.SteamEngine.blowers = !Train.SteamEngine.blowers;
 				}
 				//Shovel Coal
 				if (key == Train.CurrentKeyConfiguration.ShovelFuel)
@@ -1335,11 +1335,11 @@ namespace Plugin
 						Train.WesternDiesel.StartupManager.StartupState = WesternStartupManager.SequenceStates.DSDAcknowledged;
 					}
 				}
-				if (key == VirtualKeys.EngineStart)
+				if (key == Train.CurrentKeyConfiguration.EngineStartKey)
 				{
 					Train.WesternDiesel.StarterKeyPressed = true;
 				}
-				if (key == VirtualKeys.MainBreaker)
+				if (key == Train.CurrentKeyConfiguration.WesternBatterySwitch)
 				{
 					Train.WesternDiesel.BatterySwitch();
 				}
