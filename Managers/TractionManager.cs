@@ -688,6 +688,16 @@ namespace Plugin
 				Train.DebugLogger.LogMessage("Traction power was not restored due to the Western Diesel transmission being overheated");
 				return;
 			}
+			if (Train.ElectricEngine != null && Train.ElectricEngine.FrontPantograph.State != PantographStates.OnService && Train.ElectricEngine.RearPantograph.State != PantographStates.OnService)
+			{
+				//Check both pantographs are not on service
+				if ((Train.ElectricEngine.FrontPantograph.State == PantographStates.Disabled && Train.ElectricEngine.RearPantograph.State != PantographStates.Disabled) || (Train.ElectricEngine.FrontPantograph.State != PantographStates.Disabled && Train.ElectricEngine.RearPantograph.State == PantographStates.Disabled))
+				{
+					//Now check to see if both are disabled
+					Train.DebugLogger.LogMessage("Traction power was not restored due to no available pantographs");
+					return;
+				}
+			}
 			Train.TractionManager.PowerCutoffDemanded = false;
 			Train.DebugLogger.LogMessage("Traction power restored");
 
@@ -711,6 +721,10 @@ namespace Plugin
 		/// The default OS_ATS behaviour is to reset all applications at once.</remarks>
 		internal void ResetBrakeApplication(bool Silent = false)
 		{
+			if (BrakeInterventionDemanded == false && CurrentInterventionBrakeNotch == 0)
+			{
+				return;
+			}
 			if (independantreset == true)
 			{
 				if (Train.AWS != null && Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired)
@@ -1096,7 +1110,7 @@ namespace Plugin
 					Train.StartupSelfTestManager.driveracknowledge();
 				}
 			}
-			if (key == VirtualKeys.FillFuel)
+			if (key == Train.CurrentKeyConfiguration.FillFuel)
 			{
 				//Toggle Fuel fill
 				if (Train.canfuel == true && Train.CurrentSpeed == 0)
@@ -1113,14 +1127,14 @@ namespace Plugin
 				//ACB/ VCB toggle
 				if (Train.ElectricEngine != null)
 				{
-					Train.ElectricEngine.breakertrip();
+					Train.ElectricEngine.TripBreaker();
 				}
 			}
 			if (key == VirtualKeys.MainBreaker)
 			{
-				Train.ElectricEngine.breakertrip();
+				Train.ElectricEngine.TripBreaker();
 			}
-			if (key == VirtualKeys.WiperSpeedDown)
+			if (key == Train.CurrentKeyConfiguration.IncreaseWiperSpeed)
 			{
 				//Wipers Speed Down
 				if (Train.Windscreen.enabled == true)
@@ -1128,7 +1142,7 @@ namespace Plugin
 					Train.Windscreen.windscreenwipers(1);
 				}
 			}
-			if (key == VirtualKeys.WiperSpeedUp)
+			if (key == Train.CurrentKeyConfiguration.DecreaseWiperSpeed)
 			{
 				//Wipers Speed Up
 				if (Train.Windscreen.enabled == true)
@@ -1405,7 +1419,7 @@ namespace Plugin
 					}
 				}
 			}
-			if (key == VirtualKeys.GearDown)
+			if (key == Train.CurrentKeyConfiguration.GearDown)
 			{
 				//Gear Down
 				if (Train.DieselEngine != null)
@@ -1419,7 +1433,7 @@ namespace Plugin
 					}
 				}
 			}
-			if (key == VirtualKeys.IncreaseCutoff)
+			if (key == Train.CurrentKeyConfiguration.CutoffIncrease)
 			{
 				//Cutoff Up
 				if (Train.SteamEngine != null)
@@ -1427,7 +1441,7 @@ namespace Plugin
 					Train.SteamEngine.cutoffstate = 0;
 				}
 			}
-			if (key == VirtualKeys.DecreaseCutoff)
+			if (key == Train.CurrentKeyConfiguration.CutoffDecrease)
 			{
 				//Cutoff Down
 				if (Train.SteamEngine != null)
@@ -1435,7 +1449,7 @@ namespace Plugin
 					Train.SteamEngine.cutoffstate = 0;
 				}
 			}
-			if (key == VirtualKeys.FillFuel)
+			if (key == Train.CurrentKeyConfiguration.FillFuel)
 			{
 				//Toggle Fuel fill
 				if (Train.SteamEngine != null)

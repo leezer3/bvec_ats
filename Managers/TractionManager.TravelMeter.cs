@@ -29,45 +29,17 @@ namespace Plugin
 			/// <param name="DistanceTravelled">The distance travelled in m</param>
 			internal void Update(double DistanceTravelled)
 			{
-				//BUG: This doesn't actally work if we travel more than 1m in a frame
-				//Issue with the original OS_ATS code, not going to fix just at the minute
 				if (Units == TravelMeterUnits.Miles)
 				{
 					//Convert to miles
 					DistanceTravelled /= 0.621;
 				}
-				
+
 				switch (Mode)
 				{
 					case TravelMeterMode.IncreaseForwards:
 						//Increment the total counter
 						TotalDistance += DistanceTravelled;
-						Counter += DistanceTravelled;
-						if (Counter > 1)
-						{
-							Decimal1++;
-							Counter = 0.0;
-						}
-						if (Decimal1 > 9)
-						{
-							Decimal10++;
-							Decimal1 = 0;
-						}
-						if (Decimal10 > 9)
-						{
-							Digit1++;
-							Decimal10 = 0;
-						}
-						if (Digit10 > 9)
-						{
-							Digit10++;
-							Digit1 = 0;
-						}
-						if (Digit10 > 9)
-						{
-							Digit100++;
-							Digit10 = 0;
-						}
 						break;
 					case TravelMeterMode.IncreaseBackwards:
 						if (DistanceTravelled > 0)
@@ -76,68 +48,20 @@ namespace Plugin
 						}
 						//Invert total distance
 						DistanceTravelled = Math.Abs(TotalDistance);
-						//Increment the total counter
-						TotalDistance += DistanceTravelled;
-						Counter += DistanceTravelled;
-						if (DistanceTravelled > 1)
-						{
-							Decimal1++;
-							Counter = 0.0;
-						}
-						if (Decimal1 > 9)
-						{
-							Decimal10++;
-							Decimal1 = 0;
-						}
-						if (Decimal10 > 9)
-						{
-							Digit1++;
-							Decimal10 = 0;
-						}
-						if (Digit10 > 9)
-						{
-							Digit10++;
-							Digit1 = 0;
-						}
-						if (Digit10 > 9)
-						{
-							Digit100++;
-							Digit10 = 0;
-						}
 						break;
 					case TravelMeterMode.IncreaseBoth:
 						//Invert total distance
 						DistanceTravelled = Math.Abs(TotalDistance);
 						//Increment the total counter
 						TotalDistance += DistanceTravelled;
-						Counter += DistanceTravelled;
-						if (DistanceTravelled > 1)
-						{
-							Decimal1++;
-							Counter = 0.0;
-						}
-						if (Decimal1 > 9)
-						{
-							Decimal10++;
-							Decimal1 = 0;
-						}
-						if (Decimal10 > 9)
-						{
-							Digit1++;
-							Decimal10 = 0;
-						}
-						if (Digit10 > 9)
-						{
-							Digit10++;
-							Digit1 = 0;
-						}
-						if (Digit10 > 9)
-						{
-							Digit100++;
-							Digit10 = 0;
-						}
 						break;
-				}	
+				}
+
+				Digit100 = (int)Math.Abs(TotalDistance / 10000 % 10);
+				Digit10 = (int)Math.Abs(TotalDistance / 1000 % 10);
+				Digit1 = (int)Math.Abs(TotalDistance / 100 % 10);
+				Decimal10 = (int)Math.Abs(TotalDistance / 10 % 10);
+				Decimal1 = (int)Math.Abs(TotalDistance / 1 % 10);
 			}
 		}
 

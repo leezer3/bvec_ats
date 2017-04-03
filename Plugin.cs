@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Text;
 using OpenBveApi.Runtime;
 using Path = OpenBveApi.Path;
 namespace Plugin {
@@ -16,7 +17,8 @@ namespace Plugin {
 		public static Random Random = new Random();
 
 		public static string TrainFolder;
-  
+
+		internal static bool FolderWriteAccess = true;
 		/// <summary>Is called when the plugin is loaded.</summary>
 		/// <param name="properties">The properties supplied to the plugin on loading.</param>
 		/// <returns>Whether the plugin was loaded successfully.</returns>
@@ -43,7 +45,14 @@ namespace Plugin {
 			//Delete error.log from previous run
 			if (File.Exists(Path.CombineFile(properties.TrainFolder, "error.log")))
 			{
-				File.Delete(Path.CombineFile(properties.TrainFolder, "error.log"));
+				try
+				{
+					File.Delete(Path.CombineFile(properties.TrainFolder, "error.log"));
+				}
+				catch
+				{
+					FolderWriteAccess = false;
+				}
 			}
 			if (File.Exists(configFile))
 			{
@@ -68,7 +77,8 @@ namespace Plugin {
 							{
 								try
 								{
-									UpgradeOSATS.UpgradeConfigurationFile(OS_ATSconfigFile, properties.TrainFolder);
+									string[] Lines = UpgradeOSATS.UpgradeConfigurationFile(OS_ATSconfigFile, properties.TrainFolder);
+
 								}
 								catch (Exception)
 								{
@@ -88,7 +98,8 @@ namespace Plugin {
 				//Now try loading
 				try
 				{
-					this.Train.LoadConfigurationFile(configFile);
+					string[] Lines = File.ReadAllLines(configFile, Encoding.UTF8);
+					this.Train.LoadConfigurationFile(Lines);
 					return true;
 				}
 				catch (Exception ex)
@@ -99,40 +110,122 @@ namespace Plugin {
 
 
 			}
-			else if (!File.Exists(configFile) && File.Exists(OS_ATSDLL) && File.Exists(OS_ATSconfigFile))
+			if (!File.Exists(configFile) && File.Exists(OS_ATSDLL) && File.Exists(OS_ATSconfigFile))
 			{
 				//The F92_en is blacklisted due to a custom OS_ATS version
 				if (Regex.IsMatch(properties.TrainFolder, @"\\F92_en(\\)?", RegexOptions.IgnoreCase))
 				{
 					properties.FailureReason = "The F92_en is not currently a supported train.";
+					try
+					{
+						using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
+						{
+							sw.WriteLine("The F92_en is not currently a supported train");
+						}
+						return false;
+					}
+					catch
+					{
+						return false;
+					}
+				}
+				//If there is no existing BVEC_ATS configuration file, but OS_ATS and the appropriate
+				//configuration files exist, then attempt to upgrade the existing file to BVEC_ATS
+				try
+				{
+					string[] Lines = UpgradeOSATS.UpgradeConfigurationFile(OS_ATSconfigFile, properties.TrainFolder);
+					try
+					{
+						File.WriteAllLines(Path.CombineFile(TrainFolder, "BVEC_ATS.cfg"), Lines);
+					}
+					catch
+					{
+						//Error writing the new configuration file
+					}
+					this.Train.LoadConfigurationFile(Lines);
+					return true;
+				}
+				catch (Exception)
+				{
+					properties.FailureReason = "Error upgrading the existing OS_ATS configuration.";
 					using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
 					{
-						sw.WriteLine("The F92_en is not currently a supported train");
+						sw.WriteLine("An existing OS_ATS configuration was found.");
+						sw.WriteLine("However, an error occurred upgrading the existing OS_ATS configuration.");
 					}
 					return false;
 				}
-				else
+			}
+			if (File.Exists(SZ_ATSDLL))
+			{
+				//We've found an OS_SZ_ATS equipped train
+				//Upgrade for this is in alpha
+				try
 				{
-					//If there is no existing BVEC_ATS configuration file, but OS_ATS and the appropriate
-					//configuration files exist, then attempt to upgrade the existing file to BVEC_ATS
+					string[] Lines = UpgradeOSSZATS.UpgradeConfigurationFile(SZ_ATSconfigFile, properties.TrainFolder);
 					try
 					{
-						UpgradeOSATS.UpgradeConfigurationFile(OS_ATSconfigFile, properties.TrainFolder);
+						File.WriteAllLines(Path.CombineFile(TrainFolder, "BVEC_ATS.cfg"), Lines);
+					}
+					catch
+					{
+						//Error writing the new configuration file
+					}
+					this.Train.LoadConfigurationFile(Lines);
+					return true;
+				}
+				catch (Exception)
+				{
+					properties.FailureReason = "Error upgrading the existing OS_SZ_ATS configuration.";
+					using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
+					{
+						sw.WriteLine("An existing OS_SZ_ATS configuration was found.");
+						sw.WriteLine("However, an error occurred upgrading the existing OS_SZ_ATS configuration.");
+					}
+					return false;
+				}
+			}
+			else
+			{
+				if (File.Exists(SZ_ATSDLL_2))
+				{
+					//We've found an OS_SZ_ATS equipped train
+					//Upgrade for this is in alpha
+					try
+					{
+						string[] Lines = UpgradeOSSZATS.UpgradeConfigurationFile(SZ_ATS_2configFile, properties.TrainFolder);
+						try
+						{
+							File.WriteAllLines(Path.CombineFile(TrainFolder, "BVEC_ATS.cfg"), Lines);
+						}
+						catch
+						{
+							//Error writing the new configuration file
+						}
+						this.Train.LoadConfigurationFile(Lines);
+						return true;
 					}
 					catch (Exception)
 					{
-						properties.FailureReason = "Error upgrading the existing OS_ATS configuration.";
+						properties.FailureReason = "Error upgrading the existing OS_SZ_ATS configuration.";
 						using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
 						{
-							sw.WriteLine("An existing OS_ATS configuration was found.");
-							sw.WriteLine("However, an error occurred upgrading the existing OS_ATS configuration.");
+							sw.WriteLine("An existing OS_SZ_ATS configuration was found.");
+							sw.WriteLine("However, an error occurred upgrading the existing OS_SZ_ATS configuration.");
 						}
 						return false;
 					}
 
+				}
+				if (File.Exists(ODF_ATSconfigFile))
+				{
+					//We've found an OdyakufanATS equipped train
+					//Upgrade for this is in alpha
 					try
 					{
-						this.Train.LoadConfigurationFile(configFile);
+						File.Copy(ODF_ATSconfigFile, configFile);
+						string[] Lines = File.ReadAllLines(configFile);
+						this.Train.LoadConfigurationFile(Lines);
 						return true;
 					}
 					catch (Exception ex)
@@ -141,109 +234,33 @@ namespace Plugin {
 						return false;
 					}
 				}
-			}
-			else if (File.Exists(SZ_ATSDLL))
-			{
-				//We've found an OS_SZ_ATS equipped train
-				//Upgrade for this is in alpha
-				try
+				else
 				{
-					UpgradeOSSZATS.UpgradeConfigurationFile(SZ_ATSconfigFile, properties.TrainFolder);
-				}
-				catch (Exception)
-				{
-					properties.FailureReason = "Error upgrading the existing OS_SZ_ATS configuration.";
+					properties.FailureReason = "No supported configuration files exist.";
+					//Write out error.log with details of what it thinks was found and missing
 					using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
 					{
-						sw.WriteLine("An existing OS_SZ_ATS configuration was found.");
-						sw.WriteLine("However, an error occurred upgrading the existing OS_SZ_ATS configuration.");
-					}
-					return false;
-				}
+						sw.WriteLine("Plugin location " + Convert.ToString(properties.TrainFolder));
+						if (File.Exists(OS_ATSDLL))
+						{
+							sw.WriteLine("OS_ATS DLL found");
+						}
+						else
+						{
+							sw.WriteLine("No OS_ATS DLL found");
+						}
 
-				try
-				{
-					this.Train.LoadConfigurationFile(configFile);
-					return true;
-				}
-				catch (Exception ex)
-				{
-					properties.FailureReason = "Error loading the configuration file: " + ex.Message;
-					return false;
-				}
-			}
-			else if (File.Exists(SZ_ATSDLL_2))
-			{
-				//We've found an OS_SZ_ATS equipped train
-				//Upgrade for this is in alpha
-				try
-				{
-					UpgradeOSSZATS.UpgradeConfigurationFile(SZ_ATS_2configFile, properties.TrainFolder);
-				}
-				catch (Exception)
-				{
-					properties.FailureReason = "Error upgrading the existing OS_SZ_ATS configuration.";
-					using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
-					{
-						sw.WriteLine("An existing OS_SZ_ATS configuration was found.");
-						sw.WriteLine("However, an error occurred upgrading the existing OS_SZ_ATS configuration.");
+						if (File.Exists(OS_ATSconfigFile))
+						{
+							sw.WriteLine("OS_ATS configuration file found");
+						}
+						else
+						{
+							sw.WriteLine("No OS_ATS configuration file found");
+						}
 					}
 					return false;
 				}
-
-				try
-				{
-					this.Train.LoadConfigurationFile(configFile);
-					return true;
-				}
-				catch (Exception ex)
-				{
-					properties.FailureReason = "Error loading the configuration file: " + ex.Message;
-					return false;
-				}
-			}
-			else if (File.Exists(ODF_ATSconfigFile))
-			{
-				//We've found an OdyakufanATS equipped train
-				//Upgrade for this is in alpha
-				try
-				{
-					File.Copy(ODF_ATSconfigFile, configFile);
-					this.Train.LoadConfigurationFile(configFile);
-					return true;
-				}
-				catch (Exception ex)
-				{
-					properties.FailureReason = "Error loading the configuration file: " + ex.Message;
-					return false;
-				}
-			}
-			else
-			{
-				properties.FailureReason = "No supported configuration files exist.";
-				//Write out error.log with details of what it thinks was found and missing
-				using (StreamWriter sw = File.CreateText(Path.CombineFile(properties.TrainFolder, "error.log")))
-				{
-					sw.WriteLine("Plugin location " + Convert.ToString(properties.TrainFolder));
-					if (File.Exists(OS_ATSDLL))
-					{
-						sw.WriteLine("OS_ATS DLL found");
-					}
-					else
-					{
-						sw.WriteLine("No OS_ATS DLL found");
-					}
-
-					if (File.Exists(OS_ATSconfigFile))
-					{
-						sw.WriteLine("OS_ATS configuration file found");
-					}
-					else
-					{
-						sw.WriteLine("No OS_ATS configuration file found");
-					}
-				}
-				return false;
 			}
 		}
 		

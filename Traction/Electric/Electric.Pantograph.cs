@@ -1,6 +1,4 @@
-﻿using System.Windows.Forms;
-
-namespace Plugin
+﻿namespace Plugin
 {
 	/// <summary>Represents a pantograph.</summary>
 	internal class Pantograph
@@ -53,7 +51,7 @@ namespace Plugin
 					}
 					break;
 				case PantographStates.RaisedVCBClosed:
-					Train.ElectricEngine.breakertrip();
+					Train.ElectricEngine.TripBreaker();
 					State = PantographStates.Lowered;
 					break;
 				case PantographStates.LoweredAtSpeed:
@@ -66,7 +64,7 @@ namespace Plugin
 						case AlarmBehaviour.TripVCB:
 							if (!Train.ElectricEngine.breakertripped)
 							{
-								Train.ElectricEngine.breakertrip();
+								Train.ElectricEngine.TripBreaker();
 							}
 							break;
 						case AlarmBehaviour.ApplyBrakesTripVCB:
@@ -76,7 +74,7 @@ namespace Plugin
 							}
 							if (!Train.ElectricEngine.breakertripped)
 							{
-								Train.ElectricEngine.breakertrip();
+								Train.ElectricEngine.TripBreaker();
 							}
 							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1);
 							break;
@@ -100,7 +98,8 @@ namespace Plugin
 			}
 		}
 
-		internal void Raise()
+		/// <summary>Raises this pantograph</summary>
+		private void Raise()
 		{
 			if (Train.ElectricEngine.breakertripped == true)
 			{
@@ -119,7 +118,8 @@ namespace Plugin
 			}
 		}
 
-		internal void Lower()
+		/// <summary>Lowers this pantograph</summary>
+		private void Lower()
 		{
 			if (LoweredSound != -1)
 			{
@@ -136,6 +136,19 @@ namespace Plugin
 			{
 				State = PantographStates.LoweredAtSpeed;
 				Train.DebugLogger.LogMessage("A pantograph was lowered whilst the train was in motion");
+			}
+		}
+
+		/// <summary>Toggles the state of this pantograph</summary>
+		internal void ToggleState()
+		{
+			if (Raised)
+			{
+				Lower();
+			}
+			else
+			{
+				Raise();
 			}
 		}
 

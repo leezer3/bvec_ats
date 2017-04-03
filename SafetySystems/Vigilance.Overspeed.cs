@@ -56,7 +56,7 @@
 				return;
 			}
 
-			if (Train.CurrentSpeed <= SafeSpeed)
+			if (Train.CurrentSpeed <= SafeSpeed && Tripped)
 			{
 				if (Train.Vigilance.AutoRelease == true)
 				{

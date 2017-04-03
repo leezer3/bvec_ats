@@ -350,7 +350,7 @@ namespace Plugin
 						if (legacypowercut == true)
 						{
 							//Reset legacy power cutoff state and retrip breaker
-							Train.ElectricEngine.breakertrip();
+							Train.ElectricEngine.TripBreaker();
 							legacypowercut = false;
 						}
 						if (breakertripped == false && ((FrontPantograph.State == PantographStates.Disabled && RearPantograph.State == PantographStates.OnService) || (RearPantograph.State == PantographStates.Disabled && FrontPantograph.State == PantographStates.OnService)))
@@ -584,7 +584,7 @@ namespace Plugin
 				firstmagnet = trainlocation;
 				nextmagnet = trainlocation + magnetdistance;
 				legacypowercut = true;
-				Train.ElectricEngine.breakertrip();
+				Train.ElectricEngine.TripBreaker();
 			}
 		}
 
@@ -606,14 +606,17 @@ namespace Plugin
 		}
 
 		//Toggle the ACB/VCB based upon it's state
-		internal void breakertrip()
+		internal void TripBreaker()
 		{
 			if (!breakertripped)
 			{
 				
 				breakertripped = true;
 				powerloop = false;
-				breakerplay();
+				if (breakersound != -1)
+				{
+					SoundManager.Play(breakersound, 1.0, 1.0, false);
+				}
 				Train.TractionManager.DemandPowerCutoff();
 				Train.DebugLogger.LogMessage("The ACB/VCB was opened");
 				Train.DebugLogger.LogMessage("Power cutoff was demanded due to an open ACB/VCB");
@@ -622,42 +625,25 @@ namespace Plugin
 			{
 				
 				breakertripped = false;
-				breakerplay();
+				if (breakersound != -1)
+				{
+					SoundManager.Play(breakersound, 1.0, 1.0, false);
+				}
 				Train.DebugLogger.LogMessage("The ACB/VCB was closed");
+				Train.TractionManager.ResetPowerCutoff();
 			}
 		}
-		internal void breakerplay()
-		{
-			if (breakersound != -1)
-			{
-				SoundManager.Play(breakersound, 1.0, 1.0, false);
-			}
-		}
+
 		//Raises & lowers the pantographs
 		internal void pantographtoggle(int pantograph)
 		{
 			if (pantograph == 0)
 			{
-				//Front pantograph
-				if (FrontPantograph.Raised == false)
-				{
-					FrontPantograph.Raise();
-				}
-				else
-				{
-					FrontPantograph.Lower();
-				}
+				FrontPantograph.ToggleState();
 			}
 			else
 			{
-				if (RearPantograph.Raised == false)
-				{
-					RearPantograph.Raise();
-				}
-				else
-				{
-					RearPantograph.Lower();
-				}
+				FrontPantograph.ToggleState();
 			}
 		}
 

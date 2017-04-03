@@ -236,7 +236,7 @@ namespace Plugin.AI
 			else if (Train.ElectricEngine.FrontPantograph.State == PantographStates.VCBReady || Train.ElectricEngine.RearPantograph.State == PantographStates.VCBReady)
 			{
 				//We have a pantograph that's ready for usage, so turn on the ACB/VCB
-				Train.ElectricEngine.breakertrip();
+				Train.ElectricEngine.TripBreaker();
 				data.Response = AIResponse.Short;
 				return;
 			}

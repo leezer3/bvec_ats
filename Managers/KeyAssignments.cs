@@ -55,6 +55,7 @@ namespace Plugin
 		internal VirtualKeys? FrontPantograph = VirtualKeys.RaisePantograph;
 		/// <summary>Raises or lowrers the rear pantograph</summary>
 		internal VirtualKeys? RearPantograph = VirtualKeys.RaisePantograph;
+
 		
 		/*
 		 * Steam Engine
@@ -140,6 +141,8 @@ namespace Plugin
 				FillFuel = VirtualKeys.I;
 				IncreaseWiperSpeed = VirtualKeys.J;
 				DecreaseWiperSpeed = VirtualKeys.K;
+				FrontPantograph = null;
+				RearPantograph = null;
 			}
 		}
 	}

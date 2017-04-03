@@ -255,7 +255,7 @@ namespace Plugin {
 		
 		/// <summary>Sets up the devices from the specified configuration file.</summary>
 		/// <param name="file">The configuration file.</param>
-		internal void LoadConfigurationFile(string file) {
+		internal void LoadConfigurationFile(string[] lines) {
 			
 
 			//Initialise all safety devices first
@@ -274,7 +274,6 @@ namespace Plugin {
 			this.SCMT_Traction = new SCMT_Traction(this);
 			this.Windscreen = new Windscreen(this);
 			this.Animations = new Animations(this);
-			string[] lines = File.ReadAllLines(file, Encoding.UTF8);
 			string section = string.Empty;
 			foreach (string line in lines)
 			{
@@ -290,6 +289,11 @@ namespace Plugin {
 						DebugLogger.DebugLogEnabled = true;
 						string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
 						DebugLogger.LogMessage("BVEC_ATS " + version + " loaded");
+					}
+					if (section == "keyassignmentslegacy")
+					{
+						DebugLogger.LogMessage("Using legacy upgraded key assignments");
+						CurrentKeyConfiguration = new KeyConfiguration(true);
 					}
 				}
 			}
@@ -347,28 +351,20 @@ namespace Plugin {
 								this.PZB.enabled = true;
 								DebugLogger.LogMessage("PZB enabled");
 								break;
-							case "interlocks":
-								//Twiddle
-								break;
-							case "keyassignments":
-								//Twiddle
-								break;
 							case "animations":
-								//Twiddle
-								break;
+							case "debug":
+							case "interlocks":
+							case "keyassignments":
+							case "keyassignmentslegacy":
 							case "settings":
-								//Twiddle
+								//These don't necessarily need their own parser settings
 								break;
 #if !DebugNBS
 							case "ledlights":
 								this.LedLights = new LEDLights(this);
 								break;
 #endif
-							case "debug":
-								//Twiddle
-								//Although we've already parsed this, it needs to be marked as a supported section
-								// TODO: Can this check be removed? Seems to be a hangup from the original plugin template??
-								// Can't see a reason off the top of my head to throw an exception either.....
+
 								break;
 							case "windscreen":
 								this.Windscreen.enabled = true;
@@ -399,7 +395,7 @@ namespace Plugin {
 								this.WesternDiesel = new WesternDiesel(this);
 								break;
 							default:
-								throw new InvalidDataException("The section " + line[0] + " is not supported.");
+								throw new InvalidDataException("The section " + section + " is not supported.");
 						}
 					} else {
 						int equals = line.IndexOf('=');
@@ -1863,10 +1859,6 @@ namespace Plugin {
 
 								case "keyassignments":
 								case "keyassignmentslegacy":
-									if (section == "keyassignmentslegacy")
-									{
-										CurrentKeyConfiguration = new KeyConfiguration(true);
-									}
 									switch (key)
 									{
 										case "safetykey":
@@ -2656,7 +2648,7 @@ namespace Plugin {
 						{
 							//Opens/ Closes ACB/VCB
 							//Line volts indicator should be illuminated, and should be resetable
-							ElectricEngine.breakertrip();
+							ElectricEngine.TripBreaker();
 						}
 					}
 					break;
