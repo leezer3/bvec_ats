@@ -293,9 +293,9 @@ namespace Plugin
 			{
 				if ((Train.TractionManager.PowerCutoffDemanded == true || BrakeInterventionDemanded == true) && doorlock == true)
 				{
+					doorlock = false;
 					Train.TractionManager.ResetPowerCutoff();
 					Train.TractionManager.ResetBrakeApplication();
-					doorlock = false;
 				}
 
 			}
