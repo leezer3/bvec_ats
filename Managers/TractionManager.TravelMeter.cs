@@ -10,6 +10,8 @@ namespace Plugin
 			internal double TotalDistance;
 
 			internal TravelMeterUnits Units = TravelMeterUnits.Kilometers;
+			/// <summary>The 1000 unit digit reading</summary>
+			internal int Digit1000;
 			/// <summary>The 100 unit digit reading</summary>
 			internal int Digit100;
 			/// <summary>The 10 unit digit reading</summary>
@@ -48,6 +50,7 @@ namespace Plugin
 						}
 						//Invert total distance
 						DistanceTravelled = Math.Abs(TotalDistance);
+						TotalDistance += DistanceTravelled;
 						break;
 					case TravelMeterMode.IncreaseBoth:
 						//Invert total distance
@@ -56,7 +59,7 @@ namespace Plugin
 						TotalDistance += DistanceTravelled;
 						break;
 				}
-
+				Digit1000 = (int)Math.Abs(TotalDistance / 100000 % 10);
 				Digit100 = (int)Math.Abs(TotalDistance / 10000 % 10);
 				Digit10 = (int)Math.Abs(TotalDistance / 1000 % 10);
 				Digit1 = (int)Math.Abs(TotalDistance / 100 % 10);

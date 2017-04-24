@@ -88,6 +88,8 @@ namespace Plugin
 		/// Whilst OpenBVE provides a native implementation for this, the actual reverser handle may be altered
 		/// for example by the plugin's cutoff state
 		internal int reverserindex = -1;
+
+		internal int travelmeter1000 = -1;
 		internal int travelmeter100 = -1;
 		internal int travelmeter10 = -1;
 		internal int travelmeter1 = -1;
@@ -454,6 +456,11 @@ namespace Plugin
 			{
 				CurrentTravelMeter.Update(this.Train.TrainLocation - this.Train.PreviousLocation);
 				//100km
+				if (travelmeter1000 != -1)
+				{
+					this.Train.Panel[travelmeter1000] = CurrentTravelMeter.Digit1000;
+
+				}
 				if (travelmeter100 != -1)
 				{
 					this.Train.Panel[travelmeter100] = CurrentTravelMeter.Digit100;

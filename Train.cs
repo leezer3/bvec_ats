@@ -1279,6 +1279,9 @@ namespace Plugin {
 										case "reverserindex":
 											InternalFunctions.ValidateIndex(value, ref TractionManager.reverserindex, key);
 											break;
+										case "travelmeter1000":
+											InternalFunctions.ValidateIndex(value, ref TractionManager.travelmeter1000, key);
+											break;
 										case "travelmeter100":
 											InternalFunctions.ValidateIndex(value, ref TractionManager.travelmeter100, key);
 											break;
