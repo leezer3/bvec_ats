@@ -293,7 +293,7 @@ namespace Plugin
         /// <summary>Call this function to issue an AWS clear indication, as a result of passing the north pole of an AWS electromagnet. This should be done only via the SetBeacon() method.</summary>
         internal void IssueClear()
         {
-            if (!Train.AWSIsolated && (this.MySafetyState != SafetyStates.Primed || this.MySafetyState == SafetyStates.CancelTimerActive))
+            if (!Train.AWSIsolated && (this.MySafetyState == SafetyStates.Primed || this.MySafetyState == SafetyStates.CancelTimerActive))
             {
                 this.MySafetyState = SafetyStates.Clear;
             }
