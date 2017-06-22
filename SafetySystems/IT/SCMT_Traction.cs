@@ -5,7 +5,7 @@
 using System;
 using OpenBveApi.Runtime;
 using System.Globalization;
-using System.Windows.Markup.Localizer;
+
 
 namespace Plugin
 {

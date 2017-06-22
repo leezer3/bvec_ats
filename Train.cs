@@ -290,7 +290,7 @@ namespace Plugin {
 						string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
 						DebugLogger.LogMessage("BVEC_ATS " + version + " loaded");
 					}
-					if (section == "keyassignmentslegacy")
+					if (section == "legacykeyassignments")
 					{
 						DebugLogger.LogMessage("Using legacy upgraded key assignments");
 						CurrentKeyConfiguration = new KeyConfiguration(true);
@@ -355,7 +355,7 @@ namespace Plugin {
 							case "debug":
 							case "interlocks":
 							case "keyassignments":
-							case "keyassignmentslegacy":
+							case "legacykeyassignments":
 							case "settings":
 								//These don't necessarily need their own parser settings
 								break;
