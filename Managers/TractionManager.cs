@@ -1412,7 +1412,7 @@ namespace Plugin
 
 		internal override void KeyUp(VirtualKeys key)
 		{
-			if (key == VirtualKeys.GearUp)
+			if (key == Train.CurrentKeyConfiguration.GearUp)
 			{
 				//Gear Up
 				if (Train.DieselEngine != null)

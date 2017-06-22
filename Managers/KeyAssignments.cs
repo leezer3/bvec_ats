@@ -135,6 +135,8 @@ namespace Plugin
 			//Sets various keys to use the legacy OS_ATS key assignments
 			if (Legacy)
 			{
+				GearUp = VirtualKeys.C1;
+				GearDown = VirtualKeys.C2;
 				CutoffIncrease = VirtualKeys.C1;
 				CutoffDecrease = VirtualKeys.C2;
 				LiveSteamInjector = VirtualKeys.B2;
