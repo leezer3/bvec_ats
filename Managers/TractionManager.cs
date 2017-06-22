@@ -1137,7 +1137,7 @@ namespace Plugin
 					Train.ElectricEngine.TripBreaker();
 				}
 			}
-			if (key == VirtualKeys.MainBreaker)
+			if (key == VirtualKeys.MainBreaker && Train.ElectricEngine != null)
 			{
 				Train.ElectricEngine.TripBreaker();
 			}
