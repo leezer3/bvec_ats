@@ -22,7 +22,7 @@ namespace Plugin
         private int NextSignalAspect = 0;
 
         /// <summary>The countdown for the acknowledgement switch. If zero, the switch is inactive.</summary>
-        internal static double AcknowledgementCountdown = 0.0;
+        internal double AcknowledgementCountdown = 0.0;
 
         /// <summary>The countdown for the emergency brake operation. If zero, the brakes are inactive.</summary>
         internal double EmergencyBrakeCountdown = 0.0;
@@ -51,7 +51,7 @@ namespace Plugin
         }
 
         /// <summary>Whether there is a pending un-acknowledged CAWS alert.</summary>
-        internal static bool AcknowledgementPending;
+        internal bool AcknowledgementPending;
 
         /// <summary>Stores whether CAWS has a current EB application.</summary>
         internal bool EBApplied;

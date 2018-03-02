@@ -1302,10 +1302,10 @@ namespace Plugin
 			{
 				if (key == Train.CurrentKeyConfiguration.CAWSKey)
 				{
-					if (CAWS.AcknowledgementCountdown > 0.0)
+					if (Train.CAWS.AcknowledgementCountdown > 0.0)
 					{
-						CAWS.AcknowledgementCountdown = 0.0;
-						CAWS.AcknowledgementPending = false;
+						Train.CAWS.AcknowledgementCountdown = 0.0;
+						Train.CAWS.AcknowledgementPending = false;
 					}
 				}
 			}

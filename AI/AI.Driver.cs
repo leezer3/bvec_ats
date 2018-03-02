@@ -111,6 +111,25 @@ namespace Plugin.AI
 					}
 				}
 			}
+
+			if (Train.CAWS != null)
+			{
+				if (Train.CAWS.AcknowledgementPending == true)
+				{
+					if (AWSWarningRecieved == false)
+					{
+						//This gives a realistic delay between the CAWS warning being recieved and the driver acknowledging it
+						AWSWarningRecieved = true;
+						data.Response = AIResponse.Long;
+					}
+					else
+					{
+						Train.CAWS.AcknowledgementCountdown = 0.0;
+						Train.CAWS.AcknowledgementPending = false;
+						data.Response = AIResponse.Medium;
+					}
+				}
+			}
 		}
 
 		internal void AWSSystem(ref AIData data)
