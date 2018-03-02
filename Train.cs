@@ -727,6 +727,15 @@ namespace Plugin {
 										case "pantographalarmbehaviour":
 											InternalFunctions.ValidateSetting(value, ref ElectricEngine.pantographalarmbehaviour, key);
 											break;
+										case "pantographfitted":
+											bool b = true;
+											InternalFunctions.ParseBool(value, ref b, key);
+											if (!b)
+											{
+												CurrentKeyConfiguration.FrontPantograph = null;
+												CurrentKeyConfiguration.RearPantograph = null;
+											}
+											break;
 										case "powerloopsound":
 											try
 											{
