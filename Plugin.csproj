@@ -63,6 +63,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugNBS|x86'">
     <OutputPath>bin\x86\DebugNBS\</OutputPath>
@@ -70,21 +71,12 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="BlinkStickDotNet">
-      <HintPath>..\..\BlinkStickDotNet-master\BlinkStickDotNet\bin\Release\BlinkStickDotNet.dll</HintPath>
-    </Reference>
     <Reference Include="OpenBveApi">
       <HintPath>D:\OBVE\OpenBveApi.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dialogs\WesternControl.cs">
@@ -100,6 +92,11 @@
     <Compile Include="Managers\KeyAssignments.cs" />
     <Compile Include="Managers\TractionManager.TractionType.cs" />
     <Compile Include="Managers\TractionManager.TravelMeter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AssemblyInfo.tt</DependentUpon>
+    </Compile>
     <Compile Include="SafetySystems\DE\F92.cs" />
     <Compile Include="SafetySystems\JA\Atc.cs" />
     <Compile Include="SafetySystems\JA\Ato.cs" />
@@ -193,7 +190,7 @@
     <Compile Include="Structures\OperativeStates.cs" />
     <Compile Include="Functions\Sounds.cs" />
     <Compile Include="Plugin.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Traction\Electric\Electric.PantographBehaviour.cs" />
     <Compile Include="Traction\steam.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -253,9 +250,17 @@
   <ItemGroup>
     <Compile Include="Traction\Diesel\StarterMotor.States.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Properties\AssemblyInfo.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>AssemblyInfo.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
   <PropertyGroup>
-    <PreBuildEvent>set textTemplatingPath="%25CommonProgramFiles(x86)%25\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe"
-if %25textTemplatingPath%25=="\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe" set textTemplatingPath="%25CommonProgramFiles%25\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe"
-%25textTemplatingPath%25 "$(ProjectDir)\Properties\AssemblyInfo.tt"</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 </Project>

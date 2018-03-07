@@ -1,12 +1,10 @@
 ﻿using System;
 using OpenBveApi.Runtime;
 
-
-
 namespace Plugin
 {
 	/// <summary>Represents an electric locomotive.</summary>
-	internal class Electric : Device
+	internal partial class Electric : Device
 	{
 
 		// --- members ---
@@ -106,6 +104,10 @@ namespace Plugin
 		/// <summary>An array storing the heating rate for each power notch</summary>
 		int[] heatingarray;
 
+		/// <summary>The speed at which the pantograph will be automatically lowered</summary>
+		internal double AutomaticPantographLowerSpeed = Double.MaxValue;
+		/// <summary>The mode by which the pantograph is automatically lowered</summary>
+		internal AutomaticPantographLoweringModes PantographLoweringMode = AutomaticPantographLoweringModes.NoAction;
 
 		// --- constructors ---
 
@@ -412,11 +414,60 @@ namespace Plugin
 					powergap = false;
 					DemandPowerCutoff(null);
 				}
-			
 
-				
+				if (Train.CurrentSpeed > AutomaticPantographLowerSpeed)
+				{
+					//Automatic pantograph lowering
+					switch (PantographLoweringMode)
+					{
+						case AutomaticPantographLoweringModes.LowerAll:
+							//In lower all mode, we don't need to check anything
+							if (FrontPantograph.State == PantographStates.OnService || FrontPantograph.State == PantographStates.RaisedTimer || FrontPantograph.State == PantographStates.VCBReady)
+							{
+								FrontPantograph.Lower(true);
+							}
+							if (RearPantograph.State == PantographStates.OnService || RearPantograph.State == PantographStates.RaisedTimer || RearPantograph.State == PantographStates.VCBReady)
+							{
+								RearPantograph.Lower(true);
+							}
+							break;
+						case AutomaticPantographLoweringModes.LowerFront:
+							if (RearPantograph.State == PantographStates.OnService)
+							{
+								if (FrontPantograph.State == PantographStates.OnService || FrontPantograph.State == PantographStates.RaisedTimer || FrontPantograph.State == PantographStates.VCBReady)
+								{
+									FrontPantograph.Lower(true);
+								}
+							}
+							break;
+						case AutomaticPantographLoweringModes.LowerRear:
+							if (FrontPantograph.State == PantographStates.OnService)
+							{
+								if (RearPantograph.State == PantographStates.OnService || RearPantograph.State == PantographStates.RaisedTimer || RearPantograph.State == PantographStates.VCBReady)
+								{
+									RearPantograph.Lower(true);
+								}
+							}
+							break;
+						case AutomaticPantographLoweringModes.LowerFrontRegardless:
+							if (FrontPantograph.State == PantographStates.OnService || FrontPantograph.State == PantographStates.RaisedTimer || FrontPantograph.State == PantographStates.VCBReady)
+							{
+								FrontPantograph.Lower(true);
+							}
+							break;
+						case AutomaticPantographLoweringModes.LowerRearRegardless:
+							if (RearPantograph.State == PantographStates.OnService || RearPantograph.State == PantographStates.RaisedTimer || RearPantograph.State == PantographStates.VCBReady)
+							{
+								RearPantograph.Lower(true);
+							}
+							break;
+
+					}
+				}
+
 
 			}
+
 			//This section of code runs the power notch loop sound
 			if (powerloopsound != -1 && data.Handles.PowerNotch != 0)
 			{

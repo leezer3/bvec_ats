@@ -778,6 +778,19 @@ namespace Plugin {
 												InternalFunctions.LogError("breakerloopsound",0);
 											}
 											break;
+										case "automaticpantographlowerbehaviour":
+											int s = -1;
+											InternalFunctions.ValidateSetting(value, ref s, key);
+											if (s < 0 || s > 5)
+											{
+												InternalFunctions.LogError("AutomaticPantographLowerBehaviour was not within the range of valid values.",6);
+												break;
+											}
+											ElectricEngine.PantographLoweringMode = (Electric.AutomaticPantographLoweringModes)s;
+											break;
+										case "automaticpantographlowerspeed":
+											InternalFunctions.ParseNumber(value, ref ElectricEngine.AutomaticPantographLowerSpeed, key);
+											break;
 										default:
 											throw new InvalidDataException("The parameter " + key + " is not supported.");
 

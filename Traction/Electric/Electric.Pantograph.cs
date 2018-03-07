@@ -119,14 +119,14 @@
 		}
 
 		/// <summary>Lowers this pantograph</summary>
-		private void Lower()
+		internal void Lower(bool Automatic)
 		{
 			if (LoweredSound != -1)
 			{
 				SoundManager.Play(LoweredSound, 1.0, 1.0, false);
 			}
 			//Lower the pantograph
-			if (Train.CurrentSpeed == 0)
+			if (Train.CurrentSpeed == 0 || Automatic)
 			{
 				State = PantographStates.Lowered;
 				Raised = false;
@@ -144,7 +144,7 @@
 		{
 			if (Raised)
 			{
-				Lower();
+				Lower(false);
 			}
 			else
 			{
