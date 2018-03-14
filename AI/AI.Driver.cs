@@ -237,7 +237,7 @@ namespace Plugin.AI
 					if (Train.CurrentKeyConfiguration.FrontPantograph != null &&
 						Train.ElectricEngine.FrontPantograph.State == PantographStates.Lowered)
 					{
-						Train.ElectricEngine.pantographtoggle(0);
+						Train.ElectricEngine.PantographToggle(0);
 						data.Response = AIResponse.Long;
 						return;
 					}
@@ -246,7 +246,7 @@ namespace Plugin.AI
 					if (Train.CurrentKeyConfiguration.RearPantograph != null &&
 						Train.ElectricEngine.RearPantograph.State != PantographStates.Lowered)
 					{
-						Train.ElectricEngine.pantographtoggle(1);
+						Train.ElectricEngine.PantographToggle(1);
 						data.Response = AIResponse.Long;
 						return;
 					}

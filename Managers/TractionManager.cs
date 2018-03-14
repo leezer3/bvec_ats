@@ -1179,11 +1179,11 @@ namespace Plugin
 			//Toggle Pantographs
 			if (key == Train.CurrentKeyConfiguration.FrontPantograph)
 			{
-				Train.ElectricEngine.pantographtoggle(0);
+				Train.ElectricEngine.PantographToggle(0);
 			}
 			if (key == Train.CurrentKeyConfiguration.RearPantograph)
 			{
-				Train.ElectricEngine.pantographtoggle(1);
+				Train.ElectricEngine.PantographToggle(1);
 			}
 
 			foreach (CustomIndicator Indicator in CustomIndicatorsArray)

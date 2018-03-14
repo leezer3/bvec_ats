@@ -686,7 +686,7 @@ namespace Plugin
 		}
 
 		//Raises & lowers the pantographs
-		internal void pantographtoggle(int pantograph)
+		internal void PantographToggle(int pantograph)
 		{
 			if (pantograph == 0)
 			{
@@ -694,7 +694,7 @@ namespace Plugin
 			}
 			else
 			{
-				FrontPantograph.ToggleState();
+				RearPantograph.ToggleState();
 			}
 		}
 
