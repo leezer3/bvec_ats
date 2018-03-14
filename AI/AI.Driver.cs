@@ -244,7 +244,7 @@ namespace Plugin.AI
 
 					//Then test the rear pantograph
 					if (Train.CurrentKeyConfiguration.RearPantograph != null &&
-						Train.ElectricEngine.RearPantograph.State != PantographStates.Lowered)
+						Train.ElectricEngine.RearPantograph.State == PantographStates.Lowered)
 					{
 						Train.ElectricEngine.PantographToggle(1);
 						data.Response = AIResponse.Long;
