@@ -130,13 +130,13 @@ namespace Plugin
 			//Set starting pantograph states
 			//If neither pantograph has a key assigned, set both to enabled
 			if (Train.CurrentKeyConfiguration.FrontPantograph == null && Train.CurrentKeyConfiguration.RearPantograph == null)
-				{
-					breakertripped = false;
-					FrontPantograph.Raised = true;
-					FrontPantograph.State = PantographStates.OnService;
-					RearPantograph.Raised = true;
-					RearPantograph.State = PantographStates.OnService;
-				}
+			{
+				breakertripped = false;
+				FrontPantograph.Raised = true;
+				FrontPantograph.State = PantographStates.OnService;
+				RearPantograph.Raised = true;
+				RearPantograph.State = PantographStates.OnService;
+			}
 			//On service- Set the enabled pantograph(s) to the OnService state
 			//Set the ACB/ VCB to closed
 			else if (mode == InitializationModes.OnService)
@@ -150,13 +150,20 @@ namespace Plugin
 					RearPantograph.Raised = true;
 					RearPantograph.State = PantographStates.OnService;
 				}
-				else
+				else if(Train.CurrentKeyConfiguration.FrontPantograph != null && Train.CurrentKeyConfiguration.RearPantograph == null)
 				{
 					//Front pantograph only is enabled
 					FrontPantograph.Raised = true;
 					FrontPantograph.State = PantographStates.OnService;
 					RearPantograph.Raised = false;
 					RearPantograph.State = PantographStates.Disabled;
+				}
+				else
+				{
+					FrontPantograph.Raised = true;
+					FrontPantograph.State = PantographStates.OnService;
+					RearPantograph.Raised = true;
+					RearPantograph.State = PantographStates.OnService;
 				}
 			}
 			//Not on service- Set the enabled pantograph(s) to the lowered state
@@ -172,13 +179,20 @@ namespace Plugin
 					RearPantograph.Raised = false;
 					RearPantograph.State = PantographStates.Lowered;
 				}
-				else
+				else if(Train.CurrentKeyConfiguration.FrontPantograph != null && Train.CurrentKeyConfiguration.RearPantograph == null)
 				{
 					//Front pantograph only is enabled
 					FrontPantograph.Raised = false;
 					FrontPantograph.State = PantographStates.Lowered;
 					RearPantograph.Raised = false;
 					RearPantograph.State = PantographStates.Disabled;
+				}
+				else
+				{
+					FrontPantograph.Raised = false;
+					FrontPantograph.State = PantographStates.Lowered;
+					RearPantograph.Raised = false;
+					RearPantograph.State = PantographStates.Lowered;
 				}
 			}
 
