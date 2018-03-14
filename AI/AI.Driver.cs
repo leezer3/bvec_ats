@@ -237,6 +237,7 @@ namespace Plugin.AI
 					if (Train.CurrentKeyConfiguration.FrontPantograph != null &&
 						Train.ElectricEngine.FrontPantograph.State == PantographStates.Lowered)
 					{
+						Train.DebugLogger.LogMessage("AI Driver: Raised the front pantograph.");
 						Train.ElectricEngine.PantographToggle(0);
 						data.Response = AIResponse.Long;
 						return;
@@ -246,6 +247,7 @@ namespace Plugin.AI
 					if (Train.CurrentKeyConfiguration.RearPantograph != null &&
 						Train.ElectricEngine.RearPantograph.State == PantographStates.Lowered)
 					{
+						Train.DebugLogger.LogMessage("AI Driver: Raised the rear pantograph.");
 						Train.ElectricEngine.PantographToggle(1);
 						data.Response = AIResponse.Long;
 						return;
@@ -254,13 +256,15 @@ namespace Plugin.AI
 			}
 			else if (Train.ElectricEngine.FrontPantograph.State == PantographStates.VCBReady || Train.ElectricEngine.RearPantograph.State == PantographStates.VCBReady)
 			{
+
 				//We have a pantograph that's ready for usage, so turn on the ACB/VCB
+				Train.DebugLogger.LogMessage("AI Driver: Toggled the VCB.");
 				Train.ElectricEngine.TripBreaker();
 				data.Response = AIResponse.Short;
 				return;
 			}
 
-			if (Train.ElectricEngine.powergap == true)
+			if (Train.ElectricEngine.PowerGap == true)
 			{
 				if (data.Handles.PowerNotch > 0)
 				{

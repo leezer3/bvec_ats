@@ -17,7 +17,7 @@ namespace Plugin
 		internal double currentheat;
 		internal double temperature;
 		/// <summary>Stores whether we are currently in a power gap</summary>
-		internal bool powergap;
+		internal bool PowerGap;
 		/// <summary>Stores the current state of the ACB/VCB</summary>
 		internal bool breakertripped;
 		/// <summary>Stores whether the power was cutoff by a legacy OS_ATS standard beacon</summary>
@@ -273,7 +273,7 @@ namespace Plugin
 			{
 				
 				//If we're in a power gap, check whether we have a pickup available
-				if (powergap)
+				if (PowerGap)
 				{
 					int new_power;
 					//First check to see whether the first pickup is in the neutral section
@@ -362,7 +362,7 @@ namespace Plugin
 					//However also check that the breaker has not been tripped by a UKTrainSys beacon
 					else if (nextmagnet != 0 && (Train.TrainLocation - pickuparray[pickuparray.Length - 1]) > nextmagnet && (Train.TrainLocation - pickuparray[0]) > nextmagnet)
 					{
-						powergap = false;
+						PowerGap = false;
 						if (legacypowercut == true)
 						{
 							//Reset legacy power cutoff state and retrip breaker
@@ -377,7 +377,7 @@ namespace Plugin
 					//If the final pickup has passed the UKTrainSys standard power gap location
 					else if (Train.TrainLocation - pickuparray[pickuparray.Length - 1] < lastmagnet)
 					{
-						powergap = false;
+						PowerGap = false;
 					}
 				}
 				//This section of code handles a UKTrainSys compatible ACB/VCB
@@ -388,12 +388,12 @@ namespace Plugin
 					DemandPowerCutoff("Power cutoff was demanded due to the ACB/VCB state");
 				}
 				//If we're in a power gap, also always demand power cutoff
-				else if (breakertripped == false && powergap == true && Train.TractionManager.PowerCutoffDemanded == false)
+				else if (breakertripped == false && PowerGap == true && Train.TractionManager.PowerCutoffDemanded == false)
 				{
 					DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
 				}
 				//If the ACB/VCB has now been reset with a pantograph available & we're not in a powergap reset traction power
-				if (breakertripped == false && powergap == false && (FrontPantograph.State == PantographStates.OnService || RearPantograph.State == PantographStates.OnService))
+				if (breakertripped == false && PowerGap == false && (FrontPantograph.State == PantographStates.OnService || RearPantograph.State == PantographStates.OnService))
 				{
 					ResetPowerCutoff("Power cutoff was released due to the availability of overhead power");
 				}
@@ -406,7 +406,7 @@ namespace Plugin
 				(RearPantograph.State == PantographStates.Lowered || RearPantograph.State == PantographStates.Disabled) && Train.TractionManager.PowerCutoffDemanded == false)
 				{
 					DemandPowerCutoff("Power cutoff was demanded due to no available pantographs");
-					powergap = true;
+					PowerGap = true;
 				}
 				//If the powergap behaviour cuts power when *any* pantograph is disabled / lowered
 				//
@@ -425,7 +425,7 @@ namespace Plugin
 				RearPantograph.Update(data.ElapsedTime.Milliseconds);
 				if ((FrontPantograph.State == PantographStates.RaisedTimer && RearPantograph.State != PantographStates.OnService) || (RearPantograph.State == PantographStates.RaisedTimer && FrontPantograph.State != PantographStates.OnService))
 				{
-					powergap = false;
+					PowerGap = false;
 					DemandPowerCutoff(null);
 				}
 
@@ -512,7 +512,7 @@ namespace Plugin
 			//This section of code runs the breaker loop sound
 			if (breakerloopsound != -1 && breakertripped == false)
 			{
-				if (!powergap && SoundManager.IsPlaying(breakerloopsound) == false)
+				if (!PowerGap && SoundManager.IsPlaying(breakerloopsound) == false)
 				{
 					breakerlooptimer += data.ElapsedTime.Milliseconds;
 					if (breakerlooptimer > breakerlooptime)
@@ -538,7 +538,7 @@ namespace Plugin
 					{
 						this.Train.Panel[ammeter] = 0;
 					}
-					else if (Train.Handles.PowerNotch != 0 && (powergap == true || breakertripped == true || Train.TractionManager.PowerCutoffDemanded == true))
+					else if (Train.Handles.PowerNotch != 0 && (PowerGap == true || breakertripped == true || Train.TractionManager.PowerCutoffDemanded == true))
 					{
 						this.Train.Panel[ammeter] = 0;
 					}
@@ -555,7 +555,7 @@ namespace Plugin
 				//Line Volts indicator
 				if (powerindicator != -1)
 				{
-					if (!powergap)
+					if (!PowerGap)
 					{
 						this.Train.Panel[powerindicator] = 1;
 					}
@@ -635,7 +635,7 @@ namespace Plugin
 				TractionManager.debuginformation[14] = Convert.ToString(FrontPantograph.State);
 				TractionManager.debuginformation[15] = Convert.ToString(RearPantograph.State);
 				TractionManager.debuginformation[16] = Convert.ToString(!breakertripped);
-				TractionManager.debuginformation[17] = Convert.ToString(!powergap);
+				TractionManager.debuginformation[17] = Convert.ToString(!PowerGap);
 			}
 			
 		}
@@ -643,9 +643,9 @@ namespace Plugin
 		//This function handles legacy power magnets- Set the electric powergap to true & set the end magnet location
 		internal void legacypowercutoff(int trainlocation,int magnetdistance)
 		{
-			if (!Train.ElectricEngine.powergap)
+			if (!Train.ElectricEngine.PowerGap)
 			{
-				Train.ElectricEngine.powergap = true;
+				Train.ElectricEngine.PowerGap = true;
 				firstmagnet = trainlocation;
 				nextmagnet = trainlocation + magnetdistance;
 				legacypowercut = true;
@@ -657,15 +657,15 @@ namespace Plugin
 		//Set the next magnet to false
 		internal void newpowercutoff(int trainlocation)
 		{
-			if (!Train.ElectricEngine.powergap)
+			if (!Train.ElectricEngine.PowerGap)
 			{
-				Train.ElectricEngine.powergap = true;
+				Train.ElectricEngine.PowerGap = true;
 				firstmagnet = trainlocation;
 				nextmagnet = 0;
 			}
 			else
 			{
-				Train.ElectricEngine.powergap = false;
+				Train.ElectricEngine.PowerGap = false;
 				lastmagnet = trainlocation;
 			}
 		}

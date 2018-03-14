@@ -316,7 +316,7 @@ namespace Plugin
 				{
 					data.DebugMessage = "Power cutoff demanded by DRA Appliance";
 				}
-				else if (Train.ElectricEngine != null && Train.ElectricEngine.powergap == true)
+				else if (Train.ElectricEngine != null && Train.ElectricEngine.PowerGap == true)
 				{
 					if (Train.ElectricEngine.FrontPantograph.State != PantographStates.OnService && Train.ElectricEngine.RearPantograph.State != PantographStates.OnService)
 					{
