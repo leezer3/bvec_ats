@@ -167,6 +167,7 @@
     <Compile Include="Structures\CustomIndicator.cs" />
     <Compile Include="Structures\DebugData.cs" />
     <Compile Include="SafetySystems\JA\Tasc.cs" />
+    <Compile Include="Traction\Common\Ammeter.cs" />
     <Compile Include="Traction\Common\OverheatAlarm.cs" />
     <Compile Include="Traction\Diesel\ExhaustSmoke.cs" />
     <Compile Include="Traction\Diesel\ExhaustSmoke.States.cs" />

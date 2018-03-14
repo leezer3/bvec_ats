@@ -45,7 +45,7 @@
 					}
 					break;
 				case PantographStates.VCBReady:
-					if (Train.ElectricEngine.breakertripped == false)
+					if (Train.ElectricEngine.BreakerTripped == false)
 					{
 						State = PantographStates.OnService;
 					}
@@ -62,7 +62,7 @@
 							State = PantographStates.Lowered;
 							break;
 						case AlarmBehaviour.TripVCB:
-							if (!Train.ElectricEngine.breakertripped)
+							if (!Train.ElectricEngine.BreakerTripped)
 							{
 								Train.ElectricEngine.TripBreaker();
 							}
@@ -72,7 +72,7 @@
 							{
 								SoundManager.Play(AlarmSound, 1.0, 1.0, true);
 							}
-							if (!Train.ElectricEngine.breakertripped)
+							if (!Train.ElectricEngine.BreakerTripped)
 							{
 								Train.ElectricEngine.TripBreaker();
 							}
@@ -101,7 +101,7 @@
 		/// <summary>Raises this pantograph</summary>
 		private void Raise()
 		{
-			if (Train.ElectricEngine.breakertripped == true)
+			if (Train.ElectricEngine.BreakerTripped == true)
 			{
 				if (RaisedSound != -1)
 				{

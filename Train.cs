@@ -686,7 +686,7 @@ namespace Plugin {
 											InternalFunctions.ValidateIndex(value, ref ElectricEngine.ammeter, key);
 											break;
 										case "ammetervalues":
-											this.ElectricEngine.ammetervalues = value;
+											this.ElectricEngine.Ammeter = new Ammeter(value);
 											break;
 										case "powerpickuppoints":
 											this.ElectricEngine.pickuppoints = value;
@@ -2662,7 +2662,7 @@ namespace Plugin {
 							/* Handle legacy APC magnet behaviour with only one beacon */
 							int secondMagnetDistance;
 							int.TryParse(beacon.Optional.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out secondMagnetDistance);
-							ElectricEngine.legacypowercutoff((int)TrainLocation, secondMagnetDistance);
+							ElectricEngine.LegacyPowerCutoff((int)TrainLocation, secondMagnetDistance);
 						}
 						else if (beacon.Optional == -1)
 						{

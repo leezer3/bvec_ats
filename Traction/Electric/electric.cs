@@ -19,9 +19,9 @@ namespace Plugin
 		/// <summary>Stores whether we are currently in a power gap</summary>
 		internal bool PowerGap;
 		/// <summary>Stores the current state of the ACB/VCB</summary>
-		internal bool breakertripped;
+		internal bool BreakerTripped;
 		/// <summary>Stores whether the power was cutoff by a legacy OS_ATS standard beacon</summary>
-		internal bool legacypowercut;
+		internal bool LegacyPowerCut;
 		internal int nextmagnet;
 		internal int firstmagnet;
 		internal int lastmagnet;
@@ -39,11 +39,9 @@ namespace Plugin
 		internal Pantograph FrontPantograph;
 		/// <summary>The current state of the rear pantograph</summary>
 		internal Pantograph RearPantograph;
+		/// <summary>The ammeter</summary>
+		internal Ammeter Ammeter;
 
-		//Default Variables
-
-		/// <summary>The ammeter value for each power notch</summary>
-		internal string ammetervalues = "0";
 		/// <summary>A list of the available power pickup points</summary>
 		internal string pickuppoints = "0";
 		/// <summary>The behaviour of the train in a powergap</summary>
@@ -97,8 +95,6 @@ namespace Plugin
 		internal int overheatalarm = -1;
 
 		//Arrays
-		/// <summary>An array storing the ammeter values for each power notch</summary>
-		int[] ammeterarray;
 		/// <summary>An array storing the location of all available pickup points</summary>
 		int[] pickuparray;
 		/// <summary>An array storing the heating rate for each power notch</summary>
@@ -123,7 +119,6 @@ namespace Plugin
 		//<param name="mode">The initialization mode.</param>
 		internal override void Initialize(InitializationModes mode)
 		{
-			InternalFunctions.ParseStringToIntArray(ammetervalues, ref ammeterarray, "ammetervalues");
 			InternalFunctions.ParseStringToIntArray(pickuppoints, ref pickuparray, "pickuppoints");
 			InternalFunctions.ParseStringToIntArray(heatingrate, ref heatingarray, "heatingrate");
 
@@ -131,7 +126,7 @@ namespace Plugin
 			//If neither pantograph has a key assigned, set both to enabled
 			if (Train.CurrentKeyConfiguration.FrontPantograph == null && Train.CurrentKeyConfiguration.RearPantograph == null)
 			{
-				breakertripped = false;
+				BreakerTripped = false;
 				FrontPantograph.Raised = true;
 				FrontPantograph.State = PantographStates.OnService;
 				RearPantograph.Raised = true;
@@ -141,7 +136,7 @@ namespace Plugin
 			//Set the ACB/ VCB to closed
 			else if (mode == InitializationModes.OnService)
 			{
-				breakertripped = false;
+				BreakerTripped = false;
 				if (Train.CurrentKeyConfiguration.FrontPantograph == null && Train.CurrentKeyConfiguration.RearPantograph != null)
 				{
 					//Rear pantograph only is enabled
@@ -170,7 +165,7 @@ namespace Plugin
 			//Set the ACB/ VCB to open
 			else
 			{
-				breakertripped = true;
+				BreakerTripped = true;
 				if (Train.CurrentKeyConfiguration.FrontPantograph == null && Train.CurrentKeyConfiguration.RearPantograph != null)
 				{
 					//Rear pantograph only is enabled
@@ -257,7 +252,7 @@ namespace Plugin
 				}
 				else if (temperature < overheat && temperature > 0)
 				{
-					if (breakertripped == false && ((FrontPantograph.State == PantographStates.Disabled && RearPantograph.State == PantographStates.OnService) 
+					if (BreakerTripped == false && ((FrontPantograph.State == PantographStates.Disabled && RearPantograph.State == PantographStates.OnService) 
 						|| (RearPantograph.State == PantographStates.Disabled && FrontPantograph.State == PantographStates.OnService)))
 					{
 						ResetPowerCutoff("Power cutoff was released due to the electric engine temperature returning to safe levels");
@@ -363,13 +358,13 @@ namespace Plugin
 					else if (nextmagnet != 0 && (Train.TrainLocation - pickuparray[pickuparray.Length - 1]) > nextmagnet && (Train.TrainLocation - pickuparray[0]) > nextmagnet)
 					{
 						PowerGap = false;
-						if (legacypowercut == true)
+						if (LegacyPowerCut == true)
 						{
 							//Reset legacy power cutoff state and retrip breaker
 							Train.ElectricEngine.TripBreaker();
-							legacypowercut = false;
+							LegacyPowerCut = false;
 						}
-						if (breakertripped == false && ((FrontPantograph.State == PantographStates.Disabled && RearPantograph.State == PantographStates.OnService) || (RearPantograph.State == PantographStates.Disabled && FrontPantograph.State == PantographStates.OnService)))
+						if (BreakerTripped == false && ((FrontPantograph.State == PantographStates.Disabled && RearPantograph.State == PantographStates.OnService) || (RearPantograph.State == PantographStates.Disabled && FrontPantograph.State == PantographStates.OnService)))
 						{
 							ResetPowerCutoff("Power cutoff was released due to leaving the neutral gap");
 						}
@@ -383,17 +378,17 @@ namespace Plugin
 				//This section of code handles a UKTrainSys compatible ACB/VCB
 				//
 				//If the ACB/VCB has tripped, always demand power cutoff
-				if (breakertripped == true && Train.TractionManager.PowerCutoffDemanded == false)
+				if (BreakerTripped == true && Train.TractionManager.PowerCutoffDemanded == false)
 				{
 					DemandPowerCutoff("Power cutoff was demanded due to the ACB/VCB state");
 				}
 				//If we're in a power gap, also always demand power cutoff
-				else if (breakertripped == false && PowerGap == true && Train.TractionManager.PowerCutoffDemanded == false)
+				else if (BreakerTripped == false && PowerGap == true && Train.TractionManager.PowerCutoffDemanded == false)
 				{
 					DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
 				}
 				//If the ACB/VCB has now been reset with a pantograph available & we're not in a powergap reset traction power
-				if (breakertripped == false && PowerGap == false && (FrontPantograph.State == PantographStates.OnService || RearPantograph.State == PantographStates.OnService))
+				if (BreakerTripped == false && PowerGap == false && (FrontPantograph.State == PantographStates.OnService || RearPantograph.State == PantographStates.OnService))
 				{
 					ResetPowerCutoff("Power cutoff was released due to the availability of overhead power");
 				}
@@ -485,7 +480,7 @@ namespace Plugin
 			//This section of code runs the power notch loop sound
 			if (powerloopsound != -1 && data.Handles.PowerNotch != 0)
 			{
-				if (breakertripped == false)
+				if (BreakerTripped == false)
 				{
 					//Start the timer
 					powerlooptimer += data.ElapsedTime.Milliseconds;
@@ -510,7 +505,7 @@ namespace Plugin
 				SoundManager.Stop(powerloopsound);
 			}
 			//This section of code runs the breaker loop sound
-			if (breakerloopsound != -1 && breakertripped == false)
+			if (breakerloopsound != -1 && BreakerTripped == false)
 			{
 				if (!PowerGap && SoundManager.IsPlaying(breakerloopsound) == false)
 				{
@@ -522,7 +517,7 @@ namespace Plugin
 					}
 				}
 			}
-			else if (breakerloopsound != -1 && breakertripped == true)
+			else if (breakerloopsound != -1 && BreakerTripped == true)
 			{
 				SoundManager.Stop(breakerloopsound);
 				breakerlooptimer = 0.0;
@@ -533,23 +528,13 @@ namespace Plugin
 				//Ammeter
 				if (ammeter != -1)
 				{
-					int ammeterlength = ammeterarray.Length;
-					if (Train.Handles.Reverser == 0 || data.Handles.BrakeNotch != 0 || Train.Handles.PowerNotch == 0)
+					if(Ammeter == null || PowerGap == true || BreakerTripped == true || Train.TractionManager.PowerCutoffDemanded == true)
 					{
 						this.Train.Panel[ammeter] = 0;
-					}
-					else if (Train.Handles.PowerNotch != 0 && (PowerGap == true || breakertripped == true || Train.TractionManager.PowerCutoffDemanded == true))
-					{
-						this.Train.Panel[ammeter] = 0;
-					}
-					else if (Train.Handles.PowerNotch != 0 && Train.Handles.PowerNotch <= ammeterlength)
-					{
-
-						this.Train.Panel[ammeter] = ammeterarray[(Train.Handles.PowerNotch - 1)];
 					}
 					else
 					{
-						this.Train.Panel[ammeter] = ammeterarray[(ammeterlength - 1)];
+						this.Train.Panel[ammeter] = Ammeter.GetCurrentValue();
 					}
 				}
 				//Line Volts indicator
@@ -567,7 +552,7 @@ namespace Plugin
 				//ACB/VCB Breaker Indicator
 				if (breakerindicator != -1)
 				{
-					if (!breakertripped)
+					if (!BreakerTripped)
 					{
 						this.Train.Panel[breakerindicator] = 1;
 					}
@@ -634,21 +619,21 @@ namespace Plugin
 			{
 				TractionManager.debuginformation[14] = Convert.ToString(FrontPantograph.State);
 				TractionManager.debuginformation[15] = Convert.ToString(RearPantograph.State);
-				TractionManager.debuginformation[16] = Convert.ToString(!breakertripped);
+				TractionManager.debuginformation[16] = Convert.ToString(!BreakerTripped);
 				TractionManager.debuginformation[17] = Convert.ToString(!PowerGap);
 			}
 			
 		}
 
 		//This function handles legacy power magnets- Set the electric powergap to true & set the end magnet location
-		internal void legacypowercutoff(int trainlocation,int magnetdistance)
+		internal void LegacyPowerCutoff(int trainLocation,int magnetDistance)
 		{
 			if (!Train.ElectricEngine.PowerGap)
 			{
 				Train.ElectricEngine.PowerGap = true;
-				firstmagnet = trainlocation;
-				nextmagnet = trainlocation + magnetdistance;
-				legacypowercut = true;
+				firstmagnet = trainLocation;
+				nextmagnet = trainLocation + magnetDistance;
+				LegacyPowerCut = true;
 				Train.ElectricEngine.TripBreaker();
 			}
 		}
@@ -673,10 +658,10 @@ namespace Plugin
 		//Toggle the ACB/VCB based upon it's state
 		internal void TripBreaker()
 		{
-			if (!breakertripped)
+			if (!BreakerTripped)
 			{
 				
-				breakertripped = true;
+				BreakerTripped = true;
 				powerloop = false;
 				if (breakersound != -1)
 				{
@@ -689,7 +674,7 @@ namespace Plugin
 			else
 			{
 				
-				breakertripped = false;
+				BreakerTripped = false;
 				if (breakersound != -1)
 				{
 					SoundManager.Play(breakersound, 1.0, 1.0, false);
