@@ -239,7 +239,7 @@ namespace Plugin.AI
 						Train.ElectricEngine.FrontPantograph.State == PantographStates.Lowered)
 					{
 						Train.DebugLogger.LogMessage("AI Driver: Raised the front pantograph.");
-						Train.ElectricEngine.PantographToggle(0);
+						Train.ElectricEngine.FrontPantograph.ToggleState();
 						data.Response = AIResponse.Long;
 						return;
 					}
@@ -249,7 +249,7 @@ namespace Plugin.AI
 						Train.ElectricEngine.RearPantograph.State == PantographStates.Lowered)
 					{
 						Train.DebugLogger.LogMessage("AI Driver: Raised the rear pantograph.");
-						Train.ElectricEngine.PantographToggle(1);
+						Train.ElectricEngine.RearPantograph.ToggleState();
 						data.Response = AIResponse.Long;
 						return;
 					}

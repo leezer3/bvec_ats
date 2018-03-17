@@ -5,8 +5,6 @@
 	{
 		/// <summary>The current state of this pantograph</summary>
 		internal PantographStates State;
-		/// <summary>Whether this pantograph is currently raised</summary>
-		internal bool Raised;
 		/// <summary>Whether line volts are available from this pantograph</summary>
 		internal bool LineVoltsAvailable;
 		/// <summary>The time interval in seconds before raising the pantograph can be attempted again</summary>
@@ -20,13 +18,21 @@
 
 		internal AlarmBehaviour Behaviour;
 
+		/// <summary>Whether this pantograph is currently raised</summary>
+		internal bool Raised()
+		{
+			if (State == PantographStates.RaisedTimer || State == PantographStates.VCBReady || State == PantographStates.OnService)
+			{
+				return true;
+			}
+			return false;
+		}
 
 		internal void Update(double TimeElapsed)
 		{
 			switch (State)
 			{
 				case PantographStates.RaisedTimer:
-					Raised = true;
 					Timer += TimeElapsed;
 					if (Timer > 1000)
 					{
@@ -52,7 +58,6 @@
 					State = PantographStates.Lowered;
 					break;
 				case PantographStates.LoweredAtSpeed:
-					Raised = false;
 					switch (Behaviour)
 					{
 						case AlarmBehaviour.None:
@@ -126,7 +131,6 @@
 			if (Train.CurrentSpeed == 0 || Automatic)
 			{
 				State = PantographStates.Lowered;
-				Raised = false;
 				Train.DebugLogger.LogMessage("A pantograph was lowered sucessfully");
 			}
 			else
@@ -139,7 +143,11 @@
 		/// <summary>Toggles the state of this pantograph</summary>
 		internal void ToggleState()
 		{
-			if (Raised)
+			if (State == PantographStates.Disabled)
+			{
+				return;
+			}
+			if (Raised())
 			{
 				Lower(false);
 			}

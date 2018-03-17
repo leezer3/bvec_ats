@@ -111,9 +111,7 @@ namespace Plugin
 			if (Train.CurrentKeyConfiguration.FrontPantograph == null && Train.CurrentKeyConfiguration.RearPantograph == null)
 			{
 				BreakerTripped = false;
-				FrontPantograph.Raised = true;
 				FrontPantograph.State = PantographStates.OnService;
-				RearPantograph.Raised = true;
 				RearPantograph.State = PantographStates.OnService;
 			}
 			//On service- Set the enabled pantograph(s) to the OnService state
@@ -124,24 +122,18 @@ namespace Plugin
 				if (Train.CurrentKeyConfiguration.FrontPantograph == null && Train.CurrentKeyConfiguration.RearPantograph != null)
 				{
 					//Rear pantograph only is enabled
-					FrontPantograph.Raised = false;
 					FrontPantograph.State = PantographStates.Disabled;
-					RearPantograph.Raised = true;
 					RearPantograph.State = PantographStates.OnService;
 				}
 				else if(Train.CurrentKeyConfiguration.FrontPantograph != null && Train.CurrentKeyConfiguration.RearPantograph == null)
 				{
 					//Front pantograph only is enabled
-					FrontPantograph.Raised = true;
 					FrontPantograph.State = PantographStates.OnService;
-					RearPantograph.Raised = false;
 					RearPantograph.State = PantographStates.Disabled;
 				}
 				else
 				{
-					FrontPantograph.Raised = true;
 					FrontPantograph.State = PantographStates.OnService;
-					RearPantograph.Raised = true;
 					RearPantograph.State = PantographStates.OnService;
 				}
 			}
@@ -153,24 +145,18 @@ namespace Plugin
 				if (Train.CurrentKeyConfiguration.FrontPantograph == null && Train.CurrentKeyConfiguration.RearPantograph != null)
 				{
 					//Rear pantograph only is enabled
-					FrontPantograph.Raised = false;
 					FrontPantograph.State = PantographStates.Disabled;
-					RearPantograph.Raised = false;
 					RearPantograph.State = PantographStates.Lowered;
 				}
 				else if(Train.CurrentKeyConfiguration.FrontPantograph != null && Train.CurrentKeyConfiguration.RearPantograph == null)
 				{
 					//Front pantograph only is enabled
-					FrontPantograph.Raised = false;
 					FrontPantograph.State = PantographStates.Lowered;
-					RearPantograph.Raised = false;
 					RearPantograph.State = PantographStates.Disabled;
 				}
 				else
 				{
-					FrontPantograph.Raised = false;
 					FrontPantograph.State = PantographStates.Lowered;
-					RearPantograph.Raised = false;
 					RearPantograph.State = PantographStates.Lowered;
 				}
 			}
@@ -562,7 +548,7 @@ namespace Plugin
 				//Pantograph Indicators
 				if (FrontPantograph.PanelIndex != -1)
 				{
-					if (FrontPantograph.Raised == true)
+					if (FrontPantograph.Raised() == true)
 					{
 						this.Train.Panel[FrontPantograph.PanelIndex] = 1;
 					}
@@ -573,7 +559,7 @@ namespace Plugin
 				}
 				if (RearPantograph.PanelIndex != -1)
 				{
-					if (RearPantograph.Raised == true)
+					if (RearPantograph.Raised() == true)
 					{
 						this.Train.Panel[RearPantograph.PanelIndex] = 1;
 					}
@@ -664,19 +650,6 @@ namespace Plugin
 				}
 				Train.DebugLogger.LogMessage("The ACB/VCB was closed");
 				Train.TractionManager.ResetPowerCutoff();
-			}
-		}
-
-		//Raises & lowers the pantographs
-		internal void PantographToggle(int pantograph)
-		{
-			if (pantograph == 0)
-			{
-				FrontPantograph.ToggleState();
-			}
-			else
-			{
-				RearPantograph.ToggleState();
 			}
 		}
 
