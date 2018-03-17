@@ -41,13 +41,8 @@ namespace Plugin
 		internal Pantograph RearPantograph;
 		/// <summary>The ammeter</summary>
 		internal Ammeter Ammeter;
-
-		/// <summary>A list of the available power pickup points</summary>
-		internal string pickuppoints = "0";
 		/// <summary>The behaviour of the train in a powergap</summary>
 		internal int powergapbehaviour = 0;
-		/// <summary>A list of the heating rates (in heat units per second) for each power notch</summary>
-		internal string heatingrate = "0";
 		/// <summary>The retry interval after an unsucessful attempt to raise the pantograph, or it has been lowered with the ACB/VCB closed</summary>
 		internal double pantographretryinterval = 5000;
 		/// <summary>The behaviour when a pantograph is lowered with the ACB/VCB closed</summary>
@@ -87,9 +82,9 @@ namespace Plugin
 
 		//Arrays
 		/// <summary>An array storing the location of all available pickup points</summary>
-		int[] pickuparray;
-		/// <summary>An array storing the heating rate for each power notch</summary>
-		int[] heatingarray;
+		internal int[] PickupLocations = { 0 };
+		/// <summary>A list of the heating rates (in heat units per second) for each power notch</summary>
+		internal int[] HeatingRates = { 0 };
 
 		/// <summary>The speed at which the pantograph will be automatically lowered</summary>
 		internal double AutomaticPantographLowerSpeed = Double.MaxValue;
@@ -111,9 +106,6 @@ namespace Plugin
 		//<param name="mode">The initialization mode.</param>
 		internal override void Initialize(InitializationModes mode)
 		{
-			InternalFunctions.ParseStringToIntArray(pickuppoints, ref pickuparray, "pickuppoints");
-			InternalFunctions.ParseStringToIntArray(heatingrate, ref heatingarray, "heatingrate");
-
 			//Set starting pantograph states
 			//If neither pantograph has a key assigned, set both to enabled
 			if (Train.CurrentKeyConfiguration.FrontPantograph == null && Train.CurrentKeyConfiguration.RearPantograph == null)
@@ -212,15 +204,15 @@ namespace Plugin
 						this.heatingtimer = 0.0;
 						if (Train.Handles.PowerNotch == 0)
 						{
-							currentheat = heatingarray[0];
+							currentheat = HeatingRates[0];
 						}
-						else if (Train.Handles.PowerNotch < heatingarray.Length)
+						else if (Train.Handles.PowerNotch < HeatingRates.Length)
 						{
-							currentheat = heatingarray[Train.Handles.PowerNotch];
+							currentheat = HeatingRates[Train.Handles.PowerNotch];
 						}
 						else
 						{
-							currentheat = heatingarray[heatingarray.Length - 1];
+							currentheat = HeatingRates[HeatingRates.Length - 1];
 						}
 						temperature += currentheat;
 					}
@@ -264,11 +256,11 @@ namespace Plugin
 				{
 					int new_power;
 					//First check to see whether the first pickup is in the neutral section
-					if (Train.TrainLocation - pickuparray[0] > firstmagnet && Train.TrainLocation - pickuparray[0] < nextmagnet)
+					if (Train.TrainLocation - PickupLocations[0] > firstmagnet && Train.TrainLocation - PickupLocations[0] < nextmagnet)
 					{
 						//Cycle through the other pickups
 						int j = 0;
-						foreach (int t in pickuparray)
+						foreach (int t in PickupLocations)
 						{
 							if (Train.TrainLocation - t < firstmagnet)
 							{
@@ -282,7 +274,7 @@ namespace Plugin
 						else if (powergapbehaviour == 1)
 						{
 							//Reduce max throttle by percentage of how many pickups are in the gap
-							double throttlemultiplier = (double)j / (double)pickuparray.Length;
+							double throttlemultiplier = (double)j / (double)PickupLocations.Length;
 							new_power = (int)(this.Train.Specs.PowerNotches * throttlemultiplier);
 							this.Train.TractionManager.SetMaxPowerNotch(new_power, false);
 							//data.Handles.PowerNotch = new_power;
@@ -298,18 +290,18 @@ namespace Plugin
 						else
 						{
 							//Kill traction power when all pickups are on the gap
-							if (j == pickuparray.Length && Train.TractionManager.PowerCutoffDemanded == false)
+							if (j == PickupLocations.Length && Train.TractionManager.PowerCutoffDemanded == false)
 							{
 								DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
 							}
 						}
 					}
 					//Now, check to see if the last pickup is in the neutral section
-					else if (Train.TrainLocation - pickuparray[pickuparray.Length - 1] > firstmagnet && Train.TrainLocation - pickuparray[pickuparray.Length - 1] < nextmagnet)
+					else if (Train.TrainLocation - PickupLocations[PickupLocations.Length - 1] > firstmagnet && Train.TrainLocation - PickupLocations[PickupLocations.Length - 1] < nextmagnet)
 					{
 						//Cycle through the other pickups
 						int j = 0;
-						foreach (int t in pickuparray)
+						foreach (int t in PickupLocations)
 						{
 							if (Train.TrainLocation - t < firstmagnet)
 							{
@@ -323,7 +315,7 @@ namespace Plugin
 						else if (powergapbehaviour == 1)
 						{
 							//Reduce max throttle by percentage of how many pickups are in the gap
-							double throttlemultiplier = (double)j / (double)pickuparray.Length;
+							double throttlemultiplier = (double)j / (double)PickupLocations.Length;
 							new_power = (int)(this.Train.Specs.PowerNotches * throttlemultiplier);
 							this.Train.TractionManager.SetMaxPowerNotch(new_power, false);
 							//data.Handles.PowerNotch = new_power;
@@ -339,7 +331,7 @@ namespace Plugin
 						else
 						{
 							//Kill traction power when all pickups are on the gap
-							if (j == pickuparray.Length && Train.TractionManager.PowerCutoffDemanded == false)
+							if (j == PickupLocations.Length && Train.TractionManager.PowerCutoffDemanded == false)
 							{
 								DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
 							}
@@ -347,7 +339,7 @@ namespace Plugin
 					}
 					//Neither the first or last pickups are in the power gap, reset the power
 					//However also check that the breaker has not been tripped by a UKTrainSys beacon
-					else if (nextmagnet != 0 && (Train.TrainLocation - pickuparray[pickuparray.Length - 1]) > nextmagnet && (Train.TrainLocation - pickuparray[0]) > nextmagnet)
+					else if (nextmagnet != 0 && (Train.TrainLocation - PickupLocations[PickupLocations.Length - 1]) > nextmagnet && (Train.TrainLocation - PickupLocations[0]) > nextmagnet)
 					{
 						PowerGap = false;
 						if (LegacyPowerCut == true)
@@ -362,7 +354,7 @@ namespace Plugin
 						}
 					}
 					//If the final pickup has passed the UKTrainSys standard power gap location
-					else if (Train.TrainLocation - pickuparray[pickuparray.Length - 1] < lastmagnet)
+					else if (Train.TrainLocation - PickupLocations[PickupLocations.Length - 1] < lastmagnet)
 					{
 						PowerGap = false;
 					}
@@ -431,6 +423,7 @@ namespace Plugin
 							{
 								RearPantograph.Lower(true);
 							}
+							Train.DebugLogger.LogMessage("Automatically lowered all pantographs due to reaching the setspeed.");
 							break;
 						case AutomaticPantographLoweringModes.LowerFront:
 							if (RearPantograph.State == PantographStates.OnService)
@@ -438,6 +431,7 @@ namespace Plugin
 								if (FrontPantograph.State == PantographStates.OnService || FrontPantograph.State == PantographStates.RaisedTimer || FrontPantograph.State == PantographStates.VCBReady)
 								{
 									FrontPantograph.Lower(true);
+									Train.DebugLogger.LogMessage("Automatically lowered the front pantograph due to reaching the setspeed.");
 								}
 							}
 							break;
@@ -447,6 +441,7 @@ namespace Plugin
 								if (RearPantograph.State == PantographStates.OnService || RearPantograph.State == PantographStates.RaisedTimer || RearPantograph.State == PantographStates.VCBReady)
 								{
 									RearPantograph.Lower(true);
+									Train.DebugLogger.LogMessage("Automatically lowered the rear pantograph due to reaching the setspeed.");
 								}
 							}
 							break;
@@ -454,12 +449,14 @@ namespace Plugin
 							if (FrontPantograph.State == PantographStates.OnService || FrontPantograph.State == PantographStates.RaisedTimer || FrontPantograph.State == PantographStates.VCBReady)
 							{
 								FrontPantograph.Lower(true);
+								Train.DebugLogger.LogMessage("Automatically lowered the front pantograph due to reaching the setspeed.");
 							}
 							break;
 						case AutomaticPantographLoweringModes.LowerRearRegardless:
 							if (RearPantograph.State == PantographStates.OnService || RearPantograph.State == PantographStates.RaisedTimer || RearPantograph.State == PantographStates.VCBReady)
 							{
 								RearPantograph.Lower(true);
+								Train.DebugLogger.LogMessage("Automatically lowered the rear pantograph due to reaching the setspeed.");
 							}
 							break;
 

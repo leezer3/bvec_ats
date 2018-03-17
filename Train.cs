@@ -662,7 +662,7 @@ namespace Plugin {
 											InternalFunctions.ValidateSetting(value, ref ElectricEngine.heatingpart, key);
 											break;
 										case "heatingrate":
-											this.ElectricEngine.heatingrate = value;
+											InternalFunctions.ParseStringToIntArray(value, ref ElectricEngine.HeatingRates, "heatingrate");
 											break;
 										case "overheatwarn":
 											InternalFunctions.ParseNumber(value, ref ElectricEngine.overheatwarn, key);
@@ -689,7 +689,7 @@ namespace Plugin {
 											this.ElectricEngine.Ammeter.Initialize(value);
 											break;
 										case "powerpickuppoints":
-											this.ElectricEngine.pickuppoints = value;
+											InternalFunctions.ParseStringToIntArray(value, ref ElectricEngine.PickupLocations, "pickuppoints");
 											break;
 										case "powergapbehaviour":
 											InternalFunctions.ValidateSetting(value, ref ElectricEngine.powergapbehaviour, key);
