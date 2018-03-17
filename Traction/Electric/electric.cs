@@ -64,11 +64,6 @@ namespace Plugin
 		internal double overheat = 0;
 		/// <summary>What happens when we overheat?</summary>
 		internal int overheatresult = 0;
-
-		//Panel Indicies
-
-		/// <summary>The panel index of the ammeter</summary>
-		internal int ammeter = -1;
 		/// <summary>The panel index of the line volts indicator</summary>
 		internal int powerindicator = -1;
 		/// <summary>The panel index of the ACB/VCB</summary>
@@ -114,6 +109,7 @@ namespace Plugin
 			this.Train = train;
 			FrontPantograph = new Pantograph(train);
 			RearPantograph = new Pantograph(train);
+			Ammeter = new Ammeter(train);
 		}
 
 		//<param name="mode">The initialization mode.</param>
@@ -526,15 +522,15 @@ namespace Plugin
 			//Panel Indicies
 			{
 				//Ammeter
-				if (ammeter != -1)
+				if (Ammeter.PanelIndex != -1)
 				{
-					if(Ammeter == null || PowerGap == true || BreakerTripped == true || Train.TractionManager.PowerCutoffDemanded == true)
+					if(PowerGap == true || BreakerTripped == true || Train.TractionManager.PowerCutoffDemanded == true)
 					{
-						this.Train.Panel[ammeter] = 0;
+						this.Train.Panel[Ammeter.PanelIndex] = 0;
 					}
 					else
 					{
-						this.Train.Panel[ammeter] = Ammeter.GetCurrentValue();
+						this.Train.Panel[Ammeter.PanelIndex] = Ammeter.GetCurrentValue();
 					}
 				}
 				//Line Volts indicator

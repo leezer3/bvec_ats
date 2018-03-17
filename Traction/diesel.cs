@@ -120,6 +120,8 @@ namespace Plugin
 		/// <summary>An array storing the fuel usage for all the gears/ power notches</summary>
 		int[] fuelarray;
 
+		internal Ammeter Ammeter;
+
 		// --- constructors ---
 
 		/// <summary>Creates a new instance of this system.</summary>
@@ -127,6 +129,7 @@ namespace Plugin
 		internal diesel(Train train)
 		{
 			this.Train = train;
+			Ammeter = new Ammeter(train);
 		}
 
 		//<param name="mode">The initialization mode.</param>
@@ -486,6 +489,18 @@ namespace Plugin
 			
 			{
 				//Panel Variables
+				//Ammeter
+				if (Ammeter.PanelIndex != -1)
+				{
+					if(Train.TractionManager.PowerCutoffDemanded == true)
+					{
+						this.Train.Panel[Ammeter.PanelIndex] = 0;
+					}
+					else
+					{
+						this.Train.Panel[Ammeter.PanelIndex] = Ammeter.GetCurrentValue();
+					}
+				}
 				if (!nogears)
 				{
 					if (gearindicator != -1)

@@ -683,10 +683,10 @@ namespace Plugin {
 											InternalFunctions.ValidateIndex(value, ref ElectricEngine.overheatalarm, key);
 											break;
 										case "ammeter":
-											InternalFunctions.ValidateIndex(value, ref ElectricEngine.ammeter, key);
+											InternalFunctions.ValidateIndex(value, ref ElectricEngine.Ammeter.PanelIndex, key);
 											break;
 										case "ammetervalues":
-											this.ElectricEngine.Ammeter = new Ammeter(value);
+											this.ElectricEngine.Ammeter.Initialize(value);
 											break;
 										case "powerpickuppoints":
 											this.ElectricEngine.pickuppoints = value;
@@ -799,6 +799,12 @@ namespace Plugin {
 								case "diesel":
 									switch (key)
 									{
+										case "ammeter":
+											InternalFunctions.ValidateIndex(value, ref DieselEngine.Ammeter.PanelIndex, key);
+											break;
+										case "ammetervalues":
+											this.DieselEngine.Ammeter.Initialize(value);
+											break;
 										case "automatic":
 											InternalFunctions.ParseBool(value, ref TractionManager.AutomaticAdvancedFunctions, key);
 											break;
