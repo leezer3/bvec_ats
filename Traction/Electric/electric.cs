@@ -42,7 +42,7 @@ namespace Plugin
 		/// <summary>The ammeter</summary>
 		internal Ammeter Ammeter;
 		/// <summary>The behaviour of the train in a powergap</summary>
-		internal int powergapbehaviour = 0;
+		internal PowerGapBehaviour PowerGapBehaviour = PowerGapBehaviour.NoEffect;
 		/// <summary>The retry interval after an unsucessful attempt to raise the pantograph, or it has been lowered with the ACB/VCB closed</summary>
 		internal double pantographretryinterval = 5000;
 		/// <summary>The behaviour when a pantograph is lowered with the ACB/VCB closed</summary>
@@ -267,33 +267,30 @@ namespace Plugin
 								j++;
 							}
 						}
-						if (powergapbehaviour == 0)
+
+						switch (PowerGapBehaviour)
 						{
-							//Power gaps have no effect, twiddle
-						}
-						else if (powergapbehaviour == 1)
-						{
-							//Reduce max throttle by percentage of how many pickups are in the gap
-							double throttlemultiplier = (double)j / (double)PickupLocations.Length;
-							new_power = (int)(this.Train.Specs.PowerNotches * throttlemultiplier);
-							this.Train.TractionManager.SetMaxPowerNotch(new_power, false);
-							//data.Handles.PowerNotch = new_power;
-						}
-						else if (powergapbehaviour == 2)
-						{
-							//Kill traction power if any pickup is on the gap
-							if (j != 0 && Train.TractionManager.PowerCutoffDemanded == false)
-							{
-								DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
-							}
-						}
-						else
-						{
-							//Kill traction power when all pickups are on the gap
-							if (j == PickupLocations.Length && Train.TractionManager.PowerCutoffDemanded == false)
-							{
-								DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
-							}
+							case PowerGapBehaviour.ProportionalReduction:
+								//Reduce max throttle by percentage of how many pickups are in the gap
+								double throttlemultiplier = (double)j / (double)PickupLocations.Length;
+								new_power = (int)(this.Train.Specs.PowerNotches * throttlemultiplier);
+								this.Train.TractionManager.SetMaxPowerNotch(new_power, false);
+								//data.Handles.PowerNotch = new_power;
+								break;
+							case PowerGapBehaviour.InactiveAny:
+								//Kill traction power if any pickup is on the gap
+								if (j != 0 && Train.TractionManager.PowerCutoffDemanded == false)
+								{
+									DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
+								}
+
+								break;
+							case PowerGapBehaviour.InactiveAll:
+								if (j == PickupLocations.Length && Train.TractionManager.PowerCutoffDemanded == false)
+								{
+									DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
+								}
+								break;
 						}
 					}
 					//Now, check to see if the last pickup is in the neutral section
@@ -308,33 +305,30 @@ namespace Plugin
 								j++;
 							}
 						}
-						if (powergapbehaviour == 0)
+						switch (PowerGapBehaviour)
 						{
-							//Power gaps have no effect, twiddle
-						}
-						else if (powergapbehaviour == 1)
-						{
-							//Reduce max throttle by percentage of how many pickups are in the gap
-							double throttlemultiplier = (double)j / (double)PickupLocations.Length;
-							new_power = (int)(this.Train.Specs.PowerNotches * throttlemultiplier);
-							this.Train.TractionManager.SetMaxPowerNotch(new_power, false);
-							//data.Handles.PowerNotch = new_power;
-						}
-						else if (powergapbehaviour == 2)
-						{
-							//Kill traction power if any pickup is on the gap
-							if (j != 0 && Train.TractionManager.PowerCutoffDemanded == false)
-							{
-								DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
-							}
-						}
-						else
-						{
-							//Kill traction power when all pickups are on the gap
-							if (j == PickupLocations.Length && Train.TractionManager.PowerCutoffDemanded == false)
-							{
-								DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
-							}
+							case PowerGapBehaviour.ProportionalReduction:
+								//Reduce max throttle by percentage of how many pickups are in the gap
+								double throttlemultiplier = (double)j / (double)PickupLocations.Length;
+								new_power = (int)(this.Train.Specs.PowerNotches * throttlemultiplier);
+								this.Train.TractionManager.SetMaxPowerNotch(new_power, false);
+								//data.Handles.PowerNotch = new_power;
+								break;
+							case PowerGapBehaviour.InactiveAny:
+								//Kill traction power if any pickup is on the gap
+								if (j != 0 && Train.TractionManager.PowerCutoffDemanded == false)
+								{
+									DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
+								}
+
+								break;
+							case PowerGapBehaviour.InactiveAll:
+								//Kill traction power when all pickups are on the gap
+								if (j == PickupLocations.Length && Train.TractionManager.PowerCutoffDemanded == false)
+								{
+									DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
+								}
+								break;
 						}
 					}
 					//Neither the first or last pickups are in the power gap, reset the power
@@ -391,7 +385,7 @@ namespace Plugin
 				//
 				//Line volts is lit, but power is still cut off
 				else if (FrontPantograph.State != PantographStates.Disabled && RearPantograph.State != PantographStates.Disabled
-				&& (FrontPantograph.State != PantographStates.OnService || RearPantograph.State != PantographStates.OnService) && powergapbehaviour == 2 && Train.TractionManager.PowerCutoffDemanded == false)
+				&& (FrontPantograph.State != PantographStates.OnService || RearPantograph.State != PantographStates.OnService) && PowerGapBehaviour == PowerGapBehaviour.InactiveAny && Train.TractionManager.PowerCutoffDemanded == false)
 				{
 					DemandPowerCutoff("Power cutoff was demanded due to no available pantographs");
 				}

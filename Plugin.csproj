@@ -192,6 +192,7 @@
     <Compile Include="Functions\Sounds.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Traction\Electric\Electric.PantographBehaviour.cs" />
+    <Compile Include="Traction\Electric\Electric.PowergapBehaviour.cs" />
     <Compile Include="Traction\steam.cs">
       <SubType>Code</SubType>
     </Compile>

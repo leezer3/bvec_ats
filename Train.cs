@@ -692,7 +692,14 @@ namespace Plugin {
 											InternalFunctions.ParseStringToIntArray(value, ref ElectricEngine.PickupLocations, "pickuppoints");
 											break;
 										case "powergapbehaviour":
-											InternalFunctions.ValidateSetting(value, ref ElectricEngine.powergapbehaviour, key);
+											int pgb = 0;
+											InternalFunctions.ValidateSetting(value, ref pgb, key);
+											if (pgb < 0 || pgb > 3)
+											{
+												InternalFunctions.LogError("powergapbehaviour",0);
+												break;
+											}
+											ElectricEngine.PowerGapBehaviour = (PowerGapBehaviour) pgb;
 											break;
 										case "powerindicator":
 											InternalFunctions.ValidateIndex(value, ref ElectricEngine.powerindicator, key);
