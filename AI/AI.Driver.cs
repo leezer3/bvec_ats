@@ -229,7 +229,7 @@ namespace Plugin.AI
 
 			//The first thing we need to do is to check the pantographs
 			//NOTE: Don't attempt to raise a pantograph whilst on the move
-			if (Train.ElectricEngine.FrontPantograph.State != PantographStates.VCBReady || Train.ElectricEngine.RearPantograph.State != PantographStates.VCBReady && Train.CurrentSpeed == 0)
+			if ((Train.ElectricEngine.FrontPantograph.State != PantographStates.VCBReady || Train.ElectricEngine.RearPantograph.State != PantographStates.VCBReady) && Train.CurrentSpeed == 0)
 			{
 				//First check whether we have any pantographs
 				if (Train.CurrentKeyConfiguration.FrontPantograph != null || Train.CurrentKeyConfiguration.RearPantograph != null)

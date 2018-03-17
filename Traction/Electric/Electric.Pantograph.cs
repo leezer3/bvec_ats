@@ -1,17 +1,14 @@
 ﻿namespace Plugin
 {
 	/// <summary>Represents a pantograph.</summary>
-	internal class Pantograph
+	internal class Pantograph : Component
 	{
-		private readonly Train Train;
 		/// <summary>The current state of this pantograph</summary>
 		internal PantographStates State;
 		/// <summary>Whether this pantograph is currently raised</summary>
 		internal bool Raised;
 		/// <summary>Whether line volts are available from this pantograph</summary>
 		internal bool LineVoltsAvailable;
-
-		private double Timer;
 		/// <summary>The time interval in seconds before raising the pantograph can be attempted again</summary>
 		internal double RetryInterval;
 		/// <summary>The alarm sound played when this pantograph is lowered at speed</summary>

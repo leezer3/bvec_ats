@@ -704,10 +704,10 @@ namespace Plugin {
 											InternalFunctions.ValidateIndex(value, ref ElectricEngine.breakerindicator, key);
 											break;
 										case "pantographindicator_f":
-											InternalFunctions.ValidateIndex(value, ref ElectricEngine.pantographindicator_f, key);
+											InternalFunctions.ValidateIndex(value, ref ElectricEngine.FrontPantograph.PanelIndex, key);
 											break;
 										case "pantographindicator_r":
-											InternalFunctions.ValidateIndex(value, ref ElectricEngine.pantographindicator_r, key);
+											InternalFunctions.ValidateIndex(value, ref ElectricEngine.RearPantograph.PanelIndex, key);
 											break;
 										case "pantographraisedsound":
 											InternalFunctions.ValidateIndex(value, ref ElectricEngine.FrontPantograph.RaisedSound, key);

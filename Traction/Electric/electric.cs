@@ -68,10 +68,6 @@ namespace Plugin
 		internal int powerindicator = -1;
 		/// <summary>The panel index of the ACB/VCB</summary>
 		internal int breakerindicator = -1;
-		/// <summary>The panel index of front pantograph</summary>
-		internal int pantographindicator_f = -1;
-		/// <summary>The panel index of the rear pantograph</summary>
-		internal int pantographindicator_r = -1;
 		/// <summary>The panel indicator for the thermometer</summary>
 		internal int thermometer = -1;
 		/// <summary>The panel indicator for the overheat indicator</summary>
@@ -573,26 +569,26 @@ namespace Plugin
 					}
 				}
 				//Pantograph Indicators
-				if (pantographindicator_f != -1)
+				if (FrontPantograph.PanelIndex != -1)
 				{
 					if (FrontPantograph.Raised == true)
 					{
-						this.Train.Panel[(pantographindicator_f)] = 1;
+						this.Train.Panel[FrontPantograph.PanelIndex] = 1;
 					}
 					else
 					{
-						this.Train.Panel[(pantographindicator_f)] = 0;
+						this.Train.Panel[FrontPantograph.PanelIndex] = 0;
 					}
 				}
-				if (pantographindicator_r != -1)
+				if (RearPantograph.PanelIndex != -1)
 				{
 					if (RearPantograph.Raised == true)
 					{
-						this.Train.Panel[(pantographindicator_r)] = 1;
+						this.Train.Panel[RearPantograph.PanelIndex] = 1;
 					}
 					else
 					{
-						this.Train.Panel[(pantographindicator_r)] = 0;
+						this.Train.Panel[RearPantograph.PanelIndex] = 0;
 					}
 				}
 			}
