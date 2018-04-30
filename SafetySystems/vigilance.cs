@@ -34,11 +34,11 @@ namespace Plugin
         /// <summary>The panel index for the vigilance lamp</summary>
         internal int vigilancelamp = -1;
         /// <summary>Stores whether a Drivers Reminder Appliance [DRA] is fitted</summary>
-        internal int draenabled = -1;
+        internal bool DRAEnabled = false;
         /// <summary>Defines the starting state for the DRA</summary>
-        internal int drastartstate = -1;
+        internal int DRAStartState = -1;
         /// <summary>The panel index for the DRA</summary>
-        internal int draindicator = -1;
+        internal int DRAIndicator = -1;
         /// <summary>Defines whether the vigilance timer can be reset by any key, or only the vigilance key</summary>
         internal int independantvigilance = 0;
         /// <summary>The speed below which vigilance is inactive</summary>
@@ -109,7 +109,7 @@ namespace Plugin
                 InternalFunctions.LogError("vigilancetimes",0);
             }
             //
-            if (draenabled == -1 || drastartstate == -1)
+            if (DRAEnabled == false || DRAStartState == -1)
             {
                 Train.drastate = false;
             }
@@ -298,15 +298,15 @@ namespace Plugin
 
 	        {
 		        //Set Panel Variables
-		        if (draindicator != -1)
+		        if (DRAIndicator != -1)
 		        {
 			        if (Train.drastate == true)
 			        {
-				        this.Train.Panel[(draindicator)] = 1;
+				        this.Train.Panel[(DRAIndicator)] = 1;
 			        }
 			        else
 			        {
-				        this.Train.Panel[(draindicator)] = 0;
+				        this.Train.Panel[(DRAIndicator)] = 0;
 			        }
 		        }
 

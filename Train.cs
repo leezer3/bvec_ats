@@ -106,6 +106,9 @@ namespace Plugin {
 		internal double TrainLocation;
 		internal double PreviousLocation;
 
+		/// <summary>The next signal</summary>
+		internal SignalData NextSignal;
+
 		/// <summary>The in-game time of day, in seconds.</summary>
 		internal static double SecondsSinceMidnight;
 		
@@ -1223,13 +1226,13 @@ namespace Plugin {
 											InternalFunctions.ValidateSetting(value, ref Vigilance.independantvigilance, key);
 											break;
 										case "draenabled":
-											InternalFunctions.ValidateSetting(value, ref Vigilance.draenabled, key);
+											InternalFunctions.ParseBool(value, ref Vigilance.DRAEnabled, key);
 											break;
 										case "drastartstate":
-											InternalFunctions.ValidateSetting(value, ref Vigilance.drastartstate, key);
+											InternalFunctions.ValidateSetting(value, ref Vigilance.DRAStartState, key);
 											break;
 										case "draindicator":
-											InternalFunctions.ValidateIndex(value, ref Vigilance.draindicator, key);
+											InternalFunctions.ValidateIndex(value, ref Vigilance.DRAIndicator, key);
 											break;
 										case "vigilancealarm":
 											InternalFunctions.ValidateIndex(value, ref Vigilance.vigilancealarm, key);
@@ -2648,10 +2651,12 @@ namespace Plugin {
 			}
 
 		}
-		
+
 		/// <summary>Is called to inform about signals.</summary>
 		/// <param name="signal">The signal data.</param>
-		internal void SetSignal(SignalData[] signal) {
+		internal void SetSignal(SignalData[] signal)
+		{
+			NextSignal = signal[1];
 
 			foreach (Device device in this.Devices) {
 				device.SetSignal(signal);

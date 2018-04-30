@@ -18,6 +18,7 @@ namespace Plugin.AI
 		internal bool SelfTestPerformed;
 		internal int SelfTestSequence = 0;
 		internal bool AWSWarningRecieved;
+		private bool DRAResponse = false;
 
 		internal void TrainDriver(AIData data)
 		{
@@ -84,13 +85,60 @@ namespace Plugin.AI
 					WesternDiesel(ref data);
 					break;
 			}
-			//Hit the deadman's handle key if required
-			if (Train.Vigilance != null && Train.Vigilance.deadmanshandle != 0)
+
+			//Vigilance Devices
+			if (Train.Vigilance != null)
 			{
-				if (Train.Vigilance.deadmanstimer > (Train.Vigilance.vigilancetime * 0.7))
+				if (Train.Vigilance.deadmanshandle != 0)
 				{
-					Train.Vigilance.deadmanstimer = 0.0;
-					data.Response = AIResponse.Medium;
+					if (Train.Vigilance.deadmanstimer > (Train.Vigilance.vigilancetime * 0.7))
+					{
+						Train.Vigilance.deadmanstimer = 0.0;
+						data.Response = AIResponse.Medium;
+					}
+				}
+
+				if (Train.Vigilance.DRAEnabled == true)
+				{
+					if (Train.drastate == false && Train.CurrentSpeed == 0)
+					{
+						//When stopped check if we meet one (or more) of the conditions to apply the DRA
+						if (Train.NextSignal.Aspect == 0)
+						{
+							Train.drastate = true;
+							Train.TractionManager.DemandPowerCutoff();
+							data.Response = AIResponse.Short;
+						}
+						if (Train.Doors != DoorStates.None)
+						{
+							Train.drastate = true;
+							Train.TractionManager.DemandPowerCutoff();
+							data.Response = AIResponse.Short;
+						}
+					}
+					else if (Train.drastate == true)
+					{
+						if (Train.NextSignal.Aspect != 0 && Train.Doors == DoorStates.None)
+						{
+							if (DRAResponse == true)
+							{
+								Train.drastate = false;
+								Train.TractionManager.ResetPowerCutoff();
+								data.Response = AIResponse.Short;
+								DRAResponse = false;
+							}
+							else
+							{
+								//Simulate delay from the conditions being met and the driver releasing the DRA
+								data.Response = AIResponse.Medium;
+								DRAResponse = true;
+							}
+
+							
+						}
+					}
+					
+
 				}
 			}
 			//AWS Handling

@@ -1472,7 +1472,7 @@ namespace Plugin
 			{
 				if (key == Train.CurrentKeyConfiguration.DRA)
 				{
-					if (Train.Vigilance.draenabled != -1)
+					if (Train.Vigilance.DRAEnabled)
 					{
 						//Operate DRA
 						if (Train.drastate == false)
