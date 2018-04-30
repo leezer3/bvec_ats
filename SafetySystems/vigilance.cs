@@ -14,7 +14,6 @@ namespace Plugin
         private readonly Train Train;
         //Internal Variables
         internal double vigilancetime;
-        internal int trainspeed;
 
         internal DeadmanStates DeadmansHandleState;
         internal VigilanteStates VigilanteState;
@@ -44,7 +43,6 @@ namespace Plugin
         /// <summary>The speed below which vigilance is inactive</summary>
         internal double vigilanceinactivespeed = 0;
         /// <summary>Timers</summary>
-        internal double overspeedtimer;
         internal int deadmanshandle = 0;
         internal double deadmanstimer;
 
@@ -92,7 +90,6 @@ namespace Plugin
             //Set Starting Paramaters Here
 
             //Timers to zero
-            overspeedtimer = 0.0;
             deadmanstimer = 0.0;
             //Split vigilance times into an array
             try
@@ -141,7 +138,7 @@ namespace Plugin
 				        DeadmansHandleState = DeadmanStates.None;
 			        }
 			        else if (Train.ElectricEngine != null && Train.ElectricEngine.FrontPantograph.State != PantographStates.OnService &&
-			                 Train.ElectricEngine.RearPantograph.State != PantographStates.OnService && trainspeed == 0)
+			                 Train.ElectricEngine.RearPantograph.State != PantographStates.OnService && Train.CurrentSpeed == 0)
 			        {
 				        //Stationary with no available pantographs
 				        DeadmansHandleState = DeadmanStates.None;
@@ -161,13 +158,13 @@ namespace Plugin
 				        //If inactive speed is -1 always set to the timer state
 				        DeadmansHandleState = DeadmanStates.OnTimer;
 			        }
-			        else if (trainspeed < vigilanceinactivespeed && DeadmansHandleState == DeadmanStates.OnTimer)
+			        else if (Train.CurrentSpeed < vigilanceinactivespeed && DeadmansHandleState == DeadmanStates.OnTimer)
 			        {
 				        //If train speed is than the inactive speed and we're in the timer mode
 				        //Set to no action
 				        DeadmansHandleState = DeadmanStates.None;
 			        }
-			        else if (trainspeed > vigilanceinactivespeed && DeadmansHandleState == DeadmanStates.None)
+			        else if (Train.CurrentSpeed > vigilanceinactivespeed && DeadmansHandleState == DeadmanStates.None)
 			        {
 				        //Set to the timer state
 				        DeadmansHandleState = DeadmanStates.OnTimer;
