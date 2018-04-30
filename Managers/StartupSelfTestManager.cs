@@ -19,7 +19,7 @@ namespace Plugin {
 		/// <summary>The timer used during the startup self-test sequence.</summary>
 		private static int MySequenceTimer = SequenceDuration;
 
-        internal static int sunflowerstate;
+        internal static AWS.SunflowerStates SunflowerState;
 		
 		// properties
 		
@@ -50,28 +50,28 @@ namespace Plugin {
             {
                 //Set to initialised if no AWS/ TPWS is installed
                 MySequenceState = SequenceStates.Initialised;
-                sunflowerstate = 0;
+                SunflowerState = AWS.SunflowerStates.Clear;
                 AWS.startuphorntriggered = false;
             }
             else if (mode == InitializationModes.OnService)
             {
                 MySequenceTimer = SequenceDuration;
                 MySequenceState = SequenceStates.Initialised;
-                sunflowerstate = 0;
+                SunflowerState = AWS.SunflowerStates.Clear;
                 AWS.startuphorntriggered = false;
             }
             else if (mode == InitializationModes.OnEmergency)
             {
                 MySequenceTimer = SequenceDuration;
                 MySequenceState = SequenceStates.Pending;
-                sunflowerstate = 1;
+                SunflowerState = AWS.SunflowerStates.Warn;
                 AWS.startuphorntriggered = false;
             }
             else if (mode == InitializationModes.OffEmergency)
             {
                 MySequenceTimer = SequenceDuration;
                 MySequenceState = SequenceStates.Pending;
-                sunflowerstate = 1;
+                SunflowerState = AWS.SunflowerStates.Warn;
                 AWS.startuphorntriggered = false;
             }
         }
@@ -91,17 +91,17 @@ namespace Plugin {
 			if (mode == InitializationModes.OnService) {
 				MySequenceTimer = SequenceDuration;
 				MySequenceState = SequenceStates.Initialised;
-                sunflowerstate = 0;
+                SunflowerState = AWS.SunflowerStates.Warn;
                 AWS.startuphorntriggered = false;
 			} else if (mode == InitializationModes.OnEmergency) {
 				MySequenceTimer = SequenceDuration;
 				MySequenceState = SequenceStates.Pending;
-                sunflowerstate = 1;
+                SunflowerState = AWS.SunflowerStates.Clear;
                 AWS.startuphorntriggered = false;
 			} else if (mode == InitializationModes.OffEmergency) {
 				MySequenceTimer = SequenceDuration;
 				MySequenceState = SequenceStates.Pending;
-                sunflowerstate = 1;
+                SunflowerState = AWS.SunflowerStates.Clear;
                 AWS.startuphorntriggered = false;
 			}
 		}
@@ -157,11 +157,11 @@ namespace Plugin {
                 }
                 else if (MySequenceState == SequenceStates.Finalising)
                 {
-                    if (Train.AWS.awswarningsound != -1)
+                    if (Train.AWS.WarningSound != -1)
                     {
-                        if (SoundManager.IsPlaying(Train.AWS.awswarningsound))
+                        if (SoundManager.IsPlaying(Train.AWS.WarningSound))
                         {
-                            SoundManager.Stop(Train.AWS.awswarningsound);
+                            SoundManager.Stop(Train.AWS.WarningSound);
                         }
                     }
                     MySequenceState = SequenceStates.Initialised;
@@ -185,7 +185,7 @@ namespace Plugin {
                     this.firststart = true;
                     if (Train.AWS.enabled == true)
                     {
-                        Train.AWS.OnStartUp(sunflowerstate);
+                        Train.AWS.OnStartUp(SunflowerState);
                     }
                     if (Train.TPWS.enabled)
                     {

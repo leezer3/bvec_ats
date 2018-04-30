@@ -1518,16 +1518,16 @@ namespace Plugin {
 											InternalFunctions.ValidateIndex(value, ref AWS.awsindicator, key);
 											break;
 										case "awswarningsound":
-											InternalFunctions.ValidateIndex(value, ref AWS.awswarningsound, key);
+											InternalFunctions.ValidateIndex(value, ref AWS.WarningSound, key);
 											break;
 										case "awsclearsound":
-											InternalFunctions.ValidateIndex(value, ref AWS.awsclearsound, key);
+											InternalFunctions.ValidateIndex(value, ref AWS.ClearSound, key);
 											break;
 										case "awsdelay":
 											InternalFunctions.ParseNumber(value, ref AWS.canceltimeout, key);
 											break;
 										case "tpwswarningsound":
-											InternalFunctions.ValidateIndex(value, ref AWS.tpwswarningsound, key);
+											InternalFunctions.ValidateIndex(value, ref AWS.TPWSWarningSound, key);
 											break;
 										case "cancelbuttonindex":
 											InternalFunctions.ValidateIndex(value, ref AWS.CancelButtonIndex, key);

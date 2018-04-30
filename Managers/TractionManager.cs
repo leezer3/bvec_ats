@@ -1094,9 +1094,9 @@ namespace Plugin
 					else if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired && Train.CurrentSpeed == 0 &&
 						Train.Handles.Reverser == 0)
 					{
-						if (SoundManager.IsPlaying(Train.AWS.awswarningsound))
+						if (SoundManager.IsPlaying(Train.AWS.WarningSound))
 						{
-							SoundManager.Stop(Train.AWS.awswarningsound);
+							SoundManager.Stop(Train.AWS.WarningSound);
 						}
 						Train.AWS.Reset();
 						ResetPowerCutoff();
