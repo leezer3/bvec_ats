@@ -28,6 +28,8 @@ namespace Plugin
         internal int TPWSWarningSound = -1;
 	    internal int CancelButtonIndex = -1;
 
+	    private bool Isolated = false;
+
         /// <summary>Gets the current warning state of the Automatic Warning System.</summary>
         internal SafetyStates SafetyState
         {
@@ -258,7 +260,7 @@ namespace Plugin
         internal void Prime()
         {
             //Try to prime our ATS Device
-            if (!Train.AWSIsolated && this.MySafetyState != SafetyStates.Primed)
+            if (!Isolated && this.MySafetyState != SafetyStates.Primed)
                 {
                     //If suppression of the next magnet is *not* active
                     if (!this.suppressionactive)
@@ -276,7 +278,7 @@ namespace Plugin
         internal void Suppress(double location)
         {
             //If AWS is not isolated, turn on suppression of next magnet and record location
-            if (!Train.AWSIsolated)
+            if (!Isolated)
             {
                 this.suppressionactive = true;
                 this.suppressionlocation = location;
@@ -286,7 +288,7 @@ namespace Plugin
         /// <summary>Call this function to issue an AWS clear indication, as a result of passing the north pole of an AWS electromagnet. This should be done only via the SetBeacon() method.</summary>
         internal void IssueClear()
         {
-            if (!Train.AWSIsolated && (this.MySafetyState == SafetyStates.Primed || this.MySafetyState == SafetyStates.CancelTimerActive))
+            if (!Isolated && (this.MySafetyState == SafetyStates.Primed || this.MySafetyState == SafetyStates.CancelTimerActive))
             {
                 this.MySafetyState = SafetyStates.Clear;
             }
@@ -333,7 +335,7 @@ namespace Plugin
 
         internal void handleawstpwsbrakedemand()
         {
-            if (!Train.AWSIsolated)
+            if (!Isolated)
             {
                 this.MySafetyState = SafetyStates.TPWSAWSBrakeDemandIssued;
             }
@@ -341,7 +343,7 @@ namespace Plugin
 
         internal void handleawstssbrakedemand()
         {
-            if (!Train.AWSIsolated)
+            if (!Isolated)
             {
                 this.MySafetyState = SafetyStates.TPWSTssBrakeDemandIssued;
             }

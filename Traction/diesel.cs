@@ -4,7 +4,7 @@ using OpenBveApi.Runtime;
 namespace Plugin
 {
 	/// <summary>Represents an electric locomotive.</summary>
-	internal class diesel : Device
+	internal class Diesel : Device
 	{
 
 		// --- members ---
@@ -126,7 +126,7 @@ namespace Plugin
 
 		/// <summary>Creates a new instance of this system.</summary>
 		/// <param name="train">The train.</param>
-		internal diesel(Train train)
+		internal Diesel(Train train)
 		{
 			this.Train = train;
 			Ammeter = new Ammeter(train);

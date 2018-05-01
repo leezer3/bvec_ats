@@ -89,8 +89,6 @@ namespace Plugin {
 		internal bool overspeedtripped;
 		internal bool drastate;
 		//internal bool deadmanstripped;
-		/// <summary>Stores whether the AWS is isolated.</summary>
-		internal static bool AWSIsolated = false;
 		/// <summary>Stores whether the startup self-test has been performed.</summary>
 		internal static bool selftest = false;
 
@@ -147,7 +145,7 @@ namespace Plugin {
 		internal Electric ElectricEngine;
 
 		/// <summary>Diesel Traction or Null Reference if not installed</summary>
-		internal diesel DieselEngine;
+		internal Diesel DieselEngine;
 
 		/// <summary>Vigilance Devices or Null Reference if not installed</summary>
 		/// Overspeed, deadman's handle & DRA
