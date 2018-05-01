@@ -91,6 +91,8 @@ namespace Plugin {
 		//internal bool deadmanstripped;
 		/// <summary>Stores whether the startup self-test has been performed.</summary>
 		internal static bool selftest = false;
+		/// <summary>Stores whether the master switch is on (Affects in-cab lights etc)</summary>
+		internal bool MasterSwitch = false;
 
 		/// <summary>Stores whether we can fuel the train.</summary>
 		internal bool canfuel;
@@ -255,7 +257,7 @@ namespace Plugin {
 		// --- functions ---
 		
 		/// <summary>Sets up the devices from the specified configuration file.</summary>
-		/// <param name="file">The configuration file.</param>
+		/// <param name="lines">A string array containing the lines read from the configuration file.</param>
 		internal void LoadConfigurationFile(string[] lines) {
 			
 
@@ -316,7 +318,7 @@ namespace Plugin {
 								DebugLogger.LogMessage("Steam traction enabled");
 								break;
 							case "diesel":
-								this.DieselEngine = new diesel(this);
+								this.DieselEngine = new Diesel(this);
 								DebugLogger.LogMessage("Diesel traction enabled");
 								break;
 							case "electric":
@@ -1357,6 +1359,18 @@ namespace Plugin {
 											break;
 										case "customindicatorbehaviour":
 											this.TractionManager.customindicatorbehaviour = value;
+											break;
+										case "leftdoorindicator":
+											InternalFunctions.ValidateIndex(value, ref TractionManager.LeftDoorIndicator, key);
+											break;
+										case "rightdoorindicator":
+											InternalFunctions.ValidateIndex(value, ref TractionManager.RightDoorIndicator, key);
+											break;
+										case "ukdtmasterswitchindicator":
+											InternalFunctions.ValidateIndex(value, ref TractionManager.UKDTMasterSwitchIndicator, key);
+											break;
+										case "masterswitchindicator":
+											InternalFunctions.ValidateIndex(value, ref TractionManager.MasterSwitchIndicator, key);
 											break;
 										default:
 											throw new InvalidDataException("The parameter " + key + " is not supported.");

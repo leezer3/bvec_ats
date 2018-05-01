@@ -178,7 +178,7 @@
     <Compile Include="Traction\Diesel\Gearbox.cs" />
     <Compile Include="Traction\Diesel\StarterMotor.cs" />
     <Compile Include="SafetySystems\Vigilance.DeadmanStates.cs" />
-    <Compile Include="Traction\diesel.cs" />
+    <Compile Include="Traction\Diesel.cs" />
     <Compile Include="Traction\Diesel\WesternGearBox.cs" />
     <Compile Include="Traction\Diesel\WesternStartup.cs" />
     <Compile Include="Traction\Diesel\WesternStartup.States.cs" />

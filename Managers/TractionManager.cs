@@ -110,6 +110,14 @@ namespace Plugin
 		/// <summary>The maximum power notch allowed by the safety system</summary>
 		internal int SafetySystemMaximumPowerNotch;
 
+		/// <summary>The panel index of the left door indicator</summary>
+		internal int LeftDoorIndicator = -1;
+		/// <summary>The panel index of the right door indicator</summary>
+		internal int RightDoorIndicator = -1;
+		/// <summary>The panel indicator for the master switch</summary>
+		internal int MasterSwitchIndicator = -1;
+		/// <summary>The panel indicator for a UKDT master switch (NB: This is reversed so 1 is 'off')</summary>
+		internal int UKDTMasterSwitchIndicator = -1;
 		//Arrays
 		int[] klaxonarray;
 		//Custom Indicators
@@ -431,6 +439,67 @@ namespace Plugin
 					data.Handles.BrakeNotch = 0;
 				}
 			}
+
+			if (MasterSwitchIndicator != -1)
+			{
+				if (Train.MasterSwitch == true)
+				{
+					Train.Panel[MasterSwitchIndicator] = 1;
+				}
+				else
+				{
+					Train.Panel[MasterSwitchIndicator] = 0;
+				}
+			}
+			if (UKDTMasterSwitchIndicator != -1)
+			{
+				if (Train.MasterSwitch == true)
+				{
+					Train.Panel[UKDTMasterSwitchIndicator] = 0;
+				}
+				else
+				{
+					Train.Panel[UKDTMasterSwitchIndicator] = 1;
+				}
+			}
+			if (Train.MasterSwitch == true)
+			{
+				switch (Train.Doors)
+				{
+					case DoorStates.Left:
+						if (LeftDoorIndicator != -1)
+						{
+							Train.Panel[LeftDoorIndicator] = 1;
+						}
+						break;
+					case DoorStates.Right:
+						if (RightDoorIndicator != -1)
+						{
+							Train.Panel[RightDoorIndicator] = 1;
+						}
+						break;
+					case DoorStates.None:
+						if (LeftDoorIndicator != -1)
+						{
+							Train.Panel[LeftDoorIndicator] = 0;
+						}
+						if (RightDoorIndicator != -1)
+						{
+							Train.Panel[RightDoorIndicator] = 0;
+						}
+						break;
+					case DoorStates.Both:
+						if (LeftDoorIndicator != -1)
+						{
+							Train.Panel[LeftDoorIndicator] = 1;
+						}
+						if (RightDoorIndicator != -1)
+						{
+							Train.Panel[RightDoorIndicator] = 1;
+						}
+						break;
+				}
+			}
 			//Independant Panel Variables
 			if (directionindicator != -1)
 			{
@@ -440,17 +509,17 @@ namespace Plugin
 			if (reverserindex != -1)
 			{
 				//Reverser Indicator
-				if (Train.Handles.Reverser == 0)
+				switch (Train.Handles.Reverser)
 				{
-					this.Train.Panel[reverserindex] = 0;
-				}
-				else if (Train.Handles.Reverser == 1)
-				{
-					this.Train.Panel[reverserindex] = 1;
-				}
-				else
-				{
-					this.Train.Panel[reverserindex] = 2;
+					case 0:
+						this.Train.Panel[reverserindex] = 0;
+						break;
+					case 1:
+						this.Train.Panel[reverserindex] = 1;
+						break;
+					default:
+						this.Train.Panel[reverserindex] = 2;
+						break;
 				}
 			}
 			{
@@ -1417,9 +1486,9 @@ namespace Plugin
 				//Gear Up
 				if (Train.DieselEngine != null)
 				{
-					if (Train.DieselEngine.gear >= 0 && Train.DieselEngine.gear < Train.DieselEngine.totalgears - 1 && Train.Handles.PowerNotch == 0)
+					if (Train.DieselEngine.CurrentGear >= 0 && Train.DieselEngine.CurrentGear < Train.DieselEngine.totalgears - 1 && Train.Handles.PowerNotch == 0)
 					{
-						Train.DieselEngine.gear++;
+						Train.DieselEngine.CurrentGear++;
 						Train.DieselEngine.gearloop = false;
 						Train.DieselEngine.gearlooptimer = 0.0;
 						Train.DieselEngine.gearchange();
@@ -1431,9 +1500,9 @@ namespace Plugin
 				//Gear Down
 				if (Train.DieselEngine != null)
 				{
-					if (Train.DieselEngine.gear <= Train.DieselEngine.totalgears && Train.DieselEngine.gear > 0 && Train.Handles.PowerNotch == 0)
+					if (Train.DieselEngine.CurrentGear <= Train.DieselEngine.totalgears && Train.DieselEngine.CurrentGear > 0 && Train.Handles.PowerNotch == 0)
 					{
-						Train.DieselEngine.gear--;
+						Train.DieselEngine.CurrentGear--;
 						Train.DieselEngine.gearloop = false;
 						Train.DieselEngine.gearlooptimer = 0.0;
 						Train.DieselEngine.gearchange();

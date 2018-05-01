@@ -59,6 +59,7 @@ namespace Plugin {
                 MySequenceState = SequenceStates.Initialised;
                 SunflowerState = AWS.SunflowerStates.Clear;
                 AWS.startuphorntriggered = false;
+	            Train.MasterSwitch = true;
             }
             else if (mode == InitializationModes.OnEmergency)
             {
@@ -93,6 +94,7 @@ namespace Plugin {
 				MySequenceState = SequenceStates.Initialised;
                 SunflowerState = AWS.SunflowerStates.Warn;
                 AWS.startuphorntriggered = false;
+				Train.MasterSwitch = true;
 			} else if (mode == InitializationModes.OnEmergency) {
 				MySequenceTimer = SequenceDuration;
 				MySequenceState = SequenceStates.Pending;
@@ -125,16 +127,19 @@ namespace Plugin {
                     return;
                 }
             }
-			if (StartupSelfTestManager.MySequenceState == StartupSelfTestManager.SequenceStates.Pending) {
+			if (MySequenceState == SequenceStates.Pending)
+			{
+				Train.MasterSwitch = false;
 				Train.selftest = false;
 				/* Check the reverser state to see if the master switch has been set to on */
 				if (Train.Handles.Reverser == 1 || Train.Handles.Reverser == -1) {
-					StartupSelfTestManager.MySequenceState = StartupSelfTestManager.SequenceStates.WaitingToStart;
+					MySequenceState = SequenceStates.WaitingToStart;
 				}
-			} else if (StartupSelfTestManager.MySequenceState == StartupSelfTestManager.SequenceStates.WaitingToStart) {
+			} else if (MySequenceState == SequenceStates.WaitingToStart) {
 				if (Train.Handles.Reverser == 0) {
 					/* Turn the master switch on, and begin the startup and self-test procedure */
 					Train.selftest = true;
+					Train.MasterSwitch = true;
 					MySequenceState = SequenceStates.Initialising;
 					/* Start the in-cab blower */
 //					if (PowerSupplyManager.SelectedPowerSupply != Plugin.MainBattery) {
@@ -150,8 +155,9 @@ namespace Plugin {
             {
                 /* Make sure that the master switch is on after reinitialisation */
                 Train.selftest = true;
-                /* Hold the brakes on until the AWS button is depressed */
-                if (MySequenceState == SequenceStates.AwaitingDriverInteraction)
+	            Train.MasterSwitch = true;
+				/* Hold the brakes on until the AWS button is depressed */
+				if (MySequenceState == SequenceStates.AwaitingDriverInteraction)
                 {
                     Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
                 }

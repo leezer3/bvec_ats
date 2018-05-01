@@ -17,7 +17,7 @@ namespace Plugin
 		internal double currentheat;
 		internal bool nogears;
 		/// <summary>The current gear</summary>
-		internal int gear = 0;
+		internal int CurrentGear = 0;
 		/// <summary>The total number of gears fitted to this train</summary>
 		internal int totalgears = 0;
 		/// <summary>The current RPM of the engine</summary>
@@ -150,7 +150,7 @@ namespace Plugin
 			//Also set value for total number of gears for easy access
 			else
 			{
-				gear = 0;
+				CurrentGear = 0;
 				totalgears = geararray.Length + 1;
 			}
 			//Set previous revs to zero
@@ -185,13 +185,13 @@ namespace Plugin
 			{
 
 				//Set gear ratio for current gear
-				if (gear == 0)
+				if (CurrentGear == 0)
 				{
 					gearratio = 0;
 				}
-				else if (gear <= geararray.Length)
+				else if (CurrentGear <= geararray.Length)
 				{
-					gearratio = geararray[gear - 1];
+					gearratio = geararray[CurrentGear - 1];
 				}
 				else
 				{
@@ -199,13 +199,13 @@ namespace Plugin
 				}
 
 				//Set fade in ratio for current gear
-				if (gear == 0)
+				if (CurrentGear == 0)
 				{
 					fadeinratio = 0;
 				}
-				else if (gear <= gearfadeinarray.Length)
+				else if (CurrentGear <= gearfadeinarray.Length)
 				{
-					fadeinratio = gearfadeinarray[gear - 1];
+					fadeinratio = gearfadeinarray[CurrentGear - 1];
 				}
 				else
 				{
@@ -214,13 +214,13 @@ namespace Plugin
 
 
 				//Set fade out ratio for current gear
-				if (gear == 0)
+				if (CurrentGear == 0)
 				{
 					fadeoutratio = 0;
 				}
-				else if (gear >= gearfadeoutarray.Length)
+				else if (CurrentGear >= gearfadeoutarray.Length)
 				{
-					fadeoutratio = gearfadeoutarray[gear - 1];
+					fadeoutratio = gearfadeoutarray[CurrentGear - 1];
 				}
 				else
 				{
@@ -273,25 +273,25 @@ namespace Plugin
 					{
 						gearplayed = false;
 						//If we aren't in gear & gears aren't blocked
-						if (gear == 0 && Train.DieselEngine.gearsblocked == false)
+						if (CurrentGear == 0 && Train.DieselEngine.gearsblocked == false)
 						{
-							gear = 1;
+							CurrentGear = 1;
 							gearchange();
 							Train.DieselEngine.gearloop = false;
 							Train.DieselEngine.gearlooptimer = 0.0;
 						}
 
-						if (currentrevs > Math.Min((2000 - fadeoutratio) / 2, 800) && gear < totalgears - 1)
+						if (currentrevs > Math.Min((2000 - fadeoutratio) / 2, 800) && CurrentGear < totalgears - 1)
 						{
-							gear++;
+							CurrentGear++;
 							gearchange();
 							Train.DieselEngine.gearloop = false;
 							Train.DieselEngine.gearlooptimer = 0.0;
 						}
 						//Change down
-						else if (currentrevs < Math.Max(fadeinratio / 2, 200) && gear > 1)
+						else if (currentrevs < Math.Max(fadeinratio / 2, 200) && CurrentGear > 1)
 						{
-							gear--;
+							CurrentGear--;
 							gearchange();
 							Train.DieselEngine.gearloop = false;
 							Train.DieselEngine.gearlooptimer = 0.0;
@@ -302,7 +302,7 @@ namespace Plugin
 					//If we're stopped with the power off, drop out of gear
 					else if (Train.Handles.Reverser == 0 && Train.Handles.PowerNotch == 0)
 					{
-						gear = 0;
+						CurrentGear = 0;
 						if (gearplayed == false)
 						{
 							gearchange();
@@ -313,7 +313,7 @@ namespace Plugin
 				}
 
 				//Finally set the power notch
-				if (gear != 0)
+				if (CurrentGear != 0)
 				{
 					this.Train.TractionManager.SetMaxPowerNotch(Math.Min(power_limit, this.Train.Handles.PowerNotch), false);
 					//data.Handles.PowerNotch = Math.Min(power_limit, this.Train.Handles.PowerNotch);
@@ -324,7 +324,7 @@ namespace Plugin
 				}
 
 				//If revving the engine is allowed in neutral
-				if (allowneutralrevs == 1 && (gear == 0 || Train.Handles.Reverser == 0))
+				if (allowneutralrevs == 1 && (CurrentGear == 0 || Train.Handles.Reverser == 0))
 				{
 					currentrevs = (int)Math.Abs((1000 / Train.Specs.PowerNotches) * Train.Handles.PowerNotch * 0.9);
 					
@@ -467,7 +467,7 @@ namespace Plugin
 				}
 			}
 			//This section of code runs the gear loop sound
-			if (gearloopsound != -1 && gear != 0)
+			if (gearloopsound != -1 && CurrentGear != 0)
 			{
 				//Start the timer
 				gearlooptimer += data.ElapsedTime.Milliseconds;
@@ -482,7 +482,7 @@ namespace Plugin
 					SoundManager.Stop(gearloopsound);
 				}
 			}
-			else if (gearloopsound != -1 && gear == 0)
+			else if (gearloopsound != -1 && CurrentGear == 0)
 			{
 				SoundManager.Stop(gearloopsound);
 			}
@@ -505,7 +505,7 @@ namespace Plugin
 				{
 					if (gearindicator != -1)
 					{
-						this.Train.Panel[(gearindicator)] = gear;
+						this.Train.Panel[(gearindicator)] = CurrentGear;
 					}
 					if (tachometer != -1)
 					{
