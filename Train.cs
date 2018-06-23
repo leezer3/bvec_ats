@@ -1911,7 +1911,7 @@ namespace Plugin {
 									break;
 
 								case "keyassignments":
-								case "keyassignmentslegacy":
+								case "legacykeyassignments":
 									switch (key)
 									{
 										case "safetykey":

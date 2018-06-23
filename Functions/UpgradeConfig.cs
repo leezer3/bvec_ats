@@ -19,6 +19,7 @@ namespace Plugin
 			var TPWS = new List<string>();
 			var interlocks = new List<string>();
 			var windscreen = new List<string>();
+			var keys = new List<string>();
 			var errors = new List<string>();
 
 			bool steamtype = false;
@@ -27,6 +28,7 @@ namespace Plugin
 			string[] lines = File.ReadAllLines(file, Encoding.UTF8);
 			foreach (string t in lines)
 			{
+				string parsedKey = "";
 				string line = t;
 				int semicolon = line.IndexOf(';');
 				if (semicolon >= 0) {
@@ -56,6 +58,8 @@ namespace Plugin
 							//VALUES COMMON TO ALL TRACTION TYPE SECTIONS
 						case "automatic":
 							common.Add(line);
+							InternalFunctions.UpgradeKey(value, ref parsedKey, key);
+							keys.Add("automatickey=" + parsedKey);
 							break;
 						case "fuelindicator":
 							common.Add(line);
@@ -126,6 +130,14 @@ namespace Plugin
 							string[] gearchangefix = line.Split(',');
 							diesel.Add(gearchangefix[0]);
 							break;
+						case "gearupkey":
+							InternalFunctions.UpgradeKey(value, ref parsedKey, key);
+							keys.Add(key + "=" + parsedKey);
+							break;
+						case "geardownkey":
+							InternalFunctions.UpgradeKey(value, ref parsedKey, key);
+							keys.Add(key +"=" + parsedKey);
+							break;
 							//VALUES TO BE ADDED TO THE STEAM SECTION OF THE CONFIGURATION FILE
 						case "cutoffmax":
 							steam.Add(line);
@@ -135,6 +147,14 @@ namespace Plugin
 							break;
 						case "cutoffineffective":
 							steam.Add(line);
+							break;
+						case "cutoffdecreasekey":
+							InternalFunctions.UpgradeKey(value, ref parsedKey, key);
+							keys.Add("cutoffdownkey=" + parsedKey);
+							break;
+						case "cutoffincreasekey":
+							InternalFunctions.UpgradeKey(value, ref parsedKey, key);
+							keys.Add("cutoffupkey=" + parsedKey);
 							break;
 						case "cutoffdeviation":
 							steam.Add(line);
@@ -153,6 +173,10 @@ namespace Plugin
 							break;
 						case "injectorindicator":
 							steam.Add(line);
+							break;
+						case "injectortogglekey":
+							InternalFunctions.UpgradeKey(value, ref parsedKey, key);
+							keys.Add("injectorkey=" + parsedKey);
 							break;
 						case "boilermaxpressure":
 							steam.Add(line);
@@ -194,6 +218,10 @@ namespace Plugin
 						case "vigilance":
 							//Change vigilance to deadmanshandle (Internal)
 							vigilance.Add("deadmanshandle=" + value);
+							break;
+						case "vigilancekey":
+							InternalFunctions.UpgradeKey(value, ref parsedKey, key);
+							keys.Add("safetykey=" + parsedKey);
 							break;
 						case "overspeedcontrol":
 							vigilance.Add(line);
@@ -327,7 +355,6 @@ namespace Plugin
 							interlocks.Add(finishedvalue);
 							break;
 						case "customindicators":
-							//Remove key assignments from customindicators
 							string[] splitcustomindicators = value.Split(',');
 							var splitarray1 = new int[splitcustomindicators.Length / 2];
 							int k = 0;
@@ -335,6 +362,8 @@ namespace Plugin
 							{
 								if (j % 2 == 0)
 								{
+									InternalFunctions.UpgradeKey(splitcustomindicators[j], ref parsedKey, key + j / 2);
+									keys.Add("customindicatorkey" + (j /2 + 1) + "=" + parsedKey);
 								}
 								else
 								{
@@ -357,6 +386,11 @@ namespace Plugin
 							break;
 						case "wiperholdposition":
 							windscreen.Add(line);
+							break;
+						case "wiperonkey":
+						case "wiperoffkey":
+							InternalFunctions.UpgradeKey(value, ref parsedKey, key);
+							keys.Add(key + "=" + parsedKey);
 							break;
 						case "numberofdrops":
 							windscreen.Add(line);
@@ -399,9 +433,10 @@ namespace Plugin
 				 *      Version 1 files handle OS_ATS only
 				 *      Version 2 files handle OS_SZ_ATS files
 				 *      Version 3 files twiddle with key assignments slightly
+				 *      Version 4 fixes custom OS_ATS keys
 				 * TODO: Re-generate files if a version 1 file is detected with OS_SZ_ATS present
 				*/
-				newLines.Add(";GenVersion=3");
+				newLines.Add(";GenVersion=4");
 				newLines.Add(";DELETE THE ABOVE LINE IF YOU MODIFY THIS FILE");
 				newLines.Add("");
 				//Traction Type First
@@ -437,6 +472,7 @@ namespace Plugin
 				newLines.AddRange(windscreen);
 				//Use the legacy set key assignments
 				newLines.Add("[LegacyKeyAssignments]");
+				newLines.AddRange(keys);
 
 
 
