@@ -11,8 +11,6 @@ namespace Plugin
 	{
 		/// <summary>The underlying train.</summary>
 		private readonly Train Train;
-
-		internal bool enabled;
 		internal int WachamIndicator = -1;
 		internal int FreiIndicator = -1;
 		internal int BefehlIndicator = -1;
@@ -144,7 +142,7 @@ namespace Plugin
 		/// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
 		internal override void Elapse(ElapseData data, ref bool blocking)
 		{
-			if (this.enabled)
+			if (this.Enabled)
 			{
 				//We need this to find the time trigger for the last inductor
 				if (DistantTimeTrigger == true)

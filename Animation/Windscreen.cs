@@ -8,9 +8,6 @@ namespace Plugin
     {
         /// <summary>The underlying train.</summary>
         private readonly Train Train;
-        // --- members ---
-        internal bool enabled;
-        //Internal Variables
 
         /// <summary>Stores whether it is currently raining.</summary>
         internal bool israining;
@@ -81,7 +78,7 @@ namespace Plugin
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
             //Is rain and windscreen wipers enabled?
-            if (this.enabled)
+            if (this.Enabled)
             {
                 //First pull a random unlit drop from our array
                 var unuseddrops = new List<int>();

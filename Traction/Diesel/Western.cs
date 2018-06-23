@@ -1205,7 +1205,7 @@ namespace Plugin
             if (Train.AWS.SafetyState == AWS.SafetyStates.Clear || Train.AWS.SafetyState == AWS.SafetyStates.None)
             {
                 Train.DebugLogger.LogMessage("Western Diesel- AWS System Isolated.");
-                Train.TractionManager.isolatetpwsaws();
+                Train.TractionManager.IsolateTPWSAWS();
                 return;
             }
             //If the AWS has been isolated by the driver, issue an unconditional reset

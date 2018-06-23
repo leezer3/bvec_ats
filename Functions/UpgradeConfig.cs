@@ -270,6 +270,8 @@ namespace Plugin
 							break;
 						case "reminderkey":
 							vigilance.Add("draenabled="+value);
+							InternalFunctions.UpgradeKey(value, ref parsedKey, key);
+							keys.Add("drakey=" + parsedKey);
 							break;
 						case "reminderindicator":
 							vigilance.Add("draindicator="+value);

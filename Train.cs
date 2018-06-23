@@ -331,27 +331,27 @@ namespace Plugin {
 								break;
 							case "aws":
 								LoadAWSTPWS();
-								this.AWS.enabled = true;
+								this.AWS.Enabled = true;
 								DebugLogger.LogMessage("AWS enabled");
 								break;
 							case "tpws":
 								LoadAWSTPWS();
-								this.TPWS.enabled = true;
+								this.TPWS.Enabled = true;
 								DebugLogger.LogMessage("TPWS enabled");
 								break;
 							case "scmt":
-								this.SCMT.enabled = true;
-								this.SCMT_Traction.enabled = true;
+								this.SCMT.Enabled = true;
+								this.SCMT_Traction.Enabled = true;
 								DebugLogger.LogMessage("SCMT enabled");
 								break;
 							case "caws":
 								this.CAWS = new CAWS(this);
-								this.CAWS.enabled = true;
+								this.CAWS.Enabled = true;
 								DebugLogger.LogMessage("CAWS enabled");
 								break;
 							case "pzb":
 								this.PZB = new PZB(this);
-								this.PZB.enabled = true;
+								this.PZB.Enabled = true;
 								DebugLogger.LogMessage("PZB enabled");
 								break;
 							case "animations":
@@ -1914,9 +1914,15 @@ namespace Plugin {
 								case "legacykeyassignments":
 									switch (key)
 									{
-										case "safetykey":
+										case "safetykey": //Deprecated, but must still parse
 											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.SafetyKey, key);
-											
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.AWSKey, key);
+											break;
+										case "vigilancekey":
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.SafetyKey, key);
+											break;
+										case "awskey":
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.AWSKey, key);
 											break;
 										case "automatickey":
 											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.AutomaticGearsCutoff, key);
@@ -2846,7 +2852,7 @@ namespace Plugin {
 				
 			}
 			//SCMT Safety System Beacons
-			if (this.SCMT.enabled == true)
+			if (this.SCMT.Enabled == true)
 			{
 				if (SCMT.testscmt == 0)
 				{

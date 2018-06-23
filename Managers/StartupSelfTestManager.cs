@@ -42,11 +42,11 @@ namespace Plugin {
         {
             if (Train.WesternDiesel != null)
             {
-                Train.AWS.enabled = false;
-                Train.TPWS.enabled = false;
+                Train.AWS.Enabled = false;
+                Train.TPWS.Enabled = false;
                 return;
             }
-            if (Train.AWS.enabled == false && Train.TPWS.enabled == false)
+            if (Train.AWS.Enabled == false && Train.TPWS.Enabled == false)
             {
                 //Set to initialised if no AWS/ TPWS is installed
                 MySequenceState = SequenceStates.Initialised;
@@ -85,8 +85,8 @@ namespace Plugin {
 		internal void Reinitialise(InitializationModes mode) {
             if (Train.WesternDiesel != null)
             {
-                Train.AWS.enabled = false;
-                Train.TPWS.enabled = false;
+                Train.AWS.Enabled = false;
+                Train.TPWS.Enabled = false;
                 return;
             }
 			if (mode == InitializationModes.OnService) {
@@ -113,12 +113,12 @@ namespace Plugin {
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
 		internal override void Elapse(ElapseData data, ref bool blocking){
             //The Western requires special handling- Return if AWS has not been switched in from the cab
-            if (Train.WesternDiesel != null && Train.AWS.enabled == false)
+            if (Train.WesternDiesel != null && Train.AWS.Enabled == false)
             {
                 if (Train.WesternDiesel.StartupManager.StartupState == WesternStartupManager.SequenceStates.AWSOnline)
                 {
                     //Enable AWS if the Western has switched it online
-                    Train.AWS.enabled = true;
+                    Train.AWS.Enabled = true;
                 }
                 else
                 {
@@ -189,11 +189,11 @@ namespace Plugin {
                 if (this.firststart == false)
                 {
                     this.firststart = true;
-                    if (Train.AWS.enabled == true)
+                    if (Train.AWS.Enabled == true)
                     {
                         Train.AWS.OnStartUp(SunflowerState);
                     }
-                    if (Train.TPWS.enabled)
+                    if (Train.TPWS.Enabled)
                     {
                         Train.TPWS.Initialize(InitializationModes.OnService);
                     }
@@ -201,7 +201,7 @@ namespace Plugin {
             }
 		}
 
-        internal void driveracknowledge()
+        internal void DriverAcknowledge()
         {
             MySequenceState = SequenceStates.Finalising;
         }

@@ -7,8 +7,6 @@ namespace Plugin
     {
         /// <summary>The underlying train.</summary>
         private readonly Train Train;
-        // --- members ---
-        internal bool enabled;
 
 		//Internal Variables
 		private int brakesappliedtimer;
@@ -110,13 +108,31 @@ namespace Plugin
             this.MySafetyState = SafetyStates.BrakeDemandAcknowledged;
         }
 
+	    internal void Override()
+	    {
+		    if (SafetyState == SafetyStates.None)
+		    {
+			    MySafetyState = SafetyStates.TemporaryOverride;
+			    Train.DebugLogger.LogMessage("The TPWS system was temporarily placed in the override state by the driver");
+		    }
+			else if (SafetyState == SafetyStates.TemporaryOverride)
+		    {
+			    MySafetyState = SafetyStates.None;
+			    Train.DebugLogger.LogMessage("The TPWS system was removed from the override state by the driver");
+		    }
+		    else
+		    {
+			    Train.DebugLogger.LogMessage("Unable to place the TPWS system in the override state, as it is currently in the following state: " + MySafetyState);
+		    }
+	    }
+
         /// <summary>Is called every frame.</summary>
         /// <param name="data">The data.</param>
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
             
-            if (this.enabled)
+            if (this.Enabled)
             {
                 if (this.SafetyState != SafetyStates.Isolated)
                 {
@@ -333,6 +349,7 @@ namespace Plugin
                 {
                     /* If the TPWS TSS Override timer is active, ignore this brake demand, and instead, reset the TPWS */
                     this.Reset();
+	                Train.DebugLogger.LogMessage("The TPWS override state was reset by an attempted brake demand (NO BRAKE DEMAND HAS BEEN MADE)");
                 }
                 else if (this.MySafetyState != SafetyStates.Isolated)
                 {

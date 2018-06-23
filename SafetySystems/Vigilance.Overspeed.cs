@@ -18,8 +18,6 @@
 		/// <summary>Whether the overspeed device has tripped</summary>
 		internal bool Tripped;
 
-		internal bool Enabled;
-
 		internal OverspeedBehaviour CurrentBehaviour;
 
 		private double OverspeedTimer;

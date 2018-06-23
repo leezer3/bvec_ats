@@ -417,15 +417,15 @@ namespace Plugin
 						data.DebugMessage = "EB Brakes demanded by neutral reverser";
 					}
 				}
-				else if (Train.SCMT.enabled == true && SCMT.EBDemanded == true)
+				else if (Train.SCMT.Enabled == true && SCMT.EBDemanded == true)
 				{
 					data.Handles.BrakeNotch = this.Train.Specs.BrakeNotches + 1;
 				}
-				else if (Train.SCMT.enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
+				else if (Train.SCMT.Enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
 				{
 					data.DebugMessage = "Brake Notch demanaded by SCMT Constant Speed Device";
 				}
-				else if (Train.CAWS != null && Train.CAWS.enabled == true)
+				else if (Train.CAWS != null && Train.CAWS.Enabled == true)
 				{
 					data.DebugMessage = "EB Brakes demanded by CAWS Safety System";
 				}
@@ -839,7 +839,7 @@ namespace Plugin
 					}
 					return;
 				}
-				if (Train.SCMT.enabled == true && SCMT.EBDemanded == true)
+				if (Train.SCMT.Enabled == true && SCMT.EBDemanded == true)
 				{
 					Train.DebugLogger.LogMessage("The current brake application was not reset due to a SCMT intervention.");
 					return;
@@ -849,7 +849,7 @@ namespace Plugin
 					Train.DebugLogger.LogMessage("The current brake application was not reset due to a SCMT Vigilante intervention.");
 					return;
 				}
-				if (Train.CAWS != null && Train.CAWS.enabled == true && Train.CAWS.EmergencyBrakeCountdown < 0.0)
+				if (Train.CAWS != null && Train.CAWS.Enabled == true && Train.CAWS.EmergencyBrakeCountdown < 0.0)
 				{
 					Train.DebugLogger.LogMessage("The current brake application was not reset due to a CAWS intervention.");
 					return;
@@ -857,7 +857,7 @@ namespace Plugin
 				//These conditions set a different brake notch to EB
 
 				//Set brake notch 1 for SCMT constant speed device
-				if (Train.SCMT.enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
+				if (Train.SCMT.Enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
 				{
 					Train.DebugLogger.LogMessage("The currently demanded brake notch was changed to 1 due to the SCMT constant-speed brake.");
 					CurrentInterventionBrakeNotch = 1;
@@ -958,17 +958,17 @@ namespace Plugin
 				}
 				return;
 			}
-			if (Train.SCMT.enabled == true && SCMT.EBDemanded == true)
+			if (Train.SCMT.Enabled == true && SCMT.EBDemanded == true)
 			{
 				return;
 			}
 			
-			if (Train.CAWS != null && Train.CAWS.enabled == true && Train.CAWS.EmergencyBrakeCountdown < 0.0)
+			if (Train.CAWS != null && Train.CAWS.Enabled == true && Train.CAWS.EmergencyBrakeCountdown < 0.0)
 			{
 				return;
 			}
 
-			if (Train.SCMT.enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
+			if (Train.SCMT.Enabled == true && SCMT_Traction.ConstantSpeedBrake == true)
 			{
 				CurrentInterventionBrakeNotch = 1;
 				return;
@@ -993,7 +993,7 @@ namespace Plugin
 
 		//Call this function to attempt to isolate or re-enable the TPWS & AWS Systems
 		/// <summary>Attempts to disable or re-enable the TPWS & AWS safety systems.</summary>
-		internal void isolatetpwsaws()
+		internal void IsolateTPWSAWS()
 		{
 			if (Train.AWS == null)
 			{
@@ -1003,14 +1003,14 @@ namespace Plugin
 			if (SafetySystemsIsolated == false)
 			{
 				//First check if TPWS is enabled in this train [AWS must therefore be enabled]
-				if (Train.TPWS.enabled == true)
+				if (Train.TPWS.Enabled == true)
 				{
 					if (Train.TPWS.SafetyState == TPWS.SafetyStates.None && (Train.AWS.SafetyState == AWS.SafetyStates.Clear || Train.AWS.SafetyState == AWS.SafetyStates.None))
 					{
 						CanIsolate = true;
 					}
 				}
-				else if (Train.TPWS.enabled == false && Train.AWS.enabled == true)
+				else if (Train.TPWS.Enabled == false && Train.AWS.Enabled == true)
 				{
 					if (Train.AWS.SafetyState == AWS.SafetyStates.Clear || Train.AWS.SafetyState == AWS.SafetyStates.None)
 					{
@@ -1020,11 +1020,11 @@ namespace Plugin
 
 				if (CanIsolate == true)
 				{
-					if (Train.TPWS.enabled == true)
+					if (Train.TPWS.Enabled == true)
 					{
 						Train.TPWS.Isolate();
 					}
-					if (Train.AWS.enabled == true)
+					if (Train.AWS.Enabled == true)
 					{
 						Train.AWS.Isolate();
 					}
@@ -1042,12 +1042,12 @@ namespace Plugin
 			}
 			if (SafetySystemsIsolated == true)
 			{
-				if (Train.AWS.enabled == true)
+				if (Train.AWS.Enabled == true)
 				{
 					Train.AWS.Reset();
 					SafetySystemsIsolated = false;
 				}
-				if (Train.TPWS.enabled == true)
+				if (Train.TPWS.Enabled == true)
 				{
 					Train.TPWS.Reset();
 					SafetySystemsIsolated = false;
@@ -1151,7 +1151,10 @@ namespace Plugin
 						ResetBrakeApplication();
 					}
 				}
+			}
 
+			if (key == Train.CurrentKeyConfiguration.AWSKey)
+			{
 				if (Train.AWS != null)
 				{
 					//Acknowledge AWS warning
@@ -1161,7 +1164,7 @@ namespace Plugin
 					}
 					//Reset AWS
 					else if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerExpired && Train.CurrentSpeed == 0 &&
-						Train.Handles.Reverser == 0)
+					         Train.Handles.Reverser == 0)
 					{
 						if (SoundManager.IsPlaying(Train.AWS.WarningSound))
 						{
@@ -1183,8 +1186,13 @@ namespace Plugin
 				//Acknowledge Self-Test warning
 				if (Train.StartupSelfTestManager != null && Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.AwaitingDriverInteraction)
 				{
-					Train.StartupSelfTestManager.driveracknowledge();
+					Train.StartupSelfTestManager.DriverAcknowledge();
 				}
+			}
+
+			if (key == Train.CurrentKeyConfiguration.TPWSOverride)
+			{
+				
 			}
 			if (key == Train.CurrentKeyConfiguration.FillFuel)
 			{
@@ -1213,7 +1221,7 @@ namespace Plugin
 			if (key == Train.CurrentKeyConfiguration.IncreaseWiperSpeed)
 			{
 				//Wipers Speed Down
-				if (Train.Windscreen.enabled == true)
+				if (Train.Windscreen.Enabled == true)
 				{
 					Train.Windscreen.windscreenwipers(1);
 				}
@@ -1221,7 +1229,7 @@ namespace Plugin
 			if (key == Train.CurrentKeyConfiguration.DecreaseWiperSpeed)
 			{
 				//Wipers Speed Up
-				if (Train.Windscreen.enabled == true)
+				if (Train.Windscreen.Enabled == true)
 				{
 					Train.Windscreen.windscreenwipers(0);
 				}
@@ -1237,7 +1245,7 @@ namespace Plugin
 					//Isolate Safety Systems
 					if (SafetySystemsIsolated == false)
 					{
-						isolatetpwsaws();
+						IsolateTPWSAWS();
 					}
 					else
 					{
@@ -1328,7 +1336,7 @@ namespace Plugin
 					}
 				}
 			}
-			if (Train.SCMT_Traction.enabled == true)
+			if (Train.SCMT_Traction.Enabled == true)
 			{
 				if (key == Train.CurrentKeyConfiguration.SCMTincreasespeed)
 				{

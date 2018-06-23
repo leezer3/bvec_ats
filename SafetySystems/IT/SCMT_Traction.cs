@@ -18,8 +18,6 @@ namespace Plugin
         /// <summary>The underlying train.</summary>
         private readonly Train Train;
 
-        internal bool enabled;
-
         //Internal Variables
         internal double heatingtimer;
         internal double currentheat;

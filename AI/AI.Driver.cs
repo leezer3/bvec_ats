@@ -59,7 +59,7 @@ namespace Plugin.AI
 							SelfTestSequence++;
 							if (Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.AwaitingDriverInteraction)
 							{
-								Train.StartupSelfTestManager.driveracknowledge();
+								Train.StartupSelfTestManager.DriverAcknowledge();
 								data.Response = AIResponse.Long;
 							}
 							SelfTestPerformed = true;
@@ -142,7 +142,7 @@ namespace Plugin.AI
 				}
 			}
 			//AWS Handling
-			if (Train.AWS != null && Train.AWS.enabled == true)
+			if (Train.AWS != null && Train.AWS.Enabled == true)
 			{
 				if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerActive)
 				{

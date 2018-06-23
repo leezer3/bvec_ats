@@ -7,8 +7,6 @@ namespace Plugin
     {
         /// <summary>The underlying train.</summary>
         private readonly Train Train;
-        // --- members ---
-        internal bool enabled;
         //Internal Variables
         private bool suppressionactive;
         private double suppressionlocation;
@@ -68,7 +66,7 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
-            if (this.enabled)
+            if (this.Enabled)
             {
                 if (this.SafetyState != SafetyStates.Isolated)
                 {
@@ -152,7 +150,7 @@ namespace Plugin
                         {
                             SoundManager.Play(WarningSound, 1.0, 1.0, true);
                         }
-                        if (Train.TPWS.enabled)
+                        if (Train.TPWS.Enabled)
                         {
                             Train.TPWS.IssueBrakeDemand();
                         }

@@ -18,23 +18,13 @@ namespace Plugin {
         /// <remarks>Use this member for determining failure modes.</remarks>
         protected OperativeStates MyOperativeState;
 
-
-        /// <summary>Whether or not the system has had its functionality enabled.</summary>
-        /// <remarks>Set this to true if a train is to be equipped with a particular system.</remarks>
-        protected bool MyEnabled;
-
-
-        
-        // properties
-
-        /// <summary>Gets the current operative state of the system.</summary>
+		/// <summary>Gets the current operative state of the system.</summary>
         internal OperativeStates OperativeState
         {
             get { return this.MyOperativeState; }
         }
 
-        
-
+		internal bool Enabled;
 
 		/// <summary>Is called when the driver changes the reverser.</summary>
 		/// <param name="reverser">The new reverser position.</param>

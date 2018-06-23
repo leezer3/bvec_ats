@@ -12,9 +12,6 @@ namespace Plugin
         /// <summary>The underlying train.</summary>
         private readonly Train Train;
 
-        // --- members ---
-        internal bool enabled;
-
         //Internal Status
         /// <summary>Whether a SCMT alert has been triggered</summary>
         internal static bool SCMT_Alert;
@@ -141,7 +138,7 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
-            if (this.enabled)
+            if (this.Enabled)
             {
                 //First, we need to sort out the distance from our beacon. This should be easier in OpenBVE...
                 //Assume that below zero values won't cause issues just for the moment
@@ -485,7 +482,7 @@ namespace Plugin
         /// <summary>This function is called from the traction manager when the TPWS reset key is pressed.</summary>
         internal void tpwsresetkey()
         {
-            if (trainstop == true && this.enabled == true)
+            if (trainstop == true && this.Enabled == true)
             {
                 if (flagbrake == true)
                 {

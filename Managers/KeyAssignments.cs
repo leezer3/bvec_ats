@@ -7,7 +7,10 @@ namespace Plugin
 		/*
 		 * Common Keys
 		 */
+		/// <summary>Acknowledge a warning from the AWS</summary>
+		internal VirtualKeys? AWSKey = VirtualKeys.A1;
 
+		internal VirtualKeys? TPWSOverride = VirtualKeys.A2;
 		/// <summary>Acknowledge a safety system warning</summary>
 		internal VirtualKeys? SafetyKey = VirtualKeys.A1;
 		/// <summary>Toggle automatic gearbox/ cutoff</summary>

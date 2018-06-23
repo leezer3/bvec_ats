@@ -7,9 +7,6 @@ namespace Plugin
         /// <summary>The underlying train.</summary>
         private readonly Train Train;
         
-        // --- members ---
-        internal bool enabled;
-
         /// <summary>The current aspect.</summary>
         private int CurrentAspect = 0;
 
@@ -69,7 +66,7 @@ namespace Plugin
         /// <param name="blocking">Whether the device is blocked or will block subsequent devices.</param>
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
-            if (this.enabled)
+            if (this.Enabled)
             {
                 CurrentVehicleState = data.Vehicle;
                 if (NextSignalLocation < double.MaxValue)
