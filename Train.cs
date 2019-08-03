@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -2686,6 +2686,11 @@ namespace Plugin {
 		/// <param name="signal">The signal data.</param>
 		internal void SetSignal(SignalData[] signal)
 		{
+			if (signal.Length < 1)
+			{
+				return;
+			}
+
 			NextSignal = signal[1];
 
 			foreach (Device device in this.Devices) {
