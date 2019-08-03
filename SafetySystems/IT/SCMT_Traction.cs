@@ -241,6 +241,8 @@ namespace Plugin
         internal static int powernotch_req;
         internal static bool ConstantSpeedBrake;
 
+        private bool enabled = false;
+
         // --- constructors ---
 
         /// <summary>Creates a new instance of this system.</summary>
@@ -321,7 +323,7 @@ namespace Plugin
             }
 	        SCMT.BlinkIndicator(ref AvariaGen, 1);
 	        BatteryVoltage = 23;
-			}
+		}
 
 
 

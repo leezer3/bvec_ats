@@ -14,4 +14,8 @@
     <StartAction>Program</StartAction>
     <StartProgram>D:\obve\openbve.exe</StartProgram>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <StartAction>Program</StartAction>
+    <StartProgram>D:\OBVE\OpenBve.exe</StartProgram>
+  </PropertyGroup>
 </Project>

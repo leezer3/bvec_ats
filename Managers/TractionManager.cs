@@ -1387,7 +1387,7 @@ namespace Plugin
 				}
 			}
 			//Italian SCMT vigilante system
-			if (Train.Vigilance != null && Train.Vigilance.vigilante == true)
+			if (Train.Vigilance != null && Train.Vigilance.vigilanteEnabled == true)
 			{
 				if (key == Train.CurrentKeyConfiguration.vigilantekey)
 				{

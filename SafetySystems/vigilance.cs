@@ -51,9 +51,7 @@ namespace Plugin
 
         //The timer index for the Italian Vigilante device
         internal double vigilanteTimer;
-        internal bool vigilante;
-        internal bool vigilanteTripped;
-        internal int vigilantePhase;
+        internal bool vigilanteEnabled;
 
         //Sound Indicies
         /// <summary>The sound index for the audible vigilance alarm</summary>
@@ -247,7 +245,7 @@ namespace Plugin
 	        }
 	        if (Train.SCMT != null)
 		        {
-			        if (vigilante == true && SCMT.testscmt == 4)
+			        if (vigilanteEnabled == true && SCMT.testscmt == 4)
 			        {
 				        if (Train.CurrentSpeed > 2 && VigilanteState == VigilanteStates.None)
 				        {
@@ -317,7 +315,7 @@ namespace Plugin
 			        {
 				        this.Train.Panel[(vigilancelamp)] = 1;
 			        }
-			        if (vigilante == true)
+			        if (vigilanteEnabled == true)
 			        {
 				        if (VigilanteState == VigilanteStates.AlarmSounding || VigilanteState == VigilanteStates.EbApplied)
 				        {

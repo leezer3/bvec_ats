@@ -219,7 +219,7 @@ namespace Plugin {
 		internal F92 F92;
 
 #if !DebugNBS
-		internal LEDLights LedLights;
+		//internal LEDLights LedLights;
 #endif
 		internal WesternDiesel WesternDiesel;
 
@@ -363,14 +363,14 @@ namespace Plugin {
 								//These don't necessarily need their own parser settings
 								break;
 #if !DebugNBS
-							case "ledlights":
-								this.LedLights = new LEDLights(this);
-								break;
+							//case "ledlights":
+								//this.LedLights = new LEDLights(this);
+								//break;
 #endif
 
 								break;
 							case "windscreen":
-								this.Windscreen.enabled = true;
+								this.Windscreen.Enabled = true;
 								DebugLogger.LogMessage("Windscreen enabled");
 								break;
 							case "ats-sx":
@@ -1247,7 +1247,7 @@ namespace Plugin {
 											InternalFunctions.ParseNumber(value, ref Vigilance.vigilanceinactivespeed, key);
 											break;
 										case "vigilante":
-											InternalFunctions.ParseBool(value, ref Vigilance.vigilante, key);
+											InternalFunctions.ParseBool(value, ref Vigilance.vigilanteEnabled, key);
 											break;
 										default:
 											throw new InvalidDataException("The parameter " + key + " is not supported.");
@@ -2223,13 +2223,16 @@ namespace Plugin {
 			if (this.WesternDiesel != null)
 			{
 				devices.Add(this.WesternDiesel);
+
 			}
+			/*
 #if !DebugNBS
 			if (this.LedLights != null)
 			{
 				devices.Add(this.LedLights);
 			}
 #endif
+	 */
 			this.Devices = devices.ToArray();
 		}
 
@@ -2535,10 +2538,19 @@ namespace Plugin {
 			}
 		}
 
+		internal Station currentStation;
+
 		/// <summary>Is called every frame.</summary>
 		/// <param name="data">The data.</param>
 		internal void Elapse(ElapseData data)
 		{
+			for (int i = 0; i < data.Stations.Count; i++)
+			{
+				if (data.Stations[i].DefaultTrackPosition > data.Vehicle.Location && (data.Stations[i].StopMode == StationStopMode.PlayerStop || data.Stations[i].StopMode == StationStopMode.AllStop))
+				{
+					currentStation = data.Stations[i];
+				}
+			}
 			this.PluginInitializing = false;
 			if (data.ElapsedTime.Seconds > 0.0 & data.ElapsedTime.Seconds < 1.0) {
 				//Odakyufan's code requires clearing the array each time

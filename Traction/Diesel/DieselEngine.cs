@@ -19,7 +19,7 @@ namespace Plugin.Traction.Diesel
         internal bool StarterKeyPressed;
 
         readonly StarterMotor Starter = new StarterMotor();
-        readonly GearBox Gears = new GearBox();
+        //readonly GearBox Gears = new GearBox(Train);
 
 
 
@@ -66,7 +66,7 @@ namespace Plugin.Traction.Diesel
 
             if (HasGears)
             {
-                data.Handles.PowerNotch = Gears.RunGearBox();
+                //data.Handles.PowerNotch = Gears.RunGearBox();
             }
 
         }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using BlinkStickDotNet;
 using OpenBveApi.Runtime;
 
@@ -108,3 +109,4 @@ namespace Plugin
         }
     }
 }
+*/

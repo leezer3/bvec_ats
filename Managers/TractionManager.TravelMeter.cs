@@ -23,8 +23,6 @@ namespace Plugin
 			/// <summary>The .01 unit digit reading</summary>
 			internal int Decimal1;
 
-			private double Counter;
-
 			internal TravelMeterMode Mode = TravelMeterMode.IncreaseForwards;
 
 			/// <summary>Updates the travel meter</summary>
