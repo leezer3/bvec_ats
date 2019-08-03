@@ -64,10 +64,14 @@ namespace Plugin
 
         internal override void Initialize(InitializationModes mode)
         {
-            if (numberofdrops != 0)
+            if (numberofdrops > 0)
             {
                 //Create arrays with number of drops
                 droparray = new bool[numberofdrops];
+            }
+            else
+            {
+	            Enabled = false;
             }
             currentwiperposition = (int)wiperholdposition;
         }
