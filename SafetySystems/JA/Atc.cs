@@ -205,7 +205,7 @@ namespace Plugin
 						if (Train.TractionManager.BrakeInterventionDemanded == false)
 						{
 							//Apply brakes via the TractionManager
-							Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
+							Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches, "Brake application demanded by the ATC Kakunin system");
 						}
 						if (data.Vehicle.Speed.KilometersPerHour == 0)
 						{

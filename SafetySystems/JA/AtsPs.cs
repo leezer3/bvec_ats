@@ -186,7 +186,7 @@ namespace Plugin
 						}
 						if (!this.Train.TractionManager.BrakeInterventionDemanded)
 						{
-							Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);   
+							Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches, "Brake application demanded by ATS-Ps");   
 						}
 					}
 				}

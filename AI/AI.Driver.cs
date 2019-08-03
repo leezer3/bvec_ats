@@ -106,13 +106,13 @@ namespace Plugin.AI
 						if (Train.NextSignal.Aspect == 0)
 						{
 							Train.drastate = true;
-							Train.TractionManager.DemandPowerCutoff();
+							Train.TractionManager.DemandPowerCutoff(null);
 							data.Response = AIResponse.Short;
 						}
 						if (Train.Doors != DoorStates.None)
 						{
 							Train.drastate = true;
-							Train.TractionManager.DemandPowerCutoff();
+							Train.TractionManager.DemandPowerCutoff(null);
 							data.Response = AIResponse.Short;
 						}
 					}

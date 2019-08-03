@@ -120,15 +120,15 @@ namespace Plugin {
 						if (!this.Override) {
 							if (this.BrakeNotch > maximumBrakeNotch) {
 								if (this.Train.TractionManager.CurrentInterventionBrakeNotch < this.Train.Specs.BrakeNotches) {
-									Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
+									Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches, "Brake application demanded by TASC");
 								}
 							} else if (this.BrakeNotch > 0) {
 								if (this.Train.TractionManager.CurrentInterventionBrakeNotch < this.BrakeNotch + this.Train.Specs.AtsNotch - 1)
 								{
-									Train.TractionManager.DemandBrakeApplication(this.BrakeNotch + this.Train.Specs.AtsNotch - 1);
+									Train.TractionManager.DemandBrakeApplication(this.BrakeNotch + this.Train.Specs.AtsNotch - 1, "Brake application demanded by TASC");
 								}
 							} else if (requiredBrakeNotch > 0.0) {
-								Train.TractionManager.DemandPowerCutoff();
+								Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded by the TASC");
 							}
 						}
 						data.DebugMessage = "TASC -- " + requiredBrakeNotch.ToString("0.0") + " @ " + this.Distance.ToString("0.00");
@@ -136,7 +136,7 @@ namespace Plugin {
 						// --- after the stop point ---
 						if (this.Train.TractionManager.CurrentInterventionBrakeNotch < this.Train.Specs.BrakeNotches)
 						{
-                            Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
+                            Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches, "Brake application demanded by TASC");
 						}
 						data.DebugMessage = "TASC -- OVERRUN";
 					}
@@ -144,7 +144,7 @@ namespace Plugin {
 					// --- doors opened ---
 					if (this.Train.TractionManager.CurrentInterventionBrakeNotch < this.Train.Specs.BrakeNotches)
 					{
-                        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
+                        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches, "Brake application demanded by TASC");
 					}
 					data.DebugMessage = "TASC -- DOORBLOCK";
 				}

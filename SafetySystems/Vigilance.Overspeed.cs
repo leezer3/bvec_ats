@@ -42,13 +42,13 @@
 						Tripped = false;
 						break;
 					case OverspeedBehaviour.ApplyServiceBrakes:
-						Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
+						Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches, "Brake application demanded by the overspeed device");
 						break;
 					case OverspeedBehaviour.ApplyEmergencyBrakes:
-						Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+						Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by the overspeed device");
 						break;
 					case OverspeedBehaviour.CutoffPower:
-						Train.TractionManager.DemandPowerCutoff();
+						Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded by an overspeed intervention");
 						break;
 				}
 				return;

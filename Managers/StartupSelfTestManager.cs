@@ -159,7 +159,7 @@ namespace Plugin {
 				/* Hold the brakes on until the AWS button is depressed */
 				if (MySequenceState == SequenceStates.AwaitingDriverInteraction)
                 {
-                    Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
+                    Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches, "Brake application was demanded by the startup self-test sequence");
                 }
                 else if (MySequenceState == SequenceStates.Finalising)
                 {

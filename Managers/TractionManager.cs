@@ -304,14 +304,14 @@ namespace Plugin
 			{
 				if (doorpowerlock == 1 && Train.TractionManager.PowerCutoffDemanded == false)
 				{
-					Train.TractionManager.DemandPowerCutoff();
+					Train.TractionManager.DemandPowerCutoff("Power cutoff demanded by open doors");
 					data.DebugMessage = "Power cutoff demanded by open doors";
 					doorlock = true;
 				}
 
 				if (doorapplybrake == 1 && BrakeInterventionDemanded == false)
 				{
-					Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
+					Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches, "Brakes demanded by open doors");
 					data.DebugMessage = "Brakes demanded by open doors";
 					doorlock = true;
 				}
@@ -718,8 +718,12 @@ namespace Plugin
 		//Call this function from a safety system to demand power cutoff
 		/// <summary>Deamnds traction power cutoff.</summary>
 		/// <remarks>This call will always succeed.</remarks>
-		internal void DemandPowerCutoff()
+		internal void DemandPowerCutoff(string reason)
 		{
+			if (!Train.TractionManager.PowerCutoffDemanded && !String.IsNullOrEmpty(reason))
+			{
+				Train.DebugLogger.LogMessage(reason);
+			}
 			Train.TractionManager.PowerCutoffDemanded = true;
 		}
 
@@ -800,12 +804,22 @@ namespace Plugin
 		//Call this function from a safety system to demand a brake application
 		/// <summary>Demands a brake application from the traction manager.</summary>
 		/// <remarks>Takes the notch demanded as the paramater. If this notch is less than the current notch, do not change notch.</remarks>
-		internal void DemandBrakeApplication(int notchdemanded)
+		internal void DemandBrakeApplication(int notchdemanded, string reason)
 		{
+			bool logOnce = false;
+			if (!BrakeInterventionDemanded)
+			{
+				Train.DebugLogger.LogMessage(reason);
+				logOnce = true;
+			}
 			BrakeInterventionDemanded = true;
 			if (notchdemanded > CurrentInterventionBrakeNotch)
 			{
 				CurrentInterventionBrakeNotch = notchdemanded;
+				if (!logOnce)
+				{
+					Train.DebugLogger.LogMessage(reason);
+				}
 			}
 		}
 
@@ -1573,7 +1587,7 @@ namespace Plugin
 						if (Train.drastate == false)
 						{
 							Train.drastate = true;
-							DemandPowerCutoff();
+							DemandPowerCutoff("Power cutoff demanded by the DRA");
 						}
 						else
 						{

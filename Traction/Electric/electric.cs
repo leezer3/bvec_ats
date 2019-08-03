@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using OpenBveApi.Runtime;
 
 namespace Plugin
@@ -636,9 +636,8 @@ namespace Plugin
 				{
 					SoundManager.Play(breakersound, 1.0, 1.0, false);
 				}
-				Train.TractionManager.DemandPowerCutoff();
 				Train.DebugLogger.LogMessage("The ACB/VCB was opened");
-				Train.DebugLogger.LogMessage("Power cutoff was demanded due to an open ACB/VCB");
+				Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded due to an open ACB/VCB");
 			}
 			else
 			{
@@ -675,7 +674,7 @@ namespace Plugin
 				{
 					Train.DebugLogger.LogMessage(Message);
 				}
-				Train.TractionManager.DemandPowerCutoff();
+				Train.TractionManager.DemandPowerCutoff(Message);
 				electricPowerCutoff = true;
 			}
 		}

@@ -223,13 +223,11 @@ namespace Plugin
                 SoundManager.Stop(EngineLoopSound);
                 if (Train.TractionManager.PowerCutoffDemanded == false)
                 {
-                    Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to no available engines.");
-                    Train.TractionManager.DemandPowerCutoff();
+	                Train.TractionManager.DemandPowerCutoff("Western Diesel- Traction power was cutoff due to no available engines.");
                 }
                 if (Train.TractionManager.BrakeInterventionDemanded == false)
                 {
-                    Train.DebugLogger.LogMessage("Western Diesel- Brakes applied due to no running compressors.");
-                    Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
+	                Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches, "Western Diesel- Brakes applied due to no running compressors.");
                 }
             }
             else
@@ -248,8 +246,7 @@ namespace Plugin
                     //If the torque convertor is not on service, then cut power
                     if (Train.TractionManager.PowerCutoffDemanded == false)
                     {
-                        Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due the torque convertor being out of service.");
-                        Train.TractionManager.DemandPowerCutoff();
+	                    Train.TractionManager.DemandPowerCutoff("Western Diesel- Traction power was cutoff due the torque convertor being out of service.");
                     }
                     //Now, run the startup sequence
                     if (Train.Handles.Reverser != 0 && Train.Handles.PowerNotch != 0)
@@ -582,13 +579,11 @@ namespace Plugin
                         Train.DebugLogger.LogMessage("Western Diesel- Engine 1 overheated");
                         if (Engine2Running == false)
                         {
-                            Train.TractionManager.DemandPowerCutoff();
-                            Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to engine 1 overheating, and engine 2 being stopped");
+                            Train.TractionManager.DemandPowerCutoff("Western Diesel- Traction power was cutoff due to engine 1 overheating, and engine 2 being stopped");
                         }
                         else if (Engine2Temperature.Overheated)
                         {
-                            Train.TractionManager.DemandPowerCutoff();
-                            Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to both engines overheating");
+                            Train.TractionManager.DemandPowerCutoff("Western Diesel- Traction power was cutoff due to both engines overheating");
                         }
                         Engine1Temperature.Logged = true;
                     }
@@ -609,13 +604,11 @@ namespace Plugin
                         Train.DebugLogger.LogMessage("Western Diesel- Engine 2 overheated");
                         if (Engine1Running == false)
                         {
-                            Train.TractionManager.DemandPowerCutoff();
-                            Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to engine 2 overheating, and engine 1 being stopped");
+                            Train.TractionManager.DemandPowerCutoff("Western Diesel- Traction power was cutoff due to engine 2 overheating, and engine 1 being stopped");
                         }
                         else if (Engine1Temperature.Overheated)
                         {
-                            Train.TractionManager.DemandPowerCutoff();
-                            Train.DebugLogger.LogMessage("Western Diesel- Traction power was cutoff due to both engines overheating");
+                            Train.TractionManager.DemandPowerCutoff("Western Diesel- Traction power was cutoff due to both engines overheating");
                         }
                         Engine2Temperature.Logged = true;
                     }
@@ -633,8 +626,7 @@ namespace Plugin
                 {
                     if (TransmissionTemperature.Logged == false)
                     {
-                        Train.DebugLogger.LogMessage("Western Diesel- Transmission overheated");
-                        Train.TractionManager.DemandPowerCutoff();
+	                    Train.TractionManager.DemandPowerCutoff("Western Diesel- Transmission overheated");
                         TransmissionTemperature.Logged = true;
                     }
                 }

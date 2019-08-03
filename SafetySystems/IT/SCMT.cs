@@ -310,7 +310,7 @@ namespace Plugin
                                             SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
                                         }
                                         EBDemanded = true;
-                                        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+                                        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by the SCMT overspeed function");
                                         trainstop = true;
                                         StopTimer.TimerActive = false;
                                         tpwsRelease = false;

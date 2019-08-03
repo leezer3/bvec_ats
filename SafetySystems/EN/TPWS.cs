@@ -143,8 +143,7 @@ namespace Plugin
                         {
                             if (Train.TractionManager.CurrentInterventionBrakeNotch != this.Train.Specs.BrakeNotches + 1)
                             {
-                                Train.DebugLogger.LogMessage("Emergency brakes were demanded by the TPWS Overspeed system");
-                                Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+	                            Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Emergency brakes were demanded by the TPWS Overspeed system");
                             }
                             this.MySafetyState = SafetyStates.TssBrakeDemand;
                             this.osslastspeed = 0;
@@ -249,8 +248,7 @@ namespace Plugin
                          * Increment the blink timer to enable the Brake Demand indicator to flash */
                         if (Train.TractionManager.CurrentInterventionBrakeNotch != this.Train.Specs.BrakeNotches + 1)
                         {
-                            Train.DebugLogger.LogMessage("Emergency brakes were demanded by the TPWS Trainstop system");
-                            Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+	                        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Emergency brakes were demanded by the TPWS Trainstop system");
                         }
                         this.indicatorblinktimer = this.indicatorblinktimer + (int)data.ElapsedTime.Milliseconds;
                         if (this.indicatorblinktimer >= 0 && indicatorblinktimer < this.brakeindicatorblinkrate)
@@ -360,7 +358,7 @@ namespace Plugin
                         this.Reinitialise(InitializationModes.OnService);
                         /* Issue the brake demand */
                         this.MySafetyState = SafetyStates.TssBrakeDemand;
-                        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+                        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by the TPWS TSS system");
 
 
                         /* Raise an event signalling that a TPWS Brake Demand has been made, for event subscribers (such as the AWS). */

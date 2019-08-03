@@ -289,7 +289,7 @@ namespace Plugin
                     }
                     if (this.State == AtsP.States.Brake)
                     {
-	                    Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
+	                    Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches, "Brake application demanded by ATS-P");
                     }
                     if (this.Position > this.SwitchToAtsSxPosition & this.State != AtsP.States.Brake & this.State != AtsP.States.Service & this.State != AtsP.States.Emergency)
                     {
@@ -298,11 +298,11 @@ namespace Plugin
                 }
                 else if (this.State == AtsP.States.Service)
                 {
-					Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches);
+					Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches, "Brake application demanded by ATS-P");
                 }
                 else if (this.State == AtsP.States.Emergency)
                 {
-					Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+					Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by ATS-P");
                 }
                 if (!this.AtsSxPMode & (this.State == AtsP.States.Normal | this.State == AtsP.States.Pattern | this.State == AtsP.States.Brake | this.State == AtsP.States.Service | this.State == AtsP.States.Emergency))
                 {

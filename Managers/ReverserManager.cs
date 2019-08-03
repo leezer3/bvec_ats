@@ -42,13 +42,13 @@
 					case NeutralBehaviour.ServiceBrakes:
 						if (Train.CurrentSpeed > 0)
 						{
-							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches);
+							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches, "Brake application was demanded by the Neutral Reverser behaviour setting");
 						}
 						break;
 					case NeutralBehaviour.EmergencyBrakes:
 						if (Train.CurrentSpeed > 0)
 						{
-							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1);
+							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1, "Brake application was demanded by the Neutral Reverser behaviour setting");
 						}
 						break;
 				}

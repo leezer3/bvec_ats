@@ -193,21 +193,21 @@ namespace Plugin
 							EmergencyBrakeCounter++;
 						}
 						//If deadman's device is inactive, apply EB
-						Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1);
+						Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1, "Brake application demanded by the F92");
 						
 					}
 				}
 				else
 				{
 					//If our tripcock is not currently turned on, then power must be cut off
-					Train.TractionManager.DemandPowerCutoff();
+					Train.TractionManager.DemandPowerCutoff("Power cutoff demanded by the F92 tripcock");
 				}
 				//Max speed device
 				if (Train.CurrentSpeed > 70 && Overspeed == false)
 				{
 					//I'm presuming that the overspeed device will also up the EB counter, need to check this....
 					EmergencyBrakeCounter++;
-					Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches);
+					Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches, "Brake application demanded by the F92 overspeed device");
 					SoundManager.Play(OverspeedSound, 1.0, 1.0, true);
 					Overspeed = true;
 				}
@@ -319,7 +319,7 @@ namespace Plugin
 						if (SignalAspect == 0)
 						{
 							PassedRedSignal = true;
-							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1);
+							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1, "Brake application demanded by the F92 passing a red signal");
 						}
 					}
 					else
@@ -327,7 +327,7 @@ namespace Plugin
 						if (Train.CurrentSpeed > data)
 						{
 							SpeedTrapActivated = true;
-							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1);
+							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1, "Braka application demanded by the F92 signal speed trap");
 						}
 					}
 					break;
@@ -336,7 +336,7 @@ namespace Plugin
 					if (Train.CurrentSpeed > data)
 					{
 						SpeedTrapActivated = true;
-						Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1);
+						Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1, "Brake application demanded by the F92 speed trap");
 					}
 					break;
 			}

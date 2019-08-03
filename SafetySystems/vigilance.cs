@@ -111,7 +111,7 @@ namespace Plugin
             else
             {
                 Train.drastate = true;
-                Train.TractionManager.DemandPowerCutoff();
+                Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded by the DRA");
             }
             DeadmansHandleState = DeadmanStates.None;
         }
@@ -227,7 +227,7 @@ namespace Plugin
 			        else if (DeadmansHandleState == DeadmanStates.BrakesApplied)
 			        {
 				        //Demand brake application
-				        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+				        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by the deadman's handle");
 				        //If we auto-release on coming to a full-stop
 				        if (AutoRelease == true && Train.CurrentSpeed == 0)
 				        {
@@ -269,7 +269,7 @@ namespace Plugin
 				        else if (VigilanteState == VigilanteStates.EbApplied)
 				        {
 					        vigilanteTimer = 0.0;
-					        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+					        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by the SCMT vigilante");
 					        if (vigilancealarm != -1)
 					        {
 						        SoundManager.Stop(vigilancealarm);

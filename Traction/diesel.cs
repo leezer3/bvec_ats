@@ -416,8 +416,7 @@ namespace Plugin
 						temperature = overheat;
 						if (overheatresult == 1 && Train.TractionManager.EngineOverheated == false)
 						{
-							Train.DebugLogger.LogMessage("Power cutoff was demanded due to the diesel engine overheating");
-							Train.TractionManager.DemandPowerCutoff();
+							Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded due to the diesel engine overheating");
 							Train.TractionManager.EngineOverheated = true;
 						}
 					}

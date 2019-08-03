@@ -254,7 +254,7 @@ namespace Plugin
 										SoundManager.Stop(PZBHomeProgramWarningSound);
 									}
 									//Apply EB brakes
-									Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+									Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by PZB");
 
 									if (Train.CurrentSpeed < 30)
 									{
@@ -383,7 +383,7 @@ namespace Plugin
 										SoundManager.Stop(PZBHomeProgramWarningSound);
 									}
 									//Apply EB brakes
-									Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+									Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by PZB");
 									if (Train.CurrentSpeed < 30)
 									{
 										CurrentProgram.BrakeReleaseTimer += data.ElapsedTime.Milliseconds;
@@ -439,7 +439,7 @@ namespace Plugin
 								SoundManager.Stop(RedSignalWarningSound);
 							}
 							//Demand EB application
-							Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+							Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by PZB");
 							break;
 					}
 				}

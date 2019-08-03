@@ -55,7 +55,7 @@ namespace Plugin.Traction.Diesel
                 }
                 //Stop the engine loop sound from playing & demand power cutoff
                 SoundManager.Stop(EngineLoopSound);
-                Train.TractionManager.DemandPowerCutoff();
+                Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded as the diesel engine was not running");
             }
             else
             {

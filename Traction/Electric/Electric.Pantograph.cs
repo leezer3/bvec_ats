@@ -78,7 +78,7 @@
 							{
 								Train.ElectricEngine.TripBreaker();
 							}
-							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1);
+							Train.TractionManager.DemandBrakeApplication(Train.Specs.BrakeNotches + 1, "Brake application demanded by the pantograph being lowered at speed");
 							break;
 					}
 					break;

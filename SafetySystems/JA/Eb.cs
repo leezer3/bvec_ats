@@ -55,7 +55,7 @@ namespace Plugin
 					SoundManager.Play(CommonSounds.ATSPBell, 1.0, 1.0, false);
 					if (!Train.TractionManager.BrakeInterventionDemanded)
 					{
-						Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches +1);
+						Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches +1, "Brake application demanded by the Eb");
 					}
 				}
 				else if (this.Train.AtsSx.State != AtsSx.States.Disabled)

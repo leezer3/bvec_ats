@@ -46,7 +46,7 @@
 				case OverheatState.Overheated:
 					if (!Train.TractionManager.PowerCutoffDemanded)
 					{
-						Train.TractionManager.DemandPowerCutoff();
+						Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded by the overheat alarm");
 					}
 					if (SoundManager.IsPlaying(WarningSound))
 					{

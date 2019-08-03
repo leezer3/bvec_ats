@@ -288,7 +288,7 @@ namespace Plugin
                     temperature = overheat;
                     if (overheatresult == 1)
                     {
-                        Train.TractionManager.DemandPowerCutoff();
+                        Train.TractionManager.DemandPowerCutoff("Traction power cutoff was demanded due to the steam engine overheating");
                         Train.TractionManager.EngineOverheated = true;
                     }
                 }

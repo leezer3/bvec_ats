@@ -158,13 +158,11 @@ namespace Plugin
                         {
                             if (Train.TractionManager.PowerCutoffDemanded == false)
                             {
-                                Train.DebugLogger.LogMessage("Power cutoff was demanded by the AWS due to a warning not being acknowledged in time");
-                                Train.TractionManager.DemandPowerCutoff();
+	                            Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded by the AWS due to a warning not being acknowledged in time");
                             }
                             if (Train.TractionManager.CurrentInterventionBrakeNotch != this.Train.Specs.BrakeNotches +1)
                             {
-                                Train.DebugLogger.LogMessage("Emergency brakes were demanded by the AWS due to a warning not being acknowledged in time");
-                                Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+	                            Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Emergency brakes were demanded by the AWS due to a warning not being acknowledged in time");
                             }
                         }
                     }

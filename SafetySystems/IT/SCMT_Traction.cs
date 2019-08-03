@@ -555,7 +555,7 @@ namespace Plugin
                             temperature = overheat;
                             if (overheatresult == 1)
                             {
-                                Train.TractionManager.DemandPowerCutoff();
+                                Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded by the SCMT traction overheating");
                                 Train.TractionManager.EngineOverheated = true;
                             }
                         }
@@ -659,13 +659,13 @@ namespace Plugin
                     {
                         //If we've exceeded the set point speed cut power
                         flag = 1;
-                        Train.TractionManager.DemandPowerCutoff();
+                        Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded by the SCMT traction reaching the setpoint speed");
                     }
                     if (Train.CurrentSpeed > setpointspeed + 1 && flag == 1 && lca == true && Train.Handles.PowerNotch > 0)
                     {
                         //If we're continuing to accelerate, demand a brake application
                         ConstantSpeedBrake = true;
-                        Train.TractionManager.DemandBrakeApplication(1);
+                        Train.TractionManager.DemandBrakeApplication(1, "Brake application demanded by the SCMT traction setpoint speed");
                         flag = 2;
                     }
                     if ((Train.CurrentSpeed < setpointspeed && flag == 2 && lca == true) ||

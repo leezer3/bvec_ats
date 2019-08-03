@@ -105,7 +105,7 @@ namespace Plugin
                         else
                         {
                             EBApplied = true;
-                            Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1);
+                            Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by the CAWS system");
                         }
                     }
                     else if (AcknowledgementCountdown > 0.0)
