@@ -202,6 +202,24 @@ namespace Plugin
 							case 9:
 								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey10;
 							break;
+							case 10:
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey11;
+								break;
+							case 11:
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey12;
+								break;
+							case 12:
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey13;
+								break;
+							case 13:
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey14;
+								break;
+							case 14:
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey15;
+								break;
+							case 16:
+								CustomIndicatorsArray[i].Key = Train.CurrentKeyConfiguration.CustomIndicatorKey16;
+								break;
 						}
 					}
 				}

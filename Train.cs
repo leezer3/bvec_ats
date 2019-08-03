@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -2002,6 +2002,24 @@ namespace Plugin {
 											break;
 										case "customindicatorkey10":
 											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey10, key);
+											break;
+										case "customindicatorkey11":
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey11, key);
+											break;
+										case "customindicatorkey12":
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey12, key);
+											break;
+										case "customindicatorkey13":
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey13, key);
+											break;
+										case "customindicatorkey14":
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey14, key);
+											break;
+										case "customindicatorkey15":
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey15, key);
+											break;
+										case "customindicatorkey16":
+											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.CustomIndicatorKey16, key);
 											break;
 										case "frontpantographkey":
 											InternalFunctions.ParseKey(value, ref CurrentKeyConfiguration.FrontPantograph, key);

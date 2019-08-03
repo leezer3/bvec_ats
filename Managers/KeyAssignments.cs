@@ -46,6 +46,18 @@ namespace Plugin
 		internal VirtualKeys? CustomIndicatorKey9;
 		/// <summary>Toggles Custom Indicator #10</summary>
 		internal VirtualKeys? CustomIndicatorKey10;
+		/// <summary>Toggles Custom Indicator #11</summary>
+		internal VirtualKeys? CustomIndicatorKey11;
+		/// <summary>Toggles Custom Indicator #12</summary>
+		internal VirtualKeys? CustomIndicatorKey12;
+		/// <summary>Toggles Custom Indicator #13</summary>
+		internal VirtualKeys? CustomIndicatorKey13;
+		/// <summary>Toggles Custom Indicator #14</summary>
+		internal VirtualKeys? CustomIndicatorKey14;
+		/// <summary>Toggles Custom Indicator #15</summary>
+		internal VirtualKeys? CustomIndicatorKey15;
+		/// <summary>Toggles Custom Indicator #16</summary>
+		internal VirtualKeys? CustomIndicatorKey16;
 		/// <summary>Rotates the headcode display</summary>
 		internal VirtualKeys? HeadCode;
 		/// <summary>Shows the advanced window, with info on pressure generation etc.</summary>
