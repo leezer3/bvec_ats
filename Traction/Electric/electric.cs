@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using OpenBveApi.Runtime;
 
 namespace Plugin
@@ -82,7 +82,7 @@ namespace Plugin
 
 		//Arrays
 		/// <summary>An array storing the location of all available pickup points</summary>
-		internal int[] PickupLocations = { 0 };
+		internal double[] PickupLocations = { 0 };
 		/// <summary>A list of the heating rates (in heat units per second) for each power notch</summary>
 		internal int[] HeatingRates = { 0 };
 

@@ -692,7 +692,7 @@ namespace Plugin {
 											this.ElectricEngine.Ammeter.Initialize(value);
 											break;
 										case "powerpickuppoints":
-											InternalFunctions.ParseStringToIntArray(value, ref ElectricEngine.PickupLocations, "pickuppoints");
+											InternalFunctions.ParseStringToDoubleArray(value, ref ElectricEngine.PickupLocations, "pickuppoints");
 											break;
 										case "powergapbehaviour":
 											int pgb = 0;
