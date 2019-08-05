@@ -121,7 +121,7 @@ namespace Plugin
 		//Arrays
 		int[] klaxonarray;
 		//Custom Indicators
-		internal CustomIndicator[] CustomIndicatorsArray = new CustomIndicator[10];
+		internal CustomIndicator[] CustomIndicatorsArray = new CustomIndicator[16];
 		
 		internal TractionManager(Train train) {
 			this.Train = train;
