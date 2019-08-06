@@ -191,7 +191,7 @@ namespace Plugin.AI
 			Train.TractionManager.AutomaticAdvancedFunctions = true;
 		}
 
-		/// <summary>Represents the driver class for a steam locomotive</summary>
+		/// <summary>Represents the driver class for a diesel locomotive</summary>
 		internal void DieselLocomotive(ref AIData data)
 		{
 			Train.TractionManager.AutomaticAdvancedFunctions = true;

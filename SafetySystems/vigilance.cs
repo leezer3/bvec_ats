@@ -235,6 +235,7 @@ namespace Plugin
 					        deadmansalarmtimer = 0.0;
 					        deadmansbraketimer = 0.0;
 					        deadmanstimer = 0.0;
+					        DeadmansHandleState = DeadmanStates.OnTimer;
 				        }
 			        }
 
