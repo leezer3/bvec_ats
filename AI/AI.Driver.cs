@@ -94,6 +94,7 @@ namespace Plugin.AI
 					if (Train.Vigilance.deadmanstimer > (Train.Vigilance.vigilancetime * 0.7))
 					{
 						Train.Vigilance.deadmanstimer = 0.0;
+						Train.Vigilance.DeadmansHandleState = Vigilance.DeadmanStates.OnTimer;
 						data.Response = AIResponse.Medium;
 					}
 				}
