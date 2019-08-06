@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace Plugin
 {
@@ -16,7 +17,7 @@ namespace Plugin
                 OutputArray = new int[splitheatingrate.Length];
                 for (int i = 0; i < OutputArray.Length; i++)
                 {
-                    OutputArray[i] = Int32.Parse(splitheatingrate[i]);
+                    OutputArray[i] = Int32.Parse(splitheatingrate[i], NumberStyles.Number, CultureInfo.InvariantCulture);
                 }
             }
             catch
@@ -36,7 +37,7 @@ namespace Plugin
                 OutputArray = new double[splitheatingrate.Length];
                 for (int i = 0; i < OutputArray.Length; i++)
                 {
-                    OutputArray[i] = Double.Parse(splitheatingrate[i]);
+                    OutputArray[i] = Double.Parse(splitheatingrate[i], NumberStyles.Number, CultureInfo.InvariantCulture);
                 }
             }
             catch

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Text;
@@ -69,7 +70,7 @@ namespace Plugin {
 					if (generatorversion != null && generatorversion.StartsWith(";GenVersion="))
 					{
 						string versiontext = Regex.Match(generatorversion, @"\d+").Value;
-						int version = Int32.Parse(versiontext);
+						int version = Int32.Parse(versiontext, NumberStyles.Number, CultureInfo.InvariantCulture);
 						//If we're below the current version, try to upgrade again
 						if (version < 1)
 						{

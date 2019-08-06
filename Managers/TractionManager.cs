@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using OpenBveApi.Runtime;
 using Microsoft.Win32;
 using Point = System.Drawing.Point;
@@ -141,7 +142,7 @@ namespace Plugin
 					if (i < splitklaxonindicator.Length)
 					{
 						//If we have a value parse it
-						klaxonarray[i] = Int32.Parse(splitklaxonindicator[i]);
+						klaxonarray[i] = Int32.Parse(splitklaxonindicator[i], NumberStyles.Number, CultureInfo.InvariantCulture);
 					}
 					else
 					{
@@ -229,7 +230,7 @@ namespace Plugin
 					//Parse the sound index value if the array value is not empty
 					if (i < splitcustomindicatorsounds.Length && !String.IsNullOrEmpty(splitcustomindicatorsounds[i]))
 					{
-						CustomIndicatorsArray[i].SoundIndex = Int32.Parse(splitcustomindicatorsounds[i]);
+						CustomIndicatorsArray[i].SoundIndex = Int32.Parse(splitcustomindicatorsounds[i], NumberStyles.Number, CultureInfo.InvariantCulture);
 					}
 				}
 				string[] SplitCustomIndicatorType = customindicatorbehaviour.Split(',');

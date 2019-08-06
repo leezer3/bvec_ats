@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -345,12 +346,12 @@ namespace Plugin
 							{
 								if (j <= 1)
 								{
-									splitarray[j] = Int32.Parse(splitklaxonindicator[j]);
+									splitarray[j] = Int32.Parse(splitklaxonindicator[j], NumberStyles.Number, CultureInfo.InvariantCulture);
 								}
 								else
 								{
-									splitarray[2] = Int32.Parse(splitklaxonindicator[0]);
-									splitarray[3] = Int32.Parse(splitklaxonindicator[j]);
+									splitarray[2] = Int32.Parse(splitklaxonindicator[0], NumberStyles.Number, CultureInfo.InvariantCulture);
+									splitarray[3] = Int32.Parse(splitklaxonindicator[j], NumberStyles.Number, CultureInfo.InvariantCulture);
 								}
 							}
 							string finishedvalue = "klaxonindicator=" + string.Join(",", Array.ConvertAll(splitarray, Convert.ToString));
@@ -410,7 +411,7 @@ namespace Plugin
 							{
 								if (j == 0)
 								{
-									windscreen.Add("drywipesound="+Convert.ToString(Int32.Parse(splitwipersound[j])));
+									windscreen.Add("drywipesound="+Convert.ToString(Int32.Parse(splitwipersound[j], NumberStyles.Number, CultureInfo.InvariantCulture)));
 								}
 								if (j == 1)
 								{

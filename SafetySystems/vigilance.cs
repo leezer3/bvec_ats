@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using OpenBveApi.Runtime;
 
 
@@ -96,7 +97,7 @@ namespace Plugin
                 vigilancearray = new int[splitvigilancetimes.Length];
                 for (int i = 0; i < vigilancearray.Length; i++)
                 {
-                    vigilancearray[i] = Int32.Parse(splitvigilancetimes[i]);
+                    vigilancearray[i] = Int32.Parse(splitvigilancetimes[i], NumberStyles.Number, CultureInfo.InvariantCulture);
                 }
             }
             catch
