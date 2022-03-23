@@ -72,7 +72,7 @@ namespace Plugin
                     gearfadeinarray = new int[splitgearfade.Length];
                     for (var i = 0; i < gearfadeinarray.Length; i++)
                     {
-                        gearfadeinarray[i] = (int)double.Parse(splitgearfade[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                        gearfadeinarray[i] = (int)double.Parse(splitgearfade[i], NumberStyles.Number, CultureInfo.InvariantCulture);
                     }
                 }
                 catch
@@ -87,7 +87,7 @@ namespace Plugin
                     for (var i = 0; i < gearfadeoutarray.Length; i++)
                     {
                         gearfadeoutarray[i] =
-                            (int)double.Parse(splitgearfade1[i], NumberStyles.Integer, CultureInfo.InvariantCulture);
+                            (int)double.Parse(splitgearfade1[i], NumberStyles.Number, CultureInfo.InvariantCulture);
                     }
                 }
                 catch

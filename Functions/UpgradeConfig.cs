@@ -22,6 +22,7 @@ namespace Plugin
 			var windscreen = new List<string>();
 			var keys = new List<string>();
 			var errors = new List<string>();
+			int mySystem = 0;
 
 			bool steamtype = false;
 			bool dieseltype = false;
@@ -422,6 +423,7 @@ namespace Plugin
 						case "system":
 							//Ignore this one, and don't add as an error
 							//Safety systems are only instanciated as necessary
+							mySystem = Int32.Parse(value);
 							break;
 						default:
 							errors.Add(line);
@@ -467,10 +469,22 @@ namespace Plugin
 				newLines.AddRange(interlocks);
 				newLines.Add("[Vigilance]");
 				newLines.AddRange(vigilance);
-				newLines.Add("[AWS]");
-				newLines.AddRange(AWS);
-				newLines.Add("[TPWS]");
-				newLines.AddRange(TPWS);
+				if (mySystem == 1 || mySystem == 2)
+				{
+					newLines.Add("[AWS]");
+					newLines.AddRange(AWS);
+				}
+				if (mySystem == 2)
+				{
+					newLines.Add("[TPWS]");
+					newLines.AddRange(TPWS);
+				}
+
+				if (mySystem == 3)
+				{
+
+				}
+
 				newLines.Add("[Windscreen]");
 				newLines.AddRange(windscreen);
 				//Use the legacy set key assignments
