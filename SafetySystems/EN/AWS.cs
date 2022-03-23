@@ -127,7 +127,7 @@ namespace Plugin
                             SoundManager.Play(WarningSound, 1.0, 1.0, true);
                         }
                         this.SunflowerState = SunflowerStates.Clear;
-                        this.canceltimer = this.canceltimer - (int)data.ElapsedTime.Milliseconds;
+                        this.canceltimer -= (int)data.ElapsedTime.Milliseconds;
                         if (this.canceltimer < 0)
                         {
                             this.canceltimer = 0;
@@ -255,19 +255,19 @@ namespace Plugin
         /// <summary>Call this function to prime the AWS as a result of passing the south pole of an AWS permanent magnet. This should be done only via the SetBeacon() method.</summary>
         internal void Prime()
         {
-            //Try to prime our ATS Device
-            if (!Isolated && this.MySafetyState != SafetyStates.Primed)
-                {
-                    //If suppression of the next magnet is *not* active
-                    if (!this.suppressionactive)
-                        {
-                        this.MySafetyState = SafetyStates.Primed;
-                        }
-                        else if (suppressionactive)
-                        {
-                        this.suppressionactive = false;
-                        }
-                } 
+	        //Try to prime our ATS Device
+	        if (!Isolated && this.MySafetyState != SafetyStates.Primed)
+	        {
+		        //If suppression of the next magnet is *not* active
+		        if (!this.suppressionactive)
+		        {
+			        this.MySafetyState = SafetyStates.Primed;
+		        }
+		        else if (suppressionactive)
+		        {
+			        this.suppressionactive = false;
+		        }
+	        }
         }
 
         /// <summary>Call this function to suppress detection of an AWS permanent magnet. This should be done only via the SetBeacon() method.</summary>
@@ -312,11 +312,11 @@ namespace Plugin
             this.suppressionlocation = 0;
             this.MySafetyState = SafetyStates.None;
             this.SunflowerState = SunflowerStates.Warn;
-            if (Train.TractionManager.BrakeInterventionDemanded == true)
+            if (Train.TractionManager.BrakeInterventionDemanded)
             {
                 Train.TractionManager.ResetBrakeApplication();
             }
-            if (Train.TractionManager.PowerCutoffDemanded == true)
+            if (Train.TractionManager.PowerCutoffDemanded)
             {
                 Train.TractionManager.ResetPowerCutoff();
             }

@@ -2,7 +2,7 @@
 
 namespace Plugin
 {
-    /// <summary>Represents an AWS Device.</summary>
+    /// <summary>Represents a TPWS Device.</summary>
     internal partial class TPWS : Device
     {
         /// <summary>The underlying train.</summary>

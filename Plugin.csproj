@@ -88,6 +88,7 @@
     </Compile>
     <Compile Include="Functions\BlinkStick.cs" />
     <Compile Include="Functions\Messages.cs" />
+    <Compile Include="Functions\Timer.cs" />
     <Compile Include="Managers\TractionManager.Direction.cs" />
     <Compile Include="Managers\ReverserManager.cs" />
     <Compile Include="Managers\KeyAssignments.cs" />
@@ -99,6 +100,7 @@
       <DependentUpon>AssemblyInfo.tt</DependentUpon>
     </Compile>
     <Compile Include="SafetySystems\DE\F92.cs" />
+    <Compile Include="SafetySystems\EN\Trainstop.cs" />
     <Compile Include="SafetySystems\JA\Atc.cs" />
     <Compile Include="SafetySystems\JA\Ato.cs" />
     <Compile Include="SafetySystems\JA\AtsP.cs" />
