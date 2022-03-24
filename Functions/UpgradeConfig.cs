@@ -425,6 +425,21 @@ namespace Plugin
 							//Safety systems are only instanciated as necessary
 							mySystem = Int32.Parse(value);
 							break;
+						case "awsacknowledgekey":
+							string[] splitKey = value.Split(',');
+							for (int j = 0; j < splitKey.Length; j++)
+							{
+								if (j == 0)
+								{
+									InternalFunctions.UpgradeKey(splitKey[0], ref parsedKey, key);
+									keys.Add("awskey=" + parsedKey);
+								}
+								if (j == 1)
+								{
+									AWS.Add("cancelbuttonindex="+Convert.ToString(Int32.Parse(splitKey[j], NumberStyles.Number, CultureInfo.InvariantCulture)));
+								}
+							}
+							break;
 						default:
 							errors.Add(line);
 							break;
