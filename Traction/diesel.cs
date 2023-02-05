@@ -96,7 +96,7 @@ namespace Plugin
 
 		//Sound Indicies
 		/// <summary>The sound index played when the gear is changed</summary>
-		internal int gearchangesound = -1;
+		internal int GearChangeSound = -1;
 		/// <summary>The sound played looped whilst we are in gear</summary>
 		internal int gearloopsound = -1;
 		/// <summary>The sound index for the overheat alarm</summary>
@@ -276,7 +276,7 @@ namespace Plugin
 						if (CurrentGear == 0 && Train.DieselEngine.gearsblocked == false)
 						{
 							CurrentGear = 1;
-							gearchange();
+							SoundManager.Play(GearChangeSound, 1.0, 1.0, false);
 							Train.DieselEngine.gearloop = false;
 							Train.DieselEngine.gearlooptimer = 0.0;
 						}
@@ -284,7 +284,7 @@ namespace Plugin
 						if (currentrevs > Math.Min((2000 - fadeoutratio) / 2, 800) && CurrentGear < totalgears - 1)
 						{
 							CurrentGear++;
-							gearchange();
+							SoundManager.Play(GearChangeSound, 1.0, 1.0, false);
 							Train.DieselEngine.gearloop = false;
 							Train.DieselEngine.gearlooptimer = 0.0;
 						}
@@ -292,7 +292,7 @@ namespace Plugin
 						else if (currentrevs < Math.Max(fadeinratio / 2, 200) && CurrentGear > 1)
 						{
 							CurrentGear--;
-							gearchange();
+							SoundManager.Play(GearChangeSound, 1.0, 1.0, false);
 							Train.DieselEngine.gearloop = false;
 							Train.DieselEngine.gearlooptimer = 0.0;
 						}
@@ -305,7 +305,7 @@ namespace Plugin
 						CurrentGear = 0;
 						if (gearplayed == false)
 						{
-							gearchange();
+							SoundManager.Play(GearChangeSound, 1.0, 1.0, false);
 							gearplayed = true;
 						}
 
@@ -564,15 +564,5 @@ namespace Plugin
 				}
 			}
 		}
-
-		/// <summary>Triggers the gear change sound</summary>
-		internal void gearchange()
-		{
-			if (gearchangesound != -1)
-			{
-				SoundManager.Play(gearchangesound, 1.0, 1.0, false);
-			}
-		}
-
 	}
 }

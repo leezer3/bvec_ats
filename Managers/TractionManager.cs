@@ -1067,7 +1067,7 @@ namespace Plugin
 		}
 
 		/// <summary>Enables the AWS & TPWS systems if they are fitted.</summary>
-		internal void reenabletpwsaws()
+		internal void ReEnableTpwsAws()
 		{
 			if (Train.AWS == null)
 			{
@@ -1282,7 +1282,7 @@ namespace Plugin
 					}
 					else
 					{
-						reenabletpwsaws();
+						ReEnableTpwsAws();
 					}
 				}
 			}
@@ -1532,7 +1532,7 @@ namespace Plugin
 						Train.DieselEngine.CurrentGear++;
 						Train.DieselEngine.gearloop = false;
 						Train.DieselEngine.gearlooptimer = 0.0;
-						Train.DieselEngine.gearchange();
+						SoundManager.Play(Train.DieselEngine.GearChangeSound, 1.0, 1.0, false);
 					}
 				}
 			}
@@ -1546,7 +1546,7 @@ namespace Plugin
 						Train.DieselEngine.CurrentGear--;
 						Train.DieselEngine.gearloop = false;
 						Train.DieselEngine.gearlooptimer = 0.0;
-						Train.DieselEngine.gearchange();
+						SoundManager.Play(Train.DieselEngine.GearChangeSound, 1.0, 1.0, false);
 					}
 				}
 			}

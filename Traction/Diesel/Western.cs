@@ -1202,7 +1202,7 @@ namespace Plugin
             if (Train.AWS.SafetyState == AWS.SafetyStates.Isolated)
             {
                 Train.DebugLogger.LogMessage("Western Diesel- AWS System reset.");
-                Train.TractionManager.reenabletpwsaws();
+                Train.TractionManager.ReEnableTpwsAws();
             }
         }
     }

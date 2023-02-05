@@ -73,8 +73,6 @@ namespace Plugin
 
 		private bool KakuninNewSection = false;
 
-		private bool KakuninATCRelease = false;
-
 		internal int KakuninPrimedIndicator = -1;
 
 		internal int KakuninTimerActiveIndicator = -1;

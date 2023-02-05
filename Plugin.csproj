@@ -71,7 +71,7 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="OpenBveApi, Version=1.5.1.0, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="OpenBveApi, Version=1.5.5.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\OBVE\OpenBveApi.dll</HintPath>
     </Reference>

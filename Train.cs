@@ -134,7 +134,7 @@ namespace Plugin {
 		internal bool PanelIllumination;
 		
 		/// <summary>Remembers which of the virtual keys are currently pressed down.</summary>
-		private bool[] KeysPressed = new bool[16];
+		private readonly bool[] KeysPressed;
 		
 		// --- devices ---
 		/// <summary>Traction Manager- Manages brake and power applications</summary>
@@ -239,7 +239,7 @@ namespace Plugin {
 			this.Handles = new ReadOnlyHandles(new Handles(0, 0, 0, false));
 			this.Doors = DoorStates.None;
 			this.Panel = panel;
-			
+			this.KeysPressed = new bool[Enum.GetNames(typeof(VirtualKeys)).Length]; // to allow building against newer OpenBVEAPI versions with longer VirtualKey lengths
 		}
 
 		internal void LoadAWSTPWS()
@@ -367,8 +367,6 @@ namespace Plugin {
 								//this.LedLights = new LEDLights(this);
 								//break;
 #endif
-
-								break;
 							case "windscreen":
 								this.Windscreen.Enabled = true;
 								DebugLogger.LogMessage("Windscreen enabled");
@@ -864,7 +862,7 @@ namespace Plugin {
 											InternalFunctions.ValidateIndex(value, ref DieselEngine.gearindicator, key);
 											break;
 										case "gearchangesound":
-											InternalFunctions.ValidateIndex(value, ref DieselEngine.gearchangesound, key);
+											InternalFunctions.ValidateIndex(value, ref DieselEngine.GearChangeSound, key);
 											break;
 										case "tachometer":
 											InternalFunctions.ValidateIndex(value, ref DieselEngine.tachometer, key);
