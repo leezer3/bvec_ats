@@ -207,6 +207,7 @@ namespace Plugin
                 CurrentGear++;
 	            Loop = false;
 	            LoopTimer = 0.0;
+	            Train.DebugLogger.LogMessage("Increased Gear to " + CurrentGear);
             }
 
         }
@@ -218,6 +219,7 @@ namespace Plugin
             {
                 SoundManager.Play(GearDownSound, 1.0, 1.0, false);
                 CurrentGear--;
+                Train.DebugLogger.LogMessage("Decreased Gear to " + CurrentGear);
             }
         }
 
@@ -234,6 +236,7 @@ namespace Plugin
 			    SoundManager.Play(GearUpSound, 1.0, 1.0, false);
 		    }
 		    CurrentGear = Gear;
+		    Train.DebugLogger.LogMessage("Set Gear to " + CurrentGear);
 	    }
 	}
 }

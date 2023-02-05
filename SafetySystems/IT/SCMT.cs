@@ -69,15 +69,15 @@ namespace Plugin
         internal bool flagriarmo;
 
         internal static int brakeNotchDemanded;
-        internal SCMT_Traction.Timer SpiabluTimer;
-        internal SCMT_Traction.Timer SpiaRossiTimer;
-        internal SCMT_Traction.Timer StopTimer;
+        internal Timer SpiabluTimer;
+        internal Timer SpiaRossiTimer;
+        internal Timer StopTimer;
         //Rearm timer?
-        internal SCMT_Traction.Timer riarmoTimer;
-        internal SCMT_Traction.Timer SrTimer;
-        internal SCMT_Traction.Timer OverrideTimer;
-        internal SCMT_Traction.Timer AlarmTimer;
-        internal SCMT_Traction.Timer campionamentoTimer;
+        internal Timer riarmoTimer;
+        internal Timer SrTimer;
+        internal Timer OverrideTimer;
+        internal Timer AlarmTimer;
+        internal Timer campionamentoTimer;
 
         internal SCMT_Traction.Indicator BrakeDemandIndicator;
         internal SCMT_Traction.Indicator TrainstopOverrideIndicator;

@@ -41,7 +41,7 @@
         internal bool StartBlocked;
 
         /// <summary>Stores whether the complex starter model is to be used</summary>
-        internal bool ComplexStarterModel;
+        private readonly bool ComplexStarterModel;
 
         internal double StarterMotorTimer;
         internal bool SimpleStarterPlayer;
@@ -49,8 +49,24 @@
         /// <summary>Gets the state of the starter motor.</summary>
         internal StarterMotorStates StarterMotorState { get; set; }
 
+        internal StarterMotor(bool isComplex)
+        {
+	        ComplexStarterModel = isComplex;
+        }
+
+        internal bool Run(double ElapsedTime, bool StarterKeyPressed, bool FuelAvailable = true)
+        {
+            if(ComplexStarterModel)
+            {
+	            //If this method returns true, then our engine is now running
+	            return RunComplex(ElapsedTime, StarterKeyPressed, FuelAvailable);
+            }
+            //This method will always return true after 10s- After this delay our engine is now running
+            return RunSimple(ElapsedTime, StarterKeyPressed);
+        }
+
         /// <summary>Runs the complex starter model. If this method returns true, the engine has started.</summary>
-        internal bool RunComplexStarter(double ElapsedTime, bool StarterKeyPresed, bool FuelAvailable)
+        private bool RunComplex(double ElapsedTime, bool StarterKeyPresed, bool FuelAvailable)
         {
             if (!StarterKeyPresed && StarterMotorState == StarterMotorStates.Active)
             {
@@ -152,8 +168,12 @@
         }
 
         /// <summary>Runs the simple starter model. When this method returns true, the engine has started.</summary>
-        internal bool RunSimpleStarter(double ElapsedTime)
+        private bool RunSimple(double ElapsedTime, bool StarterKeyPressed)
         {
+	        if (!StarterKeyPressed)
+	        {
+		        return false;
+	        }
             if (!SimpleStarterPlayer && !SoundManager.IsPlaying(StarterRunUpSound))
             {
                 SoundManager.Play(StarterRunUpSound, 1.0, 1.0, false);

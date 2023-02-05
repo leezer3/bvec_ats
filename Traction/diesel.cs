@@ -256,7 +256,7 @@ namespace Plugin
 				//Next we need to set the gears
 				//Manual gears are handled in the KeyUp function
 				//Automatic gears are handled here
-				if (this.Train.TractionManager.AutomaticAdvancedFunctions == true)
+				if (this.Train.TractionManager.AutomaticAdvancedFunctions)
 				{
 					if (Train.DieselEngine.gearsblocked == true)
 					{

@@ -12,15 +12,18 @@ namespace Plugin.Traction.Diesel
 
         internal bool HasGears;
 
-        internal bool ComplexStarterModel;
-
         internal int EngineLoopSound = -1;
+        
+        readonly StarterMotor Starter;
 
-        internal bool StarterKeyPressed;
+        readonly GearBox Gears;
 
-        readonly StarterMotor Starter = new StarterMotor();
-        //readonly GearBox Gears = new GearBox(Train);
-
+        internal DieselEngine(Train train)
+        {
+	        Train = train;
+	        Gears = new GearBox(train);
+	        Starter = new StarterMotor(false);
+        }
 
 
 
@@ -35,23 +38,7 @@ namespace Plugin.Traction.Diesel
                 //Check whether we can start the engine
                 if (this.Train.StartupSelfTestManager.SequenceState == StartupSelfTestManager.SequenceStates.Initialised)
                 {
-                    //Use the complex starter model by default
-                    if (ComplexStarterModel)
-                    {
-                        //If this method returns true, then our engine is now running
-                        if (Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed, true))
-                        {
-                            EngineRunning = true;
-                        }
-                    }
-                    else
-                    {
-                        //This method will always return true after 10s- After this delay our engine is now running
-                        if (Starter.RunSimpleStarter(data.ElapsedTime.Milliseconds))
-                        {
-                            EngineRunning = true;
-                        }
-                    }
+	                EngineRunning = Starter.Run(data.ElapsedTime.Milliseconds, Train.TractionManager.EngineStartKeyPressed);
                 }
                 //Stop the engine loop sound from playing & demand power cutoff
                 SoundManager.Stop(EngineLoopSound);
@@ -66,7 +53,7 @@ namespace Plugin.Traction.Diesel
 
             if (HasGears)
             {
-                //data.Handles.PowerNotch = Gears.RunGearBox();
+                data.Handles.PowerNotch = Gears.Run();
             }
 
         }

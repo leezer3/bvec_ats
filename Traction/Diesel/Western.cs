@@ -24,8 +24,6 @@ namespace Plugin
         internal int NumberOfEnginesRunning;
         /// <summary>Stores which engine is currently selected for control.</summary>
         internal int EngineSelector = 2;
-        /// <summary>Stores whether the starter key is currently pressed.</summary>
-        internal bool StarterKeyPressed;
         /// <summary>Stores whether the engine stop key is currently pressed.</summary>
         internal bool StopKeyPressed;
         /// <summary>Stores whether the battery is currently isolated.</summary>
@@ -124,8 +122,8 @@ namespace Plugin
          * Internal engine classes
          * 
          */
-        internal readonly StarterMotor Engine1Starter = new StarterMotor();
-        internal readonly StarterMotor Engine2Starter = new StarterMotor();
+        internal readonly StarterMotor Engine1Starter = new StarterMotor(true);
+        internal readonly StarterMotor Engine2Starter = new StarterMotor(true);
         internal readonly WesternStartupManager StartupManager = new WesternStartupManager();
         internal readonly WesternGearBox GearBox = new WesternGearBox();
         internal readonly Turbocharger Turbocharger = new Turbocharger();
@@ -155,7 +153,7 @@ namespace Plugin
                 if (EngineSelector == 1 && StartupManager.StartupState >= WesternStartupManager.SequenceStates.ReadyToStart)
                 {
                     //If this method returns true, then our engine is now running
-                    if (Engine1Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed, !FuelPumpIsolated))
+                    if (Engine1Starter.Run(data.ElapsedTime.Milliseconds, Train.TractionManager.EngineStartKeyPressed, !FuelPumpIsolated))
                     {
                         Engine1Running = true;
                         //Reset the power cutoff
@@ -188,7 +186,7 @@ namespace Plugin
                 //Check whether we can start the engine
                 if (EngineSelector == 2 && StartupManager.StartupState >= WesternStartupManager.SequenceStates.ReadyToStart)
                 {
-                    if (Engine2Starter.RunComplexStarter(data.ElapsedTime.Milliseconds, StarterKeyPressed, !FuelPumpIsolated))
+                    if (Engine2Starter.Run(data.ElapsedTime.Milliseconds, Train.TractionManager.EngineStartKeyPressed, !FuelPumpIsolated))
                     {
                         Engine2Running = true;
                         //Reset the power cutoff
@@ -396,9 +394,9 @@ namespace Plugin
             }
             //Update exhaust smoke
             {
-                bool Starter1 = EngineSelector == 1 && StarterKeyPressed == true;
+                bool Starter1 = EngineSelector == 1 && Train.TractionManager.EngineStartKeyPressed;
                 Engine1Exhaust.Update(data.ElapsedTime.Milliseconds,CurrentRPM,Starter1,Engine1Running,Turbocharger.TurbochargerState);
-                bool Starter2 = EngineSelector == 2 && StarterKeyPressed == true;
+                bool Starter2 = EngineSelector == 2 && Train.TractionManager.EngineStartKeyPressed;
                 Engine2Exhaust.Update(data.ElapsedTime.Milliseconds, CurrentRPM, Starter2, Engine2Running,Turbocharger.TurbochargerState);
             }
             //This section of code handles engine & transmission temperatures
@@ -908,7 +906,7 @@ namespace Plugin
                 {
                     if (EngineSelector == 1)
                     {
-                        if (StarterKeyPressed)
+                        if (Train.TractionManager.EngineStartKeyPressed)
                         {
                             this.Train.Panel[Engine1Button] = 1;    
                         }
@@ -930,7 +928,7 @@ namespace Plugin
                 {
                     if (EngineSelector == 2)
                     {
-                        if (StarterKeyPressed)
+                        if (Train.TractionManager.EngineStartKeyPressed)
                         {
                             this.Train.Panel[Engine2Button] = 1;
                         }

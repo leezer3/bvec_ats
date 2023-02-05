@@ -240,15 +240,15 @@ namespace Plugin.AI
 						return;
 					//Turn on starter motor
 					case WesternStartupManager.SequenceStates.ReadyToStart:
-						Train.WesternDiesel.StarterKeyPressed = true;
-						if (Train.WesternDiesel.Engine2Running == true)
+						Train.TractionManager.EngineStartKeyPressed = true;
+						if (Train.WesternDiesel.Engine2Running)
 						{
 							Train.WesternDiesel.EngineSelector = 1;
 							data.Response = AIResponse.Long;
 						}
-						if (Train.WesternDiesel.Engine1Running == true)
+						if (Train.WesternDiesel.Engine1Running)
 						{
-							Train.WesternDiesel.StarterKeyPressed = false;
+							Train.TractionManager.EngineStartKeyPressed = false;
 							WesternEnginesRunning = true;
 							data.Response = AIResponse.Long;
 						}

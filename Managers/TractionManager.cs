@@ -21,7 +21,7 @@ namespace Plugin
 
 		internal ReverserManager CurrentReverserManager;
 
-		
+		internal bool EngineStartKeyPressed;
 
 		/// <summary>The engine has overheated</summary>
 		internal bool EngineOverheated;
@@ -1468,7 +1468,7 @@ namespace Plugin
 				}
 				if (key == Train.CurrentKeyConfiguration.EngineStartKey)
 				{
-					Train.WesternDiesel.StarterKeyPressed = true;
+					EngineStartKeyPressed = true;
 				}
 				if (key == Train.CurrentKeyConfiguration.WesternBatterySwitch)
 				{
@@ -1647,7 +1647,7 @@ namespace Plugin
 			{
 				if (key == VirtualKeys.EngineStart)
 				{
-					Train.WesternDiesel.StarterKeyPressed = false;
+					Train.TractionManager.EngineStartKeyPressed = false;
 				}
 			}
 			if (Train.AWS != null)
