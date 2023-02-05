@@ -304,7 +304,7 @@ namespace Plugin
             }
 
             //First try to set automatic cutoff without calculating
-            if (this.Train.TractionManager.AutomaticAdvancedFunctions == true && Train.CurrentSpeed == 0)
+            if (this.Train.TractionManager.AutomaticAdvancedFunctions && Train.CurrentSpeed == 0)
             {
 
                 if (Train.Handles.Reverser == 0)
@@ -385,7 +385,7 @@ namespace Plugin
                         optimalcutoff = cutoffmax - speed * cutoffratio / 10;
                         new_power = Math.Max((int)(this.Train.Specs.PowerNotches - ((optimalcutoff - cutoff) < 0 ? -(optimalcutoff - cutoff) : (optimalcutoff - cutoff)) / (int)cutoffdeviation), 0);
                         //Automagically set cutofff
-						if (this.Train.TractionManager.AutomaticAdvancedFunctions == true)
+						if (this.Train.TractionManager.AutomaticAdvancedFunctions)
                         {
 
                             cutoff = (int)Math.Max(optimalcutoff, cutoffineffective + 1);
@@ -408,7 +408,7 @@ namespace Plugin
                         optimalcutoff = cutoffmin + speed * cutoffratio / 10;
                         new_power = Math.Max((int)(this.Train.Specs.PowerNotches - ((optimalcutoff - cutoff) < 0 ? -(optimalcutoff - cutoff) : (optimalcutoff - cutoff)) / (int)cutoffdeviation), 0);
                         //Automagically set cutoff
-						if (this.Train.TractionManager.AutomaticAdvancedFunctions == true)
+						if (this.Train.TractionManager.AutomaticAdvancedFunctions)
                         {
                             cutoff = (int)Math.Min(optimalcutoff, -cutoffineffective - 1);
                         }
@@ -483,8 +483,8 @@ namespace Plugin
                         //Firemass must be below maximum and shovelling true [Non automatic]
                         //If automatic firing is on, only shovel coal if we are below 50% of max fire mass- Change???
                         //Use automatic behaviour if no shovelling key is set as obviously we can't shovel coal manually with no key
-						if (shovelling == true && firemass < maximumfiremass || this.Train.TractionManager.AutomaticAdvancedFunctions == true && firemass < (firemass / 2) && firemass < maximumfiremass
-                            || Train.CurrentKeyConfiguration.ShovelFuel == null && firemass < (firemass / 2) && firemass < maximumfiremass)
+						if (shovelling && firemass < maximumfiremass || this.Train.TractionManager.AutomaticAdvancedFunctions && firemass < (firemass / 2) && firemass < maximumfiremass
+						                                             || Train.CurrentKeyConfiguration.ShovelFuel == null && firemass < (firemass / 2) && firemass < maximumfiremass)
                         {
                             //Add the amount of coal shovelled per second to the fire mass & decrease it from the fire temperature
                             firemass += (int)shovellingrate;
@@ -519,7 +519,7 @@ namespace Plugin
                             //Otherwise set to max
                             firetemp = 1000;
                         }
-                        if (Blowers.Active == true)
+                        if (Blowers.Active)
                         {
                             finalsteamrate = (int)((((double)calculatedsteamrate / 1000) * firetemp) * Blowers.PressureIncreaseFactor);
                         }
@@ -532,7 +532,7 @@ namespace Plugin
                 }
                 if (this.maintimer > 1)
                 {
-                    if (Blowers.Active == true)
+                    if (Blowers.Active)
                     {
                         pressureup = (int)(((boilerwatertosteamrate / 60) * maintimer) * Blowers.PressureIncreaseFactor);
                     }
@@ -599,13 +599,13 @@ namespace Plugin
 
             }
 
-			if (this.Train.TractionManager.AutomaticAdvancedFunctions == true)
+			if (this.Train.TractionManager.AutomaticAdvancedFunctions)
             {
                 Blowers.Timer += data.ElapsedTime.Milliseconds;
                 //This section of code operates the automatic injectors
                 if (stm_boilerwater > boilermaxwaterlevel / 2 && stm_boilerpressure > boilermaxpressure / 4)
                 {
-                    if (LiveSteamInjector.Active == true && Blowers.Timer > 10000)
+                    if (LiveSteamInjector.Active && Blowers.Timer > 10000)
                     {
                         LiveSteamInjector.Active = false;
                         Train.DebugLogger.LogMessage("The automatic fireman de-activated the injectors");
@@ -623,7 +623,7 @@ namespace Plugin
                     }
                     else
                     {
-                        if (Blowers.Active == true && Blowers.Timer > 10000)
+                        if (Blowers.Active && Blowers.Timer > 10000)
                         {
                             Train.DebugLogger.LogMessage("The automatic fireman de-activated the blowers");
                             Blowers.Active = false;
@@ -677,7 +677,7 @@ namespace Plugin
                 }
             }
             //This section of code fills our tanks from a water tower
-            if (fuelling == true)
+            if (fuelling)
             {
                 if (maintimer > 1)
                 {
@@ -701,7 +701,7 @@ namespace Plugin
                 {
                     debugpressureuse += (int)(steamheatlevel * steamheatpressureuse);
                 }
-                if (CylinderCocks.Active == true)
+                if (CylinderCocks.Active)
                 {
                     debugpressureuse += (int)(cylindercocks_basepressureuse + (cylindercocks_notchpressureuse * Train.Handles.PowerNotch));
                 }
@@ -717,7 +717,7 @@ namespace Plugin
                 this.Train.TractionManager.DebugWindowData.SteamEngine.BoilerWaterLevel = Convert.ToString(stm_boilerwater) + " of " + Convert.ToString(boilermaxwaterlevel, CultureInfo.InvariantCulture);
                 this.Train.TractionManager.DebugWindowData.SteamEngine.TanksWaterLevel = Convert.ToString(fuel) + " of " + Convert.ToString(fuelcapacity, CultureInfo.InvariantCulture);
 				this.Train.TractionManager.DebugWindowData.SteamEngine.AutoCutoff = this.Train.TractionManager.AutomaticAdvancedFunctions;
-                if (cylindercocks == true)
+                if (cylindercocks)
                 {
                     this.Train.TractionManager.DebugWindowData.SteamEngine.CylinderCocks = "Open";
                 }
@@ -774,7 +774,7 @@ namespace Plugin
                 }
                 if (fuelfillindicator != -1)
                 {
-                    if (fuelling == true)
+                    if (fuelling)
                     {
                         this.Train.Panel[fuelfillindicator] = 1;
                     }

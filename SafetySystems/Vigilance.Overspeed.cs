@@ -56,7 +56,7 @@
 
 			if (Train.CurrentSpeed <= SafeSpeed && Tripped)
 			{
-				if (Train.Vigilance.AutoRelease == true)
+				if (Train.Vigilance.AutoRelease)
 				{
 					Tripped = false;
 					Train.TractionManager.ResetBrakeApplication();
@@ -65,7 +65,7 @@
 
 			if (PanelIndicator != -1)
 			{
-				Train.Panel[PanelIndicator] = Tripped == true || Train.CurrentSpeed > WarningSpeed ? 1 : 0;
+				Train.Panel[PanelIndicator] = Tripped || Train.CurrentSpeed > WarningSpeed ? 1 : 0;
 			}
 			if (AlarmSound != -1)
 			{

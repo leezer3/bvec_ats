@@ -58,7 +58,7 @@ namespace Plugin
         //<param name="mode">The initialization mode.</param>
         internal override void Initialize(InitializationModes mode)
         {
-            if (Train.selftest == true)
+            if (Train.selftest)
             {
                 brakesappliedtimer = (int)brakesappliedtimeout;
                 overridetimer = (int)overridetimeout;

@@ -70,10 +70,7 @@
 							}
 							break;
 						case AlarmBehaviour.ApplyBrakesTripVCB:
-							if (AlarmSound != -1)
-							{
-								SoundManager.Play(AlarmSound, 1.0, 1.0, true);
-							}
+							SoundManager.Play(AlarmSound, 1.0, 1.0, true);
 							if (!Train.ElectricEngine.BreakerTripped)
 							{
 								Train.ElectricEngine.TripBreaker();
@@ -90,10 +87,7 @@
 						{
 							State = PantographStates.Lowered;
 							Timer = 0.0;
-							if (AlarmSound != -1)
-							{
-								SoundManager.Stop(AlarmSound);
-							}
+							SoundManager.Stop(AlarmSound);
 						}
 					}
 					break;
@@ -103,12 +97,9 @@
 		/// <summary>Raises this pantograph</summary>
 		private void Raise()
 		{
-			if (Train.ElectricEngine.BreakerTripped == true)
+			if (Train.ElectricEngine.BreakerTripped)
 			{
-				if (RaisedSound != -1)
-				{
-					SoundManager.Play(RaisedSound, 1.0, 1.0, false);
-				}
+				SoundManager.Play(RaisedSound, 1.0, 1.0, false);
 				//We can raise the pantograph, so start the line volts timer
 				State = PantographStates.RaisedTimer;
 				Train.DebugLogger.LogMessage("A pantograph was raised sucessfully");
@@ -123,10 +114,7 @@
 		/// <summary>Lowers this pantograph</summary>
 		internal void Lower(bool Automatic)
 		{
-			if (LoweredSound != -1)
-			{
-				SoundManager.Play(LoweredSound, 1.0, 1.0, false);
-			}
+			SoundManager.Play(LoweredSound, 1.0, 1.0, false);
 			//Lower the pantograph
 			if (Train.CurrentSpeed == 0 || Automatic)
 			{

@@ -227,7 +227,7 @@ namespace Plugin
             //Cylinder cocks puff state is handled in the animations class, but pressure usage is handled in the steam traction class
             if (this.Train.SteamEngine != null && cylinderpuff_L != -1)
             {
-                if (Train.SteamEngine.cylindercocks == true)
+                if (Train.SteamEngine.cylindercocks)
                 {
                     if (Train.CurrentSpeed == 0 && Train.Handles.PowerNotch == 0)
                     {
@@ -268,7 +268,7 @@ namespace Plugin
             }
             if (this.Train.SteamEngine != null && cylinderpuff_R != -1)
             {
-                if (Train.SteamEngine.cylindercocks == true)
+                if (Train.SteamEngine.cylindercocks)
                 {
                     if (Train.CurrentSpeed == 0 && Train.Handles.PowerNotch == 0)
                     {
@@ -350,7 +350,7 @@ namespace Plugin
                     doorlighttimer2 += data.ElapsedTime.Milliseconds;
                     if (doorlighttimer2 > 1000)
                     {
-                        if (doorlighton == true)
+                        if (doorlighton)
                         {
                             doorlighton = false;
                         }

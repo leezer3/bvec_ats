@@ -49,7 +49,7 @@ namespace Plugin
         //<param name="mode">The initialization mode.</param>
         internal void OnStartUp(SunflowerStates state)
         {
-            if (Train.selftest == true)
+            if (Train.selftest)
             {
                 suppressionactive = false;
                 canceltimer = (int)canceltimeout;

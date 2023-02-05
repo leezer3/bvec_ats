@@ -255,7 +255,7 @@ namespace Plugin
         //<param name="mode">The initialization mode.</param>
         internal override void Initialize(InitializationModes mode)
         {
-            if (enabled == true)
+            if (enabled)
             {
                 InternalFunctions.ParseStringToIntArray(gearratios, ref geararray, "gearratios");
                 InternalFunctions.ParseStringToIntArray(gearfadeinrange, ref gearfadeinarray, "gearfadeinrange");
@@ -333,7 +333,7 @@ namespace Plugin
         internal override void Elapse(ElapseData data, ref bool blocking)
         {
 	        elapsedTime = data.ElapsedTime.Milliseconds;
-            if (enabled == true)
+            if (enabled)
             {
                 reverserposition = Train.Handles.Reverser;
                 //Load LCM power notch if we are in LCM mode as opposed to constant speed mode
@@ -428,9 +428,9 @@ namespace Plugin
                     //Next we need to set the gears
                     //Manual gears are handled in the KeyUp function
                     //Automatic gears are handled here
-                    if (automatic == true)
+                    if (automatic)
                     {
-                        if (SCMT_Traction.gearsblocked == true)
+                        if (SCMT_Traction.gearsblocked)
                         {
                             power_limit = 0;
                             //Stop, drop to N with no power applied and the gears will unblock
@@ -591,7 +591,7 @@ namespace Plugin
                     }
                 }
                 //This section of code fills our fuel tanks
-                if (fuelling == true)
+                if (fuelling)
                 {
                     fuellingtimer += data.ElapsedTime.Milliseconds;
                     if (fuellingtimer > 1000)
@@ -630,7 +630,7 @@ namespace Plugin
                 {
                     lca = true;
                 }
-                if (lcm == true && lcm_state == 0)
+                if (lcm && lcm_state == 0)
                 {
                     lcm = false;
                 }
@@ -650,42 +650,42 @@ namespace Plugin
                 if (maxsetpointspeed != -1)
                 {
                     //This handles the setpoint speed function
-                    if (setpointspeed == 0 && lca == true)
+                    if (setpointspeed == 0 && lca)
                     {
                         data.Handles.PowerNotch = 0;
                     }
-                    if (Train.CurrentSpeed > setpointspeed && flag == 0 && setpointspeed > 0 && lca == true &&
+                    if (Train.CurrentSpeed > setpointspeed && flag == 0 && setpointspeed > 0 && lca &&
                         data.Handles.PowerNotch > 0)
                     {
                         //If we've exceeded the set point speed cut power
                         flag = 1;
                         Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded by the SCMT traction reaching the setpoint speed");
                     }
-                    if (Train.CurrentSpeed > setpointspeed + 1 && flag == 1 && lca == true && Train.Handles.PowerNotch > 0)
+                    if (Train.CurrentSpeed > setpointspeed + 1 && flag == 1 && lca && Train.Handles.PowerNotch > 0)
                     {
                         //If we're continuing to accelerate, demand a brake application
                         ConstantSpeedBrake = true;
                         Train.TractionManager.DemandBrakeApplication(1, "Brake application demanded by the SCMT traction setpoint speed");
                         flag = 2;
                     }
-                    if ((Train.CurrentSpeed < setpointspeed && flag == 2 && lca == true) ||
-                        (lca == true && flag == 2 && Train.Handles.PowerNotch == 0) || (lcm == true && flag == 2))
+                    if ((Train.CurrentSpeed < setpointspeed && flag == 2 && lca) ||
+                        (lca && flag == 2 && Train.Handles.PowerNotch == 0) || (lcm && flag == 2))
                     {
                         ConstantSpeedBrake = false;
                         Train.TractionManager.ResetBrakeApplication();
                         flag = 1;
                     }
-                    if ((Train.CurrentSpeed < setpointspeed - 2 && flag == 1 && lca == true) ||
-                        (lca == true && flag == 2 && Train.Handles.PowerNotch == 0) || (lcm == true && flag == 1))
+                    if ((Train.CurrentSpeed < setpointspeed - 2 && flag == 1 && lca) ||
+                        (lca && flag == 2 && Train.Handles.PowerNotch == 0) || (lcm && flag == 1))
                     {
                         Train.TractionManager.ResetPowerCutoff();
                         flag = 0;
                     }
                 }
                 //Handles the starter motor
-                if (flagavv == true)
+                if (flagavv)
                 {
-                    if (StarterTimer.TimerActive == true)
+                    if (StarterTimer.TimerActive)
                     {
                         StarterTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
                         if (StarterTimer.TimeElapsed > 2000)
@@ -709,7 +709,7 @@ namespace Plugin
                             
                         }
 
-                        if (Avv == true && (SCMT.testscmt == 4 || SCMT.testscmt == 0))
+                        if (Avv && (SCMT.testscmt == 4 || SCMT.testscmt == 0))
                         {
                             if (gear == 0)
                             {
@@ -718,7 +718,7 @@ namespace Plugin
                             }
                         }
 
-                        if (BatteryTimer.TimerActive == true)
+                        if (BatteryTimer.TimerActive)
                         {
                             BatteryTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
                             if (BatteryTimer.TimeElapsed > 3000)
@@ -765,7 +765,7 @@ namespace Plugin
                             trolleybraketimer = 0;
                         }
                     }
-                    else if (flagcarr == true && Train.Handles.BrakeNotch < 1 && data.Vehicle.BcPressure < 5000)
+                    else if (flagcarr && Train.Handles.BrakeNotch < 1 && data.Vehicle.BcPressure < 5000)
                     {
                         trolleybraketimer += data.ElapsedTime.Milliseconds;
                         if (trolleybraketimer > 2500)
@@ -789,7 +789,7 @@ namespace Plugin
 
                 //Handles the revs counter
                 {
-                    if (Avv == true)
+                    if (Avv)
                     {
                         if (data.Handles.BrakeNotch == 0)
                         {
@@ -831,7 +831,7 @@ namespace Plugin
                         data.Handles.BrakeNotch = 1;
                         flagfe = true;
                     }
-                    else if (Train.Handles.BrakeNotch == 1 && Train.CurrentSpeed <= 35 && flagfe == true)
+                    else if (Train.Handles.BrakeNotch == 1 && Train.CurrentSpeed <= 35 && flagfe)
                     {
                         data.Handles.BrakeNotch = 0;
                         flagfe = false;
@@ -841,7 +841,7 @@ namespace Plugin
                 {
                     if (indattesa == 1)
                     {
-                        if (AttessaTimer.TimerActive == true)
+                        if (AttessaTimer.TimerActive)
                         {
                             AttessaTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
                             if (AttessaTimer.TimeElapsed > 7000)
@@ -854,7 +854,7 @@ namespace Plugin
                 }
                 //Self-test function
                 {
-                    if (SCMTtesttimer.TimerActive == true)
+                    if (SCMTtesttimer.TimerActive)
                     {
                         if (SCMT.testscmt == 1)
                         {
@@ -867,7 +867,7 @@ namespace Plugin
                             }
                         }
                     }
-                    if (timerScariche.TimerActive == true)
+                    if (timerScariche.TimerActive)
                     {
                         timerScariche.TimeElapsed += data.ElapsedTime.Milliseconds;
                         if (seqScarico == 0)
@@ -973,7 +973,7 @@ namespace Plugin
                             }
                         }
                     }
-                    if (timerRitSpegscmt.TimerActive == true)
+                    if (timerRitSpegscmt.TimerActive)
                     {
                         timerRitSpegscmt.TimeElapsed += data.ElapsedTime.Milliseconds;
                         if (timerRitSpegscmt.TimeElapsed > 6000)
@@ -985,7 +985,7 @@ namespace Plugin
                 }
                 //Runs the buttons during self-test
                 {
-                    if (timertestpulsanti.TimerActive == true)
+                    if (timertestpulsanti.TimerActive)
                     {
                         timertestpulsanti.TimeElapsed += data.ElapsedTime.Milliseconds;
                         if (testpulsanti_State == 8)
@@ -1108,7 +1108,7 @@ namespace Plugin
                     }
                     if (fuelfillindicator != -1)
                     {
-                        if (fuelling == true)
+                        if (fuelling)
                         {
                             this.Train.Panel[(fuelfillindicator)] = 1;
                         }
@@ -1132,7 +1132,7 @@ namespace Plugin
                     }
                     if (indcarrfren != -1)
                     {
-                        if (flagcarr == true)
+                        if (flagcarr)
                         {
                             this.Train.Panel[indcarrfren] = 1;
                         }
@@ -1159,7 +1159,7 @@ namespace Plugin
                     }
                     if (indspegnmon != -1)
                     {
-                        if (flagmonitor == true)
+                        if (flagmonitor)
                         {
                             this.Train.Panel[indspegnmon] = 1;
                         }
@@ -1281,7 +1281,7 @@ namespace Plugin
         /// Check if engine can be started
         internal static void ConsensoAvviamento()
         {
-            if (ConsAvv == false && ChiaveBanco == true)
+            if (ConsAvv == false && ChiaveBanco)
             {
 				SCMT.BlinkIndicator(ref ConsAvviam, 1);
 				SCMT.ShowIndicator(ref ConsAvviam, elapsedTime);
@@ -1293,7 +1293,7 @@ namespace Plugin
                     SoundManager.Play(sunoconsavv, 1.0, 1.0, false);
                 }
             }
-            else if (ConsAvv == true && ChiaveBanco == true)
+            else if (ConsAvv && ChiaveBanco)
             {
 				SCMT.BlinkIndicator(ref ConsAvviam, 0);
 				SCMT.ShowIndicator(ref ConsAvviam, elapsedTime);
@@ -1306,7 +1306,7 @@ namespace Plugin
                 }
             }
 
-            if (ConsAvv == false && Avv == true)
+            if (ConsAvv == false && Avv)
             {
                 Avv = false;
                 
@@ -1336,7 +1336,7 @@ namespace Plugin
         {
 			SCMT.BlinkIndicator(ref Avviam, 1);
 			SCMT.ShowIndicator(ref Avviam, elapsedTime);
-            if (ConsAvv == true && Avv == false && reverserposition == 0 && indlcm == 0 && indattesa == 0)
+            if (ConsAvv && Avv == false && reverserposition == 0 && indlcm == 0 && indattesa == 0)
             {
                 flagavv = true;
                 if (StarterTimer.TimerActive == false)
@@ -1362,7 +1362,7 @@ namespace Plugin
             //Blink indicator Arresto
 			SCMT.BlinkIndicator(ref Arresto, 1);
 			SCMT.ShowIndicator(ref Arresto, elapsedTime);
-            if (Avv == true)
+            if (Avv)
             {
                 if (sunosottofondo != -1)
                 {
@@ -1406,7 +1406,7 @@ namespace Plugin
                 lcm = true;
             }
 
-            if (lcm == true)
+            if (lcm)
             {
                 powernotch_req = indlcm;
             }
@@ -1425,7 +1425,7 @@ namespace Plugin
                 powernotch_req = indlcm;
             }
 
-            if (lcm == true)
+            if (lcm)
             {
                 powernotch_req = indlcm;
                 if (indlcm == 0)
@@ -1438,7 +1438,7 @@ namespace Plugin
         /// <summary>Call from the traction manager when the SCMT Test key is pressed</summary>
         internal void TestSCMT()
         {
-            if (SCMT.testscmt == 0 && ChiaveBanco == true && Train.CurrentSpeed == 0)
+            if (SCMT.testscmt == 0 && ChiaveBanco && Train.CurrentSpeed == 0)
             {
                 SCMT.testscmt = 1;
                 SCMTtesttimer.TimeElapsed = 0;

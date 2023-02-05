@@ -230,7 +230,7 @@ namespace Plugin
 				        //Demand brake application
 				        Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by the deadman's handle");
 				        //If we auto-release on coming to a full-stop
-				        if (AutoRelease == true && Train.CurrentSpeed == 0)
+				        if (AutoRelease && Train.CurrentSpeed == 0)
 				        {
 					        Train.TractionManager.ResetBrakeApplication();
 					        deadmansalarmtimer = 0.0;
@@ -247,7 +247,7 @@ namespace Plugin
 	        }
 	        if (Train.SCMT != null)
 		        {
-			        if (vigilanteEnabled == true && SCMT.testscmt == 4)
+			        if (vigilanteEnabled && SCMT.testscmt == 4)
 			        {
 				        if (Train.CurrentSpeed > 2 && VigilanteState == VigilanteStates.None)
 				        {
@@ -297,7 +297,7 @@ namespace Plugin
 		        //Set Panel Variables
 		        if (DRAIndicator != -1)
 		        {
-			        if (Train.drastate == true)
+			        if (Train.drastate)
 			        {
 				        this.Train.Panel[(DRAIndicator)] = 1;
 			        }
@@ -317,7 +317,7 @@ namespace Plugin
 			        {
 				        this.Train.Panel[(vigilancelamp)] = 1;
 			        }
-			        if (vigilanteEnabled == true)
+			        if (vigilanteEnabled)
 			        {
 				        if (VigilanteState == VigilanteStates.AlarmSounding || VigilanteState == VigilanteStates.EbApplied)
 				        {

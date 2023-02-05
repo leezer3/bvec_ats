@@ -145,7 +145,7 @@ namespace Plugin
 			if (this.Enabled)
 			{
 				//We need this to find the time trigger for the last inductor
-				if (DistantTimeTrigger == true)
+				if (DistantTimeTrigger)
 				{
 					DistantInductorTime = data.TotalTime;
 					DistantTimeTrigger = false;
@@ -154,7 +154,7 @@ namespace Plugin
 				if (RunningPrograms.Count == 0)
 				{
 					BrakeCurveSwitchMode = false;
-					if (SwitchModeLog == true)
+					if (SwitchModeLog)
 					{
 						Train.DebugLogger.LogMessage("Brake curve Switch Mode was released due to no running programs");
 						SwitchModeLog = false;
@@ -221,7 +221,7 @@ namespace Plugin
 									//Elapse the timer first
 									CurrentProgram.BrakeCurveTimer += data.ElapsedTime.Milliseconds;
 									//We are in the brake curve, so work out maximum speed
-									if (BrakeCurveSwitchMode == true)
+									if (BrakeCurveSwitchMode)
 									{
 										//If we're in the switch mode, maximum speed is always 45km/h
 										CurrentProgram.MaxSpeed = 45;
@@ -345,7 +345,7 @@ namespace Plugin
 									}
 
 									//We are in the brake curve, so work out maximum speed
-									if (BrakeCurveSwitchMode == true)
+									if (BrakeCurveSwitchMode)
 									{
 										if (trainclass == 0)
 										{
@@ -410,7 +410,7 @@ namespace Plugin
 						case PZBBefehlStates.HomeStopPassed:
 							//We've passed a home stop signal which it is possible to override-
 							//Check if the override key is currently pressed
-							if (StopOverrideKeyPressed == true)
+							if (StopOverrideKeyPressed)
 							{
 								PZBBefehlState = PZBBefehlStates.HomeStopPassedAuthorised;
 							}
@@ -461,7 +461,7 @@ namespace Plugin
 					//EB Light
 					if (EBLight != -1)
 					{
-						if (Train.TractionManager.BrakeInterventionDemanded == true)
+						if (Train.TractionManager.BrakeInterventionDemanded)
 						{
 							this.Train.Panel[EBLight] = 1;
 						}
@@ -494,7 +494,7 @@ namespace Plugin
 						else if (PZBBefehlState == PZBBefehlStates.EBApplication)
 						{
 							this.Train.Panel[RunningLightsStartIndicator + 3] = 0;
-							if (BlinkState == true)
+							if (BlinkState)
 							{
 								this.Train.Panel[RunningLightsStartIndicator + 4] = 0;
 								this.Train.Panel[RunningLightsStartIndicator + 5] = 0;    
@@ -539,7 +539,7 @@ namespace Plugin
 						else if ((data.Vehicle.BpPressure/100000) < 2.8)
 						{
 							this.Train.Panel[RunningLightsStartIndicator + 3] = 0;
-							if (BlinkState == true)
+							if (BlinkState)
 							{
 								this.Train.Panel[RunningLightsStartIndicator] = 0;
 								this.Train.Panel[RunningLightsStartIndicator + 1] = 0;
@@ -581,10 +581,10 @@ namespace Plugin
 								if (OverridingProgram.Type == 0)
 								{
 									//This is a 1000hz program
-									if (BrakeCurveSwitchMode == true)
+									if (BrakeCurveSwitchMode)
 									{
 										//Blue 70km/h and blue 80km/h lights blink alternately
-										if (BlinkState == true)
+										if (BlinkState)
 										{
 											this.Train.Panel[RunningLightsStartIndicator + 1] = 0;
 											this.Train.Panel[RunningLightsStartIndicator + 2] = 1;
@@ -613,7 +613,7 @@ namespace Plugin
 									else
 									{
 										//Blue 85km/h light to be blinking
-										if (BlinkState == true)
+										if (BlinkState)
 										{
 											this.Train.Panel[RunningLightsStartIndicator + 2] = 1;
 										}
@@ -640,11 +640,11 @@ namespace Plugin
 								else if(OverridingProgram.Type == 1)
 								{
 									//This is a 500hz program
-									if (BrakeCurveSwitchMode == true)
+									if (BrakeCurveSwitchMode)
 									{
 										//Blue 70km/h and blue 80km/h lights blink alternately
 										//Red 500hz light lit
-										if (BlinkState == true)
+										if (BlinkState)
 										{
 											this.Train.Panel[RunningLightsStartIndicator + 1] = 0;
 											this.Train.Panel[RunningLightsStartIndicator + 2] = 1;
@@ -691,7 +691,7 @@ namespace Plugin
 				{
 					if (WachamIndicator != -1)
 					{
-						if (WachamPressed == true)
+						if (WachamPressed)
 						{
 							this.Train.Panel[WachamIndicator] = 1;
 						}
@@ -702,7 +702,7 @@ namespace Plugin
 					}
 					if (FreiIndicator != -1)
 					{
-						if (FreiPressed == true)
+						if (FreiPressed)
 						{
 							this.Train.Panel[FreiIndicator] = 1;
 						}
@@ -713,7 +713,7 @@ namespace Plugin
 					}
 					if (BefehlIndicator != -1)
 					{
-						if (StopOverrideKeyPressed == true)
+						if (StopOverrideKeyPressed)
 						{
 							this.Train.Panel[BefehlIndicator] = 1;
 						}
@@ -1179,7 +1179,7 @@ namespace Plugin
 							break;
 						}
 					}
-					if (CanRelease == true && PZBBefehlState != PZBBefehlStates.EBApplication)
+					if (CanRelease && PZBBefehlState != PZBBefehlStates.EBApplication)
 					{
 						Train.TractionManager.ResetBrakeApplication();
 					}

@@ -163,13 +163,7 @@ namespace Plugin {
                 }
                 else if (MySequenceState == SequenceStates.Finalising)
                 {
-                    if (Train.AWS.WarningSound != -1)
-                    {
-                        if (SoundManager.IsPlaying(Train.AWS.WarningSound))
-                        {
-                            SoundManager.Stop(Train.AWS.WarningSound);
-                        }
-                    }
+	                SoundManager.Stop(Train.AWS.WarningSound);
                     MySequenceState = SequenceStates.Initialised;
                     Train.TractionManager.ResetBrakeApplication();
                 }
@@ -189,7 +183,7 @@ namespace Plugin {
                 if (this.firststart == false)
                 {
                     this.firststart = true;
-                    if (Train.AWS.Enabled == true)
+                    if (Train.AWS.Enabled)
                     {
                         Train.AWS.OnStartUp(SunflowerState);
                     }

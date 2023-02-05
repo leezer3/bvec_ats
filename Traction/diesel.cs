@@ -258,7 +258,7 @@ namespace Plugin
 				//Automatic gears are handled here
 				if (this.Train.TractionManager.AutomaticAdvancedFunctions)
 				{
-					if (Train.DieselEngine.gearsblocked == true)
+					if (Train.DieselEngine.gearsblocked)
 					{
 						power_limit = 0;
 						//Stop, drop to N with no power applied and the gears will unblock
@@ -452,7 +452,7 @@ namespace Plugin
 				}
 			}
 			//This section of code fills our fuel tanks
-			if (fuelling == true)
+			if (fuelling)
 			{
 				fuellingtimer += data.ElapsedTime.Milliseconds;
 				if (fuellingtimer > 1000)
@@ -491,7 +491,7 @@ namespace Plugin
 				//Ammeter
 				if (Ammeter.PanelIndex != -1)
 				{
-					if(Train.TractionManager.PowerCutoffDemanded == true)
+					if(Train.TractionManager.PowerCutoffDemanded)
 					{
 						this.Train.Panel[Ammeter.PanelIndex] = 0;
 					}
@@ -543,7 +543,7 @@ namespace Plugin
 				}
 				if (fuelfillindicator != -1)
 				{
-					if (fuelling == true)
+					if (fuelling)
 					{
 						this.Train.Panel[(fuelfillindicator)] = 1;
 					}

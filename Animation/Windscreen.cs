@@ -111,7 +111,7 @@ namespace Plugin
                 }
 
                 //If we're raining, 
-                if (israining == true)
+                if (israining)
                 {
                     //Generate a random drop interval
                     var dev = (int)(0.4 * 2000 / rainintensity);
@@ -292,7 +292,7 @@ namespace Plugin
                     foreach (bool x in droparray)
                     {
                         i++;
-                        if (x == true)
+                        if (x)
                         {
                             this.Train.Panel[(i + dropstartindex - 1)] = 1;
                         }
@@ -357,18 +357,12 @@ namespace Plugin
             if (request == 0 && wiperspeed <= 1)
             {
                 wiperspeed++;
-                if (wiperswitchsound != -1)
-                {
-                    SoundManager.Play(wiperswitchsound, 1.0, 1.0, false);
-                }
+                SoundManager.Play(wiperswitchsound, 1.0, 1.0, false);
             }
             else if (request == 1 && wiperspeed > 0)
             {
                 wiperspeed--;
-                if (wiperswitchsound != -1)
-                {
-                    SoundManager.Play(wiperswitchsound, 1.0, 1.0, false);
-                }
+                SoundManager.Play(wiperswitchsound, 1.0, 1.0, false);
             }
         }
     }

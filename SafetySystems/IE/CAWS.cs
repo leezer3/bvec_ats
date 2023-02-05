@@ -78,12 +78,9 @@ namespace Plugin
                         {
                             AcknowledgementCountdown = 7.0;
                         }
-                        else if (NextSignalAspect > CurrentAspect && EBApplied != false)
+                        else if (NextSignalAspect > CurrentAspect && EBApplied)
                         {
-                            if (UpgradeSound != -1)
-                            {
-                                SoundManager.Play(UpgradeSound, 1.0, 1.0, false);
-                            }
+	                        SoundManager.Play(UpgradeSound, 1.0, 1.0, false);
                         }
                         CurrentAspect = NextSignalAspect;
                         NextSignalLocation = double.MaxValue;
@@ -126,14 +123,14 @@ namespace Plugin
                 if (AspectIndicator != -1)
                 {
                     this.Train.Panel[AspectIndicator] = CurrentAspect;
-                    if (EBApplied == true)
+                    if (EBApplied)
                     {
                         this.Train.Panel[AspectIndicator] = 0;
                     }
                 }
                 if (AcknowlegementIndicator != -1)
                 {
-                    if (AcknowledgementPending == true)
+                    if (AcknowledgementPending)
                     {
                         this.Train.Panel[AcknowlegementIndicator] = 1;
                     }
@@ -144,7 +141,7 @@ namespace Plugin
                 }
                 if (EBIndicator != -1)
                 {
-                    if (EBApplied == true)
+                    if (EBApplied)
                     {
                         this.Train.Panel[EBIndicator] = 1;
                     }
@@ -154,16 +151,13 @@ namespace Plugin
                     }
                 }
                 //Sounds
-                if (DowngradeSound != -1)
+                if (AcknowledgementPending)
                 {
-                    if (AcknowledgementPending == true)
-                    {
-                        SoundManager.Play(DowngradeSound, 1.0, 1.0, true);
-                    }
-                    else
-                    {
-                        SoundManager.Stop(DowngradeSound);
-                    }
+	                SoundManager.Play(DowngradeSound, 1.0, 1.0, true);
+                }
+                else
+                {
+	                SoundManager.Stop(DowngradeSound);
                 }
             }
         }
@@ -202,10 +196,7 @@ namespace Plugin
             }
             else if (newAspect > CurrentAspect && EBApplied == false)
             {
-                if (UpgradeSound != -1)
-                {
-                    SoundManager.Play(UpgradeSound, 1.0, 1.0, false);
-                }
+	            SoundManager.Play(UpgradeSound, 1.0, 1.0, false);
             }
             if (EBApplied == false)
             {

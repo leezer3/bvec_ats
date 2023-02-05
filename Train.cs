@@ -2883,7 +2883,7 @@ namespace Plugin {
 				
 			}
 			//SCMT Safety System Beacons
-			if (this.SCMT.Enabled == true)
+			if (this.SCMT.Enabled)
 			{
 				if (SCMT.testscmt == 0)
 				{

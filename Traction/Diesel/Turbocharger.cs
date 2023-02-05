@@ -35,7 +35,7 @@
             switch (TurbochargerState)
             {
                 case TurbochargerStates.None:
-                    if (Active == true)
+                    if (Active)
                     {
                         //If our turbocharger is active, switch to the run-up state and play sound
                         TurbochargerState = TurbochargerStates.RunUp;

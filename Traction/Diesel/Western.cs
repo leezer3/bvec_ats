@@ -233,7 +233,7 @@ namespace Plugin
                 if (CompressorsRunning == false)
                 {
                     CompressorsRunning = true;
-                    if (Train.TractionManager.BrakeInterventionDemanded == true)
+                    if (Train.TractionManager.BrakeInterventionDemanded)
                     {
                         Train.DebugLogger.LogMessage("Western Diesel- An attempt was made to reset the current brake application due to the compressors starting.");
                         Train.TractionManager.ResetBrakeApplication();
@@ -570,7 +570,7 @@ namespace Plugin
                 /*
                  *  Engine 1
                  */
-                if (Engine1Temperature.Overheated == true)
+                if (Engine1Temperature.Overheated)
                 {
                     if (Engine1Temperature.Logged == false)
                     {
@@ -586,7 +586,7 @@ namespace Plugin
                         Engine1Temperature.Logged = true;
                     }
                 }
-                else if(Engine1Temperature.Logged == true && Engine1Temperature.Overheated == false)
+                else if(Engine1Temperature.Logged && Engine1Temperature.Overheated == false)
                 {
                     Train.DebugLogger.LogMessage("Western Diesel- Engine 1 returned to normal operating temperature");
                     Train.TractionManager.ResetPowerCutoff();
@@ -595,7 +595,7 @@ namespace Plugin
                 /*
                  *  Engine 2
                  */
-                if (Engine2Temperature.Overheated == true)
+                if (Engine2Temperature.Overheated)
                 {
                     if (Engine2Temperature.Logged == false)
                     {
@@ -611,7 +611,7 @@ namespace Plugin
                         Engine2Temperature.Logged = true;
                     }
                 }
-                else if(Engine2Temperature.Logged == true)
+                else if(Engine2Temperature.Logged)
                 {
                     Train.DebugLogger.LogMessage("Western Diesel- Engine 2 returned to normal operating temperature");
                     Train.TractionManager.ResetPowerCutoff();
@@ -620,7 +620,7 @@ namespace Plugin
                 /*
                  *  Transmission
                  */
-                if (TransmissionTemperature.Overheated == true)
+                if (TransmissionTemperature.Overheated)
                 {
                     if (TransmissionTemperature.Logged == false)
                     {
@@ -628,7 +628,7 @@ namespace Plugin
                         TransmissionTemperature.Logged = true;
                     }
                 }
-                else if (TransmissionTemperature.Logged == true && TransmissionTemperature.Overheated == false)
+                else if (TransmissionTemperature.Logged && TransmissionTemperature.Overheated == false)
                 {
                     if ((Engine1Running && !Engine1Temperature.Overheated) || (Engine2Running && !Engine2Temperature.Overheated))
                     {
@@ -645,7 +645,7 @@ namespace Plugin
                 switch (StartupManager.StartupState)
                 {
                     case WesternStartupManager.SequenceStates.Pending:
-                        if (FireBell == true)
+                        if (FireBell)
                         {
                             //We have isolated the battery, but the fire bell is currently ringing- Stop
                             FireBell = false;
@@ -775,7 +775,7 @@ namespace Plugin
                                 //Both engine ILs red, all other ILs blue
                                 this.Train.Panel[ILCluster1] = 1;
                             }
-                            else if (Engine1Running == true && Engine2Running == false)
+                            else if (Engine1Running && Engine2Running == false)
                             {
                                 //Engine 1 IL lit blue
                                 //If the torque convertor fill sequence is active, or we have overheated the general alarm light should be lit
@@ -790,7 +790,7 @@ namespace Plugin
                                 }
 
                             }
-                            else if (Engine1Running == false && Engine2Running == true)
+                            else if (Engine1Running == false && Engine2Running)
                             {
                                 //Engine 2 IL lit blue
                                 //If the torque convertor fill sequence is active, or we have overheated the general alarm light should be lit
@@ -882,7 +882,7 @@ namespace Plugin
                 }
                 if (RPMGauge1 != -1)
                 {
-                    if (Engine1Running == true)
+                    if (Engine1Running)
                     {
                         this.Train.Panel[RPMGauge1] = (int)CurrentRPM;
                     }
@@ -893,7 +893,7 @@ namespace Plugin
                 }
                 if (RPMGauge2 != -1)
                 {
-                    if (Engine2Running == true)
+                    if (Engine2Running)
                     {
                         this.Train.Panel[RPMGauge2] = (int)CurrentRPM;
                     }
@@ -948,7 +948,7 @@ namespace Plugin
                 }
                 if (FuelPumpSwitchIndex != -1)
                 {
-                    if (FuelPumpIsolated == true)
+                    if (FuelPumpIsolated)
                     {
                         this.Train.Panel[FuelPumpSwitchIndex] = 1;
                     }
@@ -987,7 +987,7 @@ namespace Plugin
             }
             //This section of code handles the power sounds
             //These are not being run by OpenBVE as they are RPM dependant
-            if (EngineLoop == true)
+            if (EngineLoop)
             {
                 //We are in the first 1/4 of the RPM range
                 if (CurrentRPM > 600 && CurrentRPM < 850)
@@ -1067,7 +1067,7 @@ namespace Plugin
         {
             SoundManager.Play(SwitchSound, 1.0, 1.0, false);
             //Toggle isolation state
-            if (BatteryIsolated == true)
+            if (BatteryIsolated)
             {
                 BatteryIsolated = false;
             }
@@ -1096,7 +1096,7 @@ namespace Plugin
         internal void FuelPumpSwitch()
         {
             SoundManager.Play(SwitchSound, 1.0, 1.0, false);
-            if (FuelPumpIsolated == true)
+            if (FuelPumpIsolated)
             {
                 FuelPumpIsolated = false;
             }
@@ -1170,7 +1170,7 @@ namespace Plugin
         /// <summary>This method should be called to attempt to initialise or cancel a fire-bell test</summary>
         internal void FireBellTest()
         {
-            if (StartupManager.StartupState == WesternStartupManager.SequenceStates.Pending || FireBell == true)
+            if (StartupManager.StartupState == WesternStartupManager.SequenceStates.Pending || FireBell)
             {
                 FireBell = false;
                 SoundManager.Stop(FireBellSound);

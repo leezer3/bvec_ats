@@ -36,7 +36,7 @@ namespace Plugin
                     //If running on one engine, our final power notch is the calculated notch divided by two and rounded up
                     FinalPowerNotch = (int)Math.Ceiling(CalculatedPowerNotch / 2);
                     //We should only activate the final two power notches if the turbocharger is active
-                    if (TurboChargerActive == true)
+                    if (TurboChargerActive)
                     {
                         FinalPowerNotch += 2;
                     }
@@ -45,7 +45,7 @@ namespace Plugin
                     //If running on two engines, then use the calculated power notch rounded up
                     FinalPowerNotch = (int)Math.Ceiling(CalculatedPowerNotch);
                     //We should only activate the final two power notches if the turbocharger is active
-                    if (TurboChargerActive == true)
+                    if (TurboChargerActive)
                     {
                         FinalPowerNotch += 2;
                     }

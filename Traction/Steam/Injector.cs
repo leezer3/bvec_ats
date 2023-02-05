@@ -22,41 +22,38 @@
 				Train.Panel[PanelIndex] = Active ? 1 : 0;
 			}
 
-			if (LoopSound != -1)
+			if (Active)
 			{
-				if (Active == true)
+				if (TogglePlayed == false)
 				{
-					if (TogglePlayed == false)
+					if (PlayOnceSound != -1)
 					{
-						if (PlayOnceSound != -1)
-						{
-							SoundManager.Play(PlayOnceSound, 2.0, 1.0, false);
-						}
-						TogglePlayed = true;
-					}
-					else
-					{
-						if (!SoundManager.IsPlaying(PlayOnceSound) || PlayOnceSound == -1)
-						{
-							SoundManager.Play(LoopSound, 2.0, 1.0, true);
-						}
+						SoundManager.Play(PlayOnceSound, 2.0, 1.0, false);
 					}
 
+					TogglePlayed = true;
 				}
 				else
 				{
-					TogglePlayed = false;
-					if (SoundManager.IsPlaying(LoopSound))
+					if (!SoundManager.IsPlaying(PlayOnceSound) || PlayOnceSound == -1)
 					{
-						SoundManager.Stop(LoopSound);
-						if (PlayOnceSound != -1)
-						{
-							SoundManager.Play(PlayOnceSound, 2.0, 1.0, false);
-						}
+						SoundManager.Play(LoopSound, 2.0, 1.0, true);
 					}
 				}
 			}
-			
+			else
+			{
+				TogglePlayed = false;
+				if (SoundManager.IsPlaying(LoopSound))
+				{
+					SoundManager.Stop(LoopSound);
+					if (PlayOnceSound != -1)
+					{
+						SoundManager.Play(PlayOnceSound, 2.0, 1.0, false);
+					}
+				}
+			}
+
 			if (Active == false)
 			{
 				return;

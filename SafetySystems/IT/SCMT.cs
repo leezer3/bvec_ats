@@ -163,17 +163,17 @@ namespace Plugin
                 }
 
                 //If we're in the alert phase
-                if (SCMT_Alert == true)
+                if (SCMT_Alert)
                 {
                     //We now need to check if the signal of the last beacon 4405 is at danger or the SCMT braking curve has been triggered
-                    if (beacon_44005 == 0 || curveflag == true)
+                    if (beacon_44005 == 0 || curveflag)
                     {
                         //Split this into it's own function for ease of reading
                         brakecurve(data.ElapsedTime.Milliseconds);
                     }
                     //The last code block figured out the maxiumum permissable speeds
                     //Now run the interventions
-                    if (testscmt != 0 && SCMT_Alert == true)
+                    if (testscmt != 0 && SCMT_Alert)
                     {
                         //First check the trainspeed and reset the overspeed trip if applicable
                         if (Train.CurrentSpeed < alertspeed + 1)
@@ -183,7 +183,7 @@ namespace Plugin
 
                             AlarmTimer.TimerActive = false;
                             //If the tgtraz is active, the red light is not lit and we're in state 4
-                            if (tgtraz_active == true && spiarossi_act == false && testscmt == 4)
+                            if (tgtraz_active && spiarossi_act == false && testscmt == 4)
                             {
                                 if (SCMT_Traction.indlcm >= 0 && Train.Handles.PowerNotch == 0)
                                 {
@@ -198,12 +198,12 @@ namespace Plugin
                                 tgtraz_active = false;
                             }
                         }
-                        if (SpiabluTimer.TimerActive == true)
+                        if (SpiabluTimer.TimerActive)
                         {
                             SpiabluTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
                             if (SpiabluTimer.TimeElapsed > 500)
                             {
-                                if (spiablue_act == true)
+                                if (spiablue_act)
                                 {
                                     spiablue_act = false;
                                 }
@@ -214,12 +214,12 @@ namespace Plugin
                                 SpiabluTimer.TimeElapsed = 0;
                             }
                         }
-                        if (SpiaRossiTimer.TimerActive == true)
+                        if (SpiaRossiTimer.TimerActive)
                         {
                             SpiaRossiTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
                             if (SpiaRossiTimer.TimeElapsed > 500)
                             {
-                                if (spiarossi_act == true)
+                                if (spiarossi_act)
                                 {
                                     spiarossi_act = false;
                                 }
@@ -230,7 +230,7 @@ namespace Plugin
                                 SpiaRossiTimer.TimeElapsed = 0;
                             }
                         }
-                        if (riarmoTimer.TimerActive == true)
+                        if (riarmoTimer.TimerActive)
                         {
                             riarmoTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
                             if (riarmoTimer.TimeElapsed > 300)
@@ -250,7 +250,7 @@ namespace Plugin
                             StopTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
                             if ((Train.CurrentSpeed < beacon_speed + 2 && beacon_speed > 30 && flagbrake == false) ||
                                 (Train.CurrentSpeed == 0 && StopTimer.TimeElapsed > (tpwsstopdelay*1000)) &&
-                                trainstop == true)
+                                trainstop)
                             {
                                 riarmoTimer.TimerActive = false;
                                 BlinkIndicator(ref BrakeDemandIndicator, 1);
@@ -267,7 +267,7 @@ namespace Plugin
                                 SetIndicator(ref srIndicator, 0);
 								ShowIndicator(ref srIndicator, data.ElapsedTime.Milliseconds);
                             }
-                            if (OverrideTimer.TimerActive == true)
+                            if (OverrideTimer.TimerActive)
                             {
                                 if (beacon_type == 44003)
                                 {
@@ -291,10 +291,7 @@ namespace Plugin
                                         AlarmTimer.TimerActive = true;
                                         AlarmTimer.TimeElapsed = 0;
                                     }
-                                    if (overspeedalarm != -1)
-                                    {
-                                        SoundManager.Play(overspeedalarm, 1.0, 1.0, true);
-                                    }
+                                    SoundManager.Play(overspeedalarm, 1.0, 1.0, true);
                                     spiarossi_act = true;
                                     if (Train.Handles.BrakeNotch == 0 && brakeNotchDemanded == 0 &&
                                         testscmt == 4)
@@ -305,10 +302,7 @@ namespace Plugin
                                     }
                                     if (Train.CurrentSpeed > maxspeed + 4)
                                     {
-                                        if (tpwswarningsound != -1)
-                                        {
-                                            SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
-                                        }
+	                                    SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
                                         EBDemanded = true;
                                         Train.TractionManager.DemandBrakeApplication(this.Train.Specs.BrakeNotches + 1, "Brake application demanded by the SCMT overspeed function");
                                         trainstop = true;
@@ -332,10 +326,7 @@ namespace Plugin
                                 else
                                 {
                                     BlinkIndicator(ref TraintripIndicator, 1);
-                                    if (tpwswarningsound != -1)
-                                    {
-                                        SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
-                                    }
+                                    SoundManager.Play(tpwswarningsound, 1.0, 1.0, true);
                                     EBDemanded = true;
                                     trainstop = true;
                                     StopTimer.TimerActive = false;
@@ -374,7 +365,7 @@ namespace Plugin
                          * Do we need the AWS release? Appears to only be triggered by the AWS startup test
                          * 
                          */
-                    if (awsRelease == true)
+                    if (awsRelease)
                     {
                         if (awsindicator != -1)
                         {
@@ -383,7 +374,7 @@ namespace Plugin
                         awsStop = false;
                         awsRelease = false;
                     }
-                    if (tpwsRelease == true && StopTimer.TimeElapsed > tpwstopdelay*1000)
+                    if (tpwsRelease && StopTimer.TimeElapsed > tpwstopdelay*1000)
                     {
                         EBDemanded = false;
                         Train.TractionManager.ResetBrakeApplication();
@@ -394,7 +385,7 @@ namespace Plugin
 
                 }
             }
-            if (OverrideTimer.TimerActive == true)
+            if (OverrideTimer.TimerActive)
             {
                 OverrideTimer.TimeElapsed += data.ElapsedTime.Milliseconds;
                 if (OverrideTimer.TimeElapsed > tpwsoverridelifetime*1000)
@@ -406,7 +397,7 @@ namespace Plugin
             //Set Panel Lights
             if (spiaSCMT != -1)
             {
-                if (SCMT_Alert == true)
+                if (SCMT_Alert)
                 {
                     this.Train.Panel[spiaSCMT] = 1;
                 }
@@ -427,7 +418,7 @@ namespace Plugin
                 }
                 if (spiablue != -1)
                 {
-                    if (spiablue_act == true)
+                    if (spiablue_act)
                     {
                         this.Train.Panel[spiablue] = 1;
                     }
@@ -472,19 +463,16 @@ namespace Plugin
             {
                 SCMT_Alert = true;
                 //Trigger audible alert if this is set
-                if (sound_scmt != -1)
-                {
-                    SoundManager.Play(sound_scmt, 1.0, 1.0, false);
-                }
+                SoundManager.Play(sound_scmt, 1.0, 1.0, false);
             }
         }
 
         /// <summary>This function is called from the traction manager when the TPWS reset key is pressed.</summary>
         internal void tpwsresetkey()
         {
-            if (trainstop == true && this.Enabled == true)
+            if (trainstop && this.Enabled)
             {
-                if (flagbrake == true)
+                if (flagbrake)
                 {
                     SetIndicator(ref TraintripIndicator, 1);
                     SetIndicator(ref BrakeDemandIndicator, 1);
@@ -498,10 +486,7 @@ namespace Plugin
                     {
                         beacon_type = 44004;
                     }
-                    if (tpwswarningsound != -1)
-                    {
-                        SoundManager.Stop(tpwswarningsound);
-                    }
+                    SoundManager.Stop(tpwswarningsound);
                     flagbrake = false;
                     flagriarmo = false;
                     SpiaRossiTimer.TimerActive = false;
@@ -511,7 +496,7 @@ namespace Plugin
                 else
                 {
                     SetIndicator(ref BrakeDemandIndicator, 1);
-                    if (flagriarmo == true)
+                    if (flagriarmo)
                     {
                         flagriarmo = false;
                         Train.TractionManager.ResetBrakeApplication();
@@ -521,10 +506,7 @@ namespace Plugin
                         {
                             beacon_type = 44004;
                         }
-                        if (tpwswarningsound != -1)
-                        {
-                            SoundManager.Stop(tpwswarningsound);
-                        }
+                        SoundManager.Stop(tpwswarningsound);
                         SpiaRossiTimer.TimerActive = false;
                         spiarossi_act = false;
                     }
@@ -556,7 +538,7 @@ namespace Plugin
             if (beacon_distance < 1200 && beacon_distance > 1000)
             {
                 alertspeed = 117;
-                if (AlarmTimer.TimerActive == true)
+                if (AlarmTimer.TimerActive)
                 {
                     AlarmTimer.TimeElapsed += time;
                     if (AlarmTimer.TimeElapsed > 5000)
@@ -568,7 +550,7 @@ namespace Plugin
             else if (beacon_distance < 1000 && beacon_distance > 800)
             {
                 alertspeed = 102;
-                if (AlarmTimer.TimerActive == true)
+                if (AlarmTimer.TimerActive)
                 {
                     AlarmTimer.TimeElapsed += time;
                     if (AlarmTimer.TimeElapsed > 5000)
@@ -580,7 +562,7 @@ namespace Plugin
             if (beacon_distance < 800 && beacon_distance > 700)
             {
                 alertspeed = 92;
-                if (AlarmTimer.TimerActive == true)
+                if (AlarmTimer.TimerActive)
                 {
                     AlarmTimer.TimeElapsed += time;
                     if (AlarmTimer.TimeElapsed > 5000)
@@ -592,7 +574,7 @@ namespace Plugin
             if (beacon_distance < 700 && beacon_distance > 600)
             {
                 alertspeed = 82;
-                if (AlarmTimer.TimerActive == true)
+                if (AlarmTimer.TimerActive)
                 {
                     AlarmTimer.TimeElapsed += time;
                     if (AlarmTimer.TimeElapsed > 5000)
@@ -604,7 +586,7 @@ namespace Plugin
             if (beacon_distance < 600 && beacon_distance > 500)
             {
                 alertspeed = 72;
-                if (AlarmTimer.TimerActive == true)
+                if (AlarmTimer.TimerActive)
                 {
                     AlarmTimer.TimeElapsed += time;
                     if (AlarmTimer.TimeElapsed > 5000)
@@ -616,7 +598,7 @@ namespace Plugin
             if (beacon_distance < 500 && beacon_distance > 400)
             {
                 alertspeed = 62;
-                if (AlarmTimer.TimerActive == true)
+                if (AlarmTimer.TimerActive)
                 {
                     AlarmTimer.TimeElapsed += time;
                     if (AlarmTimer.TimeElapsed > 5000)
@@ -628,7 +610,7 @@ namespace Plugin
             if (beacon_distance < 400 && beacon_distance > 300)
             {
                 alertspeed = 45;
-                if (AlarmTimer.TimerActive == true)
+                if (AlarmTimer.TimerActive)
                 {
                     AlarmTimer.TimeElapsed += time;
                     if (AlarmTimer.TimeElapsed > 5000)
@@ -640,7 +622,7 @@ namespace Plugin
             if (beacon_distance < 300 && beacon_distance > 220)
             {
                 alertspeed = 33;
-                if (AlarmTimer.TimerActive == true)
+                if (AlarmTimer.TimerActive)
                 {
                     AlarmTimer.TimeElapsed += time;
                     if (AlarmTimer.TimeElapsed > 5000)
@@ -667,7 +649,7 @@ namespace Plugin
 
 	    internal static void ShowIndicator(ref SCMT_Traction.Indicator i, double elapsedTime)
 	    {
-		    if (i.Timer.TimerActive == true)
+		    if (i.Timer.TimerActive)
 		    {
 			    i.Timer.TimeElapsed += elapsedTime;
 			    if (i.Timer.TimeElapsed > i.Value*1000)

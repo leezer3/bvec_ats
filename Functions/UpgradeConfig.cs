@@ -467,14 +467,14 @@ namespace Plugin
 					newLines.AddRange(electric);
 				}
 
-				if (steamtype == true)
+				if (steamtype)
 				{
 					newLines.Add("[Steam]");
 					newLines.AddRange(common);
 					newLines.AddRange(steam);
 				}
 
-				if (dieseltype == true)
+				if (dieseltype)
 				{
 					newLines.Add("[Diesel]");
 					newLines.AddRange(common);

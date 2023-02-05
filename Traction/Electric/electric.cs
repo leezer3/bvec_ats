@@ -322,7 +322,7 @@ namespace Plugin
 					else if (nextmagnet != 0 && (Train.TrainLocation - PickupLocations[PickupLocations.Length - 1]) > nextmagnet && (Train.TrainLocation - PickupLocations[0]) > nextmagnet)
 					{
 						PowerGap = false;
-						if (LegacyPowerCut == true)
+						if (LegacyPowerCut)
 						{
 							//Reset legacy power cutoff state and retrip breaker
 							Train.ElectricEngine.TripBreaker();
@@ -342,12 +342,12 @@ namespace Plugin
 				//This section of code handles a UKTrainSys compatible ACB/VCB
 				//
 				//If the ACB/VCB has tripped, always demand power cutoff
-				if (BreakerTripped == true && Train.TractionManager.PowerCutoffDemanded == false)
+				if (BreakerTripped && Train.TractionManager.PowerCutoffDemanded == false)
 				{
 					DemandPowerCutoff("Power cutoff was demanded due to the ACB/VCB state");
 				}
 				//If we're in a power gap, also always demand power cutoff
-				else if (BreakerTripped == false && PowerGap == true && Train.TractionManager.PowerCutoffDemanded == false)
+				else if (BreakerTripped == false && PowerGap && Train.TractionManager.PowerCutoffDemanded == false)
 				{
 					DemandPowerCutoff("Power cutoff was demanded due to a neutral gap in the overhead line");
 				}
@@ -474,7 +474,7 @@ namespace Plugin
 				SoundManager.Stop(powerloopsound);
 			}
 			//This section of code runs the breaker loop sound
-			if (breakerloopsound != -1 && BreakerTripped == false)
+			if (BreakerTripped == false)
 			{
 				if (!PowerGap && SoundManager.IsPlaying(breakerloopsound) == false)
 				{
@@ -486,7 +486,7 @@ namespace Plugin
 					}
 				}
 			}
-			else if (breakerloopsound != -1 && BreakerTripped == true)
+			else
 			{
 				SoundManager.Stop(breakerloopsound);
 				breakerlooptimer = 0.0;
@@ -497,7 +497,7 @@ namespace Plugin
 				//Ammeter
 				if (Ammeter.PanelIndex != -1)
 				{
-					if(PowerGap == true || BreakerTripped == true || Train.TractionManager.PowerCutoffDemanded == true)
+					if(PowerGap || BreakerTripped || Train.TractionManager.PowerCutoffDemanded)
 					{
 						this.Train.Panel[Ammeter.PanelIndex] = 0;
 					}
@@ -548,7 +548,7 @@ namespace Plugin
 				//Pantograph Indicators
 				if (FrontPantograph.PanelIndex != -1)
 				{
-					if (FrontPantograph.Raised() == true)
+					if (FrontPantograph.Raised())
 					{
 						this.Train.Panel[FrontPantograph.PanelIndex] = 1;
 					}
@@ -559,7 +559,7 @@ namespace Plugin
 				}
 				if (RearPantograph.PanelIndex != -1)
 				{
-					if (RearPantograph.Raised() == true)
+					if (RearPantograph.Raised())
 					{
 						this.Train.Panel[RearPantograph.PanelIndex] = 1;
 					}
@@ -570,18 +570,13 @@ namespace Plugin
 				}
 			}
 			//Sounds
+			if (temperature > overheatalarm)
 			{
-				if (overheatalarm != -1)
-				{
-					if (temperature > overheatalarm)
-					{
-						SoundManager.Play(overheatalarm, 1.0, 1.0, true);
-					}
-					else
-					{
-						SoundManager.Stop(overheatalarm);
-					}
-				}
+				SoundManager.Play(overheatalarm, 1.0, 1.0, true);
+			}
+			else
+			{
+				SoundManager.Stop(overheatalarm);
 			}
 			//Pass information to the advanced driving window
 			if (AdvancedDriving.CheckInst != null)
@@ -632,10 +627,7 @@ namespace Plugin
 				
 				BreakerTripped = true;
 				powerloop = false;
-				if (breakersound != -1)
-				{
-					SoundManager.Play(breakersound, 1.0, 1.0, false);
-				}
+				SoundManager.Play(breakersound, 1.0, 1.0, false);
 				Train.DebugLogger.LogMessage("The ACB/VCB was opened");
 				Train.TractionManager.DemandPowerCutoff("Power cutoff was demanded due to an open ACB/VCB");
 			}
@@ -643,10 +635,7 @@ namespace Plugin
 			{
 				
 				BreakerTripped = false;
-				if (breakersound != -1)
-				{
-					SoundManager.Play(breakersound, 1.0, 1.0, false);
-				}
+				SoundManager.Play(breakersound, 1.0, 1.0, false);
 				Train.DebugLogger.LogMessage("The ACB/VCB was closed");
 				Train.TractionManager.ResetPowerCutoff();
 			}
@@ -656,7 +645,7 @@ namespace Plugin
 		/// <param name="Message">The message to log</param>
 		internal void ResetPowerCutoff(string Message)
 		{
-			if (electricPowerCutoff == true)
+			if (electricPowerCutoff)
 			{
 				Train.DebugLogger.LogMessage(Message);
 				Train.TractionManager.ResetPowerCutoff();

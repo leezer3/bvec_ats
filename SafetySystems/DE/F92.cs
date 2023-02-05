@@ -92,9 +92,9 @@ namespace Plugin
 		internal override void Elapse(ElapseData data, ref bool blocking)
 		{
 			{
-				if (TripcockActive == true)
+				if (TripcockActive)
 				{
-					if (DeadmansDeviceActive == true)
+					if (DeadmansDeviceActive)
 					{
 						//We can accelerate!
 						//If the throttle button is held down, then the train will accelerate towards the selected speed
@@ -213,7 +213,7 @@ namespace Plugin
 				}
 				else
 				{
-					if (Overspeed == true)
+					if (Overspeed)
 					{
 						//Only attempt to reset the brake application once, else this causes log spam
 						Train.TractionManager.ResetBrakeApplication();
@@ -225,7 +225,7 @@ namespace Plugin
 			//Sounds
 			{
 				//If our trainspeed is greater than 50km/h then we should play the curve flange sound
-				if (Train.CurrentSpeed > 50 && CurveFlangeNoise == true)
+				if (Train.CurrentSpeed > 50 && CurveFlangeNoise)
 				{
 					//Requires fade-in sound
 					SoundManager.Play(CurveFlangeSound, 1.0, 1.0, true);
@@ -237,7 +237,7 @@ namespace Plugin
 					//Requires fade-out sound
 				}
 				//This sound is played whilst in tight curves (Rumbling noise) whilst the speed is above 25km/h
-				if (Train.CurrentSpeed > 25 && TightCurveNoise == true)
+				if (Train.CurrentSpeed > 25 && TightCurveNoise)
 				{
 					//Requires fade-in sound
 					SoundManager.Play(TightCurveSound, 1.0, 1.0, true);

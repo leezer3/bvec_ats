@@ -99,7 +99,7 @@ namespace Plugin.AI
 					}
 				}
 
-				if (Train.Vigilance.DRAEnabled == true)
+				if (Train.Vigilance.DRAEnabled)
 				{
 					if (Train.drastate == false && Train.CurrentSpeed == 0)
 					{
@@ -117,11 +117,11 @@ namespace Plugin.AI
 							data.Response = AIResponse.Short;
 						}
 					}
-					else if (Train.drastate == true)
+					else if (Train.drastate)
 					{
 						if (Train.NextSignal.Aspect != 0 && Train.Doors == DoorStates.None)
 						{
-							if (DRAResponse == true)
+							if (DRAResponse)
 							{
 								Train.drastate = false;
 								Train.TractionManager.ResetPowerCutoff();
@@ -143,7 +143,7 @@ namespace Plugin.AI
 				}
 			}
 			//AWS Handling
-			if (Train.AWS != null && Train.AWS.Enabled == true)
+			if (Train.AWS != null && Train.AWS.Enabled)
 			{
 				if (Train.AWS.SafetyState == AWS.SafetyStates.CancelTimerActive)
 				{
@@ -163,7 +163,7 @@ namespace Plugin.AI
 
 			if (Train.CAWS != null)
 			{
-				if (Train.CAWS.AcknowledgementPending == true)
+				if (Train.CAWS.AcknowledgementPending)
 				{
 					if (AWSWarningRecieved == false)
 					{
@@ -268,7 +268,7 @@ namespace Plugin.AI
 		/// <summary>Represents the driver class for an electric locomotive</summary>
 		internal void ElectricLocomotive(ref AIData data)
 		{
-			if (PantographRising == true)
+			if (PantographRising)
 			{
 				//We need a delay if the pantograph is currently rising, as the default Long response isn't quite long enough....
 				PantographRising = false;
@@ -314,7 +314,7 @@ namespace Plugin.AI
 				return;
 			}
 
-			if (Train.ElectricEngine.PowerGap == true)
+			if (Train.ElectricEngine.PowerGap)
 			{
 				if (data.Handles.PowerNotch > 0)
 				{

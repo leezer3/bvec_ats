@@ -181,9 +181,9 @@ namespace Plugin
 			if (!blocking)
 			{
 				//Kankunin
-				if(KakuninPrimed == true)
+				if(KakuninPrimed)
 				{
-					if (KakuninActive == true && KakuninCheck == false)
+					if (KakuninActive && KakuninCheck == false)
 					{
 						//Check that our speed is GREATER than the check speed, and that our timer has not yet expired
 						if (data.Vehicle.Speed.KilometersPerHour > KakuninCheckSpeed && KakuninCheck == false && KakuninTimer < KakuninDelay)
@@ -198,7 +198,7 @@ namespace Plugin
 						}
 					}
 					//The Kakunin check has failed
-					if (KakuninCheck == true)
+					if (KakuninCheck)
 					{
 						if (Train.TractionManager.BrakeInterventionDemanded == false)
 						{
@@ -970,14 +970,14 @@ namespace Plugin
 		internal void ResetKakunin()
 		{
 			//Kakunin is active, but has not yet triggered a brake application
-			if (KakuninActive == true && KakuninCheck == false)
+			if (KakuninActive && KakuninCheck == false)
 			{
 				KakuninActive = false;
 				KakuninTimer = 0;
 				return;
 			}
 			//Kakunin is applying brakes, but one of the conditions for reset is available
-			if (KakuninCheck == true && (KakuninCanReset == true || KakuninNewSection == true))
+			if (KakuninCheck && (KakuninCanReset || KakuninNewSection))
 			{
 				KakuninCheck = false;
 				KakuninCanReset = false;
@@ -1048,13 +1048,13 @@ namespace Plugin
 
 		internal override void SetSignal(SignalData[] signal)
 		{
-			if (KakuninPrimed == true)
+			if (KakuninPrimed)
 			{
 				//If Kakunin is currently primed, check whether ATC brakes are already applying
 				if (this.State > States.Ats)
 				{
 					//ATC brakes are active
-					if (KakuninCheck == true)
+					if (KakuninCheck)
 					{
 						//Kakunin brakes are currently applied, but can now be reset as we have left the section
 						KakuninNewSection = true;
